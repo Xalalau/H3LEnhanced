@@ -25,4 +25,9 @@ public:
 	int MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf );
 };
 
+// ############ hu3lifezado ############ //
+// Nova funcao para facilitar a escrita de mensagens
+void hu3_mensagem(char string[128], int opcao);
+// ############ //
+
 #endif //GAME_CLIENT_UI_HUD_CHUDTEXTMESSAGE_H

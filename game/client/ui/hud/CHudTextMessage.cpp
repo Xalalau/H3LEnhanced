@@ -207,3 +207,14 @@ int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf
 
 	return 1;
 }
+
+// ############ hu3lifezado ############ //
+// Nova funcao para facilitar a escrita de mensagens
+void hu3_mensagem( char string[], int opcao)
+{
+	char* string_aux;
+	safe_strcpy(string_aux, string, strlen(string_aux));
+	sprintf(string_aux, "%c%s", opcao, CHudTextMessage::BufferedLocaliseTextString(string_aux));
+	gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string_aux), string_aux);
+}
+// ############ //
