@@ -1,15 +1,29 @@
-HLEnhanced
+H3LEnhanced
 ======================
 
-[![Join the chat at https://gitter.im/HLEnhanced-Project/Lobby](https://badges.gitter.im/HLEnhanced-Project/Lobby.svg)](https://gitter.im/HLEnhanced-Project/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Olá! Sejam bem-vindos à zona!
 
-For more information, read the [wiki](https://github.com/SamVanheer/HLEnhanced/wiki).
+O nosso objetivo aqui é abusar dessa maravilhosa base denominada HLEnchanced, um remake ridiculamente bem feito do HL1, para criar a ultimate experiência 100% cagada conhecida como "Hu3-Life". 
 
-Build status
+Nesse momento o que nos importa é trazer para cá todas as nossas alterações feitas no [antigo e abandonado HL1 SDK](https://github.com/ValveSoftware/halflife), processo que deve demorar algum tempo. Contudo, mesmo que os pedaços do Hu3 ainda estejam faltando, já estamos funcionais e prontos para novidades. Sintam-se à vontade para destruir e obliterar! Vocês podem nos enviar sugestões, mudanças, apontar erros, etc. Apenas notem que nós não vamos resolver problemas relativos ao HL1 ou ao HLEnchanced por conta própria. Se vocês *querem programação de verdade*, vão falar com os [programadores de verdade](https://github.com/SamVanheer/HLEnhanced/issues)! Infelizmente aqui nós só vamos nos ater às nossas zoeiras;
 
-|             | Windows | Linux/OSX |
-|-------------|---------|-----------|
-| **master**  | [![AppVeyor](https://ci.appveyor.com/api/projects/status/h4cwesn12o16p07j/branch/master?svg=true)](https://ci.appveyor.com/project/SamVanheer/hlenhanced/branch/master) | [![Build Status](https://travis-ci.org/SamVanheer/HLEnhanced.svg?branch=master)](https://travis-ci.org/SamVanheer/HLEnhanced) |
+Testes
+----------------
+
+Por enquanto estamos utilizando o próprio mini mod oficial do HLEnchanced para checar as mudanças. Fiquem com o download:
+
+[https://www.dropbox.com/s/fe66rijzdqexk4q/hlenhanced.zip?dl=0](https://www.dropbox.com/s/fe66rijzdqexk4q/hlenhanced.zip?dl=0) (~27MB)
+
+Essas são as nossas modificações:
+* inclusão dos mapas hl_c00, hl_c01_a1 e hl_c01_a2 do Sven Coop para *exclusivo teste do modo coop* (não estamos pegando nada, vamos largar todos esses arquivos em breve!);
+* o nome da pasta do mod já está acertado;
+* alguns arquivos já estão corretamente renomeados; e
+* nossos arquivos de client e hl do Linux e Windows (11/03/2017) já estão inclusos.
+
+Para instalar, descompactem o zip dentro da pasta ".../steamapps/common/Half-Life" e reinicie o Steam.
+
+Façam o que quiserem agora.
+
 
 Half Life 1 SDK LICENSE
 ======================
@@ -30,41 +44,3 @@ LIMITATION OF LIABILITY.  IN NO EVENT SHALL VALVE OR ITS SUPPLIERS BE LIABLE FOR
  
  
 If you would like to use the SDK for a commercial purpose, please contact Valve at sourceengine@valvesoftware.com.
-
-
-Half-Life 1
-======================
-
-This is the README for the Half-Life 1 engine and its associated games.
-
-Please use this repository to report bugs and feature requests for Half-Life 1 related products.
-
-Reporting Issues
-----------------
-
-If you encounter an issue while using Half-Life 1 games, first search the [issue list](https://github.com/ValveSoftware/halflife/issues) to see if it has already been reported. Include closed issues in your search.
-
-If it has not been reported, create a new issue with at least the following information:
-
-- a short, descriptive title;
-- a detailed description of the issue, including any output from the command line;
-- steps for reproducing the issue;
-- your system information.\*; and
-- the `version` output from the in‐game console.
-
-Please place logs either in a code block (press `M` in your browser for a GFM cheat sheet) or a [gist](https://gist.github.com).
-
-\* The preferred and easiest way to get this information is from Steam's Hardware Information viewer from the menu (`Help -> System Information`). Once your information appears: right-click within the dialog, choose `Select All`, right-click again, and then choose `Copy`. Paste this information into your report, preferably in a code block.
-
-Conduct
--------
-
-
-There are basic rules of conduct that should be followed at all times by everyone participating in the discussions.  While this is generally a relaxed environment, please remember the following:
-
-- Do not insult, harass, or demean anyone.
-- Do not intentionally multi-post an issue.
-- Do not use ALL CAPS when creating an issue report.
-- Do not repeatedly update an open issue remarking that the issue persists.
-
-Remember: Just because the issue you reported was reported here does not mean that it is an issue with Half-Life.  As well, should your issue not be resolved immediately, it does not mean that a resolution is not being researched or tested.  Patience is always appreciated.
