@@ -117,4 +117,9 @@ private:
 	int m_iBucketHeight, m_iBucketWidth, m_iABHeight, m_iABWidth;
 };
 
+// ############ hu3lifezado ############ //
+// Variavel contendo a arma atual
+CBasePlayerWeapon *hu3ArmaAtual;
+// ############ //
+
 #endif //GAME_CLIENT_UI_HUD_CHUDAMMO_H
