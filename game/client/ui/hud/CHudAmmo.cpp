@@ -433,14 +433,6 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf )
 
 	m_pWeapon = pWeapon;
 
-	// ############ hu3lifezado ############ //
-	// Armazeno a arma atual
-	if ( m_pWeapon != NULL )
-	{
-		hu3ArmaAtual = m_pWeapon;
-	}
-	// ############ //
-
 	UpdateWeaponHUD( m_pWeapon, fOnTarget );
 	
 	return 1;
