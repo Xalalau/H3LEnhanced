@@ -9,7 +9,7 @@ Nesse primeiro momento o que nos importa é trazer para cá todas as nossas alte
 
 Porém, mesmo que os pedaços do Hu3 ainda estejam faltando, já estamos funcionais e prontos para novidades. Vocês podem nos enviar sugestões, mudanças, apontar erros, etc. Sintam-se à vontade para destruir e obliterar!
 
-Apenas notem que nós não vamos resolver problemas relativos ao HL1 ou ao HLEnchanced por conta própria. Se vocês querem *programação de verdade*, [aqui está o local](https://github.com/SamVanheer/HLEnhanced/issues) para falar com os *programadores de verdade*. Deem a assistência mais éria no [repositório original](https://github.com/SamVanheer/HLEnhanced) que vocês estarão ajudando não só o Hu3-Life como também todas as outras pessoas que utilizam essa base!
+Apenas notem que nós não vamos resolver problemas relativos ao HL1 ou ao HLEnchanced por conta própria. [Aqui está o local](https://github.com/SamVanheer/HLEnhanced/issues) para falar com os *super programadores* que cuidam disso. Vamos espalhar esses tipos de benefícios ao invés de concentrá-los aqui!
 
 Testes
 ----------------
