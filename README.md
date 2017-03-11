@@ -7,7 +7,9 @@ O nosso objetivo aqui é abusar dessa maravilhosa base denominada HLEnchanced, u
 
 Nesse primeiro momento o que nos importa é trazer para cá todas as nossas alterações feitas no [abandonado HL1 SDK](https://github.com/ValveSoftware/halflife), processo que deve demorar algum tempo.
 
-Porém, mesmo que os pedaços do Hu3 ainda estejam faltando, já estamos funcionais e prontos para novidades. Vocês podem nos enviar sugestões, mudanças, apontar erros, etc. Sintam-se à vontade para destruir e obliterar! Apenas notem que nós não vamos resolver problemas relativos ao HL1 ou ao HLEnchanced por conta própria. Se vocês *querem programação de verdade*, vão falar com os [programadores de verdade](https://github.com/SamVanheer/HLEnhanced/issues)! Lembrem-se que nós não estamos tentando melhorar o HLEnchanced, queremos é piorar ele! Tenham em mente que aqui só imperarão zoeiras, e nada de "maravilhas digitais"... Se quiserem seriedade, suportem o [repositório original](https://github.com/SamVanheer/HLEnhanced)! Lá sim vocês estarão ajudando não só o Hu3-Life, já que iremos puxar as suas melhorias, como também todas as outras pessoas que usam essa base!
+Porém, mesmo que os pedaços do Hu3 ainda estejam faltando, já estamos funcionais e prontos para novidades. Vocês podem nos enviar sugestões, mudanças, apontar erros, etc. Sintam-se à vontade para destruir e obliterar!
+
+Apenas notem que nós não vamos resolver problemas relativos ao HL1 ou ao HLEnchanced por conta própria. Se vocês querem *programação de verdade*, [aqui está o local](https://github.com/SamVanheer/HLEnhanced/issues) para falar com os *programadores de verdade*. Deem a assistência mais éria no [repositório original](https://github.com/SamVanheer/HLEnhanced) que vocês estarão ajudando não só o Hu3-Life como também todas as outras pessoas que utilizam essa base!
 
 Testes
 ----------------
