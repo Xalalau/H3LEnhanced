@@ -28,6 +28,13 @@
 
 #define MOUSE_BUTTON_COUNT 5
 
+// ############ hu3lifezado ############ //
+// Conserto de um bug na movimentacao do jogador: https://github.com/ValveSoftware/halflife/issues/1546
+#ifdef _WIN32
+    SDL_bool mouseRelative = SDL_TRUE;
+#endif
+// ############ //
+
 // Set this to 1 to show mouse cursor.  Experimental
 int	g_iVisibleMouse = 0;
 
@@ -227,6 +234,23 @@ IN_ActivateMouse
 */
 void DLLEXPORT IN_ActivateMouse (void)
 {
+    // ############ hu3lifezado ############ //
+    // Conserto de um bug na movimentacao do jogador: https://github.com/ValveSoftware/halflife/issues/1546
+#ifdef _WIN32
+    if (!m_bRawInput)
+    {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        mouseRelative = SDL_FALSE;
+    }
+    else
+    {
+        mouseRelative = SDL_TRUE;
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    }
+#else
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+#endif
+    // ############ //
 	if (mouseinitialized)
 	{
 #ifdef _WIN32
@@ -246,6 +270,16 @@ IN_DeactivateMouse
 */
 void DLLEXPORT IN_DeactivateMouse (void)
 {
+    // ############ hu3lifezado ############ //
+    // Conserto de um bug na movimentacao do jogador: https://github.com/ValveSoftware/halflife/issues/1546
+#ifdef _WIN32
+    if (m_bRawInput)
+    {
+        mouseRelative = SDL_FALSE;
+    }
+#endif
+    SDL_SetRelativeMouseMode(SDL_FALSE);
+    // ############ //
 	if (mouseinitialized)
 	{
 #ifdef _WIN32
@@ -459,6 +493,21 @@ IN_MouseMove
 */
 void IN_MouseMove ( float frametime, usercmd_t *cmd)
 {
+    // ############ hu3lifezado ############ //
+    // Conserto de um bug na movimentacao do jogador: https://github.com/ValveSoftware/halflife/issues/1546
+    #ifdef _WIN32
+      if (!m_bRawInput && mouseRelative)
+      {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        mouseRelative = SDL_FALSE;
+      }
+      else if (m_bRawInput && !mouseRelative)
+      {
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+        mouseRelative = SDL_TRUE;
+      }
+    #endif
+    // ############ //
 	int		mx, my;
 	Vector viewangles;
 
