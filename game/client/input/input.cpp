@@ -459,6 +459,13 @@ void IN_UseDown (void)
 void IN_UseUp (void) {KeyUp(&in_use);}
 void IN_JumpDown (void)
 {
+	// ############ hu3lifezado ############ //
+	// Nao pular caso o jogador esteja travado! (Isso e importante no nosso gameplay)
+	if (CVAR_GET_FLOAT("sv_maxspeed") == 0)
+	{
+		return;
+	}
+	// ############ //
 	KeyDown(&in_jump);
 	gHUD.m_Spectator.HandleButtonsDown( IN_JUMP );
 
