@@ -13,7 +13,7 @@ Nesse primeiro momento o que nos importa é trazer para cá todas as nossas hu3l
 
 Mas mesmo que os pedaços do Hu3 ainda estejam faltando por aqui, já estamos prontos para testes! Vocês podem nos mandar sugestões, códigos, apontar erros, etc. Sintam-se à vontade para destruir e obliterar!
 
-Nossa única ressalva é que não nos comprometemos a resolver bugs no HL1 nem no HLEnchanced. [Eis o local](https://github.com/SamVanheer/HLEnhanced/issues) para que vocês falem com os *super programadores* competentes dessa causa. Notem que é até melhor que os seus remendos sejam feitos lá já que os forks se beneficiam dos avanços.
+Nossa única ressalva é que não nos comprometemos a resolver bugs do HL1 nem do HLEnchanced. [Eis o local](https://github.com/SamVanheer/HLEnhanced/issues) para que vocês falem com os *super programadores* competentes dessa causa. Notem que é até melhor que os seus remendos sejam feitos lá já que os forks se beneficiam dos avanços.
 
 Testes
 ----------------
@@ -38,19 +38,19 @@ Obs: o download está hospedado no Dropbox e sem avisos nós mexemos nele adicio
 Compilação
 ----------------
 
-Nós seguimos e recomenamos as instruções do repositório original. Compilamos o projeto tanto no Windows 7 com o [Visual Studio 2015 Community Edition](https://www.visualstudio.com/downloads/)) quanto no Linux Mint 18.1 com gcc-5 e g++-5, tudo focado em 32 bits. Foi necessário baixar o CMake atualizado nos dois casos.
+Nós seguimos e recomenamos as instruções do repositório original. Compilamos o projeto tanto no Windows 7 com o [Visual Studio 2015 Community Edition](https://www.visualstudio.com/downloads/) quanto no Linux Mint 18.1 com gcc-5 e g++-5 (tudo focado em 32 bits). Foi necessário baixar o CMake atualizado nos dois casos.
 
 Acompanhem por lá: [https://github.com/SamVanheer/HLEnhanced/wiki](https://github.com/SamVanheer/HLEnhanced/wiki)
 
 Lista de mudanças
 ----------------
 
-Começará a ser escrita em breve... Provavelmente será linkada aqui.
+Começará a ser escrita em breve... Provavelmente a linkaremos aqui.
 
 Obrigado
 ----------------
 
-Façam bom uso, e agradecemos adiantado aos que nos ajudarem na zoeira. Essa pessoas têm os nomes garantidos nos créditos do mod.
+Façam bom uso, e agradecemos adiantado aos que nos ajudarem na zoeira. Essa pessoas têm os nomes garantidos nos créditos do mod!
 
 Half Life 1 SDK LICENSE
 ======================
