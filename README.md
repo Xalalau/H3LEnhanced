@@ -3,31 +3,40 @@ H3LEnhanced
 
 Olá! Sejam bem-vindos à zona!
 
-O nosso objetivo aqui é abusar dessa maravilhosa base denominada HLEnchanced, um remake ridiculamente bem feito do HL1, para criar a ultimate experiência 100% cagada conhecida como "Hu3-Life". 
+O nosso objetivo é criar a ultimate experiência 100% cagada 3D vulgarmente conhecida como "**Hu3-Life**".
 
-Nesse primeiro momento o que nos importa é trazer para cá todas as nossas alterações feitas no [abandonado HL1 SDK](https://github.com/ValveSoftware/halflife), processo que deve demorar algum tempo.
+Tudo isso será possível graças a esse pequeno milagre chamado **HLEnchanced**, que se trata de um remake espetacurlamente bem feito do HL1. (Violá-lo-emos!)
 
-Porém, mesmo que os pedaços do Hu3 ainda estejam faltando, já estamos funcionais e prontos para novidades. Vocês podem nos enviar sugestões, mudanças, apontar erros, etc. Sintam-se à vontade para destruir e obliterar!
+Nesse primeiro momento o que nos importa é trazer para cá todas as nossas hu3lterações implementadas no [velho HL1 SDK](https://github.com/ValveSoftware/halflife) da Valve, processo que deve levar um tempo - não fiquem ansiosos.
 
-Apenas notem que nós não vamos resolver problemas relativos ao HL1 ou ao HLEnchanced por conta própria. [Aqui está o local](https://github.com/SamVanheer/HLEnhanced/issues) para falar com os *super programadores* que cuidam disso. Vamos espalhar esses tipos de benefícios ao invés de concentrá-los aqui!
+Mas mesmo que os pedaços do Hu3 ainda estejam faltando por aqui, já estamos prontos para testes! Vocês podem nos mandar sugestões, códigos, apontar erros, etc. Sintam-se à vontade para destruir e obliterar!
+
+Nossa única ressalva é que não nos comprometemos a resolver bugs no HL1 nem no HLEnchanced. [Eis o local](https://github.com/SamVanheer/HLEnhanced/issues) para que vocês falem com os *super programadores* competentes dessa causa. Notem que é até melhor que os seus remendos sejam feitos lá já que os forks se beneficiam dos avanços.
 
 Testes
 ----------------
 
-Por enquanto estamos utilizando o próprio mini mod oficial do HLEnchanced para checar as mudanças. Fiquem com o download:
+Estamos utilizando o próprio mini mod oficial do HLEnchanced para checar as mudanças, fiquem com o download:
 
 [https://www.dropbox.com/s/fe66rijzdqexk4q/hlenhanced.zip?dl=0](https://www.dropbox.com/s/fe66rijzdqexk4q/hlenhanced.zip?dl=0) (~27MB)
 
 Essas são as nossas modificações:
-* inclusão dos mapas hl_c00, hl_c01_a1 e hl_c01_a2 do Sven Coop para *exclusivo teste do modo coop* (não estamos pegando nada, vamos largar todos esses arquivos em breve!);
-* o nome da pasta do mod já está acertado;
-* alguns arquivos já estão corretamente renomeados; e
-* nossos arquivos de client e hl do Linux e Windows (11/03/2017) já estão inclusos.
+* incluímos os nossos client.dll e o hl.dll modificados;
+* incluímos o sample.wad;
+* incluímos alguns dos nossos arquivos de configuração;
+* incluímos os mapas hl_c00, hl_c01_a1 e hl_c01_a2 do Sven Coop para realizar testes no modo coop;
+* incluímos alguns sprites;
+* o nome da pasta do mod já está acertado; e
+* alguns arquivos já estão corretamente renomeados.
 
 Para instalar, descompactem o zip dentro da pasta ".../steamapps/common/Half-Life" e reiniciem o Steam.
 
-Façam o que quiserem agora.
+Obs: o download está hospedado no Dropbox e sem avisos nós mexemos nele adicionando ou removendo coisas. Não há controle de versão pois essa coletânea não passa de um conjunto de testes. Além disso, entendam que, infelizmente, vocês pouco vão encontrar do Hu3-Life por aqui. Esse repositório possui o motor do mod, ele não é o mod em si.
 
+Obrigado
+----------------
+
+Façam bom uso, e agradecemos adiantado aos que nos ajudarem na zoeira. Essa pessoas têm os nomes garantidos nos créditos do mod.
 
 Half Life 1 SDK LICENSE
 ======================
