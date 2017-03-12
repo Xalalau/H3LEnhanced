@@ -44,6 +44,13 @@ public:
 	void Reload( void ) override;
 	void WeaponIdle( void ) override;
 
+	// ############ hu3lifezado ############ //
+	// Funcao da mira em terceira pessoa
+	void UpdateSpot(void);
+	// Sprite da mira em terceira pessoa
+	int hu3_spriteTexture;
+	// ############ //
+
 	bool IsUseable() override;
 
 	float m_flNextAnimTime;
