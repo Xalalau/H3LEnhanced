@@ -1,6 +1,8 @@
 H3LEnhanced
 ======================
 
+[![Hu3-Life Teaser Trailer 3](https://img.youtube.com/vi/fvkc70QQid0/0.jpg)](https://www.youtube.com/watch?v=fvkc70QQid0)
+
 Olá! Sejam bem-vindos à zona!
 
 O nosso objetivo é criar a ultimate experiência 100% cagada 3D vulgarmente conhecida como "**Hu3-Life**".
@@ -32,6 +34,18 @@ Essas são as nossas modificações:
 Para instalar, descompactem o zip dentro da pasta ".../steamapps/common/Half-Life" e reiniciem o Steam.
 
 Obs: o download está hospedado no Dropbox e sem avisos nós mexemos nele adicionando ou removendo coisas. Não há controle de versão pois essa coletânea não passa de um conjunto de testes. Além disso, entendam que, infelizmente, vocês pouco vão encontrar do Hu3-Life por aqui. Esse repositório possui o motor do mod, ele não é o mod em si.
+
+Compilação
+----------------
+
+Nós seguimos e recomenamos as instruções do repositório original. Compilamos o projeto tanto no Windows 7 com o [Visual Studio 2015 Community Edition](https://www.visualstudio.com/downloads/)) quanto no Linux Mint 18.1 com gcc-5 e g++-5, tudo focado em 32 bits. Foi necessário baixar o CMake atualizado nos dois casos.
+
+Acompanhem por lá: [https://github.com/SamVanheer/HLEnhanced/wiki](https://github.com/SamVanheer/HLEnhanced/wiki)
+
+Lista de mudanças
+----------------
+
+Começará a ser escrita em breve... Provavelmente será linkada aqui.
 
 Obrigado
 ----------------
