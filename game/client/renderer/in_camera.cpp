@@ -53,6 +53,15 @@ cvar_t	*cam_idealpitch;
 cvar_t	*cam_idealdist;
 cvar_t	*cam_contain;
 
+// ############ hu3lifezado ############ //
+// Novas variaveis para a terceira pessoa
+static wrect_t nullrc;
+cvar_t	*cam_hu3;
+cvar_t	*cam_hu3_alternar;
+cvar_t	*cam_hu3_pl_andando;
+cvar_t	*cam_hu3_reload_icon;
+// ############ //
+
 cvar_t	*c_maxpitch;
 cvar_t	*c_minpitch;
 cvar_t	*c_maxyaw;
@@ -111,14 +120,20 @@ float MoveToward( float cur, float goal, float maxspeed )
 		if( cur < goal )
 		{
 			if( cur < goal - 1.0 )
-				cur += ( goal - cur ) / 4.0;
+				// ############ hu3lifezado ############ //
+				// Atrasei mais a virada de camera (/ 4.0)
+				cur += (goal - cur) / 10.0;
+				// ############ //
 			else
 				cur = goal;
 		}
 		else
 		{
-			if( cur > goal + 1.0 )
-				cur -= ( cur - goal ) / 4.0;
+			if (cur > goal + 1.0)
+				// ############ hu3lifezado ############ //
+				// Atrasei mais a virada de camera (/ 4.0)
+				cur -= (cur - goal) / 10.0;
+				// ############ //
 			else
 				cur = goal;
 		}
@@ -184,7 +199,14 @@ void DLLEXPORT CAM_Think( void )
 
 	if( !cam_thirdperson )
 		return;
-	
+
+	// ############ hu3lifezado ############ //
+	// O player morre apenas em primeira pessoa
+	if (gHUD.m_Health.m_iHealth <= 0)
+		if (cam_thirdperson)
+			CAM_ToFirstPerson();
+	// ############ //
+
 #ifdef LATER
 	if ( cam_contain->value )
 	{
@@ -379,16 +401,22 @@ void DLLEXPORT CAM_Think( void )
 	}
 	else
 	{
-		if( camAngles[ YAW ] - viewangles[ YAW ] != cam_idealyaw->value )
-			camAngles[ YAW ] = MoveToward( camAngles[ YAW ], cam_idealyaw->value + viewangles[ YAW ], CAM_ANGLE_SPEED );
+		// ############ hu3lifezado ############ //
+		// A camera da terceira pessoa agora so se ajeita caso o jogador execute certas acoes (definidas em input.cpp)
+		if( cam_hu3->value == 0 || cam_hu3->value == 1 || cam_hu3->value == 2 || (cam_hu3->value == 3 && gEngfuncs.pfnGetCvarFloat( "cam_hu3_pl_acoes" ) == 1)  )
+		{
+			if( camAngles[ YAW ] - viewangles[ YAW ] != cam_idealyaw->value )
+				camAngles[ YAW ] = MoveToward( camAngles[ YAW ], cam_idealyaw->value + viewangles[ YAW ], CAM_ANGLE_SPEED );
 
-		if( camAngles[ PITCH ] - viewangles[ PITCH ] != cam_idealpitch->value )
-			camAngles[ PITCH ] = MoveToward( camAngles[ PITCH ], cam_idealpitch->value + viewangles[ PITCH ], CAM_ANGLE_SPEED );
+			if( camAngles[ PITCH ] - viewangles[ PITCH ] != cam_idealpitch->value )
+				camAngles[ PITCH ] = MoveToward( camAngles[ PITCH ], cam_idealpitch->value + viewangles[ PITCH ], CAM_ANGLE_SPEED );
 
-		if( fabs( camAngles[ 2 ] - cam_idealdist->value ) < 2.0 )
-			camAngles[ 2 ] = cam_idealdist->value;
-		else
-			camAngles[ 2 ] += ( cam_idealdist->value - camAngles[ 2 ] ) / 4.0;
+			if( abs( camAngles[ 2 ] - cam_idealdist->value ) < 2.0 )
+				camAngles[ 2 ] = cam_idealdist->value;
+			else
+				camAngles[ 2 ] += ( cam_idealdist->value - camAngles[ 2 ] ) / 4.0;
+		}
+		// ############ //
 	}
 #ifdef LATER
 	if( cam_contain->value )
@@ -435,6 +463,9 @@ void CAM_ToThirdPerson(void)
 { 
 	Vector viewangles;
 
+// ############ hu3lifezado ############ //
+// Vai ter terceira pessoa no multiplayer sim, amiguinho!
+/*
 #if !defined( _DEBUG )
 	if ( gEngfuncs.GetMaxClients() > 1 )
 	{
@@ -442,6 +473,8 @@ void CAM_ToThirdPerson(void)
 		return;
 	}
 #endif
+*/
+// ############ //
 
 	gEngfuncs.GetViewAngles( viewangles );
 
@@ -469,6 +502,52 @@ void CAM_ToggleSnapto( void )
 	cam_snapto->value = !cam_snapto->value;
 }
 
+// ############ hu3lifezado ############ //
+// Funcao de troca dos modos de camera
+void CAM_ToggleHu3(void)
+{
+	int cam_hu3 = gEngfuncs.pfnGetCvarFloat("cam_hu3");
+
+	if (cam_hu3 != 3)
+	{
+		SetCrosshair(0, nullrc, 0, 0, 0);
+	}
+	else
+	{
+		gHUD.m_Ammo.hu3ControlCrosshair();
+	}
+
+	if (cam_hu3 == 0)
+	{
+		if (!cam_thirdperson)
+			CAM_ToThirdPerson();
+		gEngfuncs.Cvar_SetValue("cam_hu3", 1);
+		hu3_mensagem("Terceira pessoa", HUD_PRINTCENTER);
+	}
+	else if (cam_hu3 == 1)
+	{
+		if (!cam_thirdperson)
+			CAM_ToThirdPerson();
+		gEngfuncs.Cvar_SetValue("cam_hu3", 2);
+		hu3_mensagem("Terceira pessoa com camera solta", HUD_PRINTCENTER);
+	}
+	else if (cam_hu3 == 2)
+	{
+		if (!cam_thirdperson)
+			CAM_ToThirdPerson();
+		gEngfuncs.Cvar_SetValue("cam_hu3", 3);
+		hu3_mensagem("Terceira pessoa com jogador solto", HUD_PRINTCENTER);
+	}
+	else if (cam_hu3 == 3)
+	{
+		if (cam_thirdperson)
+			CAM_ToFirstPerson();
+		gEngfuncs.Cvar_SetValue("cam_hu3", 0);
+		hu3_mensagem("Primera pessoa", HUD_PRINTCENTER);
+	}
+}
+// ############ //
+
 void CAM_Init( void )
 {
 	gEngfuncs.pfnAddCommand( "+campitchup", CAM_PitchUpDown );
@@ -490,6 +569,10 @@ void CAM_Init( void )
 	gEngfuncs.pfnAddCommand( "+camdistance", CAM_StartDistance );
 	gEngfuncs.pfnAddCommand( "-camdistance", CAM_EndDistance );
 	gEngfuncs.pfnAddCommand( "snapto", CAM_ToggleSnapto );
+	// ############ hu3lifezado ############ //
+	// Funcao da camera hu3 toogle
+	gEngfuncs.pfnAddCommand("cam_hu3_alternar", CAM_ToggleHu3);
+	// ############ //
 
 	cam_command				= gEngfuncs.pfnRegisterVariable ( "cam_command", "0", 0 );	 // tells camera to go to thirdperson
 	cam_snapto				= gEngfuncs.pfnRegisterVariable ( "cam_snapto", "0", 0 );	 // snap to thirdperson view
@@ -497,6 +580,13 @@ void CAM_Init( void )
 	cam_idealpitch			= gEngfuncs.pfnRegisterVariable ( "cam_idealpitch", "0", 0 );	 // thirperson pitch
 	cam_idealdist			= gEngfuncs.pfnRegisterVariable ( "cam_idealdist", "64", 0 );	 // thirdperson distance
 	cam_contain				= gEngfuncs.pfnRegisterVariable ( "cam_contain", "0", 0 );	// contain camera to world
+	// ############ hu3lifezado ############ //
+	// Comandos da camera hu3
+	cam_hu3					= gEngfuncs.pfnRegisterVariable ( "cam_hu3", "0", 0 ); // Variavel para ligar o nosso modo de camera do Hu3-Life em terceira pessoa solto
+	cam_hu3_alternar		= gEngfuncs.pfnRegisterVariable ( "cam_hu3_alternar", "0", 0 ); // Alterna entre os diferentes modos de camera disponiveis
+	cam_hu3_pl_andando		= gEngfuncs.pfnRegisterVariable ( "cam_hu3_pl_acoes", "0", 0 ); // Variavel auxiliar para detectar quando o player esta realizando certas acoes (ver em input.cpp)
+	cam_hu3_reload_icon		= gEngfuncs.pfnRegisterVariable ( "cam_hu3_reload_icon", "0", 0 ); // Variavel auxiliar para detectar quando o player esta realizando certas acoes (ver em input.cpp)
+	// ############ //
 
 	c_maxpitch				= gEngfuncs.pfnRegisterVariable ( "c_maxpitch", "90.0", 0 );
 	c_minpitch				= gEngfuncs.pfnRegisterVariable ( "c_minpitch", "0.0", 0 );

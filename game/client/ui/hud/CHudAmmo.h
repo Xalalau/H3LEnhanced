@@ -77,6 +77,11 @@ public:
 
 	void SetCrosshair( HSPRITE hCrosshair, const wrect_t& rect, int r, int g, int b );
 
+	// ############ hu3lifezado ############ //
+	// Funcao para religar o crosshair na primeira pessoa
+	void hu3ControlCrosshair(void);
+	// ############ //
+
 private:
 	void UpdateWeaponHUD( CBasePlayerWeapon* pWeapon, bool bOnTarget );
 

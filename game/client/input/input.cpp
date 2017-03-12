@@ -58,6 +58,13 @@ cvar_t	*cl_yawspeed;
 cvar_t	*cl_pitchspeed;
 cvar_t	*cl_anglespeedkey;
 cvar_t	*cl_vsmoothing;
+
+// ############ hu3lifezado ############ //
+// Variavel para guardar a ultima posicao valida do angulo de visao
+// E usada nos modos de terceira pessoa
+Vector hu3_viewangles_backup;
+// ############ //
+
 /*
 ===============================================================================
 
@@ -350,191 +357,8 @@ void KeyUp (kbutton_t *b)
 	b->state |= 4; 		// impulse up
 }
 
-/*
-============
-HUD_Key_Event
-
-Return 1 to allow engine to process the key, otherwise, act on it as needed
-============
-*/
-int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding )
-{
-	if (gViewPort)
-		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
-	
-	return 1;
-}
-
-void IN_BreakDown( void ) { KeyDown( &in_break );};
-void IN_BreakUp( void ) { KeyUp( &in_break ); };
-void IN_KLookDown (void) {KeyDown(&in_klook);}
-void IN_KLookUp (void) {KeyUp(&in_klook);}
-void IN_JLookDown (void) {KeyDown(&in_jlook);}
-void IN_JLookUp (void) {KeyUp(&in_jlook);}
-void IN_MLookDown (void) {KeyDown(&in_mlook);}
-void IN_UpDown(void) {KeyDown(&in_up);}
-void IN_UpUp(void) {KeyUp(&in_up);}
-void IN_DownDown(void) {KeyDown(&in_down);}
-void IN_DownUp(void) {KeyUp(&in_down);}
-void IN_LeftDown(void) {KeyDown(&in_left);}
-void IN_LeftUp(void) {KeyUp(&in_left);}
-void IN_RightDown(void) {KeyDown(&in_right);}
-void IN_RightUp(void) {KeyUp(&in_right);}
-
-void IN_ForwardDown(void)
-{
-	KeyDown(&in_forward);
-	gHUD.m_Spectator.HandleButtonsDown( IN_FORWARD );
-}
-
-void IN_ForwardUp(void)
-{
-	KeyUp(&in_forward);
-	gHUD.m_Spectator.HandleButtonsUp( IN_FORWARD );
-}
-
-void IN_BackDown(void)
-{
-	KeyDown(&in_back);
-	gHUD.m_Spectator.HandleButtonsDown( IN_BACK );
-}
-
-void IN_BackUp(void)
-{
-	KeyUp(&in_back);
-	gHUD.m_Spectator.HandleButtonsUp( IN_BACK );
-}
-void IN_LookupDown(void) {KeyDown(&in_lookup);}
-void IN_LookupUp(void) {KeyUp(&in_lookup);}
-void IN_LookdownDown(void) {KeyDown(&in_lookdown);}
-void IN_LookdownUp(void) {KeyUp(&in_lookdown);}
-void IN_MoveleftDown(void)
-{
-	KeyDown(&in_moveleft);
-	gHUD.m_Spectator.HandleButtonsDown( IN_MOVELEFT );
-}
-
-void IN_MoveleftUp(void)
-{
-	KeyUp(&in_moveleft);
-	gHUD.m_Spectator.HandleButtonsUp( IN_MOVELEFT );
-}
-
-void IN_MoverightDown(void)
-{
-	KeyDown(&in_moveright);
-	gHUD.m_Spectator.HandleButtonsDown( IN_MOVERIGHT );
-}
-
-void IN_MoverightUp(void)
-{
-	KeyUp(&in_moveright);
-	gHUD.m_Spectator.HandleButtonsUp( IN_MOVERIGHT );
-}
-void IN_SpeedDown(void) {KeyDown(&in_speed);}
-void IN_SpeedUp(void) {KeyUp(&in_speed);}
-void IN_StrafeDown(void) {KeyDown(&in_strafe);}
-void IN_StrafeUp(void) {KeyUp(&in_strafe);}
-
-// needs capture by hud/vgui also
-extern void __CmdFunc_InputPlayerSpecial(void);
-
-void IN_Attack2Down(void) 
-{
-	KeyDown(&in_attack2);
-
-#ifdef _TFC
-	__CmdFunc_InputPlayerSpecial();
-#endif
-
-	gHUD.m_Spectator.HandleButtonsDown( IN_ATTACK2 );
-}
-
-void IN_Attack2Up(void) {KeyUp(&in_attack2);}
-void IN_UseDown (void)
-{
-	KeyDown(&in_use);
-	gHUD.m_Spectator.HandleButtonsDown( IN_USE );
-}
-void IN_UseUp (void) {KeyUp(&in_use);}
-void IN_JumpDown (void)
-{
-	// ############ hu3lifezado ############ //
-	// Nao pular caso o jogador esteja travado! (Isso e importante no nosso gameplay)
-	if (CVAR_GET_FLOAT("sv_maxspeed") == 0)
-	{
-		return;
-	}
-	// ############ //
-	KeyDown(&in_jump);
-	gHUD.m_Spectator.HandleButtonsDown( IN_JUMP );
-
-}
-void IN_JumpUp (void) {KeyUp(&in_jump);}
-void IN_DuckDown(void)
-{
-	KeyDown(&in_duck);
-	gHUD.m_Spectator.HandleButtonsDown( IN_DUCK );
-
-}
-void IN_DuckUp(void) {KeyUp(&in_duck);}
-void IN_ReloadDown(void) {KeyDown(&in_reload);}
-void IN_ReloadUp(void) {KeyUp(&in_reload);}
-void IN_Alt1Down(void) {KeyDown(&in_alt1);}
-void IN_Alt1Up(void) {KeyUp(&in_alt1);}
-void IN_GraphDown(void) {KeyDown(&in_graph);}
-void IN_GraphUp(void) {KeyUp(&in_graph);}
-
-void IN_AttackDown(void)
-{
-	KeyDown( &in_attack );
-	gHUD.m_Spectator.HandleButtonsDown( IN_ATTACK );
-}
-
-void IN_AttackUp(void)
-{
-	KeyUp( &in_attack );
-	in_cancel = 0;
-}
-
-// Special handling
-void IN_Cancel(void)
-{
-	in_cancel = 1;
-}
-
-void IN_Impulse (void)
-{
-	in_impulse = atoi( gEngfuncs.Cmd_Argv(1) );
-}
-
-void IN_ScoreDown(void)
-{
-	KeyDown(&in_score);
-	if ( gViewPort )
-	{
-		gViewPort->ShowScoreBoard();
-	}
-}
-
-void IN_ScoreUp(void)
-{
-	KeyUp(&in_score);
-	if ( gViewPort )
-	{
-		gViewPort->HideScoreBoard();
-	}
-}
-
-void IN_MLookUp (void)
-{
-	KeyUp( &in_mlook );
-	if ( !( in_mlook.state & 1 ) && lookspring->value )
-	{
-		V_StartPitchDrift();
-	}
-}
-
+// ############ hu3lifezado ############ //
+// Movi essa funcao aqui pra cima (para usar na terceira pessoa)
 /*
 ===============
 CL_KeyState
@@ -545,51 +369,280 @@ Returns 0.25 if a key was pressed and released during the frame,
 1.0 if held for the entire time
 ===============
 */
-float CL_KeyState (kbutton_t *key)
+float CL_KeyState(kbutton_t *key)
 {
 	float		val = 0.0;
 
 	//TODO: define these constants. - Solokiller
-	const int impulsedown	= key->state & 2;
-	const int impulseup		= key->state & 4;
-	const int down			= key->state & 1;
-	
-	if ( impulsedown && !impulseup )
+	const int impulsedown = key->state & 2;
+	const int impulseup = key->state & 4;
+	const int down = key->state & 1;
+
+	if (impulsedown && !impulseup)
 	{
 		// pressed and held this frame?
 		val = down ? 0.5 : 0.0;
 	}
 
-	if ( impulseup && !impulsedown )
+	if (impulseup && !impulsedown)
 	{
 		// released this frame?
 		val = 0.0;//down ? 0.0 : 0.0;
 	}
 
-	if ( !impulsedown && !impulseup )
+	if (!impulsedown && !impulseup)
 	{
 		// held the entire frame?
 		val = down ? 1.0 : 0.0;
 	}
 
-	if ( impulsedown && impulseup )
+	if (impulsedown && impulseup)
 	{
-		if ( down )
+		if (down)
 		{
 			// released and re-pressed this frame
-			val = 0.75;	
+			val = 0.75;
 		}
 		else
 		{
 			// pressed and released this frame
-			val = 0.25;	
+			val = 0.25;
 		}
 	}
 
 	// clear impulses
-	key->state &= 1;		
+	key->state &= 1;
 	return val;
 }
+// ############
+
+// ############ hu3lifezado ############ //
+// Funcao para controlar os modos de camera de terceira pessoa
+void hu3_camera()
+{
+	if (cam_thirdperson && gEngfuncs.pfnGetCvarFloat("cam_hu3"))
+	{
+		if (CL_KeyState(&in_forward) || CL_KeyState(&in_back) || CL_KeyState(&in_moveleft) || CL_KeyState(&in_moveright) || CL_KeyState(&in_use) || CL_KeyState(&in_duck) || CL_KeyState(&in_attack))
+		{
+			if (gEngfuncs.pfnGetCvarFloat("cam_hu3") != 2 && CL_KeyState(&in_attack)) // Garante que o modo de jogador solto nao seja reposicionado apas eventos de tiro
+			{
+				return;
+			}
+			if (gEngfuncs.pfnGetCvarFloat("cam_hu3_pl_acoes") == 0)
+			{
+				gEngfuncs.Cvar_SetValue("cam_hu3_pl_acoes", 1);
+			}
+		}
+		else
+		{
+			if (gEngfuncs.pfnGetCvarFloat("cam_hu3_pl_acoes") == 1)
+			{
+				gEngfuncs.Cvar_SetValue("cam_hu3_pl_acoes", 0);
+			}
+		}
+	}
+}
+// ############ //
+
+/*
+============
+HUD_Key_Event
+
+Return 1 to allow engine to process the key, otherwise, act on it as needed
+============
+*/
+int DLLEXPORT HUD_Key_Event(int down, int keynum, const char *pszCurrentBinding)
+{
+	if (gViewPort)
+		return gViewPort->KeyInput(down, keynum, pszCurrentBinding);
+
+	return 1;
+}
+
+void IN_BreakDown(void) { KeyDown(&in_break); };
+void IN_BreakUp(void) { KeyUp(&in_break); };
+void IN_KLookDown(void) { KeyDown(&in_klook); }
+void IN_KLookUp(void) { KeyUp(&in_klook); }
+void IN_JLookDown(void) { KeyDown(&in_jlook); }
+void IN_JLookUp(void) { KeyUp(&in_jlook); }
+void IN_MLookDown(void) { KeyDown(&in_mlook); }
+void IN_UpDown(void) { KeyDown(&in_up); }
+void IN_UpUp(void) { KeyUp(&in_up); }
+void IN_DownDown(void) { KeyDown(&in_down); }
+void IN_DownUp(void) { KeyUp(&in_down); }
+void IN_LeftDown(void) { KeyDown(&in_left); }
+void IN_LeftUp(void) { KeyUp(&in_left); }
+void IN_RightDown(void) { KeyDown(&in_right); }
+void IN_RightUp(void) { KeyUp(&in_right); }
+
+// ############ hu3lifezado ############ //
+// Essa parte interage com a nossa funcao hu3_camera()
+void IN_ForwardDown(void)
+{
+	KeyDown(&in_forward);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsDown(IN_FORWARD);
+}
+
+void IN_ForwardUp(void)
+{
+	KeyUp(&in_forward);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsUp(IN_FORWARD);
+}
+
+void IN_BackDown(void)
+{
+	KeyDown(&in_back);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsDown(IN_BACK);
+}
+
+void IN_BackUp(void)
+{
+	KeyUp(&in_back);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsUp(IN_BACK);
+}
+void IN_LookupDown(void) { KeyDown(&in_lookup); }
+void IN_LookupUp(void) { KeyUp(&in_lookup); }
+void IN_LookdownDown(void) { KeyDown(&in_lookdown); }
+void IN_LookdownUp(void) { KeyUp(&in_lookdown); }
+void IN_MoveleftDown(void)
+{
+	KeyDown(&in_moveleft);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsDown(IN_MOVELEFT);
+}
+
+void IN_MoveleftUp(void)
+{
+	KeyUp(&in_moveleft);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsUp(IN_MOVELEFT);
+}
+
+void IN_MoverightDown(void)
+{
+	KeyDown(&in_moveright);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsDown(IN_MOVERIGHT);
+}
+
+void IN_MoverightUp(void)
+{
+	KeyUp(&in_moveright);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsUp(IN_MOVERIGHT);
+}
+void IN_SpeedDown(void) { KeyDown(&in_speed); }
+void IN_SpeedUp(void) { KeyUp(&in_speed); }
+void IN_StrafeDown(void) { KeyDown(&in_strafe); }
+void IN_StrafeUp(void) { KeyUp(&in_strafe); }
+
+// needs capture by hud/vgui also
+extern void __CmdFunc_InputPlayerSpecial(void);
+
+void IN_Attack2Down(void)
+{
+	KeyDown(&in_attack2);
+
+#ifdef _TFC
+	__CmdFunc_InputPlayerSpecial();
+#endif
+
+	gHUD.m_Spectator.HandleButtonsDown(IN_ATTACK2);
+}
+
+void IN_Attack2Up(void) { KeyUp(&in_attack2); }
+void IN_UseDown(void)
+{
+	KeyDown(&in_use);
+	gHUD.m_Spectator.HandleButtonsDown(IN_USE);
+}
+void IN_UseUp(void) { KeyUp(&in_use); }
+void IN_JumpDown(void)
+{
+	// ############ hu3lifezado ############ //
+	// Nao pular caso o jogador esteja travado! (Isso e importante no nosso gameplay)
+	if (CVAR_GET_FLOAT("sv_maxspeed") == 0)
+	{
+		return;
+	}
+	// ############ //
+	KeyDown(&in_jump);
+	gHUD.m_Spectator.HandleButtonsDown(IN_JUMP);
+
+}
+void IN_JumpUp(void) { KeyUp(&in_jump); }
+void IN_DuckDown(void)
+{
+	hu3_camera();
+	KeyDown(&in_duck);
+	gHUD.m_Spectator.HandleButtonsDown(IN_DUCK);
+
+}
+void IN_DuckUp(void) { KeyUp(&in_duck); hu3_camera(); }
+void IN_ReloadDown(void) { KeyDown(&in_reload); }
+void IN_ReloadUp(void) { KeyUp(&in_reload); }
+void IN_Alt1Down(void) { KeyDown(&in_alt1); }
+void IN_Alt1Up(void) { KeyUp(&in_alt1); }
+void IN_GraphDown(void) { KeyDown(&in_graph); }
+void IN_GraphUp(void) { KeyUp(&in_graph); }
+
+void IN_AttackDown(void)
+{
+	KeyDown(&in_attack);
+	hu3_camera();
+	gHUD.m_Spectator.HandleButtonsDown(IN_ATTACK);
+}
+
+void IN_AttackUp(void)
+{
+	KeyUp(&in_attack);
+	hu3_camera();
+	in_cancel = 0;
+}
+// ############ //
+
+// Special handling
+void IN_Cancel(void)
+{
+	in_cancel = 1;
+}
+
+void IN_Impulse(void)
+{
+	in_impulse = atoi(gEngfuncs.Cmd_Argv(1));
+}
+
+void IN_ScoreDown(void)
+{
+	KeyDown(&in_score);
+	if (gViewPort)
+	{
+		gViewPort->ShowScoreBoard();
+	}
+}
+
+void IN_ScoreUp(void)
+{
+	KeyUp(&in_score);
+	if (gViewPort)
+	{
+		gViewPort->HideScoreBoard();
+	}
+}
+
+void IN_MLookUp(void)
+{
+	KeyUp(&in_mlook);
+	if (!(in_mlook.state & 1) && lookspring->value)
+	{
+		V_StartPitchDrift();
+	}
+}
+
 
 /*
 ================
@@ -750,7 +803,20 @@ void DLLEXPORT CL_CreateMove ( float frametime, usercmd_t *cmd, int active )
 
 	if ( g_iAlive )
 	{
-		cmd->viewangles = viewangles;
+		// ############ hu3lifezado ############ //
+		// Adaptacoes para os modos de terceira pessoa (cmd->viewangles = viewangles;)
+		int cam_hu3 = gEngfuncs.pfnGetCvarFloat("cam_hu3");
+		int cam_hu3_pl_acoes = gEngfuncs.pfnGetCvarFloat("cam_hu3_pl_acoes");
+		if (cam_hu3 == 0 || cam_hu3 == 1 || (cam_hu3 == 2 && cam_hu3_pl_acoes == 1) || cam_hu3 == 3)
+		{
+			cmd->viewangles = viewangles;
+			hu3_viewangles_backup = viewangles;
+		}
+		else if (cam_hu3 == 2 && cam_hu3_pl_acoes == 0)
+		{
+			cmd->viewangles = hu3_viewangles_backup;
+		}
+		// ############ //
 		oldangles = viewangles;
 	}
 	else

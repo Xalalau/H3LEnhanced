@@ -118,6 +118,18 @@ bool CHudAmmo::Init()
 	return true;
 };
 
+// ############ hu3lifezado ############ //
+// Funcao para religar o crosshair na primeira pessoa
+void CHudAmmo::hu3ControlCrosshair()
+{
+	if (m_pCrosshair != NULL && m_pWeapon != NULL)
+	{
+		auto pHUDInfo = m_pWeapon->GetWeaponInfo()->GetHUDInfo();
+		SetCrosshair(pHUDInfo->GetAutoAim().hSprite, pHUDInfo->GetAutoAim().rect, 255, 255, 255);
+	}
+}
+// ############ //
+
 void CHudAmmo::Reset()
 {
 	m_fFade = 0;
@@ -442,21 +454,32 @@ void CHudAmmo::UpdateWeaponHUD( CBasePlayerWeapon* pWeapon, bool bOnTarget )
 {
 	auto pHUDInfo = pWeapon->GetWeaponInfo()->GetHUDInfo();
 
-	if( gHUD.m_iFOV >= 90 )
-	{ // normal crosshairs
-		if( bOnTarget && pHUDInfo->GetAutoAim().hSprite )
-			SetCrosshair( pHUDInfo->GetAutoAim().hSprite, pHUDInfo->GetAutoAim().rect, 255, 255, 255 );
+	// ############ hu3lifezado ############ //
+	// So mostra o crosshair na primeira pessoa
+	wrect_t nullrc = {};
+
+	if (gEngfuncs.pfnGetCvarFloat("cam_hu3") == 0)
+	{
+		if (gHUD.m_iFOV >= 90)
+		{ // normal crosshairs
+			if (bOnTarget && pHUDInfo->GetAutoAim().hSprite)
+				SetCrosshair(pHUDInfo->GetAutoAim().hSprite, pHUDInfo->GetAutoAim().rect, 255, 255, 255);
+			else
+				SetCrosshair(pHUDInfo->GetCrosshair().hSprite, pHUDInfo->GetCrosshair().rect, 255, 255, 255);
+		}
 		else
-			SetCrosshair( pHUDInfo->GetCrosshair().hSprite, pHUDInfo->GetCrosshair().rect, 255, 255, 255 );
+		{ // zoomed crosshairs
+			if (bOnTarget && pHUDInfo->GetZoomedAutoAim().hSprite)
+				SetCrosshair(pHUDInfo->GetZoomedAutoAim().hSprite, pHUDInfo->GetZoomedAutoAim().rect, 255, 255, 255);
+			else
+				SetCrosshair(pHUDInfo->GetZoomedCrosshair().hSprite, pHUDInfo->GetZoomedCrosshair().rect, 255, 255, 255);
+		}
 	}
 	else
-	{ // zoomed crosshairs
-		if( bOnTarget && pHUDInfo->GetZoomedAutoAim().hSprite )
-			SetCrosshair( pHUDInfo->GetZoomedAutoAim().hSprite, pHUDInfo->GetZoomedAutoAim().rect, 255, 255, 255 );
-		else
-			SetCrosshair( pHUDInfo->GetZoomedCrosshair().hSprite, pHUDInfo->GetZoomedCrosshair().rect, 255, 255, 255 );
-
+	{
+		SetCrosshair(0, nullrc, 0, 0, 0);
 	}
+	// ############ //
 
 	m_fFade = 200.0f; //!!!
 	m_iFlags |= HUD_ACTIVE;
@@ -767,16 +790,16 @@ bool CHudAmmo::Draw(float flTime)
 		int iIconWidth = ammo2.rect.right - ammo2.rect.left;
 
 		// Do we have secondary ammo?
-		if ( pPlayer->CountAmmo( pAmmo->GetID() ) > 0 )
+		if (pPlayer->CountAmmo(pAmmo->GetID()) > 0)
 		{
-			y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight/4;
+			y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
 			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
-			x = gHUD.DrawHudNumber(x, y, iFlags|DHN_3DIGITS, pPlayer->CountAmmo( pAmmo->GetID() ), r, g, b);
+			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, pPlayer->CountAmmo(pAmmo->GetID()), r, g, b);
 
 			// Draw the ammo Icon
-			SPR_Set( ammo2.hSprite, r, g, b);
-			int iOffset = ( ammo2.rect.bottom - ammo2.rect.top)/8;
-			SPR_DrawAdditive(0, x, y - iOffset, &ammo2.rect );
+			SPR_Set(ammo2.hSprite, r, g, b);
+			int iOffset = (ammo2.rect.bottom - ammo2.rect.top) / 8;
+			SPR_DrawAdditive(0, x, y - iOffset, &ammo2.rect);
 		}
 	}
 	return true;
