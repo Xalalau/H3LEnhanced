@@ -120,7 +120,7 @@ bool CHudAmmo::Init()
 
 // ############ hu3lifezado ############ //
 // Funcao para religar o crosshair na primeira pessoa
-void CHudAmmo::hu3ControlCrosshair()
+void CHudAmmo::hu3ReativarCrosshair()
 {
 	if (m_pCrosshair != NULL && m_pWeapon != NULL)
 	{

@@ -79,7 +79,7 @@ public:
 
 	// ############ hu3lifezado ############ //
 	// Funcao para religar o crosshair na primeira pessoa
-	void hu3ControlCrosshair(void);
+	void hu3ReativarCrosshair(void);
 	// ############ //
 
 private:

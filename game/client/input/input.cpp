@@ -60,10 +60,14 @@ cvar_t	*cl_anglespeedkey;
 cvar_t	*cl_vsmoothing;
 
 // ############ hu3lifezado ############ //
-// Variavel para guardar a ultima posicao valida do angulo de visao
-// E usada nos modos de terceira pessoa
+// Variavel usada para fazer a transicao entre os modos de terceira pessoa 2 e 3. Guarda o ultimo angulo de visao valido
 Vector hu3_viewangles_backup;
+// Variavel para dizer se a camera deve seguir o jogador por tras nos modos 2 e 3 da terceira pessoa (external em camera.h)
+bool cam_hu3_seguir_ply = false;
+// Variavel que controla os modos de camera. 0 = primeira pessoa; 1, 2 e 3 = terceiras pessoas (external em camera.h)
+int cam_hu3_valor;
 // ############ //
+
 
 /*
 ===============================================================================
@@ -414,31 +418,26 @@ float CL_KeyState(kbutton_t *key)
 	key->state &= 1;
 	return val;
 }
-// ############
 
-// ############ hu3lifezado ############ //
-// Funcao para controlar os modos de camera de terceira pessoa
-void hu3_camera()
+// Essa funcao diz se as cameras de terceira pessoa nos modos 2 e 3 devem automaticamente seguir o jogador por tras
+void hu3_AjustarCamera()
 {
-	if (cam_thirdperson && gEngfuncs.pfnGetCvarFloat("cam_hu3"))
+	// Jogador esta na terceira pessoa? O modo de camera do hu3 esta corretamente configurado para terceira pessoa?
+	if (cam_thirdperson && cam_hu3_valor)
 	{
+		// Esta sendo executada uma acao onde a camera deva automaticamente seguir o jogador?
+		// Nota: devemos checar aqui esses varios CL_KeyState()! Precisamos conferir tudo ao mesmo tempo! Checar tecla por tecla causa conflitos.
 		if (CL_KeyState(&in_forward) || CL_KeyState(&in_back) || CL_KeyState(&in_moveleft) || CL_KeyState(&in_moveright) || CL_KeyState(&in_use) || CL_KeyState(&in_duck) || CL_KeyState(&in_attack))
 		{
-			if (gEngfuncs.pfnGetCvarFloat("cam_hu3") != 2 && CL_KeyState(&in_attack)) // Garante que o modo de jogador solto nao seja reposicionado apas eventos de tiro
-			{
+			if (cam_hu3_valor != 2 && CL_KeyState(&in_attack)) // E o modo 2 na terceira pessoa? Infelizmente temos que forcar a camera para atras em eventos de tiro. Ha bugs da engine aqui.
 				return;
-			}
-			if (gEngfuncs.pfnGetCvarFloat("cam_hu3_pl_acoes") == 0)
-			{
-				gEngfuncs.Cvar_SetValue("cam_hu3_pl_acoes", 1);
-			}
+			if (cam_hu3_seguir_ply == 0)
+				cam_hu3_seguir_ply = 1;
 		}
-		else
+		else // Nao. Modo com movimento livre.
 		{
-			if (gEngfuncs.pfnGetCvarFloat("cam_hu3_pl_acoes") == 1)
-			{
-				gEngfuncs.Cvar_SetValue("cam_hu3_pl_acoes", 0);
-			}
+			if (cam_hu3_seguir_ply == 1)
+				cam_hu3_seguir_ply = 0;
 		}
 	}
 }
@@ -476,32 +475,32 @@ void IN_RightDown(void) { KeyDown(&in_right); }
 void IN_RightUp(void) { KeyUp(&in_right); }
 
 // ############ hu3lifezado ############ //
-// Essa parte interage com a nossa funcao hu3_camera()
+// Essa parte interage com a nossa funcao hu3_AjustarCamera(true)
 void IN_ForwardDown(void)
 {
 	KeyDown(&in_forward);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsDown(IN_FORWARD);
 }
 
 void IN_ForwardUp(void)
 {
 	KeyUp(&in_forward);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsUp(IN_FORWARD);
 }
 
 void IN_BackDown(void)
 {
 	KeyDown(&in_back);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsDown(IN_BACK);
 }
 
 void IN_BackUp(void)
 {
 	KeyUp(&in_back);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsUp(IN_BACK);
 }
 void IN_LookupDown(void) { KeyDown(&in_lookup); }
@@ -511,28 +510,28 @@ void IN_LookdownUp(void) { KeyUp(&in_lookdown); }
 void IN_MoveleftDown(void)
 {
 	KeyDown(&in_moveleft);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsDown(IN_MOVELEFT);
 }
 
 void IN_MoveleftUp(void)
 {
 	KeyUp(&in_moveleft);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsUp(IN_MOVELEFT);
 }
 
 void IN_MoverightDown(void)
 {
 	KeyDown(&in_moveright);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsDown(IN_MOVERIGHT);
 }
 
 void IN_MoverightUp(void)
 {
 	KeyUp(&in_moveright);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsUp(IN_MOVERIGHT);
 }
 void IN_SpeedDown(void) { KeyDown(&in_speed); }
@@ -577,12 +576,12 @@ void IN_JumpDown(void)
 void IN_JumpUp(void) { KeyUp(&in_jump); }
 void IN_DuckDown(void)
 {
-	hu3_camera();
+	hu3_AjustarCamera();
 	KeyDown(&in_duck);
 	gHUD.m_Spectator.HandleButtonsDown(IN_DUCK);
 
 }
-void IN_DuckUp(void) { KeyUp(&in_duck); hu3_camera(); }
+void IN_DuckUp(void) { KeyUp(&in_duck); hu3_AjustarCamera(); }
 void IN_ReloadDown(void) { KeyDown(&in_reload); }
 void IN_ReloadUp(void) { KeyUp(&in_reload); }
 void IN_Alt1Down(void) { KeyDown(&in_alt1); }
@@ -593,14 +592,14 @@ void IN_GraphUp(void) { KeyUp(&in_graph); }
 void IN_AttackDown(void)
 {
 	KeyDown(&in_attack);
-	hu3_camera();
+	hu3_AjustarCamera();
 	gHUD.m_Spectator.HandleButtonsDown(IN_ATTACK);
 }
 
 void IN_AttackUp(void)
 {
 	KeyUp(&in_attack);
-	hu3_camera();
+	hu3_AjustarCamera();
 	in_cancel = 0;
 }
 // ############ //
@@ -804,17 +803,15 @@ void DLLEXPORT CL_CreateMove ( float frametime, usercmd_t *cmd, int active )
 	if ( g_iAlive )
 	{
 		// ############ hu3lifezado ############ //
-		// Adaptacoes para os modos de terceira pessoa (cmd->viewangles = viewangles;)
-		int cam_hu3 = gEngfuncs.pfnGetCvarFloat("cam_hu3");
-		int cam_hu3_pl_acoes = gEngfuncs.pfnGetCvarFloat("cam_hu3_pl_acoes");
-		if (cam_hu3 == 0 || cam_hu3 == 1 || (cam_hu3 == 2 && cam_hu3_pl_acoes == 1) || cam_hu3 == 3)
+		// Adaptacoes para fazer pegar o modo 2 da terceira pessoa (cmd->viewangles = viewangles;)
+		if (cam_hu3_valor == 2 && cam_hu3_seguir_ply == 0)
+		{
+			cmd->viewangles = hu3_viewangles_backup;
+		}
+		else
 		{
 			cmd->viewangles = viewangles;
 			hu3_viewangles_backup = viewangles;
-		}
-		else if (cam_hu3 == 2 && cam_hu3_pl_acoes == 0)
-		{
-			cmd->viewangles = hu3_viewangles_backup;
 		}
 		// ############ //
 		oldangles = viewangles;
