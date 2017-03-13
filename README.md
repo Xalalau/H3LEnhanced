@@ -1,21 +1,19 @@
-H3LEnhanced - Introdução
+H3LEnhanced
 ======================
 
 [![Hu3-Life Teaser Trailer 3](https://img.youtube.com/vi/fvkc70QQid0/0.jpg)](https://www.youtube.com/watch?v=fvkc70QQid0)
 
 Olá! Sejam bem-vindos à zona!
 
-O nosso objetivo é criar a ultimate experiência 100% cagada 3D vulgarmente conhecida como "**Hu3-Life**".
+O nosso objetivo é criar a ultimate experiência 100% cagada 3D vulgarmente conhecida como [Hu3-Life](http://www.moddb.com/mods/hu3-life).
 
-Tudo isso será possível graças a esse pequeno milagre chamado **HLEnchanced**, que se trata de um remake espetacurlamente bem feito do HL1. (Violá-lo-emos!)
+Tudo isso será possível graças a esse pequeno milagre chamado [HLEnchanced](https://github.com/SamVanheer/HLEnhanced), que se trata de um espetacular remake do Half-Life 1!
 
-Nesse primeiro momento o que nos importa é trazer para cá todas as nossas hu3lterações implementadas no [velho HL1 SDK](https://github.com/ValveSoftware/halflife) da Valve, processo que deve levar um tempo - não fiquem ansiosos.
-
-Mas mesmo que os pedaços do Hu3 ainda estejam faltando por aqui, já estamos prontos para testes! Vocês podem nos mandar sugestões, códigos, apontar erros, etc. Acessem [a nossa wiki](https://github.com/xalalau/H3LEnhanced/wiki) e sintam-se à vontade para destruir e obliterar!
+Nesse primeiro momento ainda precisamos portar todas as nossas hu3lterações implementadas no [antigo HL1 SDK da Valve](https://github.com/ValveSoftware/halflife) para cá, mas logo iremos passar disso. Não fiquem tão ansiosos... Inclusive, vocês já podem nos enviar sugestões, códigos, apontar erros, etc., o projeto compila e funciona! Acessem [a nossa wiki](https://github.com/xalalau/H3LEnhanced/wiki) para informações precisas e sintam-se à vontade para destruir e obliterar!
 
 Nossa única ressalva é que não nos comprometemos a resolver bugs do HL1 nem do HLEnchanced. [Eis o local](https://github.com/SamVanheer/HLEnhanced/issues) para que vocês falem com os *super programadores* competentes dessa causa. Notem que é até melhor que os seus remendos sejam feitos lá já que os forks se beneficiam dos avanços.
 
-É isso, façam bom uso do código. E agradecemos adiantado aos que nos ajudarem na zoeira. (Essas pessoas têm os nomes garantidos nos créditos!)
+É isso... Façam bom uso do código! E agradecemos muito aos que decidirem nos ajudar nessa zoeira! (= nome nos créditos)
 
 Half Life 1 SDK LICENSE
 ======================
