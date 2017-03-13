@@ -1,4 +1,4 @@
-H3LEnhanced
+H3LEnhanced - Introdução
 ======================
 
 [![Hu3-Life Teaser Trailer 3](https://img.youtube.com/vi/fvkc70QQid0/0.jpg)](https://www.youtube.com/watch?v=fvkc70QQid0)
@@ -11,46 +11,11 @@ Tudo isso será possível graças a esse pequeno milagre chamado **HLEnchanced**
 
 Nesse primeiro momento o que nos importa é trazer para cá todas as nossas hu3lterações implementadas no [velho HL1 SDK](https://github.com/ValveSoftware/halflife) da Valve, processo que deve levar um tempo - não fiquem ansiosos.
 
-Mas mesmo que os pedaços do Hu3 ainda estejam faltando por aqui, já estamos prontos para testes! Vocês podem nos mandar sugestões, códigos, apontar erros, etc. Sintam-se à vontade para destruir e obliterar!
+Mas mesmo que os pedaços do Hu3 ainda estejam faltando por aqui, já estamos prontos para testes! Vocês podem nos mandar sugestões, códigos, apontar erros, etc. Acessem [a nossa wiki](https://github.com/xalalau/H3LEnhanced/wiki) e sintam-se à vontade para destruir e obliterar!
 
 Nossa única ressalva é que não nos comprometemos a resolver bugs do HL1 nem do HLEnchanced. [Eis o local](https://github.com/SamVanheer/HLEnhanced/issues) para que vocês falem com os *super programadores* competentes dessa causa. Notem que é até melhor que os seus remendos sejam feitos lá já que os forks se beneficiam dos avanços.
 
-Testes
-----------------
-
-Estamos utilizando o próprio mini mod oficial do HLEnchanced para checar as mudanças, fiquem com o download:
-
-[https://www.dropbox.com/s/fe66rijzdqexk4q/hlenhanced.zip?dl=0](https://www.dropbox.com/s/fe66rijzdqexk4q/hlenhanced.zip?dl=0) (~27MB)
-
-Essas são as nossas modificações:
-* incluímos os nossos client.dll e o hl.dll modificados;
-* incluímos o sample.wad;
-* incluímos alguns dos nossos arquivos de configuração;
-* incluímos os mapas hl_c00, hl_c01_a1 e hl_c01_a2 do Sven Coop para realizar testes no modo coop;
-* incluímos alguns sprites;
-* o nome da pasta do mod já está acertado; e
-* alguns arquivos já estão corretamente renomeados.
-
-Para instalar, descompactem o zip dentro da pasta ".../steamapps/common/Half-Life" e reiniciem o Steam.
-
-Obs: o download está hospedado no Dropbox e sem avisos nós mexemos nele adicionando ou removendo coisas. Não há controle de versão pois essa coletânea não passa de um conjunto de testes. Além disso, entendam que, infelizmente, vocês pouco vão encontrar do Hu3-Life por aqui. Esse repositório possui o motor do mod, ele não é o mod em si.
-
-Compilação
-----------------
-
-Nós seguimos e recomenamos as instruções do repositório original. Compilamos o projeto tanto no Windows 7 com o [Visual Studio 2015 Community Edition](https://www.visualstudio.com/downloads/) quanto no Linux Mint 18.1 com gcc-5 e g++-5 (tudo focado em 32 bits). Foi necessário baixar o CMake atualizado nos dois casos.
-
-Acompanhem por lá: [https://github.com/SamVanheer/HLEnhanced/wiki](https://github.com/SamVanheer/HLEnhanced/wiki)
-
-Lista de mudanças
-----------------
-
-Começará a ser escrita em breve... Provavelmente a linkaremos aqui.
-
-Obrigado
-----------------
-
-Façam bom uso, e agradecemos adiantado aos que nos ajudarem na zoeira. Essa pessoas têm os nomes garantidos nos créditos do mod!
+É isso, façam bom uso do código. E agradecemos adiantado aos que nos ajudarem na zoeira. (Essas pessoas têm os nomes garantidos nos créditos!)
 
 Half Life 1 SDK LICENSE
 ======================
