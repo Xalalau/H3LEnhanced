@@ -43,7 +43,10 @@
 // Attack distance constants
 #define	BIG_ATTACKDIST		170
 #define BIG_MORTARDIST		800
-#define BIG_MAXCHILDREN		20			// Max # of live headcrab children
+// ############ hu3lifezado ############ //
+// Mais aliens (20)
+#define BIG_MAXCHILDREN		100			// Max # of live headcrab children
+// ############ //
 
 #define bits_MEMORY_CHILDPAIR		(bits_MEMORY_CUSTOM1)
 #define bits_MEMORY_ADVANCE_NODE	(bits_MEMORY_CUSTOM2)
