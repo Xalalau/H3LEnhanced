@@ -126,11 +126,13 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 
-	// charge the player
-	if ( pActivator->GiveHealth( 1, DMG_GENERIC ) )
+	// ############ hu3lifezado ############ //
+	// Unidade do SUS te mata. (1)
+	if ( pActivator->GiveHealth( -7, DMG_GENERIC ) )
 	{
 		m_iJuice--;
 	}
+	// ############ //
 
 	// govern the rate of charge
 	m_flNextCharge = gpGlobals->time + 0.1;
