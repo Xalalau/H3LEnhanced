@@ -360,7 +360,11 @@ void CBullsquid :: HandleAnimEvent( AnimEvent_t& event )
 				WRITE_COORD( vecSpitDir.y);	
 				WRITE_COORD( vecSpitDir.z);	
 				WRITE_SHORT( iSquidSpitSprite );	// model
-				WRITE_BYTE ( 15 );			// count
+				// ############ hu3lifezado ############ //
+				// Vomito agora e volumoso
+				// WRITE_BYTE ( 15 );			// count
+				WRITE_BYTE ( 100 );			// count
+				// ############ //
 				WRITE_BYTE ( 210 );			// speed
 				WRITE_BYTE ( 25 );			// noise ( client will divide by 100 )
 			MESSAGE_END();
