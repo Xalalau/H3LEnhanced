@@ -457,7 +457,11 @@ void CBullsquid :: HandleAnimEvent( AnimEvent_t& event )
 					if ( pHurt->IsPlayer() )
 					{
 						UTIL_MakeVectors( pev->angles );
-						pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 300 + gpGlobals->v_up * 300;
+						// ############ hu3lifezado ############ //
+						// A pancada do dinossauro de joga bastante para trás!
+						// pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 300 + gpGlobals->v_up * 300;
+						pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 1000 + gpGlobals->v_up * 1000;
+						// ############ //
 					}
 				}
 			}
