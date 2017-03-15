@@ -45,8 +45,6 @@ public:
 	void WeaponIdle( void ) override;
 
 	// ############ hu3lifezado ############ //
-	// Funcao da mira em terceira pessoa
-	void UpdateSpot(void);
 	// Sprite da mira em terceira pessoa
 	int hu3_spriteTexture;
 	// ############ //

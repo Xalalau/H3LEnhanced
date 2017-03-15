@@ -80,34 +80,6 @@ void CMP5::Precache( void )
 	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
 }
 
-// ############ hu3lifezado ############ //
-// Funcao principal da mira em terceira pessoa
-void CMP5::UpdateSpot(void)
-{
-#ifndef CLIENT_DLL
-	if (CVAR_GET_FLOAT("cam_hu3") != 0)
-	{
-		UTIL_MakeVectors(m_pPlayer->pev->v_angle);
-		Vector vecSrc = m_pPlayer->GetGunPosition();
-		Vector vecAiming = gpGlobals->v_forward;
-
-		TraceResult tr;
-		UTIL_TraceLine(vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
-
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_SPRITE);
-		WRITE_COORD(tr.vecEndPos.x);
-		WRITE_COORD(tr.vecEndPos.y);
-		WRITE_COORD(tr.vecEndPos.z);
-		WRITE_SHORT(hu3_spriteTexture);
-		WRITE_BYTE(9);
-		WRITE_BYTE(50);
-		MESSAGE_END();
-	}
-#endif
-}
-// ############ //
-
 bool CMP5::AddToPlayer( CBasePlayer *pPlayer )
 {
 	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
@@ -124,7 +96,7 @@ bool CMP5::Deploy()
 {
 	// ############ hu3lifezado ############ //
 	// Mira em terceira pessoa
-	UpdateSpot();
+	UpdateSpot( m_pPlayer, hu3_spriteTexture );
 	// ############ //
 	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
 }
@@ -134,7 +106,7 @@ void CMP5::PrimaryAttack()
 {
 	// ############ hu3lifezado ############ //
 	// Mira em terceira pessoa
-	UpdateSpot();
+	UpdateSpot( m_pPlayer, hu3_spriteTexture );
 	// ############ //
 	// don't fire underwater
 	if (m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
@@ -204,7 +176,7 @@ void CMP5::SecondaryAttack( void )
 {
 	// ############ hu3lifezado ############ //
 	// Mira em terceira pessoa
-	UpdateSpot();
+	UpdateSpot( m_pPlayer, hu3_spriteTexture );
 	// ############ //
 	// don't fire underwater
 	if (m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
@@ -269,7 +241,7 @@ void CMP5::WeaponIdle( void )
 {
 	// ############ hu3lifezado ############ //
 	// Mira em terceira pessoa
-	UpdateSpot();
+	UpdateSpot( m_pPlayer, hu3_spriteTexture );
 	// ############ //
 
 	ResetEmptySound( );
