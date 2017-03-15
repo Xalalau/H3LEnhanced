@@ -30,9 +30,36 @@ float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
 	if( !pev->takedamage )
 		return 0;
 
-	// heal
+	const float flOldHealth = pev->health;
+
+	// ############ hu3lifezado ############ //
+	// Mudei o limite de sangue de pev->max_health
+
+// heal
+	pev->health += flHealth;
+
+	// Nao pode sangue acima do maximo
+	if (pev->health > pev->max_health)
+		pev->health = pev->max_health;
+
+	// Nao pode sangue baixo de 0
+	if (pev->health < 0)
+		pev->health = 1;
+
+	// Calculamos o sangue atual
+	float currentHeath = pev->health - flOldHealth;
+
+	// Corrigimos o valor caso o SUS esteja nos matando
+	if (currentHeath < 0 )
+		currentHeath = currentHeath * -1;
+
+	return currentHeath;
+
+	// Original:
+	/*
+// heal
 	if( pev->health >= pev->max_health )
-		return 0;
+	return 0;
 
 	const float flOldHealth = pev->health;
 
@@ -44,6 +71,8 @@ float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
 		pev->health = pev->max_health;
 
 	return pev->health - flOldHealth;
+	*/
+	// ############ //
 }
 
 // inflict damage on this entity.  bitsDamageType indicates type of damage inflicted, ie: DMG_CRUSH
