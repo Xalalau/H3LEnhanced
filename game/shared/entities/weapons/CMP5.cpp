@@ -71,14 +71,22 @@ void CMP5::Precache( void )
 
 	PRECACHE_SOUND ("weapons/357_cock1.wav");
 
+	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
+	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
+
 	// ############ hu3lifezado ############ //
 	// Sprite da mira em terceira pessoa
 	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
 	// ############ //
-
-	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
-	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CMP5::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 bool CMP5::AddToPlayer( CBasePlayer *pPlayer )
 {
@@ -94,20 +102,12 @@ bool CMP5::AddToPlayer( CBasePlayer *pPlayer )
 
 bool CMP5::Deploy()
 {
-	// ############ hu3lifezado ############ //
-	// Mira em terceira pessoa
-	UpdateSpot( m_pPlayer, hu3_spriteTexture );
-	// ############ //
 	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
 }
 
 
 void CMP5::PrimaryAttack()
 {
-	// ############ hu3lifezado ############ //
-	// Mira em terceira pessoa
-	UpdateSpot( m_pPlayer, hu3_spriteTexture );
-	// ############ //
 	// don't fire underwater
 	if (m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
 	{
@@ -174,10 +174,6 @@ void CMP5::PrimaryAttack()
 
 void CMP5::SecondaryAttack( void )
 {
-	// ############ hu3lifezado ############ //
-	// Mira em terceira pessoa
-	UpdateSpot( m_pPlayer, hu3_spriteTexture );
-	// ############ //
 	// don't fire underwater
 	if (m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
 	{
@@ -239,11 +235,6 @@ void CMP5::Reload( void )
 
 void CMP5::WeaponIdle( void )
 {
-	// ############ hu3lifezado ############ //
-	// Mira em terceira pessoa
-	UpdateSpot( m_pPlayer, hu3_spriteTexture );
-	// ############ //
-
 	ResetEmptySound( );
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );

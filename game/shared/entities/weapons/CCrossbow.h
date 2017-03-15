@@ -53,6 +53,13 @@ public:
 
 	int m_fInZoom; // don't save this
 
+	// ############ hu3lifezado ############ //
+	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// Sprite da mira em terceira pessoa
+	int hu3_spriteTexture;
+	// ############ //
+
 private:
 	unsigned short m_usCrossbow;
 	unsigned short m_usCrossbow2;

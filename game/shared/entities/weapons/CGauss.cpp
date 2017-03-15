@@ -86,7 +86,20 @@ void CGauss::Precache()
 
 	m_usGaussFire = PRECACHE_EVENT( 1, "events/gauss.sc" );
 	m_usGaussSpin = PRECACHE_EVENT( 1, "events/gaussspin.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CGauss::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 bool CGauss::AddToPlayer( CBasePlayer *pPlayer )
 {

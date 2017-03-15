@@ -68,7 +68,20 @@ void CCrossbow::Precache( void )
 
 	m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
 	m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CCrossbow::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 bool CCrossbow::Deploy()
 {

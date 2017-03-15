@@ -85,7 +85,20 @@ void CEgon::Precache( void )
 
 	m_usEgonFire = PRECACHE_EVENT ( 1, "events/egon_fire.sc" );
 	m_usEgonStop = PRECACHE_EVENT ( 1, "events/egon_stop.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CEgon::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 
 bool CEgon::Deploy()

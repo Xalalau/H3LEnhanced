@@ -68,7 +68,20 @@ void CPython::Precache( void )
 	PRECACHE_SOUND ("weapons/357_shot2.wav");
 
 	m_usFirePython = PRECACHE_EVENT( 1, "events/python.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CPython::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 bool CPython::Deploy()
 {

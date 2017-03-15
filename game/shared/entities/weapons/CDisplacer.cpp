@@ -69,7 +69,20 @@ void CDisplacer::Precache()
 	UTIL_PrecacheOther( "displacer_ball" );
 
 	m_usFireDisplacer = PRECACHE_EVENT( 1, "events/displacer.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CDisplacer::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 void CDisplacer::Spawn()
 {

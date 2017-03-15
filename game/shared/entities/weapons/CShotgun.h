@@ -63,6 +63,13 @@ public:
 	float m_flNextReload;
 	int m_iShell;
 
+	// ############ hu3lifezado ############ //
+	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// Sprite da mira em terceira pessoa
+	int hu3_spriteTexture;
+	// ############ //
+
 	void GetWeaponData( weapon_data_t& data ) override
 	{
 		BaseClass::GetWeaponData( data );

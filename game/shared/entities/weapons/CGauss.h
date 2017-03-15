@@ -98,6 +98,13 @@ public:
 					   // we need to know so we can pick the right set of effects. 
 	bool m_fPrimaryFire;
 
+	// ############ hu3lifezado ############ //
+	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// Sprite da mira em terceira pessoa
+	int hu3_spriteTexture;
+	// ############ //
+
 private:
 	unsigned short m_usGaussFire;
 	unsigned short m_usGaussSpin;

@@ -69,6 +69,14 @@ public:
 
 	void SetWeaponData( const weapon_data_t& data ) override;
 
+public:
+	// ############ hu3lifezado ############ //
+	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// Sprite da mira em terceira pessoa
+	int hu3_spriteTexture;
+	// ############ //
+
 private:
 	unsigned short m_usFireSpore;
 

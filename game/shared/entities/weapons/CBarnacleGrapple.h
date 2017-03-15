@@ -64,6 +64,14 @@ public:
 
 	void SecondaryAttack() override;
 
+public:
+	// ############ hu3lifezado ############ //
+	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// Sprite da mira em terceira pessoa
+	int hu3_spriteTexture;
+	// ############ //
+
 private:
 	void Fire( const Vector& vecOrigin, const Vector& vecDir );
 	void EndAttack();

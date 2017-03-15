@@ -64,7 +64,20 @@ void CBarnacleGrapple::Precache()
 	PRECACHE_MODEL( "sprites/tongue.spr" );
 
 	UTIL_PrecacheOther( "grapple_tip" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CBarnacleGrapple::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 void CBarnacleGrapple::Spawn()
 {

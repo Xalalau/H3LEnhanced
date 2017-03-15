@@ -56,7 +56,20 @@ void CShockRifle::Precache()
 	UTIL_PrecacheOther( "shock_beam" );
 
 	m_usShockRifle = PRECACHE_EVENT( 1, "events/shock.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Sprite da mira em terceira pessoa
+	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// ############ //
 }
+
+// ############ hu3lifezado ############ //
+// Renderizacao da mira em terceira pessoa
+void CShockRifle::ItemPreFrame(void)
+{
+	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+}
+// ############ //
 
 void CShockRifle::Spawn()
 {
