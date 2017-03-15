@@ -289,7 +289,11 @@ void CBigMomma::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceRe
 			pev->dmgtime = gpGlobals->time;
 		}
 
-		newInfo.GetMutableDamage() = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
+		// ############ hu3lifezado ############ //
+		// O novo valor deixa viavel matarmos o Bicho Piruleta (0.1)
+		newInfo.GetMutableDamage() = 100;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
+	   // ############ //
+
 	}
 	else if ( gpGlobals->time > m_painSoundTime )
 	{
