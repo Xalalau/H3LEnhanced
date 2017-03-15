@@ -166,10 +166,13 @@ void CGlock::Reload( void )
 
 	bool bResult;
 
+	// ############ hu3lifezado ############ //
+	// Tempo de recarga aumentado para acertar com a nova animacao. (1.5)
 	if (m_iClip == 0)
-		bResult = DefaultReload( GLOCK_RELOAD, 1.5 );
+		bResult = DefaultReload( GLOCK_RELOAD, 2.2);
 	else
-		bResult = DefaultReload( GLOCK_RELOAD_NOT_EMPTY, 1.5 );
+		bResult = DefaultReload( GLOCK_RELOAD_NOT_EMPTY, 2.2);
+	// ############ //
 
 	if ( bResult )
 	{
