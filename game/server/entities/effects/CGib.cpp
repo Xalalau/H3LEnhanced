@@ -38,12 +38,18 @@ void CGib::Spawn( const char *szGibModel )
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
 	pev->nextthink = gpGlobals->time + 4;
-	m_lifeTime = 25;
+	// ############ hu3lifezado ############ //
+	// Diminui o tempo de vida dos gibs (25)
+	m_lifeTime = 5;
+	// ############ //
 	SetThink( &CGib::WaitTillLand );
 	SetTouch( &CGib::BounceGibTouch );
 
 	m_material = matNone;
-	m_cBloodDecals = 5;// how many blood decals this gib can place (1 per bounce until none remain). 
+	// ############ hu3lifezado ############ //
+	// Mais capacidade de cada tripa cagar tudo de sangue (5)
+	m_cBloodDecals = 8;// how many blood decals this gib can place (1 per bounce until none remain). 
+	// ############ //
 }
 
 //
@@ -59,11 +65,15 @@ void CGib::BounceGibTouch( CBaseEntity *pOther )
 
 	if( pev->flags & FL_ONGROUND )
 	{
-		pev->velocity = pev->velocity * 0.9;
-		pev->angles.x = 0;
-		pev->angles.z = 0;
-		pev->avelocity.x = 0;
-		pev->avelocity.z = 0;
+		// ############ hu3lifezado ############ //
+		// Tripas saem voando feito loucas. Aceleram ao inves de desacelerar. (0.9)
+		pev->velocity = pev->velocity * 3;
+		// As seguintes foram comentadas para que o gib rode:
+		//pev->angles.x = 0;
+		//pev->angles.z = 0;
+		//pev->avelocity.x = 0;
+		//pev->avelocity.z = 0;
+		// ############ //
 	}
 	else
 	{
@@ -125,13 +135,26 @@ void CGib::StickyGibTouch( CBaseEntity *pOther )
 //=========================================================
 void CGib::WaitTillLand( void )
 {
+	// ############ hu3lifezado ############ //
+	// Copiei esse fix da Valve que limita a velocidade do gib
+	float length = pev->velocity.Length();
+
+	// ceiling at 1500.  The gib velocity equation is not bounded properly.  Rather than tune it
+	// in 3 separate places again, I'll just limit it here.
+	if ( length > 1500.0 )
+		pev->velocity = pev->velocity.Normalize() * 1500;		// This should really be sv_maxvelocity * 0.75 or something
+	// ############ //
+
 	if( !IsInWorld() )
 	{
 		UTIL_Remove( this );
 		return;
 	}
 
-	if( pev->velocity == g_vecZero )
+	// ############ hu3lifezado ############ //
+	// Alterei para iniciar o fade dos gibs na velocidade maxima ao inves de na minima (if ( pev->velocity == g_vecZero ))
+	if (pev->velocity == pev->velocity.Normalize() * 1500)
+	// ############ //
 	{
 		SetThink( &CGib::SUB_StartFadeOut );
 		pev->nextthink = gpGlobals->time + m_lifeTime;

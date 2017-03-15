@@ -76,21 +76,25 @@ void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceR
 	}
 	*/
 
-	if( info.GetDamage() < 10 )
+	// ############ hu3lifezado ############ //
+	// Mais sangue na parede!! (cCount = 1, 2, 4)
+	if (info.GetDamage() < 10)
 	{
 		flNoise = 0.1;
-		cCount = 1;
+		cCount = 3;
 	}
-	else if( info.GetDamage() < 25 )
+	else if (info.GetDamage() < 25)
 	{
 		flNoise = 0.2;
-		cCount = 2;
+		cCount = 7;
 	}
 	else
 	{
 		flNoise = 0.3;
-		cCount = 4;
+		cCount = 12;
 	}
+	// ############ //
+
 
 	for( i = 0; i < cCount; i++ )
 	{

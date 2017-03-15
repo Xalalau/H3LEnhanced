@@ -90,7 +90,10 @@ void CBaseMonster :: GibMonster( void )
 		if ( CVAR_GET_FLOAT("violence_hgibs") != 0 )	// Only the player will ever get here
 		{
 			CGib::SpawnHeadGib( this );
-			CGib::SpawnRandomGibs( this, 4, 1 );	// throw some human gibs.
+			// ############ hu3lifezado ############ //
+			// Mais tripas (this,4,1)
+			CGib::SpawnRandomGibs( this, 5, 1 );	// throw some human gibs.
+			// ############ //
 		}
 		gibbed = true;
 	}
@@ -98,7 +101,10 @@ void CBaseMonster :: GibMonster( void )
 	{
 		if ( CVAR_GET_FLOAT("violence_agibs") != 0 )	// Should never get here, but someone might call it directly
 		{
-			CGib::SpawnRandomGibs( this, 4, 0 );	// Throw alien gibs
+			// ############ hu3lifezado ############ //
+			// Mais tripas (this,4,1)
+			CGib::SpawnRandomGibs( this, 5, 1 );	// throw alien gibs.
+			// ############ //
 		}
 		gibbed = true;
 	}
@@ -298,8 +304,10 @@ void CBaseMonster::BecomeDead( void )
 	
 	// give the corpse half of the monster's original maximum health. 
 	pev->health = pev->max_health / 2;
-	pev->max_health = 5; // max_health now becomes a counter for how many blood decals the corpse can place.
-
+	// ############ hu3lifezado ############ //
+	// Mais sangue por corpo (5)
+	pev->max_health = pev->health; // max_health now becomes a counter for how many blood decals the corpse can place.
+	// ############ //
 	// make the corpse fly away from the attack vector
 	pev->movetype = MOVETYPE_TOSS;
 	//pev->flags &= ~FL_ONGROUND;
@@ -402,7 +410,7 @@ void CBaseMonster::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 		SetTouch( NULL );
 		BecomeDead();
 	}
-	
+
 	// don't let the status bar glitch for players.with <0 health.
 	if (pev->health < -99)
 	{
@@ -887,6 +895,11 @@ void CBaseMonster :: MakeDamageBloodDecal ( int cCount, float flNoise, TraceResu
 			pev->max_health--;
 		}
 	}
+
+	// ############ hu3lifezado ############ //
+	// Alien solta mais sangue (nao tem padrao, eu adicionei, apenas delete)
+	cCount += 5;
+	// ############ //
 
 	for ( i = 0 ; i < cCount ; i++ )
 	{
