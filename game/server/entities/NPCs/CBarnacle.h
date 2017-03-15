@@ -16,7 +16,10 @@
 #define GAME_SERVER_ENTITIES_NPCS_CBARNACLE_H
 
 #define	BARNACLE_BODY_HEIGHT	44 // how 'tall' the barnacle's model is.
-#define BARNACLE_PULL_SPEED		8
+// ############ hu3lifezado ############ //
+// Agora a puxada e bem mais rapida. Muito mais emocao! (8)
+#define BARNACLE_PULL_SPEED		30
+// ############ //
 #define BARNACLE_KILL_VICTIM_DELAY	5 // how many seconds after pulling prey in to gib them. 
 
 //=========================================================
