@@ -50,6 +50,25 @@ SpawnBlood
 */
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage)
 {
+	// ############ hu3lifezado ############ //
+	// Aliens espirram sangue (jogadores nao porque sai bugado)
+	if (bloodColor != BLOOD_COLOR_RED) {
+		Vector random = UTIL_RandomBloodVector();
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecSpot);
+		WRITE_BYTE(TE_BLOODSTREAM);
+		WRITE_COORD(vecSpot.x);
+		WRITE_COORD(vecSpot.y);
+		WRITE_COORD(vecSpot.z);
+		WRITE_COORD(random.x);
+		WRITE_COORD(random.y);
+		WRITE_COORD(random.z);
+		WRITE_BYTE(bloodColor);
+		WRITE_BYTE(min(RANDOM_LONG(10, 100), 255));
+		MESSAGE_END();
+	}
+	// ############ //
+
 	UTIL_BloodDrips( vecSpot, g_vecAttackDir, bloodColor, (int)flDamage );
 }
 
