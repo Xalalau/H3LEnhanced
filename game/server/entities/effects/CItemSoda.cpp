@@ -47,7 +47,10 @@ void CItemSoda::CanTouch( CBaseEntity *pOther )
 
 	// spoit sound here
 
-	pOther->GiveHealth( 1, DMG_GENERIC );// a bit of health.
+	// ############ hu3lifezado ############ //
+	// No Hu3-Life refrigerante faz bem! Te da 50 de vida ao inves de 1
+	pOther->GiveHealth( 50, DMG_GENERIC );// a bit of health.
+	// ############ //
 
 	if( !FNullEnt( pev->owner ) )
 	{
