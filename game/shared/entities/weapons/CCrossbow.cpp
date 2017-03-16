@@ -208,8 +208,14 @@ void CCrossbow::FireBolt()
 	}
 	else
 	{
-		pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
-		pBolt->pev->speed = BOLT_AIR_VELOCITY;
+		// ############ hu3lifezado ############ //
+		// Troca a velocidade do projetil
+		//pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
+		//pBolt->pev->speed = BOLT_AIR_VELOCITY;
+		int auxiliar = RANDOM_FLOAT(10, 2500);
+		pBolt->pev->velocity = vecDir * auxiliar;
+		pBolt->pev->speed = auxiliar;
+		// ############ //
 	}
 	pBolt->pev->avelocity.z = 10;
 #endif
