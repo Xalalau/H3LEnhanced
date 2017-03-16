@@ -136,7 +136,7 @@ void CFlyingCrowbar::SpinTouch(CBaseEntity *pOther)
 	CBasePlayerWeapon *pItem = (CBasePlayerWeapon *)Create("weapon_crowbar", pev->origin, pev->angles, edict());
 
 	// Spawn a weapon box
-	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", GetAbsOrigin(), pev->angles, edict()); // Trocar isso por weapon_crowbar depois. Esta bugando
+	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", GetAbsOrigin(), pev->angles, edict());
 
 	// don't let weapon box tilt.
 	pWeaponBox->pev->angles.x = 0;

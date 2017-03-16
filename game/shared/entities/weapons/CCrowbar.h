@@ -44,7 +44,8 @@ public:
 	void PrimaryAttack( void ) override;
 
 	// ############ hu3lifezado ############ //
-	// Tiro secundario
+	// Tiro secundario, adaptado de: 
+	// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 	void SecondaryAttack(void);
 	// ############ //
 
