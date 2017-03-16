@@ -23,6 +23,12 @@
 #include "CBasePlayer.h"
 #include "gamerules/GameRules.h"
 
+// ############ hu3lifezado ############ //
+// Tiro secundario, adaptado de:
+// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+#include "CFlyingCrowbar.h"
+// ############ //
+
 BEGIN_DATADESC( CCrowbar )
 	DEFINE_THINKFUNC( SwingAgain ),
 	DEFINE_THINKFUNC( Smack ),
@@ -60,6 +66,12 @@ void CCrowbar::Precache( void )
 	PRECACHE_SOUND("weapons/cbar_miss1.wav");
 
 	m_usCrowbar = PRECACHE_EVENT ( 1, "events/crowbar.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Tiro secundario, adaptado de:
+	// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+	UTIL_PrecacheOther("flying_crowbar");
+	// ############ //
 }
 
 bool CCrowbar::Deploy()
@@ -84,6 +96,50 @@ void CCrowbar::PrimaryAttack()
 	}
 }
 
+// ############ hu3lifezado ############ //
+// Tiro secundario, adaptado de:
+// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+void CCrowbar::SecondaryAttack()
+{
+	// Don't throw underwater, and only throw if we were able to detatch 
+	// from player.
+	if ((m_pPlayer->pev->waterlevel != 3) && (m_pPlayer->RemovePlayerItem(this)))
+	{
+		// Get the origin, direction, and fix the angle of the throw.
+		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
+		Vector vecDir = gpGlobals->v_forward;
+		Vector vecAng = UTIL_VecToAngles(vecDir);
+		vecAng.z = vecDir.z - 90;
+
+		// Create a flying crowbar.
+		CFlyingCrowbar *pFCBar = (CFlyingCrowbar *)Create("flying_crowbar", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
+		
+		// Give the crowbar its velocity, angle, and spin. 
+		// Lower the gravity a bit, so it flys. 
+#ifndef CLIENT_DLL
+		pFCBar->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
+		pFCBar->pev->angles = vecAng;
+		pFCBar->pev->avelocity.x = -1000;
+		pFCBar->pev->gravity = .5;
+		pFCBar->m_pPlayer = m_pPlayer;
+#endif
+
+		// Do player weapon anim and sound effect. 
+		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+		EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
+
+		// Just for kicks, set this. 
+		// But we destroy this weapon anyway so... thppt. 
+		m_flNextSecondaryAttack = gpGlobals->time + 0.75;
+
+		// take item off hud
+		m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
+
+		// Destroy this weapon
+		DestroyItem();
+	}
+}
+// ############ //
 
 void CCrowbar::Smack( )
 {

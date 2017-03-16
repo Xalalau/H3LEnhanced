@@ -42,6 +42,12 @@ public:
 	void Smack( void );
 
 	void PrimaryAttack( void ) override;
+
+	// ############ hu3lifezado ############ //
+	// Tiro secundario
+	void SecondaryAttack(void);
+	// ############ //
+
 	bool Swing( const bool bFirst );
 	bool Deploy() override;
 	void Holster() override;
