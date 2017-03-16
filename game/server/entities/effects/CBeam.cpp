@@ -207,7 +207,11 @@ CBeam *CBeam::BeamCreate( const char *pSpriteName, int width )
 	CBeam *pBeam = GetClassPtr( ( CBeam * ) NULL );
 	pBeam->pev->classname = MAKE_STRING( "beam" );
 
-	pBeam->BeamInit( pSpriteName, width );
+	// ############ hu3lifezado ############ //
+	// Lasers grossos, sempre.
+	//pBeam->BeamInit( pSpriteName, width );
+	pBeam->BeamInit(pSpriteName, width + 50);
+	// ############ //
 
 	return pBeam;
 }
