@@ -23,6 +23,8 @@ add_sources(
 	CBaseTurret.cpp
 	CBigMomma.h
 	CBigMomma.cpp
+	CBitch1.h
+	CBitch1.cpp
 	CBloater.h
 	CBloater.cpp
 	CBMortar.h
