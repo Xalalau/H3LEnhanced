@@ -17,8 +17,6 @@ add_sources(
 	CDisplacer.cpp
 	CEgon.h
 	CEgon.cpp
-    CFlyingCrowbar.h
-    CFlyingCrowbar.cpp
 	CGauss.h
 	CGauss.cpp
 	CGlock.h

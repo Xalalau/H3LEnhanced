@@ -26,7 +26,9 @@
 // ############ hu3lifezado ############ //
 // Tiro secundario, adaptado de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
-#include "CFlyingCrowbar.h"
+#ifndef CLIENT_DLL
+#include "entities/weapons/CFlyingCrowbar.h"
+#endif
 // ############ //
 
 BEGIN_DATADESC( CCrowbar )
@@ -111,12 +113,12 @@ void CCrowbar::SecondaryAttack()
 		Vector vecAng = UTIL_VecToAngles(vecDir);
 		vecAng.z = vecDir.z - 90;
 
+#ifndef CLIENT_DLL
 		// Create a flying crowbar.
 		CFlyingCrowbar *pFCBar = (CFlyingCrowbar *)Create("flying_crowbar", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
 		
 		// Give the crowbar its velocity, angle, and spin. 
 		// Lower the gravity a bit, so it flys. 
-#ifndef CLIENT_DLL
 		pFCBar->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
 		pFCBar->pev->angles = vecAng;
 		pFCBar->pev->avelocity.x = -1000;
