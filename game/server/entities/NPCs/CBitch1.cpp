@@ -199,3 +199,22 @@ void CBitch1::TalkInit()
 	m_szGrp[TLK_WOUND] = "PT_WOUND";
 	m_szGrp[TLK_MORTAL] = "PT_MORTAL";
 }
+
+//=========================================================
+// PainSound
+//=========================================================
+void CBitch1::PainSound(void)
+{
+	if (gpGlobals->time < m_painTime)
+		return;
+
+	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
+
+	switch (RANDOM_LONG(0, 3))
+	{
+	case 0: EMIT_SOUND_DYN(this, CHAN_VOICE, "putas/gemendo1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 1: EMIT_SOUND_DYN(this, CHAN_VOICE, "putas/gemendo2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 2: EMIT_SOUND_DYN(this, CHAN_VOICE, "putas/gemendo3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	case 3: EMIT_SOUND_DYN(this, CHAN_VOICE, "putas/gemendo4.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
+	}
+}
