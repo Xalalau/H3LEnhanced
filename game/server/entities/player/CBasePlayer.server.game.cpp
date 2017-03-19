@@ -24,11 +24,26 @@
 #include "Angelscript/ScriptAPI/ASEvents.h"
 #endif
 
+// ############ hu3lifezado ############ //
+// Remover as armas do jogador. Acesso hu3_removeallitens
+#include "Server.h"
+// ############ //
+
 // 
 // PlayerUse - handles USE keypress
 //
 void CBasePlayer::PlayerUse()
 {
+	// ############ hu3lifezado ############ //
+	// Remover as armas do jogador
+	if (hu3_removeallitens.value == 1)
+	{
+		RemoveAllItems(TRUE);
+		hu3_removeallitens.value = 0;
+		strcpy(hu3_removeallitens.string, "0");
+	}
+	// ############ //
+
 	if( IsObserver() )
 		return;
 

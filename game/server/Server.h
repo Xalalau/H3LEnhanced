@@ -42,6 +42,10 @@ extern cvar_t	defaultteam;
 extern cvar_t	allowmonsters;
 extern cvar_t	as_plugin_list_file;
 extern cvar_t	as_mysql_config;
+// ############ hu3lifezado ############ //
+// Remover as armas do jogador
+extern cvar_t	hu3_removeallitens;
+// ############ //
 
 // Engine Cvars
 extern cvar_t	*g_psv_gravity;

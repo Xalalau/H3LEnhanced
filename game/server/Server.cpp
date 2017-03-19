@@ -49,6 +49,11 @@ cvar_t	teamoverride = {"mp_teamoverride","1" };
 cvar_t	defaultteam = {"mp_defaultteam","0" };
 cvar_t	allowmonsters={"mp_allowmonsters","0", FCVAR_SERVER };
 
+// ############ hu3lifezado ############ //
+// Remover as armas do jogador
+cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
+// ############ //
+
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
 
 cvar_t  mp_chattime = {"mp_chattime","10", FCVAR_SERVER };
@@ -622,6 +627,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &as_plugin_list_file );
 
 	CVAR_REGISTER( &as_mysql_config );
+
+	// ############ hu3lifezado ############ //
+	// Remover as armas do jogador
+	CVAR_REGISTER (&hu3_removeallitens);
+	// ############ //
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
