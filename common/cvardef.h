@@ -26,14 +26,17 @@
 #define FCVAR_UNLOGGED		(1<<8)  // If this is a FCVAR_SERVER, don't log changes to the log file / console if we are creating a log
 #define FCVAR_NOEXTRAWHITEPACE	(1<<9)  // strip trailing/leading white space from this cvar
 
+// ############ hu3lifezado ############ //
+// Agora e "char* string;" ao inves de "const char* string;"
 struct cvar_t
 {
 	const char* pszName;
 	//Note: the engine treats this as a non-const pointer. It's const here to silence compiler warnings.
 	//As an added benefit, game code can't just modify the strings. - Solokiller
-	const char*	string;
+	char*		string;
 	int			flags;
 	float		value;
 	cvar_t		*next;
 };
+// ############ //
 #endif
