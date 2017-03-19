@@ -139,16 +139,18 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		EMIT_SOUND( this, CHAN_STATIC, "items/suitcharge1.wav", 0.85, ATTN_NORM );
 	}
 
-
+	// ############ hu3lifezado ############ //
+	// Os numeros estavam hardcoded em "100" aqui, troquei para MAX_NORMAL_BATTERY
 	// charge the player
-	if (m_hActivator->pev->armorvalue < 100)
+	if (m_hActivator->pev->armorvalue < MAX_NORMAL_BATTERY)
 	{
 		m_iJuice--;
 		m_hActivator->pev->armorvalue += 1;
 
-		if (m_hActivator->pev->armorvalue > 100)
-			m_hActivator->pev->armorvalue = 100;
+		if (m_hActivator->pev->armorvalue > MAX_NORMAL_BATTERY)
+			m_hActivator->pev->armorvalue = MAX_NORMAL_BATTERY;
 	}
+	// ############ //
 
 	// govern the rate of charge
 	m_flNextCharge = gpGlobals->time + 0.1;

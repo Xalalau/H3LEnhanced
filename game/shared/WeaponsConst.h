@@ -69,7 +69,10 @@ enum WeaponId
 
 #define WEAPON_SUIT			31	// ?????
 
-#define MAX_NORMAL_BATTERY	100
+// ############ hu3lifezado ############ //
+// O novo maximo e 666
+#define MAX_NORMAL_BATTERY	666
+// ############ //
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
