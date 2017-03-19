@@ -97,6 +97,12 @@ add_sources(
 	CNihilanthHVR.cpp
 	COsprey.h
 	COsprey.cpp
+	CPedestrian1.h
+	CPedestrian1.cpp
+	CPedestrian2.h
+	CPedestrian2.cpp
+	CPedestrian3.h
+	CPedestrian3.cpp
 	CPenguinGrenade.h
 	CPenguinGrenade.cpp
 	CRat.h
