@@ -95,6 +95,8 @@ add_sources(
 	CRoach.cpp
 	CScientist.h
 	CScientist.cpp
+	CScientistGiant.h
+	CScientistGiant.cpp
 	CSentry.h
 	CSentry.cpp
 	CSittingScientist.h
