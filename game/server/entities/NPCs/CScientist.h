@@ -71,10 +71,13 @@ public:
 
 	DECLARE_SCHEDULES() override;
 
-private:
+	// ############ hu3lifezado ############ //
+	// Deixei variaveis publicas para serem utilizadas nas nossas subclasses
+public:
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
+	// ############ //
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CSCIENTIST_H
