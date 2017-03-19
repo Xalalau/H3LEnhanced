@@ -165,8 +165,11 @@ void CSqueakGrenade::HuntThink( void )
 	if( gpGlobals->time >= m_flDie )
 	{
 		g_vecAttackDir = pev->velocity.Normalize();
-		pev->health = -1;
-		Killed( CTakeDamageInfo( this, 0, 0 ), GIB_NORMAL );
+		// ############ hu3lifezado ############ //
+		//pev->health = -1;
+		//Killed( CTakeDamageInfo( this, 0, 0 ), GIB_NORMAL );
+		m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
+		// ############ //
 		return;
 	}
 
