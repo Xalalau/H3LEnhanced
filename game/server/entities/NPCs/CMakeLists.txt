@@ -53,6 +53,8 @@ add_sources(
 	CGargantua.cpp
 	CGenericMonster.h
 	CGenericMonster.cpp
+	CGenericMonsterGod.h
+	CGenericMonsterGod.cpp
 	CGMan.h
 	CGMan.cpp
 	CHAssassin.h
