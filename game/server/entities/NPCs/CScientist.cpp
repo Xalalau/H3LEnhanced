@@ -350,9 +350,15 @@ END_SCHEDULES()
 
 void CScientist::DeclineFollowing( void )
 {
-	Talk( 10 );
-	m_hTalkTarget = m_hEnemy;
-	PlaySentence( "SC_POK", 2, VOL_NORM, ATTN_NORM );
+	// ############ hu3lifezado ############ //
+	// FOkToSpeak() corta as respostas dos cientistas caso a flag "gag" esteja em uso
+	if ( FOkToSpeak() )
+	{
+		Talk(10);
+		m_hTalkTarget = m_hEnemy;
+		PlaySentence("SC_POK", 2, VOL_NORM, ATTN_NORM);
+	}
+	// ############ //
 }
 
 
