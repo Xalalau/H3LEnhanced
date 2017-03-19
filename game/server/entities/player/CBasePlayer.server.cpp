@@ -131,7 +131,10 @@ void CBasePlayer::InitialSpawn()
 void CBasePlayer::Spawn()
 {
 	pev->classname		= MAKE_STRING( "player" );
-	pev->health			= 100;
+	// ############ hu3lifezado ############ //
+	// Era 100
+	pev->health = 169;
+	// ############ //
 	pev->armorvalue		= 0;
 	pev->takedamage		= DAMAGE_AIM;
 	pev->solid			= SOLID_SLIDEBOX;
