@@ -56,6 +56,8 @@ add_sources(
 	CParentDoor.cpp
 	CPlayerHudColors.h
 	CPlayerHudColors.cpp
+	CPointCMD.h
+	CPointCMD.cpp
 	CPointEntity.h
 	CPointEntity.cpp
 	CPushable.h
