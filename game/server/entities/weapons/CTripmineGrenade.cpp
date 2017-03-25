@@ -208,7 +208,17 @@ void CTripmineGrenade::MakeBeam()
 
 	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
 	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
-	m_pBeam->SetColor( 0, 214, 198 );
+	// ############ hu3lifezado ############ //
+	// Jato de porra ( 0, 214, 198 )
+	m_pBeam->SetColor( 255, 255, 255 );
+	// Esporrada na parede
+	CBaseEntity *pEntity = NULL;
+	TraceResult *pTrace;
+	pTrace = &tr;
+	if ( !FNullEnt(pTrace->pHit) )
+		pEntity = CBaseEntity::Instance(pTrace->pHit);
+	UTIL_GunshotDecalTrace( &tr, RANDOM_LONG(33,34) ); // DECAL_SPIT1 e 2
+	// ############ //
 	m_pBeam->SetScrollRate( 255 );
 	m_pBeam->SetBrightness( 64 );
 }
