@@ -38,7 +38,7 @@ void CBasePlayer::PlayerUse()
 	// Remover as armas do jogador
 	if (hu3_removeallitens.value == 1)
 	{
-		RemoveAllItems(TRUE);
+		RemoveAllItems(true);
 		hu3_removeallitens.value = 0;
 		strcpy(hu3_removeallitens.string, "0");
 	}
