@@ -21,6 +21,8 @@ add_sources(
 	CTriggerCDAudio.cpp
 	CTriggerChangeTarget.h
 	CTriggerChangeTarget.cpp
+	CTriggerCMD.h
+	CTriggerCMD.cpp
 	CTriggerCounter.h
 	CTriggerCounter.cpp
 	CTriggerEndSection.h
