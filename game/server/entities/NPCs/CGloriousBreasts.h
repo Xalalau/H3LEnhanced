@@ -18,7 +18,15 @@
 class CGloriousBreasts : public CBitch1
 {
 public:
+	DECLARE_CLASS( CGloriousBreasts, CBitch1 );
+	DECLARE_DATADESC();
+
 	void Spawn(void);
+
+private:
+	float m_painTime;
+	float m_healTime;
+	float m_fearTime;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CGLORIOUSBREASTS_H

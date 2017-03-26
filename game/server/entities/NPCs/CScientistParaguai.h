@@ -18,8 +18,16 @@
 class CScientistParaguai : public CScientist
 {
 public:
+	DECLARE_CLASS( CScientistParaguai, CScientist );
+	DECLARE_DATADESC();
+
 	void Spawn(void);
 	void Precache(void);
+
+private:
+	float m_painTime;
+	float m_healTime;
+	float m_fearTime;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CSCIENTISTPARAGUAI_H
