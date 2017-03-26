@@ -36,14 +36,12 @@ enum
 
 void CPedestrian1::DeclineFollowing(void)
 {
-	if (FOkToSpeak())
-	{
-		Talk(10);
-		m_hTalkTarget = m_hEnemy;
-		PlaySentence("FV_POK", 2, VOL_NORM, ATTN_NORM);
-	}
+	if (pev->spawnflags & SF_MONSTER_GAG)
+		return;
+	Talk(10);
+	m_hTalkTarget = m_hEnemy;
+	PlaySentence("FV_POK", 2, VOL_NORM, ATTN_NORM);
 }
-
 
 void CPedestrian1::Scream(void)
 {

@@ -351,13 +351,12 @@ END_SCHEDULES()
 void CScientist::DeclineFollowing( void )
 {
 	// ############ hu3lifezado ############ //
-	// FOkToSpeak() corta as respostas dos cientistas caso a flag "gag" esteja em uso
-	if ( FOkToSpeak() )
-	{
-		Talk(10);
-		m_hTalkTarget = m_hEnemy;
-		PlaySentence("SC_POK", 2, VOL_NORM, ATTN_NORM);
-	}
+	// SF_MONSTER_GAG corta as respostas dos cientistas caso a flag "gag" esteja em uso
+	if (pev->spawnflags & SF_MONSTER_GAG)
+		return;
+	Talk(10);
+	m_hTalkTarget = m_hEnemy;
+	PlaySentence("SC_POK", 2, VOL_NORM, ATTN_NORM);
 	// ############ //
 }
 
