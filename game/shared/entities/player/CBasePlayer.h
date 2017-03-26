@@ -148,6 +148,11 @@ private:
 	bool m_bSentInitData = false;
 	
 public:
+	// ############ hu3lifezado ############ //
+	// Variavel para controlar o icone de recarga na terceira pessoa
+	bool cam_hu3_reload_icon;
+	// ############
+
 	// Spectator camera
 	void	Observer_FindNextPlayer( bool bReverse );
 	void	Observer_HandleButtons();

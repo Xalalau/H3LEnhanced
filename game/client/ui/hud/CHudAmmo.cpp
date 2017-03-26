@@ -808,8 +808,25 @@ bool CHudAmmo::Draw(float flTime)
 			SPR_Set(ammo2.hSprite, r, g, b);
 			int iOffset = (ammo2.rect.bottom - ammo2.rect.top) / 8;
 			SPR_DrawAdditive(0, x, y - iOffset, &ammo2.rect);
+			// ############ hu3lifezado ############ //
+			// Icone de recarga na terceira pessoa
+			y += gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
 		}
 	}
+
+	if (pPlayer->cam_hu3_reload_icon == true)
+	{
+		x = ScreenWidth - 4 * AmmoWidth - 250;
+
+		x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, 13, r, g, b);
+		gHUD.DrawHudNumber(x - 15, y, iFlags | DHN_3DIGITS, 37, r, g, b);
+		/*
+		SPR_Set(m_pWeapon->hAmmo2, r, g, b);
+		int iOffset = (m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top)/8;
+		SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2);
+		*/
+	}
+	// ############
 	return true;
 }
 
