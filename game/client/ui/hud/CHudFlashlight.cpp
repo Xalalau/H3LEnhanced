@@ -112,27 +112,54 @@ bool CHudFlashlight::Draw(float flTime)
 	if (m_flBat < 0.20)
 		gHUD.GetEmptyItemColor().UnpackRGB(r,g,b);
 	else
-		gHUD.GetPrimaryColor().UnpackRGB(r,g,b);
+		// ############ hu3lifezado ############ //
+		// Mudei a cor do HUD (RGB_YELLOWISH)
+		//gHUD.GetPrimaryColor().UnpackRGB(r,g,b);
+		UnpackRGB(r,g,b, RGB_WHITEISH);
+		// ############ //
 
 	ScaleColors(r, g, b, a);
 
-	y = (m_prc1->bottom - m_prc2->top)/2;
-	x = ScreenWidth - m_iWidth - m_iWidth/2 ;
+	// ############ hu3lifezado ############ //
+	// Icone da lanterna foi movido para a regiao armadura
+	//y = (m_prc1->bottom - m_prc2->top) / 2;
+	//x = ScreenWidth - m_iWidth - m_iWidth / 2;
+	int distancia_do_lado = 130;
+	y = ScreenHeight - 32 - 12;
+	x = distancia_do_lado;
+	// ############ //
 
 	// Draw the flashlight casing
-	SPR_Set(m_hSprite1, r, g, b );
-	SPR_DrawAdditive( 0,  x, y, m_prc1);
+	// ############ hu3lifezado ############ //
+	// Desativei o sprite de lanterna desligada
+	//SPR_Set(m_hSprite1, r, g, b );
+	//SPR_DrawAdditive( 0,  x, y, m_prc1);
+	// ############ //
 
 	if ( m_fOn )
 	{  // draw the flashlight beam
-		x = ScreenWidth - m_iWidth/2;
+	   // ############ hu3lifezado ############ //
+	   // Gambiarra para o icone da lanterna ligada aparecer por inteiro
+		SPR_Set(m_hBeam, r, g, b);
+		SPR_DrawAdditive(0, x, y, m_prc1);
+		// ############ //
+
+		// ############ hu3lifezado ############ //
+		// Nova dimensao lateral da lanterna ligada
+		// x = ScreenWidth - m_iWidth/2;
+		x = distancia_do_lado + m_iWidth;
+		// ############ //
 
 		SPR_Set( m_hBeam, r, g, b );
 		SPR_DrawAdditive( 0, x, y, m_prcBeam );
 	}
 
 	// draw the flashlight energy level
-	x = ScreenWidth - m_iWidth - m_iWidth/2 ;
+	// ############ hu3lifezado ############ //
+	// Icone da energia da lanterna foi movido para a regiao armadura
+	//x = ScreenWidth - m_iWidth - m_iWidth/2 ;
+	x = distancia_do_lado;
+	// ############ //
 	int iOffset = m_iWidth * (1.0 - m_flBat);
 	if (iOffset < m_iWidth)
 	{
