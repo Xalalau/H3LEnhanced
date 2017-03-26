@@ -18,7 +18,15 @@
 class CPedestrian2 : public CPedestrian1
 {
 public:
+	DECLARE_CLASS( CPedestrian2, CScientist );
+	DECLARE_DATADESC();
+
 	void Spawn(void);
+
+private:
+	float m_painTime;
+	float m_healTime;
+	float m_fearTime;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CPEDESTRIAN2_H

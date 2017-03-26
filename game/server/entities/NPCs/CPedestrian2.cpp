@@ -16,6 +16,12 @@
 
 #include "CPedestrian2.h"
 
+BEGIN_DATADESC(	CPedestrian2 )
+	DEFINE_FIELD( m_painTime, FIELD_TIME ),
+	DEFINE_FIELD( m_healTime, FIELD_TIME ),
+	DEFINE_FIELD( m_fearTime, FIELD_TIME ),
+END_DATADESC()
+
 LINK_ENTITY_TO_CLASS(monster_pedestre_2, CPedestrian2);
 
 //=========================================================

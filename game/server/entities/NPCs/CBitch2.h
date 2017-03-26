@@ -18,7 +18,15 @@
 class CBitch2 : public CBitch1
 {
 public:
+	DECLARE_CLASS(CBitch2, CScientist);
+	DECLARE_DATADESC();
+
 	void Spawn(void);
+
+private:
+	float m_painTime;
+	float m_healTime;
+	float m_fearTime;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CBITCH2_H

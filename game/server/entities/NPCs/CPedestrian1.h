@@ -18,6 +18,9 @@
 class CPedestrian1 : public CScientist
 {
 public:
+	DECLARE_CLASS( CPedestrian1, CScientist );
+	DECLARE_DATADESC();
+
 	void Spawn(void);
 	void Precache(void);
 	void PainSound(void);
@@ -25,6 +28,11 @@ public:
 	void DeclineFollowing(void);
 	void Scream(void);
 	void StartTask(Task_t *pTask);
+
+private:
+	float m_painTime;
+	float m_healTime;
+	float m_fearTime;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CPEDESTRIAN1_H
