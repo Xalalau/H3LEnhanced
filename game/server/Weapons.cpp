@@ -144,9 +144,8 @@ void EjectBrass( const Vector& vecOrigin, const Vector& vecVelocity, float rotat
 	MESSAGE_END();
 }
 
-
-#if 0
-// UNDONE: This is no longer used?
+// ############ hu3lifezado ############ //
+// Funcao reintegrada no jogo
 void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
 {
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecOrigin );
@@ -160,7 +159,7 @@ void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
 		WRITE_BYTE ( 15 );// 1.5 seconds
 	MESSAGE_END();
 }
-#endif
+// ############ //
 
 // ############ hu3lifezado ############ //
 // Funcao principal da mira em terceira pessoa
