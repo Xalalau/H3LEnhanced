@@ -21,7 +21,7 @@ void CTriggerCMD::KeyValue(KeyValueData *pkvd)
 	if (FStrEq(pkvd->szKeyName, "command"))
 	{
 		m_Command = ALLOC_STRING(pkvd->szValue);
-		pkvd->fHandled = TRUE;
+		pkvd->fHandled = true;
 	}
 	else
 		CBaseTrigger::KeyValue(pkvd);
