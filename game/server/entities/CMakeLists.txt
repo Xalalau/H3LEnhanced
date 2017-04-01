@@ -34,6 +34,8 @@ add_sources(
 	CEnvGlobal.cpp
 	CFuncMortarField.h
 	CFuncMortarField.cpp
+	CFuncParent.h
+	CFuncParent.cpp
 	CGrenade.h
 	CGrenade.cpp
 	CInfoIntermission.h
@@ -52,8 +54,6 @@ add_sources(
 	CMultiSource.cpp
 	CNullEntity.h
 	CNullEntity.cpp
-	CParentDoor.h
-	CParentDoor.cpp
 	CPlayerHudColors.h
 	CPlayerHudColors.cpp
 	CPointCMD.h

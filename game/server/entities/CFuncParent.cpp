@@ -1,8 +1,7 @@
 // ##############################
 // HU3-LIFE ENTIDADE ARRASTADORA
 // ##############################
-// Arrasta solids e point_ents ao se mover.
-// Nao funciona com coisas animadas (elas nao param) (TODO - Ajeitar isso)
+// Arrasta outras entidades consigo ao se mover.
 
 #include "extdll.h"
 #include "util.h"
@@ -11,22 +10,11 @@
 #include "SaveRestore.h"
 #include "entities/DoorConstants.h"
 
-#include "CParentDoor.h"
+#include "CFuncParent.h"
 
-BEGIN_DATADESC(CParentDoor)
-	DEFINE_FIELD(m_bHealthValue, FIELD_CHARACTER),
-	DEFINE_FIELD(m_bMoveSnd, FIELD_CHARACTER),
-	DEFINE_FIELD(m_bStopSnd, FIELD_CHARACTER),
-
-	DEFINE_FIELD(m_bLockedSound, FIELD_CHARACTER),
-	DEFINE_FIELD(m_bLockedSentence, FIELD_CHARACTER),
-	DEFINE_FIELD(m_bUnlockedSound, FIELD_CHARACTER),
-	DEFINE_FIELD(m_bUnlockedSentence, FIELD_CHARACTER),
-
+BEGIN_DATADESC(CFuncParent)
 	DEFINE_FIELD(speed, FIELD_FLOAT),
-
-	DEFINE_FIELD(door, FIELD_EVARS),
-	DEFINE_FIELD(destination, FIELD_VECTOR),
+	DEFINE_FIELD(wait, FIELD_FLOAT),
 
 	DEFINE_FIELD(parent01_name, FIELD_STRING),
 	DEFINE_FIELD(parent01, FIELD_EVARS),
@@ -62,56 +50,13 @@ BEGIN_DATADESC(CParentDoor)
 	DEFINE_FIELD(parent16, FIELD_EVARS),
 END_DATADESC()
 
-LINK_ENTITY_TO_CLASS(func_parent, CParentDoor);
-//
-// Cache user-entity-field values until spawn is called.
-//
+LINK_ENTITY_TO_CLASS(func_parent, CFuncParent);
 
-void CParentDoor::KeyValue(KeyValueData *pkvd)
+void CFuncParent::KeyValue(KeyValueData *pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "skin"))//skin is used for content type
+	if (FStrEq(pkvd->szKeyName, "wait"))
 	{
-		pev->skin = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "movesnd"))
-	{
-		m_bMoveSnd = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "stopsnd"))
-	{
-		m_bStopSnd = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "healthvalue"))
-	{
-		m_bHealthValue = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "locked_sound"))
-	{
-		m_bLockedSound = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "locked_sentence"))
-	{
-		m_bLockedSentence = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "unlocked_sound"))
-	{
-		m_bUnlockedSound = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "unlocked_sentence"))
-	{
-		m_bUnlockedSentence = atof(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	else if (FStrEq(pkvd->szKeyName, "WaveHeight"))
-	{
-		pev->scale = atof(pkvd->szValue) * (1.0 / 8.0);
+		wait = atof(pkvd->szValue);
 		pkvd->fHandled = true;
 	}
 	else if (FStrEq(pkvd->szKeyName, "parent01"))
@@ -198,42 +143,29 @@ void CParentDoor::KeyValue(KeyValueData *pkvd)
 		CBaseToggle::KeyValue(pkvd);
 }
 
-void CParentDoor::Spawn()
+void CFuncParent::Spawn()
 {
-	Precache();
-
-	// Modifico propriedades da entidade para que ela se mova
-	PrepareModel();
-
 	// Defino os angulos do movimento
 	SetMovedir(this);
 
 	// Defino a velocidade
-	speed = pev->speed;
-
 	if (pev->speed == 0)
 		pev->speed = 100;
-	if (pev->dmg == 0)
-		pev->dmg = 2;
+	speed = pev->speed;
 
-	// Salvo a entidade principal pev em door
-	door = pev;
+	// Modifico as propriedades basicas da entidade
+	pev->movetype = MOVETYPE_PUSH;
+	SetAbsOrigin(GetAbsOrigin());
+	SetModel(STRING(pev->model));
 
-	// Calculo o vetor posicao e saldo em destination
-	m_vecPosition1 = GetAbsOrigin();
-	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
-	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
-	destination = m_vecPosition2;
+	// Deixo o interior de LinearMoveDone() acessivel
+	blockThink = false;
 }
 
-//
-// Used by SUB_UseTargets, when a door is the target of a button.
-//
-void CParentDoor::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+void CFuncParent::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
 	// Movimento do func_parent
-	LinearMove(destination, speed);
+	LinearMove(pev, SetMoveVector(pev), speed);
 	// Movimento dos parents
 	ProcessMovement(parent01, parent01_name);
 	ProcessMovement(parent02, parent02_name);
@@ -251,53 +183,96 @@ void CParentDoor::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	ProcessMovement(parent14, parent14_name);
 	ProcessMovement(parent15, parent15_name);
 	ProcessMovement(parent16, parent16_name);
-	// Reassociacao do pev original
-	pev = door;
 }
 
-// Modifica propriedades da entidade para que possa se mover
-void CParentDoor::PrepareModel()
+// Coordena as configuracoes e chamadas de movimento (eh a principal)
+void CFuncParent::ProcessMovement(entvars_t *parent, string_t targetName)
 {
-	if (pev->skin == 0)
-	{//normal door
-		if (FBitSet(pev->spawnflags, SF_DOOR_PASSABLE))
-			pev->solid = SOLID_NOT;
-		else
-			pev->solid = SOLID_BSP;
-	}
-	else
-	{// special contents
-		pev->solid = SOLID_NOT;
-		SetBits(pev->spawnflags, SF_DOOR_SILENT);	// water is silent for now
-	}
-
-	pev->movetype = MOVETYPE_PUSH;
-	SetAbsOrigin(GetAbsOrigin());
-	SetModel(STRING(pev->model));
-}
-
-// Faz as entidades se moverem
-void CParentDoor::ProcessMovement(entvars_t *parent, string_t targetName)
-{
-	if ((pev = parent) == NULL)
+	parent = SetEntVars_t(targetName);
+	if (parent != NULL)
 	{
-		pev = parent = SetEntVars_t(targetName);
-		if (parent != NULL)
-		{
-			PrepareModel();
-			LinearMove(destination, speed);
-		}
+		parent->movetype = MOVETYPE_PUSH;
+		LinearMove(parent, SetMoveVector(parent), speed);
 	}
-	else
-		LinearMove(destination, speed);
 }
 
 // Encontra entidades no mapa
-entvars_t * CParentDoor::SetEntVars_t(string_t targetName)
+entvars_t * CFuncParent::SetEntVars_t(string_t targetName)
 {
 	edict_t* pentTarget = NULL;
+
 	pentTarget = FIND_ENTITY_BY_STRING(pentTarget, "targetname", STRING(targetName));
+
 	if (FNullEnt(pentTarget))
 		return NULL;
-	return &pentTarget->v;
+	else
+		return &pentTarget->v;
+}
+
+// Define o vetor de deslocamento
+Vector CFuncParent::SetMoveVector(entvars_t *entity)
+{
+	// Pego o vetor da posicao atual
+	m_vecPosition1 = GetAbsOrigin();
+
+	// Acerto a direcao do movimento:
+	if (entity != pev)
+		entity->movedir = pev->movedir;
+
+	// Calculo o vetor deslocamento (creditos para a Valve):
+	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
+	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
+	
+	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
+
+	return m_vecPosition2;
+}
+
+// Efetivamente move as entidades
+void CFuncParent::LinearMove(entvars_t *entity, Vector vecDest, float flSpeed)
+{
+	ASSERTSZ(flSpeed != 0, "LinearMove:  no speed is defined!");
+
+	// Ja chegou?
+	if (vecDest == entity->origin)
+		return;
+
+	// set destdelta to the vector needed to move
+	Vector vecDestDelta = vecDest - GetAbsOrigin();
+
+	// divide vector length by speed to get time to reach dest
+	float flTravelTime = vecDestDelta.Length() / flSpeed;
+
+	// set nextthink to trigger a call to LinearMoveDone when dest is reached
+	entity->nextthink = entity->ltime + flTravelTime;
+	if (entity == pev)
+	{
+		parent_time = entity->ltime + flTravelTime + wait;
+		SetThink(&CFuncParent::LinearMoveDone);
+	}
+
+	// scale the destdelta vector by the time spent traveling to get velocity
+	entity->velocity = vecDestDelta / flTravelTime;
+}
+
+void CFuncParent::LinearMoveDone(void)
+{
+	if (!blockThink)
+	{
+		// Paro a entidade
+		if (pev->velocity > 0)
+			pev->velocity = 0;
+
+		// Verifico se ela ja pode iniciar a proxima entidade (target)
+		if (pev->ltime > parent_time)
+		{
+			blockThink = true;
+
+			if (strcmp(STRING(pev->target), "") != 0)
+				FireTargets(STRING(pev->target), m_hActivator, this, USE_TOGGLE, 0);
+		}
+		else
+			// Se ainda ouver delay para contabilizar, continuo rodando essa funcao...
+			pev->nextthink = pev->ltime + 0.1;
+	}
 }

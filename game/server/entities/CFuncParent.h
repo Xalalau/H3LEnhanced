@@ -12,8 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef GAME_SERVER_CPARENTDOOR_H
-#define GAME_SERVER_CPARENTDOOR_H
+#ifndef GAME_SERVER_CFUNCPARENT_H
+#define GAME_SERVER_CFUNCPARENT_H
 
 /*QUAKED func_door (0 .5 .8) ? START_OPEN x DOOR_DONT_LINK TOGGLE
 if two doors touch, they are assumed to be connected and operate as a unit.
@@ -39,10 +39,10 @@ field activates the door.
 3)      stone chain
 4)      screechy metal
 */
-class CParentDoor : public CBaseDoor
+class CFuncParent : public CBaseToggle
 {
 public:
-	DECLARE_CLASS(CParentDoor, CBaseDoor);
+	DECLARE_CLASS(CFuncParent, CBaseToggle);
 	DECLARE_DATADESC();
 
 	void Spawn(void) override;
@@ -50,16 +50,15 @@ public:
 	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value) override;
 
 	entvars_t * SetEntVars_t(string_t parent01_nome);
-	void PrepareModel();
 	void ProcessMovement(entvars_t *parent, string_t targetName);
+	Vector SetMoveVector(entvars_t *entity);
+	void LinearMove(entvars_t *entity, Vector vecDest, float flSpeed);
+	void LinearMoveDone(void);
 
 	float speed;
-
-	Vector m_vecPosition2Backup;
-
-	entvars_t *door;
-
-	Vector destination;
+	float wait;
+	float parent_time;
+	bool blockThink;
 
 	string_t parent01_name;
 	entvars_t *parent01;
@@ -113,4 +112,4 @@ public:
 #define noiseMoving noise1
 #define noiseArrived noise2
 
-#endif //GAME_SERVER_CPARENTDOOR_H
+#endif //GAME_SERVER_CFUNCPARENT_H
