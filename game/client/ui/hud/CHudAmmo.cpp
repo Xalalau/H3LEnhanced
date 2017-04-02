@@ -808,18 +808,18 @@ bool CHudAmmo::Draw(float flTime)
 			SPR_Set(ammo2.hSprite, r, g, b);
 			int iOffset = (ammo2.rect.bottom - ammo2.rect.top) / 8;
 			SPR_DrawAdditive(0, x, y - iOffset, &ammo2.rect);
-			// ############ hu3lifezado ############ //
-			// Icone de recarga na terceira pessoa
-			y += gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
 		}
 	}
 
+	// ############ hu3lifezado ############ //
+	// Icone de recarga na terceira pessoa
 	if (pPlayer->cam_hu3_reload_icon == true)
 	{
-		x = ScreenWidth - 4 * AmmoWidth - 250;
+		x = ScreenWidth / 2 - 5;
+		y -= 467;
 
-		x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, 13, r, g, b);
-		gHUD.DrawHudNumber(x - 15, y, iFlags | DHN_3DIGITS, 37, r, g, b);
+		gHUD.DrawHudString(x, y, iFlags | DHN_3DIGITS, "...", r, g, b);
+		//gHUD.DrawHudNumber(x - 15, y, iFlags | DHN_3DIGITS, 37, r, g, b);
 		/*
 		SPR_Set(m_pWeapon->hAmmo2, r, g, b);
 		int iOffset = (m_pWeapon->rcAmmo2.bottom - m_pWeapon->rcAmmo2.top)/8;
@@ -926,10 +926,16 @@ int CHudAmmo::DrawWList(float flTime)
 	CBasePlayer* pPlayer = g_Prediction.GetLocalPlayer();
 
 	// ############ hu3lifezado ############ //
+	// Variaveis para fazer calculos
+	int sprite_da_arma = pPlayer->GetFirstPos(iActiveSlot)->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.right - pPlayer->GetFirstPos(iActiveSlot)->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.left;
+	int quadrado_das_armas = m_iBucketWidth;
+	int numero_de_quadrados = 7;
+	
 	// Opcoes para mover o menu de armas
 	int vai_pra_esquerda = 10;
-	int vai_pra_direita = ScreenWidth - m_iBucketWidth * MAX_WEAPON_SLOTS - (m_CrosshairRC.right - m_CrosshairRC.left) - 15;
-	int vai_pro_meio = ScreenWidth / 2 - (m_iBucketWidth * MAX_WEAPON_SLOTS + (m_CrosshairRC.right - m_CrosshairRC.left)) / 2;
+	int vai_pra_direita = ScreenWidth - quadrado_das_armas * numero_de_quadrados - sprite_da_arma - 15;
+	int vai_pro_meio = ScreenWidth / 2 - (quadrado_das_armas * numero_de_quadrados + sprite_da_arma) / 2;
+	
 	int mover = vai_pro_meio;
 
 	x = mover;
