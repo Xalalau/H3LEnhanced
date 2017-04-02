@@ -183,6 +183,8 @@ void CAM_SetHu3()
 	{
 		gHUD.m_Ammo.hu3ReativarCrosshair();
 		gEngfuncs.Cvar_SetValue("cam_command", 2);
+		if (! (gHUD.m_Health.m_iHealth <= 0))
+			hu3_mensagem("Primeira pessoa", HUD_PRINTCENTER);
 		if (cam_hu3->value != 0)
 		{
 			gEngfuncs.Cvar_SetValue("cam_hu3", 0);
@@ -252,8 +254,17 @@ void DLLEXPORT CAM_Think( void )
 	// ############ hu3lifezado ############ //
 	// O player morre apenas em primeira pessoa
 	if (gHUD.m_Health.m_iHealth <= 0)
+	{
 		if (cam_thirdperson)
-			CAM_ToFirstPerson();
+		{
+			gHUD.m_Ammo.hu3ReativarCrosshair();
+			gEngfuncs.Cvar_SetValue("cam_command", 2);
+			if (cam_hu3->value != 0)
+			{
+				gEngfuncs.Cvar_SetValue("cam_hu3", 0);
+			}
+		}
+	}
 	// ############ //
 
 #ifdef LATER
