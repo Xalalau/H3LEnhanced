@@ -21,6 +21,11 @@
 
 #include "gamerules/GameRules.h"
 
+// ############ hu3lifezado ############ //
+// Entidade generica da mira em terceira pessoa
+#include "entities/weapons/CHu3XSpot.h"
+// ############ //
+
 #include "CM249.h"
 
 BEGIN_DATADESC( CM249 )
@@ -57,18 +62,56 @@ void CM249::Precache()
 	PRECACHE_SOUND( "weapons/saw_fire1.wav" );
 
 	m_usFireM249 = PRECACHE_EVENT( 1, "events/m249.sc" );
-
-	// ############ hu3lifezado ############ //
-	// Sprite da mira em terceira pessoa
-	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
-	// ############ //
 }
 
 // ############ hu3lifezado ############ //
-// Renderizacao da mira em terceira pessoa
+// Chamada do ponto de mira da terceira pessoa
 void CM249::ItemPreFrame(void)
 {
-	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+	UpdateSpot();
+}
+
+// Renderiza o ponto de mira da terceira pessoa 
+void CM249::UpdateSpot()
+{
+#ifndef CLIENT_DLL
+	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	{
+		if (!m_pLaser)
+		{
+			m_pLaser = CHu3XSpot::CreateSpot();
+		}
+
+		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
+
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
+
+		TraceResult tr;
+
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+	}
+	else if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Remove o ponto de mira da terceira pessoa 
+void CM249::RemoveSpot()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
 }
 // ############ //
 
@@ -122,6 +165,13 @@ bool CM249::Deploy()
 
 void CM249::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
+	// ############ //
+
 	SetThink( nullptr );
 
 	SendWeaponAnim( M249_HOLSTER );
@@ -347,6 +397,13 @@ void CM249::Reload()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.78;
 
 		m_flReloadEnd = UTIL_WeaponTimeBase() + 1.33;
+
+		// ############ hu3lifezado ############ //
+		// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+		RemoveSpot();
+#endif
+		// ############ //
 	}
 }
 

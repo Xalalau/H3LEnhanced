@@ -18,6 +18,12 @@
 #include "cbase.h"
 #include "entities/NPCs/Monsters.h"
 #include "Weapons.h"
+
+// ############ hu3lifezado ############ //
+// Entidade generica da mira em terceira pessoa
+#include "entities/weapons/CHu3XSpot.h"
+// ############ //
+
 #include "CShotgun.h"
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
@@ -74,18 +80,64 @@ void CShotgun::Precache( void )
 
 	m_usSingleFire = PRECACHE_EVENT( 1, "events/shotgun1.sc" );
 	m_usDoubleFire = PRECACHE_EVENT( 1, "events/shotgun2.sc" );
-
-	// ############ hu3lifezado ############ //
-	// Sprite da mira em terceira pessoa
-	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
-	// ############ //
 }
 
 // ############ hu3lifezado ############ //
-// Renderizacao da mira em terceira pessoa
+// Chamada do ponto de mira da terceira pessoa
 void CShotgun::ItemPreFrame(void)
 {
-	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+	UpdateSpot();
+}
+
+// Renderiza o ponto de mira da terceira pessoa 
+void CShotgun::UpdateSpot()
+{
+#ifndef CLIENT_DLL
+	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	{
+		if (!m_pLaser)
+		{
+			m_pLaser = CHu3XSpot::CreateSpot();
+		}
+
+		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
+
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
+
+		TraceResult tr;
+
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+	}
+	else if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Remove o ponto de mira da terceira pessoa 
+void CShotgun::RemoveSpot()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Recolha da arma
+void CShotgun::Holster()
+{
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif	
 }
 // ############ //
 
@@ -282,6 +334,13 @@ void CShotgun::Reload( void )
 
 		m_flNextReload = UTIL_WeaponTimeBase() + 0.5;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+
+		// ############ hu3lifezado ############ //
+		// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+		RemoveSpot();
+#endif
+		// ############ //
 	}
 	else
 	{
@@ -289,6 +348,13 @@ void CShotgun::Reload( void )
 		m_iClip += 1;
 		m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] -= 1;
 		m_InSpecialReload = ReloadState::DO_RELOAD_EFFECTS;
+
+		// ############ hu3lifezado ############ //
+		// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+		RemoveSpot();
+#endif
+		// ############ //
 	}
 }
 

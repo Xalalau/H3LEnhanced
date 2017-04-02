@@ -95,18 +95,18 @@ public:
 		m_fireState = data.iuser3;
 	}
 
+	// ############ hu3lifezado ############ //
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	void UpdateSpot();
+	void RemoveSpot();
+	// ############ //
+
 	CBeam				*m_pBeam;
 	CBeam				*m_pNoise;
 	CSprite				*m_pSprite;
 
 	unsigned short m_usEgonStop;
-
-	// ############ hu3lifezado ############ //
-	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
-	void ItemPreFrame(void);
-	// Sprite da mira em terceira pessoa
-	int hu3_spriteTexture;
-	// ############ //
 
 private:
 	float				m_shootTime;
@@ -114,6 +114,11 @@ private:
 	int					m_fireState;
 	float				m_shakeTime;
 	bool				m_deployed;
+
+	// ############ hu3lifezado ############ //
+	// Mira em terceira pessoa
+	CHu3XSpot* m_pLaser;
+	// ############ //
 
 	unsigned short m_usEgonFire;
 };

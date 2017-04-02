@@ -57,10 +57,10 @@ public:
 
 public:
 	// ############ hu3lifezado ############ //
-	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	// Funcoes para renderizar a mira em terceira pessoa
 	void ItemPreFrame(void);
-	// Sprite da mira em terceira pessoa
-	int hu3_spriteTexture;
+	void UpdateSpot();
+	void RemoveSpot();
 	// ############ //
 
 private:
@@ -70,6 +70,11 @@ private:
 
 	float m_flRechargeTime;
 	float m_flSoundDelay;
+
+	// ############ hu3lifezado ############ //
+	// Mira em terceira pessoa
+	CHu3XSpot* m_pLaser;
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CSHOCKRIFLE_H

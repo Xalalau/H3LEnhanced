@@ -47,15 +47,20 @@ public:
 	void WeaponIdle( void ) override;
 
 	// ############ hu3lifezado ############ //
-	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	// Funcoes para renderizar a mira em terceira pessoa
 	void ItemPreFrame(void);
-	// Sprite da mira em terceira pessoa
-	int hu3_spriteTexture;
+	void UpdateSpot();
+	void RemoveSpot();
+	void Holster() override;
 	// ############ //
 
 private:
 	int m_iShell;
 
+	// ############ hu3lifezado ############ //
+	// Mira em terceira pessoa
+	CHu3XSpot* m_pLaser;
+	// ############ //
 
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;

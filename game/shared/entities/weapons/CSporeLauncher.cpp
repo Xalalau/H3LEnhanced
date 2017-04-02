@@ -23,6 +23,11 @@
 #include "entities/weapons/CSpore.h"
 #endif
 
+// ############ hu3lifezado ############ //
+// Entidade generica da mira em terceira pessoa
+#include "entities/weapons/CHu3XSpot.h"
+// ############ //
+
 #include "CSporeLauncher.h"
 
 BEGIN_DATADESC( CSporeLauncher )
@@ -53,18 +58,56 @@ void CSporeLauncher::Precache()
 	UTIL_PrecacheOther( "spore" );
 
 	m_usFireSpore = PRECACHE_EVENT( 1, "events/spore.sc" );
-
-	// ############ hu3lifezado ############ //
-	// Sprite da mira em terceira pessoa
-	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
-	// ############ //
 }
 
 // ############ hu3lifezado ############ //
-// Renderizacao da mira em terceira pessoa
+// Chamada do ponto de mira da terceira pessoa
 void CSporeLauncher::ItemPreFrame(void)
 {
-	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+	UpdateSpot();
+}
+
+// Renderiza o ponto de mira da terceira pessoa 
+void CSporeLauncher::UpdateSpot()
+{
+#ifndef CLIENT_DLL
+	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	{
+		if (!m_pLaser)
+		{
+			m_pLaser = CHu3XSpot::CreateSpot();
+		}
+
+		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
+
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
+
+		TraceResult tr;
+
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+	}
+	else if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Remove o ponto de mira da terceira pessoa 
+void CSporeLauncher::RemoveSpot()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
 }
 // ############ //
 
@@ -104,6 +147,13 @@ bool CSporeLauncher::Deploy()
 
 void CSporeLauncher::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
+	// ############ //
+
 	m_ReloadState = ReloadState::NOT_RELOADING;
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;

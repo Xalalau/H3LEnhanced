@@ -17,6 +17,12 @@
 #include "cbase.h"
 #include "entities/NPCs/Monsters.h"
 #include "Weapons.h"
+
+// ############ hu3lifezado ############ //
+// Entidade generica da mira em terceira pessoa
+#include "entities/weapons/CHu3XSpot.h"
+// ############ //
+
 #include "CGauss.h"
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
@@ -99,18 +105,60 @@ void CGauss::Precache()
 	PRECACHE_SOUND("weapons/gauss_brasil.wav");
 	// Textura dos aneis
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");
-	// Sprite da mira em terceira pessoa
-	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
 	// ############ //
 }
 
 // ############ hu3lifezado ############ //
-// Renderizacao da mira em terceira pessoa
+// Chamada do ponto de mira da terceira pessoa
 void CGauss::ItemPreFrame(void)
 {
-	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+	UpdateSpot();
+}
+
+// Renderiza o ponto de mira da terceira pessoa 
+void CGauss::UpdateSpot()
+{
+#ifndef CLIENT_DLL
+	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	{
+		if (!m_pLaser)
+		{
+			m_pLaser = CHu3XSpot::CreateSpot();
+		}
+
+		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
+
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
+
+		TraceResult tr;
+
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+	}
+	else if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Remove o ponto de mira da terceira pessoa 
+void CGauss::RemoveSpot()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
 }
 // ############ //
+
 
 bool CGauss::AddToPlayer( CBasePlayer *pPlayer )
 {
@@ -142,6 +190,13 @@ bool CGauss::Deploy()
 
 void CGauss::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
+	// ############ //
+
 	PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict(), m_usGaussFire, 0.01, m_pPlayer->GetAbsOrigin(), m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
 	
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
@@ -166,6 +221,11 @@ void CGauss::PrimaryAttack()
 		return;
 	}
 	*/
+
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
 	// ############ //
 
 	if ( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] < AMMO_PER_PRIMARY_SHOT )

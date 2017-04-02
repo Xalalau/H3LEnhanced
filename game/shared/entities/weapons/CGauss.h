@@ -103,8 +103,10 @@ public:
 	bool m_fPrimaryFire;
 
 	// ############ hu3lifezado ############ //
-	// Funcao de CBasePlayerWeapon usada para renderizar a mira em terceira pessoa
+	// Funcoes para renderizar a mira em terceira pessoa
 	void ItemPreFrame(void);
+	void UpdateSpot();
+	void RemoveSpot();
 	// Codigo dos aneis de poder
 	void SonicAttack(int force);
 	void WriteBeamColor(int force);
@@ -113,13 +115,15 @@ public:
 	// Tamanho dos aneis
 	int m_iSpriteTextureRange;
 	// ############ //
-	// Sprite da mira em terceira pessoa
-	int hu3_spriteTexture;
-	// ############ //
 
 private:
 	unsigned short m_usGaussFire;
 	unsigned short m_usGaussSpin;
+
+	// ############ hu3lifezado ############ //
+	// Mira em terceira pessoa
+	CHu3XSpot* m_pLaser;
+	// ############ //
 
 	AttackState m_InAttack;
 };

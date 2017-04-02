@@ -80,10 +80,6 @@ void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage) { }
 int DamageDecal( CBaseEntity *pEntity, int bitsDamageType ) { return 0; }
 void DecalGunshot( TraceResult *pTrace, int iBulletType ) { }
 void EjectBrass ( const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype ) { }
-// ############ hu3lifezado ############ //
-// Funcao da mira em terceira pessoa
-void UpdateSpot(CBasePlayer * m_pPlayer, int hu3_spriteTexture) { }
-// ############ //
 void CBasePlayerAmmo::Spawn( void ) { }
 CBaseEntity* CBasePlayerAmmo::Respawn( void ) { return this; }
 void CBasePlayerAmmo::Materialize( void ) { }

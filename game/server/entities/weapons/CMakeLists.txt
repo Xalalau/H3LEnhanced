@@ -8,6 +8,8 @@ add_sources(
 	CDisplacerBall.cpp
 	CFlyingCrowbar.h
 	CFlyingCrowbar.cpp
+	CHu3XSpot.h
+	CHu3XSpot.cpp
 	CShockBeam.h
 	CShockBeam.cpp
 	CSpore.h

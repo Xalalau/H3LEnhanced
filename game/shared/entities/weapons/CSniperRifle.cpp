@@ -6,6 +6,11 @@
 #include "Weapons.h"
 #include "gamerules/GameRules.h"
 
+// ############ hu3lifezado ############ //
+// Entidade generica da mira em terceira pessoa
+#include "entities/weapons/CHu3XSpot.h"
+// ############ //
+
 #include "CSniperRifle.h"
 
 BEGIN_DATADESC( CSniperRifle )
@@ -37,18 +42,56 @@ void CSniperRifle::Precache()
 	PRECACHE_SOUND( "weapons/sniper_bolt2.wav" );
 
 	m_usSniper = PRECACHE_EVENT( 1, "events/sniper.sc" );
-
-	// ############ hu3lifezado ############ //
-	// Sprite da mira em terceira pessoa
-	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
-	// ############ //
 }
 
 // ############ hu3lifezado ############ //
-// Renderizacao da mira em terceira pessoa
+// Chamada do ponto de mira da terceira pessoa
 void CSniperRifle::ItemPreFrame(void)
 {
-	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+	UpdateSpot();
+}
+
+// Renderiza o ponto de mira da terceira pessoa 
+void CSniperRifle::UpdateSpot()
+{
+#ifndef CLIENT_DLL
+	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	{
+		if (!m_pLaser)
+		{
+			m_pLaser = CHu3XSpot::CreateSpot();
+		}
+
+		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
+
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
+
+		TraceResult tr;
+
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+	}
+	else if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Remove o ponto de mira da terceira pessoa 
+void CSniperRifle::RemoveSpot()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
 }
 // ############ //
 
@@ -85,6 +128,13 @@ bool CSniperRifle::Deploy()
 
 void CSniperRifle::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
+	// ############ //
+
 	m_fInReload = false;// cancel any reload in progress.
 
 	if( m_bInZoom )
@@ -192,6 +242,12 @@ void CSniperRifle::Reload()
 
 				m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 2.324;
 			}
+			// ############ hu3lifezado ############ //
+			// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+			RemoveSpot();
+#endif
+			// ############ //
 		}
 		else if( DefaultReload( SNIPERRIFLE_RELOAD1, 2.324, 1 ) )
 		{
@@ -203,6 +259,12 @@ void CSniperRifle::Reload()
 			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 4.102;
 			m_flReloadStart = gpGlobals->time;
 			m_bReloading = true;
+			// ############ hu3lifezado ############ //
+			// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+			RemoveSpot();
+#endif
+			// ############ //
 		}
 		else
 		{

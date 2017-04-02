@@ -17,6 +17,12 @@
 #include "cbase.h"
 #include "entities/NPCs/Monsters.h"
 #include "Weapons.h"
+
+// ############ hu3lifezado ############ //
+// Entidade generica da mira em terceira pessoa
+#include "entities/weapons/CHu3XSpot.h"
+// ############ //
+
 #include "CCrossbow.h"
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
@@ -70,16 +76,59 @@ void CCrossbow::Precache( void )
 	m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
 
 	// ############ hu3lifezado ############ //
-	// Sprite da mira em terceira pessoa
-	hu3_spriteTexture = PRECACHE_MODEL("sprites/laserdot_hu3.spr");
+	// Gambiarra braba! Dou precache da mira de terceira pessoa aqui para todas as armas. Nao achei o local certo para fazer isso... - Xalalau
+	UTIL_PrecacheOther("laser_hu3");
 	// ############ //
 }
 
 // ############ hu3lifezado ############ //
-// Renderizacao da mira em terceira pessoa
+// Chamada do ponto de mira da terceira pessoa
 void CCrossbow::ItemPreFrame(void)
 {
-	UpdateSpot(m_pPlayer, hu3_spriteTexture);
+	UpdateSpot();
+}
+
+// Renderiza o ponto de mira da terceira pessoa 
+void CCrossbow::UpdateSpot()
+{
+#ifndef CLIENT_DLL
+	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	{
+		if (!m_pLaser)
+		{
+			m_pLaser = CHu3XSpot::CreateSpot();
+		}
+
+		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
+
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
+
+		TraceResult tr;
+
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+
+		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+	}
+	else if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+
+// Remove o ponto de mira da terceira pessoa 
+void CCrossbow::RemoveSpot()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
+		m_pLaser = nullptr;
+	}
+#endif
 }
 // ############ //
 
@@ -92,6 +141,12 @@ bool CCrossbow::Deploy()
 
 void CCrossbow::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
+	// ############ //
 	m_fInReload = false;// cancel any reload in progress.
 
 	if ( m_fInZoom )
@@ -257,6 +312,13 @@ void CCrossbow::Reload( void )
 {
 	if ( m_pPlayer->GetAmmoCount( "bolts" ) <= 0 )
 		return;
+
+	// ############ hu3lifezado ############ //
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	RemoveSpot();
+#endif
+	// ############ //
 
 	if ( m_pPlayer->pev->fov != 0 )
 	{
