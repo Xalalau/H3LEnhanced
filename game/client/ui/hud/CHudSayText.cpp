@@ -219,7 +219,10 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, size_t uiBufSize, int clie
 	m_iFlags |= HUD_ACTIVE;
 	PlaySound( "misc/talk.wav", 1 );
 
-	m_iYStart = ScreenHeight - 60 - ( m_iLineHeight * (MAX_LINES+2) );
+	// ############ hu3lifezado ############ //
+	// Mensagens de chat agoram aparecem 40 unidades acima do normal
+	m_iYStart = ScreenHeight - 60 - 40 - ( m_iLineHeight * (MAX_LINES+2) );
+	// ############ //
 }
 
 void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
