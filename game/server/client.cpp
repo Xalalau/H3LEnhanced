@@ -106,8 +106,11 @@ void Host_Say( CBasePlayer* pPlayer, const bool bTeamOnly )
 		return;
 
 	//Not yet.
-	if ( pPlayer->m_flNextChatTime > gpGlobals->time )
-		 return;
+	// ############ hu3lifezado ############ //
+	// "Not yet" o cacete. O player pode escrever o quando ele quiser!
+	//if ( pPlayer->m_flNextChatTime > gpGlobals->time )
+	//	 return;
+	// ############ //
 
 	if ( !stricmp( pcmd, cpSay) || !stricmp( pcmd, cpSayTeam ) )
 	{
