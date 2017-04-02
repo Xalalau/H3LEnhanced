@@ -158,6 +158,15 @@ void CFuncParent::Spawn()
 	SetAbsOrigin(GetAbsOrigin());
 	SetModel(STRING(pev->model));
 
+	// Pego o vetor da posicao atual
+	m_vecPosition1 = GetAbsOrigin();
+
+	// Calculo o vetor deslocamento (creditos para a Valve):
+	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
+	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
+
+	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
+
 	// Deixo o interior de LinearMoveDone() acessivel
 	blockThink = false;
 }
@@ -165,35 +174,39 @@ void CFuncParent::Spawn()
 void CFuncParent::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
 	// Movimento do func_parent
-	LinearMove(pev, SetMoveVector(pev), speed);
+	LinearMove(pev, m_vecPosition2, speed);
 	// Movimento dos parents
-	ProcessMovement(parent01, parent01_name);
-	ProcessMovement(parent02, parent02_name);
-	ProcessMovement(parent03, parent03_name);
-	ProcessMovement(parent04, parent04_name);
-	ProcessMovement(parent05, parent05_name);
-	ProcessMovement(parent06, parent06_name);
-	ProcessMovement(parent07, parent07_name);
-	ProcessMovement(parent08, parent08_name);
-	ProcessMovement(parent09, parent09_name);
-	ProcessMovement(parent10, parent10_name);
-	ProcessMovement(parent11, parent11_name);
-	ProcessMovement(parent12, parent12_name);
-	ProcessMovement(parent13, parent13_name);
-	ProcessMovement(parent14, parent14_name);
-	ProcessMovement(parent15, parent15_name);
-	ProcessMovement(parent16, parent16_name);
+	parent01 = ProcessMovement(parent01, parent01_name);
+	parent02 = ProcessMovement(parent02, parent02_name);
+	parent03 = ProcessMovement(parent03, parent03_name);
+	parent04 = ProcessMovement(parent04, parent04_name);
+	parent05 = ProcessMovement(parent05, parent05_name);
+	parent06 = ProcessMovement(parent06, parent06_name);
+	parent07 = ProcessMovement(parent07, parent07_name);
+	parent08 = ProcessMovement(parent08, parent08_name);
+	parent09 = ProcessMovement(parent09, parent09_name);
+	parent10 = ProcessMovement(parent10, parent10_name);
+	parent11 = ProcessMovement(parent11, parent11_name);
+	parent12 = ProcessMovement(parent12, parent12_name);
+	parent13 = ProcessMovement(parent13, parent13_name);
+	parent14 = ProcessMovement(parent14, parent14_name);
+	parent15 = ProcessMovement(parent15, parent15_name);
+	parent16 = ProcessMovement(parent16, parent16_name);
 }
 
 // Coordena as configuracoes e chamadas de movimento (eh a principal)
-void CFuncParent::ProcessMovement(entvars_t *parent, string_t targetName)
+entvars_t* CFuncParent::ProcessMovement(entvars_t *parent, string_t targetName)
 {
 	parent = SetEntVars_t(targetName);
 	if (parent != NULL)
 	{
 		parent->movetype = MOVETYPE_PUSH;
-		LinearMove(parent, SetMoveVector(parent), speed);
+		LinearMove(parent, m_vecPosition2, speed);
+
+		return parent;
 	}
+
+	return nullptr;
 }
 
 // Encontra entidades no mapa
@@ -209,31 +222,11 @@ entvars_t * CFuncParent::SetEntVars_t(string_t targetName)
 		return &pentTarget->v;
 }
 
-// Define o vetor de deslocamento
-Vector CFuncParent::SetMoveVector(entvars_t *entity)
-{
-	// Pego o vetor da posicao atual
-	m_vecPosition1 = GetAbsOrigin();
-
-	// Acerto a direcao do movimento:
-	if (entity != pev)
-		entity->movedir = pev->movedir;
-
-	// Calculo o vetor deslocamento (creditos para a Valve):
-	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
-	
-	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
-
-	return m_vecPosition2;
-}
-
 // Efetivamente move as entidades
 void CFuncParent::LinearMove(entvars_t *entity, Vector vecDest, float flSpeed)
 {
-	ASSERTSZ(flSpeed != 0, "LinearMove:  no speed is defined!");
-
 	// Ja chegou?
+	ASSERTSZ(flSpeed != 0, "LinearMove:  no speed is defined!");
 	if (vecDest == entity->origin)
 		return;
 
@@ -259,9 +252,57 @@ void CFuncParent::LinearMoveDone(void)
 {
 	if (!blockThink)
 	{
-		// Paro a entidade
+		// Paro a entidade e todos os parents
 		if (pev->velocity > 0)
 			pev->velocity = 0;
+		if (parent01)
+			if (parent01->velocity > 0)
+					parent01->velocity = 0;
+		if (parent02)
+			if (parent02->velocity > 0)
+				parent02->velocity = 0;
+		if (parent03)
+			if (parent03->velocity > 0)
+				parent03->velocity = 0;
+		if (parent04)
+			if (parent04->velocity > 0)
+				parent04->velocity = 0;
+		if (parent05)
+			if (parent05->velocity > 0)
+				parent05->velocity = 0;
+		if (parent06)
+			if (parent06->velocity > 0)
+				parent06->velocity = 0;
+		if (parent07)
+			if (parent07->velocity > 0)
+				parent07->velocity = 0;
+		if (parent08)
+			if (parent08->velocity > 0)
+				parent08->velocity = 0;
+		if (parent09)
+			if (parent09->velocity > 0)
+				parent09->velocity = 0;
+		if (parent10)
+			if (parent10->velocity > 0)
+				parent10->velocity = 0;
+		if (parent11)
+			if (parent11->velocity > 0)
+				parent11->velocity = 0;
+		if (parent12)
+			if (parent12->velocity > 0)
+				parent12->velocity = 0;
+		if (parent13)
+			if (parent13->velocity > 0)
+				parent13->velocity = 0;
+		if (parent14)
+			if (parent14->velocity > 0)
+				parent14->velocity = 0;
+		if (parent15)
+			if (parent15->velocity > 0)
+				parent15->velocity = 0;
+		if (parent16)
+			if (parent16->velocity > 0)
+				parent16->velocity = 0;
 
 		// Verifico se ela ja pode iniciar a proxima entidade (target)
 		if (pev->ltime > parent_time)

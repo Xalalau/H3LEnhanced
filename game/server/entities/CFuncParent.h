@@ -26,8 +26,7 @@ public:
 	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value) override;
 
 	entvars_t * SetEntVars_t(string_t parent01_nome);
-	void ProcessMovement(entvars_t *parent, string_t targetName);
-	Vector SetMoveVector(entvars_t *entity);
+	entvars_t * ProcessMovement(entvars_t *parent, string_t targetName);
 	void LinearMove(entvars_t *entity, Vector vecDest, float flSpeed);
 	void LinearMoveDone(void);
 
