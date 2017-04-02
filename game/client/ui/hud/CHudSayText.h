@@ -20,7 +20,10 @@ struct cvar_t;
 class CHudSayText : public CHudBase
 {
 private:
-	static const size_t MAX_LINES = 5;
+	// ############ hu3lifezado ############ //
+	// Numero de linhas aumentado de 5 para 8
+	static const size_t MAX_LINES = 8;
+	// ############ //
 	/**
 	*	it can be less than this, depending on char size
 	*/
