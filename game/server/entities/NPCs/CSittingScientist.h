@@ -40,7 +40,7 @@ public:
 	void  Precache( void ) override;
 
 	void SittingThink( void );
-	int	Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 
 	virtual void SetAnswerQuestion( CTalkMonster *pSpeaker ) override;
 	int FriendNumber( int arrayNumber ) const override;

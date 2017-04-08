@@ -15,19 +15,26 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDBATTERY_H
 #define GAME_CLIENT_UI_HUD_CHUDBATTERY_H
 
-class CHudBattery : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudBattery : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init()  override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudBattery, CBaseHudElement<CHLHud> );
+
+	CHudBattery( const char* const pszName, CHLHud& hud );
+
+	void Init()  override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
-	int MsgFunc_Battery( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Battery( const char *pszName, int iSize, void *pbuf );
 
 private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
-	wrect_t *m_prc1;
-	wrect_t *m_prc2;
+	const wrect_t *m_prc1;
+	const wrect_t *m_prc2;
 	int	  m_iBat;
 	int	  m_iBatMax;
 	float m_fFade;

@@ -23,8 +23,8 @@ class CDeadScientist : public CBaseMonster
 public:
 	DECLARE_CLASS( CDeadScientist, CBaseMonster );
 
-	void Spawn( void ) override;
-	int	Classify( void ) override { return	CLASS_HUMAN_PASSIVE; }
+	void Spawn() override;
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE ); }
 
 	void KeyValue( KeyValueData *pkvd ) override;
 	int	m_iPose;// which sequence to display

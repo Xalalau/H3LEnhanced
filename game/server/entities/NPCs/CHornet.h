@@ -38,8 +38,8 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	int	 Classify ( void ) override;
-	int  IRelationship ( CBaseEntity *pTarget ) override;
+	EntityClassification_t GetClassification() override;
+	Relationship IRelationship( CBaseEntity *pTarget ) override;
 
 	void IgniteTrail( void );
 	void StartTrack ( void );

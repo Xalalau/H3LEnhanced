@@ -39,7 +39,7 @@ void CPathCorner::Touch( CBaseEntity *pOther )
 	}
 
 	// If OTHER isn't explicitly looking for this path_corner, bail out
-	if( pOther->m_pGoalEnt != this )
+	if( pOther->m_hGoalEnt != this )
 	{
 		return;
 	}
@@ -62,16 +62,16 @@ void CPathCorner::Touch( CBaseEntity *pOther )
 		ALERT( at_warning, "PathCornerTouch: no next stop specified" );
 	}
 
-	pOther->m_pGoalEnt = UTIL_FindEntityByTargetname( nullptr, GetTarget() );
+	pOther->m_hGoalEnt = UTIL_FindEntityByTargetname( nullptr, GetTarget() );
 
 	// If "next spot" was not found (does not exist - level design error)
-	if( !pOther->m_pGoalEnt )
+	if( !pOther->m_hGoalEnt )
 	{
 		ALERT( at_console, "PathCornerTouch--%s couldn't find next stop in path: %s", GetClassname(), GetTarget() );
 		return;
 	}
 
 	// Turn towards the next stop in the path.
-	pOther->pev->ideal_yaw = UTIL_VecToYaw( pOther->m_pGoalEnt->GetAbsOrigin() - pOther->GetAbsOrigin() );
+	pOther->pev->ideal_yaw = UTIL_VecToYaw( pOther->m_hGoalEnt->GetAbsOrigin() - pOther->GetAbsOrigin() );
 }
 #endif

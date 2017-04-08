@@ -74,13 +74,12 @@ class VoiceImagePanel : public vgui::ImagePanel
 };
 
 
-class CVoiceStatus : public CHudBase, public vgui::CDefaultInputSignal
+class CVoiceStatus : public vgui::CDefaultInputSignal
 {
 public:
 				CVoiceStatus();
 	virtual		~CVoiceStatus();
 
-// CHudBase overrides.
 public:
 	
 	// Initialize the cl_dll's voice manager.
@@ -89,7 +88,7 @@ public:
 		vgui::Panel **pParentPanel);
 	
 	// ackPosition is the bottom position of where CVoiceStatus will draw the voice acknowledgement labels.
-	virtual bool VidInit() override;
+	virtual bool VidInit();
 
 
 public:
@@ -110,10 +109,10 @@ public:
 	void	CreateEntities();
 
 	// Called when the server registers a change to who this client can hear.
-	void	HandleVoiceMaskMsg(int iSize, void *pbuf);
+	void	MsgFunc_VoiceMask( const char* pszName, int iSize, void *pbuf);
 
 	// The server sends this message initially to tell the client to send their state.
-	void	HandleReqStateMsg(int iSize, void *pbuf);
+	void	MsgFunc_ReqState( const char* pszName, int iSize, void *pbuf);
 
 
 // Squelch mode functions.

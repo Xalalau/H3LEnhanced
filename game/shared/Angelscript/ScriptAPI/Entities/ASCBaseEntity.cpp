@@ -1,3 +1,5 @@
+#include <type_traits>
+
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -331,34 +333,6 @@ static void RegisterScriptUSE_TYPE( asIScriptEngine& engine )
 }
 
 /**
-*	Class name for Classification in scripts.
-*/
-#define AS_CLASSIFICATION_NAME "Classification"
-
-static void RegisterScriptClassification( asIScriptEngine& engine )
-{
-	const char* const pszObjectName = AS_CLASSIFICATION_NAME;
-
-	engine.RegisterEnum( pszObjectName );
-
-	engine.RegisterEnumValue( pszObjectName, "CLASS_NONE", CLASS_NONE );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_MACHINE", CLASS_MACHINE );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_PLAYER", CLASS_PLAYER );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_HUMAN_PASSIVE", CLASS_HUMAN_PASSIVE );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_HUMAN_MILITARY", CLASS_HUMAN_MILITARY );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_ALIEN_MILITARY", CLASS_ALIEN_MILITARY );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_ALIEN_PASSIVE", CLASS_ALIEN_PASSIVE );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_ALIEN_MONSTER", CLASS_ALIEN_MONSTER );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_ALIEN_PREY", CLASS_ALIEN_PREY );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_ALIEN_PREDATOR", CLASS_ALIEN_PREDATOR );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_INSECT", CLASS_INSECT );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_PLAYER_ALLY", CLASS_PLAYER_ALLY );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_PLAYER_BIOWEAPON", CLASS_PLAYER_BIOWEAPON );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_ALIEN_BIOWEAPON", CLASS_ALIEN_BIOWEAPON );
-	engine.RegisterEnumValue( pszObjectName, "CLASS_IGNORE", CLASS_IGNORE );
-}
-
-/**
 *	Class name for BloodColor in scripts.
 */
 #define AS_BLOODCOLOR_NAME "BloodColor"
@@ -678,6 +652,10 @@ void RegisterScriptEntityDependencies( asIScriptEngine& engine )
 		engine.RegisterObjectType( pszName, 0, asOBJ_REF | asOBJ_NOCOUNT );
 	}
 
+	static_assert( std::is_same<uint32_t, EntityClassification_t>::value, "Update EntityClassification_t for Angelscript" );
+
+	engine.RegisterTypedef( "EntityClassification_t", "uint32" );
+
 	RegisterScriptFixAngleMode( engine );
 	RegisterScriptMoveType( engine );
 	RegisterScriptSolid( engine );
@@ -691,7 +669,6 @@ void RegisterScriptEntityDependencies( asIScriptEngine& engine )
 	RegisterScriptKeyValueData( engine );
 	RegisterScriptFCapability( engine );
 	RegisterScriptUSE_TYPE( engine );
-	RegisterScriptClassification( engine );
 	RegisterScriptBloodColor( engine );
 	RegisterScriptCTakeDamageInfo( engine );
 	RegisterScriptTraceResult( engine );

@@ -179,9 +179,9 @@ void CSittingScientist::SittingThink( void )
 //=========================================================
 // ID as a passive human
 //=========================================================
-int	CSittingScientist::Classify( void )
+EntityClassification_t CSittingScientist::GetClassification()
 {
-	return	CLASS_HUMAN_PASSIVE;
+	return EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE );
 }
 
 // prepare sitting scientist to answer a question
@@ -223,7 +223,7 @@ bool CSittingScientist::FIdleSpeak()
 
 	if( pentFriend && RANDOM_LONG( 0, 1 ) )
 	{
-		CTalkMonster *pTalkMonster = GetClassPtr( ( CTalkMonster * ) pentFriend->pev );
+		auto pTalkMonster = static_cast<CTalkMonster*>( pentFriend );
 		pTalkMonster->SetAnswerQuestion( this );
 
 		IdleHeadTurn( pentFriend->GetAbsOrigin() );

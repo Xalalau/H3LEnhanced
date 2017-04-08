@@ -338,3 +338,11 @@ void CHornetGun::WeaponIdle( void )
 	}
 	SendWeaponAnim( iAnim );
 }
+
+void CHornetGun::WeaponHolsterPreFrame()
+{
+	BaseClass::WeaponHolsterPreFrame();
+
+	//Reload in the background when holstered. - Solokiller
+	Reload();
+}

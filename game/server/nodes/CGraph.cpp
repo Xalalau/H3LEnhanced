@@ -135,8 +135,13 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 
 	if ( !pevLinkEnt )
 		return nullptr;
+
+	auto pLinkEnt = CBaseEntity::Instance( pevLinkEnt );
+
+	if( !pLinkEnt )
+		return nullptr;
 			
-	if ( FClassnameIs ( pevLinkEnt, "func_door" ) || FClassnameIs ( pevLinkEnt, "func_door_rotating" ) )
+	if ( pLinkEnt->ClassnameIs( "func_door" ) || pLinkEnt->ClassnameIs( "func_door_rotating" ) )
 	{
 
 		///!!!UNDONE - check for TOGGLE or STAY open doors here. If a door is in the way, and is 
@@ -152,7 +157,7 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 		TraceResult	tr;
 
 		// find the button or trigger
-		while( (pSearch = UTIL_FindEntityByTarget( pSearch, STRING( pevLinkEnt->targetname ) )) )
+		while( (pSearch = UTIL_FindEntityByTarget( pSearch, pLinkEnt->GetTargetname() )) )
 		{		
 			if ( pSearch->ClassnameIs( "func_button" ) || pSearch->ClassnameIs( "func_rot_button" ) )
 			{// only buttons are handled right now. 
@@ -179,7 +184,7 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 	}
 	else
 	{
-		ALERT ( at_aiconsole, "Unsupported PathEnt:\n'%s'\n", STRING ( pevLinkEnt->classname ) );
+		ALERT ( at_aiconsole, "Unsupported PathEnt:\n'%s'\n", pLinkEnt->GetClassname() );
 		return NULL;
 	}
 }
@@ -204,11 +209,19 @@ bool CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NOD
 		return true;
 	}
 
+	auto pLinkEnt = CBaseEntity::Instance( pevLinkEnt );
+
+	if( FNullEnt( pLinkEnt ) )
+	{
+		ALERT( at_aiconsole, "dead path ent!\n" );
+		return true;
+	}
+
 // func_door
-	if ( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
+	if ( pLinkEnt->ClassnameIs( "func_door" ) || pLinkEnt->ClassnameIs( "func_door_rotating" ) )
 	{
 		// ent is a door.
-		CBaseToggle* pDoor = static_cast<CBaseToggle*>( CBaseEntity::Instance( pevLinkEnt ) );
+		CBaseToggle* pDoor = static_cast<CBaseToggle*>( pLinkEnt );
 
 		if ( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) ) 
 		{// door is use only.
@@ -246,13 +259,13 @@ bool CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NOD
 		}
 	}
 // func_breakable	
-	else if ( FClassnameIs( pevLinkEnt, "func_breakable" ) && queryType == NODEGRAPH_STATIC )
+	else if ( pLinkEnt->ClassnameIs( "func_breakable" ) && queryType == NODEGRAPH_STATIC )
 	{
 		return true;
 	}
 	else
 	{
-		ALERT ( at_aiconsole, "Unhandled Ent in Path %s\n", STRING( pevLinkEnt->classname ) );
+		ALERT ( at_aiconsole, "Unhandled Ent in Path %s\n", pLinkEnt->GetClassname() );
 		return false;
 	}
 
@@ -1193,8 +1206,8 @@ int CGraph :: LinkVisibleNodes ( CLink *pLinkPool, FILE *file, int *piBadNode )
 			}
 #endif
 
-			tr.pHit = NULL;// clear every time so we don't get stuck with last trace's hit ent
-			pTraceEnt = 0;
+			tr.pHit = nullptr;// clear every time so we don't get stuck with last trace's hit ent
+			pTraceEnt = nullptr;
 
 			UTIL_TraceLine ( m_pNodes[ i ].m_vecOrigin,
 							 m_pNodes[ j ].m_vecOrigin,
@@ -1217,18 +1230,19 @@ int CGraph :: LinkVisibleNodes ( CLink *pLinkPool, FILE *file, int *piBadNode )
 								 g_pBodyQueueHead->edict(),//!!!HACKHACK no real ent to supply here, using a global we don't care about
 								 &tr );
 
+				auto pHitBaseEnt = CBaseEntity::Instance( tr.pHit );
 				
 // there is a solid_bsp ent in the way of these two nodes, so we must record several things about in order to keep
 // track of it in the pathfinding code, as well as through save and restore of the node graph. ANY data that is manipulated 
 // as part of the process of adding a LINKENT to a connection here must also be done in CGraph::SetGraphPointers, where reloaded
 // graphs are prepared for use.
-				if ( tr.pHit == pTraceEnt && !FClassnameIs( tr.pHit, "worldspawn" ) )
+				if ( tr.pHit == pTraceEnt && !pHitBaseEnt->ClassnameIs( "worldspawn" ) )
 				{
 					// get a pointer
 					pLinkPool [ cTotalLinks ].m_pLinkEnt = VARS( tr.pHit );
 
 					// record the modelname, so that we can save/load node trees
-					memcpy( pLinkPool [ cTotalLinks ].m_szLinkEntModelname, STRING( VARS(tr.pHit)->model ), 4 );
+					memcpy( pLinkPool [ cTotalLinks ].m_szLinkEntModelname, pHitBaseEnt->GetModelName(), 4 );
 
 					// set the flag for this ent that indicates that it is attached to the world graph
 					// if this ent is removed from the world, it must also be removed from the connections
@@ -1249,8 +1263,11 @@ int CGraph :: LinkVisibleNodes ( CLink *pLinkPool, FILE *file, int *piBadNode )
 				fprintf ( file, "%4d", j );
 
 				if ( !FNullEnt( pLinkPool[ cTotalLinks ].m_pLinkEnt ) )
-				{// record info about the ent in the way, if any.
-					fprintf ( file, "  Entity on connection: %s, name: %s  Model: %s", STRING( VARS( pTraceEnt )->classname ), STRING ( VARS( pTraceEnt )->targetname ), STRING ( VARS(tr.pHit)->model ) );
+				{
+					// record info about the ent in the way, if any.
+					auto pTargetBaseEnt = GET_PRIVATE( pTraceEnt );
+					auto pHitBaseEnt = GET_PRIVATE( tr.pHit );
+					fprintf ( file, "  Entity on connection: %s, name: %s  Model: %s", pTargetBaseEnt->GetClassname(), pTargetBaseEnt->GetTargetname(), pHitBaseEnt->GetModelName() );
 				}
 				
 				fprintf ( file, "\n" );

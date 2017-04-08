@@ -163,7 +163,7 @@ void CLeech::SwitchLeechState( void )
 	}
 }
 
-int CLeech::IRelationship( CBaseEntity *pTarget )
+Relationship CLeech::IRelationship( CBaseEntity *pTarget )
 {
 	if ( pTarget->IsPlayer() )
 		return R_DL;

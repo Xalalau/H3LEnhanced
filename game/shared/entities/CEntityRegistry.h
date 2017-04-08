@@ -85,7 +85,7 @@ public:
 		// allocate private data 
 		CBaseEntity* pEntity = new( pev ) T;
 		pEntity->pev = pev;
-		pev->classname = MAKE_STRING( GetEntityname() );
+		pEntity->SetClassname( GetEntityname() );
 		//Now calls OnCreate - Solokiller
 		pEntity->OnCreate();
 

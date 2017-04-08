@@ -135,7 +135,7 @@ void CMultiManager::ManagerThink( void )
 
 CMultiManager *CMultiManager::Clone( void )
 {
-	CMultiManager *pMulti = GetClassPtr( ( CMultiManager * ) NULL );
+	auto pMulti = static_cast<CMultiManager*>( UTIL_CreateNamedEntity( "multi_manager" ) );
 
 	edict_t *pEdict = pMulti->pev->pContainingEntity;
 	memcpy( pMulti->pev, pev, sizeof( *pev ) );

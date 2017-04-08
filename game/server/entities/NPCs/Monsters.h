@@ -16,6 +16,7 @@
 #define GAME_SERVER_ENTITIES_NPCS_MONSTERS_H
 
 #include "Skill.h"
+#include "Relationship.h"
 
 /*
 
@@ -209,42 +210,6 @@ void EjectBrass( const Vector& vecOrigin, const Vector& vecVelocity, float rotat
 *	TODO: implementation is disabled. - Solokiller
 */
 void ExplodeModel( const Vector& vecOrigin, float speed, int model, int count );
-
-/**
-*	Monster to monster relationship types.
-*/
-enum Relationship
-{
-	/**
-	*	(ALLY) pals. Good alternative to R_NO when applicable.
-	*/
-	R_AL	= -2,
-
-	/**
-	*	(FEAR)will run.
-	*/
-	R_FR	= -1,
-
-	/**
-	*	(NO RELATIONSHIP) disregard.
-	*/
-	R_NO	= 0,
-
-	/**
-	*	(DISLIKE) will attack.
-	*/
-	R_DL	= 1,
-
-	/**
-	*	(HATE) will attack this character instead of any visible DISLIKEd characters.
-	*/
-	R_HT	= 2,
-
-	/**
-	*	(NEMESIS)  A monster Will ALWAYS attack its nemsis, no matter what.
-	*/
-	R_NM	= 3,
-};
 
 /**
 *	These bits represent the monster's memory.

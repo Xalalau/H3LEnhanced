@@ -214,6 +214,13 @@ bool CSave::WriteFields( const char *pname, void *pBaseData, const TYPEDESCRIPTI
 				case FIELD_EHANDLE:
 					entityArray[ j ] = EntityIndex( ( CBaseEntity * ) ( ( ( EHANDLE * ) pOutputData )[ j ] ) );
 					break;
+
+				default:
+					{
+						//This can only happen if the case statements in the outer switch aren't in sync with the inner one.
+						ALERT( at_error, "Unsupported field type for entity array! Did you forget to update the switch statement?\n" );
+						break;
+					}
 				}
 			}
 			WriteInt( pTest->fieldName, entityArray, pTest->fieldSize );

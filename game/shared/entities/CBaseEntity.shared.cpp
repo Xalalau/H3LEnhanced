@@ -24,7 +24,7 @@
 
 // Global Savedata for Delay
 BEGIN_DATADESC_NOBASE( CBaseEntity )
-	DEFINE_FIELD( m_pGoalEnt, FIELD_CLASSPTR ),
+	DEFINE_FIELD( m_hGoalEnt, FIELD_EHANDLE ),
 	
 	DEFINE_FIELD( m_pfnThink, FIELD_FUNCPTR ),		// UNDONE: Build table of these!!!
 	DEFINE_FIELD( m_pfnTouch, FIELD_FUNCPTR ),
@@ -253,6 +253,17 @@ BEGIN_DATADESC( CBasePlayer )
 	//DEFINE_FIELD( m_fOnTarget, FIELD_BOOLEAN ), // Don't need to restore
 	//DEFINE_FIELD( m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 END_DATADESC()
+
+void CBaseEntity::KeyValue( KeyValueData* pkvd )
+{
+	if( FStrEq( "classificationOverride", pkvd->szKeyName ) )
+	{
+		SetClassificationOverride( EntityClassifications().GetClassificationId( pkvd->szValue ) );
+		pkvd->fHandled = true;
+	}
+	else
+		pkvd->fHandled = false;
+}
 
 void CBaseEntity::TakeDamage( const CTakeDamageInfo& info )
 {

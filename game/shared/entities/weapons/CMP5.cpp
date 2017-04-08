@@ -42,7 +42,7 @@ CMP5::CMP5()
 //=========================================================
 void CMP5::Spawn( )
 {
-	pev->classname = MAKE_STRING("weapon_9mmAR"); // hack to allow for old names
+	SetClassname("weapon_9mmAR"); // hack to allow for old names
 	Precache( );
 	SetModel( "models/w_9mmAR.mdl");
 

@@ -58,7 +58,7 @@ public:
 	void Precache( void ) override;
 	void SetYawSpeed( void ) override;
 	int  ISoundMask( void ) override;
-	int  Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	void IdleSound( void ) override;
 	void PainSound( void ) override;
@@ -75,7 +75,7 @@ public:
 	Schedule_t *GetSchedule( void ) override;
 	Schedule_t *GetScheduleOfType( int Type ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
-	int IRelationship( CBaseEntity *pTarget ) override;
+	Relationship IRelationship( CBaseEntity *pTarget ) override;
 	int IgnoreConditions( void ) override;
 	MONSTERSTATE GetIdealState( void ) override;
 

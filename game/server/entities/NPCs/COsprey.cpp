@@ -25,7 +25,6 @@
 #include "COsprey.h"
 
 BEGIN_DATADESC(	COsprey )
-	DEFINE_FIELD( m_pGoalEnt, FIELD_CLASSPTR ),
 	DEFINE_FIELD( m_vel1, FIELD_VECTOR ),
 	DEFINE_FIELD( m_vel2, FIELD_VECTOR ),
 	DEFINE_FIELD( m_pos1, FIELD_POSITION_VECTOR ),
@@ -271,18 +270,18 @@ void COsprey :: HoverThink( void )
 
 void COsprey::UpdateGoal( )
 {
-	if (m_pGoalEnt)
+	if ( m_hGoalEnt )
 	{
 		m_pos1 = m_pos2;
 		m_ang1 = m_ang2;
 		m_vel1 = m_vel2;
-		m_pos2 = m_pGoalEnt->GetAbsOrigin();
-		m_ang2 = m_pGoalEnt->pev->angles;
+		m_pos2 = m_hGoalEnt->GetAbsOrigin();
+		m_ang2 = m_hGoalEnt->pev->angles;
 		UTIL_MakeAimVectors( Vector( 0, m_ang2.y, 0 ) );
-		m_vel2 = gpGlobals->v_forward * m_pGoalEnt->pev->speed;
+		m_vel2 = gpGlobals->v_forward * m_hGoalEnt->pev->speed;
 
 		m_startTime = m_startTime + m_dTime;
-		m_dTime = 2.0 * (m_pos1 - m_pos2).Length() / (m_vel1.Length() + m_pGoalEnt->pev->speed);
+		m_dTime = 2.0 * (m_pos1 - m_pos2).Length() / (m_vel1.Length() + m_hGoalEnt->pev->speed);
 
 		if (m_ang1.y - m_ang2.y < -180)
 		{
@@ -305,23 +304,23 @@ void COsprey::FlyThink( void )
 	StudioFrameAdvance( );
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	if ( m_pGoalEnt == NULL && HasTarget() )// this monster has a target
+	if ( m_hGoalEnt == NULL && HasTarget() )// this monster has a target
 	{
-		m_pGoalEnt = UTIL_FindEntityByTargetname( nullptr, GetTarget() );
+		m_hGoalEnt = UTIL_FindEntityByTargetname( nullptr, GetTarget() );
 		UpdateGoal( );
 	}
 
 	if (gpGlobals->time > m_startTime + m_dTime)
 	{
-		if (m_pGoalEnt->pev->speed == 0)
+		if ( m_hGoalEnt->pev->speed == 0)
 		{
 			SetThink( &COsprey::DeployThink );
 		}
 		do
 		{
-			m_pGoalEnt = UTIL_FindEntityByTargetname( nullptr, m_pGoalEnt->GetTarget() );
+			m_hGoalEnt = UTIL_FindEntityByTargetname( nullptr, m_hGoalEnt->GetTarget() );
 		}
-		while( m_pGoalEnt->pev->speed < 400 && !HasDead() );
+		while( m_hGoalEnt->pev->speed < 400 && !HasDead() );
 		UpdateGoal( );
 	}
 
@@ -605,7 +604,7 @@ void COsprey :: DyingThink( void )
 
 		EMIT_SOUND( this, CHAN_STATIC, "weapons/mortarhit.wav", 1.0, 0.3);
 
-		RadiusDamage( GetAbsOrigin(), this, this, 300, CLASS_NONE, DMG_BLAST );
+		RadiusDamage( GetAbsOrigin(), this, this, 300, EntityClassifications().GetNoneId(), DMG_BLAST );
 
 		// gibs
 		vecSpot = GetAbsOrigin() + (pev->mins + pev->maxs) * 0.5;

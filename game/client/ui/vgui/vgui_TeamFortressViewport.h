@@ -24,26 +24,19 @@
 
 #include "CImageLabel.h"
 
+#include "vgui_defaultinputsignal.h"
 // custom scheme handling
 #include "vgui_SchemeManager.h"
 
-#define TF_DEFS_ONLY
-#ifdef _TFC
-#include "../tfc/tf_defs.h"
-#else
-//TODO: these constants are defined in StudioModelRenderer as well, but this one was incorrect. This should really be cleaned up - Solokiller
-#define PC_LASTCLASS 12
-#define PC_UNDEFINED 0
-#define MENU_DEFAULT				1
-#define MENU_TEAM 					2
-#define MENU_CLASS 					3
-#define MENU_MAPBRIEFING			4
-#define MENU_INTRO 					5
-#define MENU_CLASSHELP				6
-#define MENU_CLASSHELP2 			7
-#define MENU_REPEATHELP 			8
-#define MENU_SPECHELP				9
-#endif
+#include "CHudHealth.h"
+#include "CHudSpectator.h"
+
+#include "vgui_CommandButton.h"
+#include "vgui_CommandLabel.h"
+#include "vgui_MenuPanel.h"
+
+#include "vgui_Defs.h"
+
 using namespace vgui;
 
 class Cursor;
@@ -63,148 +56,11 @@ class TeamFortressViewport;
 
 char* GetVGUITGAName(const char *pszName);
 BitmapTGA *LoadTGAForRes(const char* pImageName);
-void ScaleColors( int &r, int &g, int &b, int a );
-extern const char* const sTFClassSelection[];
-extern int sTFValidClassInts[];
-extern const char* const sLocalisedClasses[];
-extern int iTeamColors[5][3];
-extern int iNumberOfTeamColors;
 extern TeamFortressViewport *gViewPort;
-
-
-// Command Menu positions 
-#define MAX_MENUS				80
-#define MAX_BUTTONS				100
-
-#define BUTTON_SIZE_Y			YRES(30)
-#define CMENU_SIZE_X			XRES(160)
-
-#define SUBMENU_SIZE_X			(CMENU_SIZE_X / 8)
-#define SUBMENU_SIZE_Y			(BUTTON_SIZE_Y / 6)
-
-#define CMENU_TOP				(BUTTON_SIZE_Y * 4)
-
-//#define MAX_TEAMNAME_SIZE		64
-#define MAX_BUTTON_SIZE			32
-
-// Map Briefing Window
-#define MAPBRIEF_INDENT			30
-
-// Team Menu
-#define TMENU_INDENT_X			(30 * ((float)ScreenHeight / 640))
-#define TMENU_HEADER			100
-#define TMENU_SIZE_X			(ScreenWidth - (TMENU_INDENT_X * 2))
-#define TMENU_SIZE_Y			(TMENU_HEADER + BUTTON_SIZE_Y * 7)
-#define TMENU_PLAYER_INDENT		(((float)TMENU_SIZE_X / 3) * 2)
-#define TMENU_INDENT_Y			(((float)ScreenHeight - TMENU_SIZE_Y) / 2)
-
-// Class Menu
-#define CLMENU_INDENT_X			(30 * ((float)ScreenHeight / 640))
-#define CLMENU_HEADER			100
-#define CLMENU_SIZE_X			(ScreenWidth - (CLMENU_INDENT_X * 2))
-#define CLMENU_SIZE_Y			(CLMENU_HEADER + BUTTON_SIZE_Y * 11)
-#define CLMENU_PLAYER_INDENT	(((float)CLMENU_SIZE_X / 3) * 2)
-#define CLMENU_INDENT_Y			(((float)ScreenHeight - CLMENU_SIZE_Y) / 2)
-
-// Arrows
-enum
-{
-	ARROW_UP,
-	ARROW_DOWN,
-	ARROW_LEFT,
-	ARROW_RIGHT,
-};
 
 //==============================================================================
 // VIEWPORT PIECES
 //============================================================
-// Command Label
-// Overridden label so we can darken it when submenus open
-class CommandLabel : public Label
-{
-private:
-	int		m_iState;
-
-public:
-	CommandLabel(const char* text,int x,int y,int wide,int tall) : Label(text,x,y,wide,tall)
-	{
-		m_iState = false;
-	}
-
-	void PushUp()
-	{
-		m_iState = false;
-		repaint();
-	}
-
-	void PushDown()
-	{
-		m_iState = true;
-		repaint();
-	}
-};
-
-//============================================================
-// Command Buttons
-class CommandButton : public Button
-{
-private:
-	int		m_iPlayerClass;
-	bool	m_bFlat;
-
-	// Submenus under this button
-	CCommandMenu *m_pSubMenu;
-	CCommandMenu *m_pParentMenu;
-	CommandLabel *m_pSubLabel;
-
-	char m_sMainText[MAX_BUTTON_SIZE];
-	char m_cBoundKey;
-
-	SchemeHandle_t m_hTextScheme;
-
-	void RecalculateText( void );
-
-public:
-	bool	m_bNoHighlight;
-
-public:
-	CommandButton(const char* text,int x,int y,int wide,int tall, bool bNoHighlight, bool bFlat);
-	// Constructors
-	CommandButton( const char* text,int x,int y,int wide,int tall, bool bNoHighlight = false);
-	CommandButton( int iPlayerClass, const char* text,int x,int y,int wide,int tall, bool bFlat );
-
-	void Init( void );
-
-	// Menu Handling
-	void AddSubMenu( CCommandMenu *pNewMenu );
-	void AddSubLabel( CommandLabel *pSubLabel )
-	{
-		m_pSubLabel = pSubLabel;
-	}
-
-	virtual int IsNotValid( void )
-	{
-		return false;
-	}
-
-	void UpdateSubMenus( int iAdjustment );
-	int GetPlayerClass() { return m_iPlayerClass; };
-	CCommandMenu *GetSubMenu() { return m_pSubMenu; };
-	
-	CCommandMenu *getParentMenu( void );
-	void setParentMenu( CCommandMenu *pParentMenu );
-
-	// Overloaded vgui functions
-	virtual void paint();
-	virtual void setText( const char *text );
-	virtual void paintBackground();
-
-	void cursorEntered( void );
-	void cursorExited( void );
-
-	void setBoundKey( char boundKey );
-	char getBoundKey( void );
-};
 
 class ColorButton : public CommandButton
 {
@@ -342,64 +198,6 @@ public:
 		Button::paint();
 	}
 };
-//============================================================
-// Command Menus
-class CCommandMenu : public Panel
-{
-private:
-	CCommandMenu *m_pParentMenu;
-	int			  m_iXOffset;
-	int			  m_iYOffset;
-
-	// Buttons in this menu
-	CommandButton *m_aButtons[ MAX_BUTTONS ];
-	int			  m_iButtons;
-
-	// opens menu from top to bottom (0 = default), or from bottom to top (1)?
-	int				m_iDirection; 
-public:
-	CCommandMenu( CCommandMenu *pParentMenu, int x,int y,int wide,int tall ) : Panel(x,y,wide,tall)
-	{
-		m_pParentMenu = pParentMenu;
-		m_iXOffset = x;
-		m_iYOffset = y;
-		m_iButtons = 0;
-		m_iDirection = 0;
-	}
-
-
-	CCommandMenu( CCommandMenu *pParentMenu, int direction, int x,int y,int wide,int tall ) : Panel(x,y,wide,tall)
-	{
-		m_pParentMenu = pParentMenu;
-		m_iXOffset = x;
-		m_iYOffset = y;
-		m_iButtons = 0;
-		m_iDirection = direction;
-	}
-
-	float		m_flButtonSizeY;
-	int			m_iSpectCmdMenu;
-	void		AddButton( CommandButton *pButton );
-	bool		RecalculateVisibles( int iNewYPos, bool bHideAll );
-	void		RecalculatePositions( int iYOffset );
-	void		MakeVisible( CCommandMenu *pChildMenu );
-
-	CCommandMenu *GetParentMenu() { return m_pParentMenu; };
-	int			GetXOffset() { return m_iXOffset; };
-	int			GetYOffset() { return m_iYOffset; };
-	int			GetDirection() { return m_iDirection; };
-	int			GetNumButtons() { return m_iButtons; };
-	CommandButton *FindButtonWithSubmenu( CCommandMenu *pSubMenu );
-
-	void		ClearButtonsOfArmedState( void );
-
-	void		RemoveAllButtons(void);
-
-
-	bool		KeyInput( int keyNum );
-
-	virtual void paintBackground();
-};
 
 //==============================================================================
 // Command menu root button (drop down box style)
@@ -468,6 +266,16 @@ public:
 
 };
 
+class CMenuHandler_SpectateFollow : public vgui::ActionSignal
+{
+protected:
+	char	m_szplayer[ MAX_COMMAND_SIZE ];
+public:
+	CMenuHandler_SpectateFollow( const char *player );
+
+	virtual void actionPerformed( vgui::Panel* panel );
+};
+
 //==============================================================================
 class TeamFortressViewport : public Panel
 {
@@ -509,12 +317,12 @@ private:
 	BuildButton   *m_pBuildButtons[3];
 	BuildButton   *m_pBuildActiveButtons[3];
 
-	int					m_iAllowSpectators;
+	bool		m_bAllowSpectators;
 
 	// Data for specific sections of the Command Menu
 	int			m_iValidClasses[5];
 	bool		m_bIsFeigning;
-	int			m_iIsSettingDetpack;
+	DetpackState	m_DetpackState = DetpackState::CANNOT_DEPLOY;
 	int			m_iNumberOfTeams;
 	int			m_iBuildState;
 	int			m_iRandomPC;
@@ -569,32 +377,34 @@ public:
 	CCommandMenu *CreateSubMenu( CommandButton *pButton, CCommandMenu *pParentMenu, int iYOffset, int iXOffset = 0 );
 
 	// Data Handlers
-	int GetValidClasses(int iTeam) { return m_iValidClasses[iTeam]; };
-	int GetNumberOfTeams() { return m_iNumberOfTeams; };
+	int GetValidClasses(int iTeam) { return m_iValidClasses[iTeam]; }
+	int GetNumberOfTeams() { return m_iNumberOfTeams; }
 	bool GetIsFeigning() const { return m_bIsFeigning; }
-	int GetIsSettingDetpack() { return m_iIsSettingDetpack; };
-	int GetBuildState() { return m_iBuildState; };
-	int IsRandomPC() { return m_iRandomPC; };
-	char *GetTeamName( int iTeam ) { return m_sTeamNames[iTeam]; };
-	int GetAllowSpectators() { return m_iAllowSpectators; };
+	DetpackState GetDetpackState() const { return m_DetpackState; }
+	int GetBuildState() { return m_iBuildState; }
+	int IsRandomPC() { return m_iRandomPC; }
+	char *GetTeamName( int iTeam ) { return m_sTeamNames[iTeam]; }
+	bool GetAllowSpectators() const { return m_bAllowSpectators; }
 
 	// Message Handlers
-	int MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamNames(const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_Feign(const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf );	
-	int MsgFunc_ResetFade( const char *pszName, int iSize, void *pbuf );	
+	void MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_TeamNames(const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Feign(const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf );	
+	void MsgFunc_ResetFade( const char *pszName, int iSize, void *pbuf );	
+
+	void ResetFade();
 
 	// Input
 	bool SlotInput( int iSlot );
@@ -622,7 +432,6 @@ public:
 
 //============================================================
 // Command Menu Button Handlers
-#define MAX_COMMAND_SIZE	256
 
 class CMenuHandler_StringCommand : public ActionSignal
 {
@@ -702,7 +511,7 @@ public:
 	virtual void actionPerformed(Panel* panel);
 };
 
-class CMenuHandler_PopupSubMenuInput : public InputSignal
+class CMenuHandler_PopupSubMenuInput : public CDefaultInputSignal
 {
 private:
 	CCommandMenu *m_pSubMenu;
@@ -725,19 +534,10 @@ public:
 
 		if (m_pButton)
 			m_pButton->setArmed(true);
-	};
-	virtual void cursorExited(Panel* Panel) {};
-	virtual void mousePressed(MouseCode code,Panel* panel)  {};
-	virtual void mouseDoublePressed(MouseCode code,Panel* panel)  {};
-	virtual void mouseReleased(MouseCode code,Panel* panel) {};
-	virtual void mouseWheeled(int delta,Panel* panel) {};
-	virtual void keyPressed(KeyCode code,Panel* panel) {};
-	virtual void keyTyped(KeyCode code,Panel* panel) {};
-	virtual void keyReleased(KeyCode code,Panel* panel) {};
-	virtual void keyFocusTicked(Panel* panel) {};
+	}
 };
 
-class CMenuHandler_LabelInput : public InputSignal
+class CMenuHandler_LabelInput : public CDefaultInputSignal
 {
 private:
 	ActionSignal *m_pActionSignal;
@@ -751,205 +551,8 @@ public:
 	{
 		m_pActionSignal->actionPerformed( panel );
 	}
-
-	virtual void mouseReleased(MouseCode code,Panel* panel) {};
-	virtual void cursorEntered(Panel* panel) {};
-	virtual void cursorExited(Panel* Panel) {};
-	virtual void cursorMoved(int x,int y,Panel* panel) {};
-	virtual void mouseDoublePressed(MouseCode code,Panel* panel)  {};
-	virtual void mouseWheeled(int delta,Panel* panel) {};
-	virtual void keyPressed(KeyCode code,Panel* panel) {};
-	virtual void keyTyped(KeyCode code,Panel* panel) {};
-	virtual void keyReleased(KeyCode code,Panel* panel) {};
-	virtual void keyFocusTicked(Panel* panel) {};
 };
 
-#define HIDE_TEXTWINDOW		0
-#define SHOW_MAPBRIEFING	1
-#define SHOW_CLASSDESC		2
-#define SHOW_MOTD			3
-#define SHOW_SPECHELP		4
-
-class CMenuHandler_TextWindow : public ActionSignal
-{
-private:
-	int	m_iState;
-public:
-	CMenuHandler_TextWindow( int iState )
-	{
-		m_iState = iState;
-	}
-
-	virtual void actionPerformed(Panel* panel)
-	{
-		if (m_iState == HIDE_TEXTWINDOW)
-		{
-			gViewPort->HideTopMenu();
-		}
-		else 
-		{
-			gViewPort->HideCommandMenu();
-			gViewPort->ShowVGUIMenu( m_iState );
-		}
-	}
-};
-
-class CMenuHandler_ToggleCvar : public ActionSignal
-{
-private:
-	cvar_t * m_cvar;
-
-public:
-	CMenuHandler_ToggleCvar( char * cvarname )
-	{
-		m_cvar = gEngfuncs.pfnGetCvarPointer( cvarname );
-	}
-
-	virtual void actionPerformed(Panel* panel)
-	{
-		if ( m_cvar->value )
-			m_cvar->value = 0.0f;
-		else
-			m_cvar->value = 1.0f;
-
-		// hide the menu 
-		gViewPort->HideCommandMenu();
-
-		gViewPort->UpdateSpectatorPanel();
-	}
-
-	
-};
-
-
-
-class CMenuHandler_SpectateFollow : public ActionSignal
-{
-protected:
-	char	m_szplayer[MAX_COMMAND_SIZE];
-public:
-	CMenuHandler_SpectateFollow( char *player )
-	{
-		strncpy( m_szplayer, player, MAX_COMMAND_SIZE);
-		m_szplayer[MAX_COMMAND_SIZE-1] = '\0';
-	}
-
-	virtual void actionPerformed(Panel* panel)
-	{
-		gHUD.m_Spectator.FindPlayer(m_szplayer);
-		gViewPort->HideCommandMenu();
-	}
-};
-
-
-
-class CDragNDropHandler : public InputSignal
-{
-private:
-	DragNDropPanel*	m_pPanel;
-	bool			m_bDragging;
-	int				m_iaDragOrgPos[2];
-	int				m_iaDragStart[2];
-
-public:
-	CDragNDropHandler(DragNDropPanel* pPanel)
-	{
-		m_pPanel = pPanel;
-		m_bDragging = false;
-	}
-
-	void cursorMoved(int x,int y,Panel* panel);
-	void mousePressed(MouseCode code,Panel* panel);
-	void mouseReleased(MouseCode code,Panel* panel);
-
-	void mouseDoublePressed(MouseCode code,Panel* panel) {};
-	void cursorEntered(Panel* panel) {};
-	void cursorExited(Panel* panel) {};
-	void mouseWheeled(int delta,Panel* panel) {};
-	void keyPressed(KeyCode code,Panel* panel) {};
-	void keyTyped(KeyCode code,Panel* panel) {};
-	void keyReleased(KeyCode code,Panel* panel) {};
-	void keyFocusTicked(Panel* panel) {};
-};
-
-class CHandler_MenuButtonOver : public InputSignal
-{
-private:
-	int			m_iButton;
-	CMenuPanel	*m_pMenuPanel;
-public:
-	CHandler_MenuButtonOver( CMenuPanel *pPanel, int iButton )
-	{
-		m_iButton = iButton;
-		m_pMenuPanel = pPanel;
-	}
-		
-	void cursorEntered(Panel *panel);
-
-	void cursorMoved(int x,int y,Panel* panel) {};
-	void mousePressed(MouseCode code,Panel* panel) {};
-	void mouseReleased(MouseCode code,Panel* panel) {};
-	void mouseDoublePressed(MouseCode code,Panel* panel) {};
-	void cursorExited(Panel* panel) {};
-	void mouseWheeled(int delta,Panel* panel) {};
-	void keyPressed(KeyCode code,Panel* panel) {};
-	void keyTyped(KeyCode code,Panel* panel) {};
-	void keyReleased(KeyCode code,Panel* panel) {};
-	void keyFocusTicked(Panel* panel) {};
-};
-
-class CHandler_ButtonHighlight : public InputSignal
-{
-private:
-	Button *m_pButton;
-public:
-	CHandler_ButtonHighlight( Button *pButton )
-	{
-		m_pButton = pButton;
-	}
-
-	virtual void cursorEntered(Panel* panel) 
-	{ 
-		m_pButton->setArmed(true);
-	};
-	virtual void cursorExited(Panel* Panel) 
-	{
-		m_pButton->setArmed(false);
-	};
-	virtual void mousePressed(MouseCode code,Panel* panel) {};
-	virtual void mouseReleased(MouseCode code,Panel* panel) {};
-	virtual void cursorMoved(int x,int y,Panel* panel) {};
-	virtual void mouseDoublePressed(MouseCode code,Panel* panel)  {};
-	virtual void mouseWheeled(int delta,Panel* panel) {};
-	virtual void keyPressed(KeyCode code,Panel* panel) {};
-	virtual void keyTyped(KeyCode code,Panel* panel) {};
-	virtual void keyReleased(KeyCode code,Panel* panel) {};
-	virtual void keyFocusTicked(Panel* panel) {};
-};
-
-//-----------------------------------------------------------------------------
-// Purpose: Special handler for highlighting of command menu buttons
-//-----------------------------------------------------------------------------
-class CHandler_CommandButtonHighlight : public CHandler_ButtonHighlight
-{
-private:
-	CommandButton *m_pCommandButton;
-public:
-	CHandler_CommandButtonHighlight( CommandButton *pButton ) : CHandler_ButtonHighlight( pButton )
-	{
-		m_pCommandButton = pButton;
-	}
-
-	virtual void cursorEntered( Panel *panel )
-	{
-		m_pCommandButton->cursorEntered();
-	}
-
-	virtual void cursorExited( Panel *panel )
-	{
-		m_pCommandButton->cursorExited();
-	}
-};
 
 
 //================================================================
@@ -1030,17 +633,12 @@ public:
 	virtual int IsNotValid()
 	{
 		// Only visible if the server allows it
-		if ( gViewPort->GetAllowSpectators() != 0 )
+		if ( gViewPort->GetAllowSpectators() )
 			return false;
 
 		return true;
 	}
 };
-
-#define		DISGUISE_TEAM1		(1<<0)
-#define		DISGUISE_TEAM2		(1<<1)
-#define		DISGUISE_TEAM3		(1<<2)
-#define		DISGUISE_TEAM4		(1<<3)
 
 class DisguiseButton : public CommandButton
 {
@@ -1075,11 +673,11 @@ public:
 class DetpackButton : public CommandButton
 {
 private:
-	int	m_iDetpackState;
+	DetpackState	m_DetpackState;
 public:
-	DetpackButton( int iState, const char* text,int x,int y,int wide,int tall ) : CommandButton( text,x,y,wide,tall)
+	DetpackButton( DetpackState state, const char* text,int x,int y,int wide,int tall ) : CommandButton( text,x,y,wide,tall)
 	{
-		m_iDetpackState = iState;
+		m_DetpackState = state;
 	}
 
 	virtual int IsNotValid()
@@ -1090,18 +688,12 @@ public:
 			return true;
 #endif
 
-		if (m_iDetpackState == gViewPort->GetIsSettingDetpack())
+		if ( m_DetpackState == gViewPort->GetDetpackState())
 			return false;
 
 		return true;
 	}
 };
-
-extern int iBuildingCosts[];
-#define BUILDSTATE_HASBUILDING		(1<<0)		// Data is building ID (1 = Dispenser, 2 = Sentry, 3 = Entry Teleporter, 4 = Exit Teleporter)
-#define BUILDSTATE_BUILDING			(1<<1)
-#define BUILDSTATE_BASE				(1<<2)
-#define BUILDSTATE_CANBUILD			(1<<3)		// Data is building ID (1 = Dispenser, 2 = Sentry, 3 = Entry Teleporter, 4 = Exit Teleporter)
 
 class BuildButton : public CommandButton
 {
@@ -1187,8 +779,6 @@ public:
 	}
 };
 
-#define MAX_MAPNAME 256
-
 class MapButton : public CommandButton
 {
 private:
@@ -1238,7 +828,7 @@ public:
 //-----------------------------------------------------------------------------
 // Purpose: CommandButton which is only displayed if the player is on team X
 //-----------------------------------------------------------------------------
-class ToggleCommandButton : public CommandButton, public InputSignal
+class ToggleCommandButton : public CommandButton, public CDefaultInputSignal
 {
 private:
 	cvar_t *		m_cvar;
@@ -1287,17 +877,7 @@ public:
 	virtual void mousePressed(MouseCode code,Panel* panel)
 	{
 		doClick();
-	};
-
-	virtual void cursorMoved(int x,int y,Panel* panel) {};
-	
-	virtual void mouseDoublePressed(MouseCode code,Panel* panel)  {};
-	virtual void mouseReleased(MouseCode code,Panel* panel) {};
-	virtual void mouseWheeled(int delta,Panel* panel) {};
-	virtual void keyPressed(KeyCode code,Panel* panel) {};
-	virtual void keyTyped(KeyCode code,Panel* panel) {};
-	virtual void keyReleased(KeyCode code,Panel* panel) {};
-	virtual void keyFocusTicked(Panel* panel) {};
+	}
 
 	virtual void paint( void )
 	{
@@ -1318,10 +898,10 @@ public:
 		}
 
 		CommandButton::paint();
-
 	} 
 };
-class SpectToggleButton : public CommandButton, public InputSignal
+
+class SpectToggleButton : public CommandButton, public CDefaultInputSignal
 {
 private:
 	cvar_t *		m_cvar;
@@ -1359,17 +939,7 @@ public:
 	virtual void mousePressed(MouseCode code,Panel* panel)
 	{
 		doClick();
-	};
-
-	virtual void cursorMoved(int x,int y,Panel* panel) {};
-	
-	virtual void mouseDoublePressed(MouseCode code,Panel* panel)  {};
-	virtual void mouseReleased(MouseCode code,Panel* panel) {};
-	virtual void mouseWheeled(int delta,Panel* panel) {};
-	virtual void keyPressed(KeyCode code,Panel* panel) {};
-	virtual void keyTyped(KeyCode code,Panel* panel) {};
-	virtual void keyReleased(KeyCode code,Panel* panel) {};
-	virtual void keyFocusTicked(Panel* panel) {};
+	}
 
 	virtual void paintBackground()
 	{
@@ -1406,215 +976,6 @@ public:
 
 		Button::paint();
 	} 
-};
-
-/*
-class SpectToggleButton : public ToggleCommandButton
-{
-private:
-	cvar_t *		m_cvar;
-	CImageLabel *	pLabelOn;
-	CImageLabel *	pLabelOff;
-	
-public:
-
-	SpectToggleButton( const char* cvarname, const char* text,int x,int y,int wide,int tall, bool flat ) : 
-	  ToggleCommandButton( cvarname, text, x, y, wide, tall, flat, TRUE )
-	 {
-		m_cvar = gEngfuncs.pfnGetCvarPointer( cvarname );
-
-			// Put a > to show it's a submenu
-		pLabelOn = new CImageLabel( "checked", 0, 0 );
-		pLabelOn->setParent(this);
-		pLabelOn->addInputSignal(this);
-				
-		pLabelOff = new CImageLabel( "unchecked", 0, 0 );
-		pLabelOff->setParent(this);
-		pLabelOff->setEnabled(true);
-		pLabelOff->addInputSignal(this);
-
-		int textwide, texttall;
-		getTextSize( textwide, texttall);
-	
-		// Reposition
-		pLabelOn->setPos( textwide, (tall - pLabelOn->getTall()) / 2 );
-
-		pLabelOff->setPos( textwide, (tall - pLabelOff->getTall()) / 2 );
-		
-		// Set text color to orange
-		setFgColor(Scheme::sc_primary1);
-	}
-		
-	virtual void paintBackground()
-	{
-		if ( isArmed())
-		{
-			drawSetColor( 143,143, 54, 125 ); 
-			drawFilledRect( 5, 0,_size[0] - 5,_size[1]);
-		}
-	}
-
-	virtual void paint()
-	{
-	
-		if ( isArmed() )
-		{ 
-			setFgColor( 194, 202, 54, 0 );
-		}
-		else
-		{
-			setFgColor( 143, 143, 54, 15 );
-		}
-
-			if ( !m_cvar )
-		{
-			pLabelOff->setVisible(false);
-			pLabelOn->setVisible(false);
-		} 
-		else if ( m_cvar->value )
-		{
-			pLabelOff->setVisible(false);
-			pLabelOn->setVisible(true);
-		}
-		else
-		{
-			pLabelOff->setVisible(true);
-			pLabelOn->setVisible(false);
-		}
-
-		Button::paint();
-	}
-};
-*/
-//============================================================
-// Panel that can be dragged around
-class DragNDropPanel : public Panel
-{
-private:
-	bool		m_bBeingDragged;
-	LineBorder	*m_pBorder;
-public:
-	DragNDropPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
-	{
-		m_bBeingDragged = false;
-
-		// Create the Drag Handler
-		addInputSignal( new CDragNDropHandler(this) );
-
-		// Create the border (for dragging)
-		m_pBorder = new LineBorder();
-	}
-
-	virtual void setDragged( bool bState )
-	{
-		m_bBeingDragged = bState;
-
-		if (m_bBeingDragged)
-			setBorder(m_pBorder);
-		else
-			setBorder(NULL);
-	}
-};
-
-//================================================================
-// Panel that draws itself with a transparent black background
-class CTransparentPanel : public Panel
-{
-private:
-	int	m_iTransparency;
-public:
-	CTransparentPanel(int iTrans, int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
-	{
-		m_iTransparency = iTrans;
-	}
-
-	virtual void paintBackground()
-	{
-		if (m_iTransparency)
-		{
-			// Transparent black background
-			drawSetColor( 0,0,0, m_iTransparency );
-			drawFilledRect(0,0,_size[0],_size[1]);
-		}
-	}
-};
-
-//================================================================
-// Menu Panel that supports buffering of menus
-class CMenuPanel : public CTransparentPanel
-{
-private:
-	CMenuPanel *m_pNextMenu;
-	int			m_iMenuID;
-	int			m_iRemoveMe;
-	int			m_iIsActive;
-	float		m_flOpenTime;
-public:
-	CMenuPanel(int iRemoveMe, int x,int y,int wide,int tall) : CTransparentPanel(100, x,y,wide,tall)
-	{
-		Reset();
-		m_iRemoveMe = iRemoveMe;
-	}
-
-	CMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide,int tall) : CTransparentPanel(iTrans, x,y,wide,tall)
-	{
-		Reset();
-		m_iRemoveMe = iRemoveMe;
-	}
-
-	virtual void Reset( void )
-	{
-		m_pNextMenu = NULL;
-		m_iIsActive = false;
-		m_flOpenTime = 0;
-	}
-
-	void SetNextMenu( CMenuPanel *pNextPanel )
-	{
-		if (m_pNextMenu)
-			m_pNextMenu->SetNextMenu( pNextPanel );
-		else
-			m_pNextMenu = pNextPanel;
-	}
-
-	void SetMenuID( int iID )
-	{
-		m_iMenuID = iID;
-	}
-
-	void SetActive( int iState )
-	{
-		m_iIsActive = iState;
-	}
-
-	virtual void Open( void )
-	{
-		setVisible( true );
-
-		// Note the open time, so we can delay input for a bit
-		m_flOpenTime = gHUD.m_flTime;
-	}
-
-	virtual void Close( void )
-	{
-		setVisible( false );
-		m_iIsActive = false;
-
-		if ( m_iRemoveMe )
-			gViewPort->removeChild( this );
-
-		// This MenuPanel has now been deleted. Don't append code here.
-	}
-
-	int			ShouldBeRemoved() { return m_iRemoveMe; };
-	CMenuPanel* GetNextMenu() { return m_pNextMenu; };
-	int			GetMenuID() { return m_iMenuID; };
-	int			IsActive() { return m_iIsActive; };
-	float		GetOpenTime() { return m_flOpenTime; };
-
-	// Numeric input
-	virtual bool SlotInput( int iSlot ) { return false; };
-	virtual void SetActiveInfo( int iInput ) {};
 };
 
 //================================================================
@@ -1681,113 +1042,6 @@ public:
 	{
 		CMenuPanel::Reset();
 		m_iCurrentInfo = 0;
-	}
-};
-
-class CTeamMenuPanel : public CMenuPanel
-{
-public:
-	ScrollPanel         *m_pScrollPanel;
-	CTransparentPanel	*m_pTeamWindow;
-	Label				*m_pMapTitle;
-	TextPanel			*m_pBriefing;
-	TextPanel			*m_pTeamInfoPanel[6];
-	CommandButton		*m_pButtons[6];
-	bool				m_bUpdatedMapName;
-	CommandButton		*m_pCancelButton;
-	CommandButton		*m_pSpectateButton;
-
-	int					m_iCurrentInfo;
-
-public:
-	CTeamMenuPanel(int iTrans, int iRemoveMe, int x,int y,int wide,int tall);
-
-	virtual bool SlotInput( int iSlot );
-	virtual void Open( void );
-	virtual void Update( void );
-	virtual void SetActiveInfo( int iInput );
-	virtual void paintBackground( void );
-
-	virtual void Initialize( void );
-
-	virtual void Reset( void )
-	{
-		CMenuPanel::Reset();
-		m_iCurrentInfo = 0;
-	}
-};
-
-//=========================================================
-// Specific Menus to handle old HUD sections
-//TODO: early replacement for CHud* stuff? - Solokiller
-class CHealthPanel : public DragNDropPanel
-{
-private:
-	BitmapTGA	*m_pHealthTGA;
-	Label		*m_pHealthLabel;
-public:
-	CHealthPanel(int x,int y,int wide,int tall) : DragNDropPanel(x,y,wide,tall)
-	{
-		// Load the Health icon
-		FileInputStream* fis = new FileInputStream( GetVGUITGAName("%d_hud_health"), false);
-		m_pHealthTGA = new BitmapTGA(fis,true);
-		fis->close();
-
-		// Create the Health Label
-		int iXSize,iYSize;
-		m_pHealthTGA->getSize(iXSize,iYSize);
-		m_pHealthLabel = new Label("",0,0,iXSize,iYSize);
-		m_pHealthLabel->setImage(m_pHealthTGA);
-		m_pHealthLabel->setParent(this);
-
-		// Set panel dimension
-		// Shouldn't be needed once Billy's fized setImage not recalculating the size
-		//setSize( iXSize + 100, gHUD.m_iFontHeight + 10 );
-		//m_pHealthLabel->setPos( 10, (getTall() - iYSize) / 2 );
-	}
-
-	virtual void paintBackground()
-	{
-	}
-
-	void paint()
-	{
-		// Get the paint color
-		int r,g,b,a = MIN_ALPHA;
-		// Has health changed? Flash the health #
-		if (gHUD.m_Health.m_fFade)
-		{
-			gHUD.m_Health.m_fFade -= (gHUD.m_flTimeDelta * 20);
-			if (gHUD.m_Health.m_fFade <= 0)
-			{
-				gHUD.m_Health.m_fFade = 0;
-			}
-
-			// Fade the health number back to dim
-			a += ( gHUD.m_Health.m_fFade / FADE_TIME ) * 128;
-		}
-
-		gHUD.m_Health.GetPainColor( r, g, b );
-		ScaleColors(r, g, b, a );
-
-		// If health is getting low, make it bright red
-		if (gHUD.m_Health.m_iHealth <= 15)
-			a = 255;
-
-		int iXSize,iYSize, iXPos, iYPos;
-		m_pHealthTGA->getSize(iXSize,iYSize);
-		m_pHealthTGA->getPos(iXPos, iYPos);
-
-		// Paint the player's health
-		int x = gHUD.DrawHudNumber( iXPos + iXSize + 5, iYPos + 5, DHN_3DIGITS | DHN_DRAWZERO, gHUD.m_Health.m_iHealth, r, g, b);
-
-		// Draw the vertical line
-		int HealthWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
-		x += HealthWidth / 2;
-
-		const auto& color = gHUD.GetPrimaryColor();
-
-		FillRGBA(x, iYPos + 5, HealthWidth / 10, gHUD.m_iFontHeight, color.r, color.g, color.b, a);
 	}
 };
 

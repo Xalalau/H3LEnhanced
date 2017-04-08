@@ -12,6 +12,11 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef GAME_CLIENT_UI_HUD_CHUDHEALTH_H
+#define GAME_CLIENT_UI_HUD_CHUDHEALTH_H
+
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
 
 #define DMG_IMAGE_LIFE		2	// seconds that image is up
 
@@ -43,15 +48,19 @@ struct DAMAGE_IMAGE
 //
 //-----------------------------------------------------
 //
-class CHudHealth: public CHudBase
+class CHudHealth: public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudHealth, CBaseHudElement<CHLHud> );
+
+	CHudHealth( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	bool Draw( float fTime ) override;
 	void Reset()  override;
-	int MsgFunc_Health(const char *pszName,  int iSize, void *pbuf);
-	int MsgFunc_Damage(const char *pszName,  int iSize, void *pbuf);
+	void MsgFunc_Health(const char *pszName,  int iSize, void *pbuf);
+	void MsgFunc_Damage(const char *pszName,  int iSize, void *pbuf);
 	int m_iHealth;
 	int m_HUD_dmg_bio;
 	int m_HUD_cross;
@@ -72,3 +81,5 @@ private:
 	void CalcDamageDirection(Vector vecFrom);
 	void UpdateTiles(float fTime, long bits);
 };	
+
+#endif //GAME_CLIENT_UI_HUD_CHUDHEALTH_H

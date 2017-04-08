@@ -29,7 +29,7 @@ public:
 
 	void UpdateOnRemove() override;
 
-	int  Classify( void ) override { return CLASS_ALIEN_MILITARY; };
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::ALIEN_MILITARY ); }
 	int  BloodColor() const override { return BLOOD_COLOR_YELLOW; }
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 	void GibMonster( void ) override;

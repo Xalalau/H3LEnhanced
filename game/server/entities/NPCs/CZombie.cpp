@@ -72,9 +72,9 @@ const char *CZombie::pPainSounds[] =
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CZombie :: Classify ( void )
+EntityClassification_t CZombie::GetClassification()
 {
-	return	CLASS_ALIEN_MONSTER;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
 }
 
 //=========================================================

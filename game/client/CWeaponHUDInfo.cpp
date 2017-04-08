@@ -71,7 +71,7 @@ bool CWeaponHUDInfo::LoadFromFile( const char* const pszWeaponName )
 
 	for( auto data : weaponData )
 	{
-		if( p = GetSpriteList( pList, data.pszName, iRes, i ) )
+		if( ( p = GetSpriteList( pList, data.pszName, iRes, i ) ) != nullptr )
 		{
 			sprintf( sz, "sprites/%s.spr", p->szSprite );
 			data.sprite.hSprite = SPR_Load( sz );

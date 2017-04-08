@@ -27,16 +27,19 @@
 
 #include "vgui_TeamFortressViewport.h"
 
+#include "CHudSayText.h"
+
 // allow 20 pixels on either side of the text
 #define MAX_LINE_WIDTH  ( ScreenWidth - 40 )
 #define LINE_START  10
 
-DECLARE_MESSAGE( m_SayText, SayText );
-
-bool CHudSayText::Init()
+CHudSayText::CHudSayText( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
 {
-	gHUD.AddHudElem( this );
+}
 
+void CHudSayText::Init()
+{
 	HOOK_MESSAGE( SayText );
 
 	InitHUDData();
@@ -44,9 +47,7 @@ bool CHudSayText::Init()
 	m_HUD_saytext =			gEngfuncs.pfnRegisterVariable( "hud_saytext", "1", 0 );
 	m_HUD_saytext_time =	gEngfuncs.pfnRegisterVariable( "hud_saytext_time", "5", 0 );
 
-	m_iFlags |= HUD_INTERMISSION; // is always drawn during an intermission
-
-	return true;
+	GetFlags() |= HUD_INTERMISSION; // is always drawn during an intermission
 }
 
 
@@ -57,9 +58,8 @@ void CHudSayText::InitHUDData()
 	memset( m_iNameLengths, 0, sizeof( m_iNameLengths ) );
 }
 
-bool CHudSayText::VidInit()
+void CHudSayText::VidInit()
 {
-	return true;
 }
 
 
@@ -104,7 +104,7 @@ bool CHudSayText::Draw( float flTime )
 		}
 		else
 		{ // buffer is empty,  just disable drawing of this section
-			m_iFlags &= ~HUD_ACTIVE;
+			GetFlags() &= ~HUD_ACTIVE;
 		}
 	}
 
@@ -145,14 +145,12 @@ bool CHudSayText::Draw( float flTime )
 	return true;
 }
 
-int CHudSayText :: MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
+void CHudSayText::MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	int client_index = reader.ReadByte();		// the client who spoke the message
 	SayTextPrint( reader.ReadString(), iSize - 1,  client_index );
-	
-	return 1;
 }
 
 void CHudSayText :: SayTextPrint( const char *pszBuf, size_t uiBufSize, int clientIndex )
@@ -213,10 +211,10 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, size_t uiBufSize, int clie
 	// Set scroll time
 	if ( i == 0 )
 	{
-		m_flScrollTime = gHUD.m_flTime + m_HUD_saytext_time->value;
+		m_flScrollTime = Hud().GetTime() + m_HUD_saytext_time->value;
 	}
 
-	m_iFlags |= HUD_ACTIVE;
+	GetFlags() |= HUD_ACTIVE;
 	PlaySound( "misc/talk.wav", 1 );
 
 	// ############ hu3lifezado ############ //

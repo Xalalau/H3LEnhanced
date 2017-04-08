@@ -14,6 +14,8 @@
 
 #include "Exports.h"
 
+#include "shared/CLocalize.h"
+
 /*
 ==========================
 HUD_ChatInputPosition
@@ -26,13 +28,18 @@ void DLLEXPORT HUD_ChatInputPosition( int *x, int *y )
 {
 	if ( g_iUser1 != 0 || gEngfuncs.IsSpectateOnly() )
 	{
-		if ( gHUD.m_Spectator.m_pip->value == INSET_OFF )
+		auto pSpectator = GETHUDCLASS( CHudSpectator );
+
+		if( pSpectator )
 		{
-			*y = YRES( PANEL_HEIGHT );
-		}
-		else
-		{
-			*y = YRES( gHUD.m_Spectator.m_OverviewData.insetWindowHeight + 5 );
+			if ( pSpectator->m_pip->value == INSET_OFF )
+			{
+				*y = YRES( PANEL_HEIGHT );
+			}
+			else
+			{
+				*y = YRES( pSpectator->m_OverviewData.insetWindowHeight + 5 );
+			}
 		}
 	}
 }
@@ -52,6 +59,8 @@ SpectatorPanel::~SpectatorPanel()
 
 void SpectatorPanel::ActionSignal(int cmd)
 {
+	auto pSpectator = GETHUDCLASS( CHudSpectator );
+
 	switch (cmd)
 	{
 		case SPECTATOR_PANEL_CMD_NONE :			break;
@@ -59,10 +68,10 @@ void SpectatorPanel::ActionSignal(int cmd)
 		case SPECTATOR_PANEL_CMD_OPTIONS :		gViewPort->ShowCommandMenu( gViewPort->m_SpectatorOptionsMenu );
 												break;
 
-		case SPECTATOR_PANEL_CMD_NEXTPLAYER :	gHUD.m_Spectator.FindNextPlayer(true);
+		case SPECTATOR_PANEL_CMD_NEXTPLAYER :	if( pSpectator ) pSpectator->FindNextPlayer(true);
 												break;
 
-		case SPECTATOR_PANEL_CMD_PREVPLAYER :	gHUD.m_Spectator.FindNextPlayer(false);
+		case SPECTATOR_PANEL_CMD_PREVPLAYER :	if( pSpectator ) pSpectator->FindNextPlayer(false);
 												break;
 
 		case SPECTATOR_PANEL_CMD_PLAYERS :		gViewPort->ShowCommandMenu( gViewPort->m_PlayerMenu );
@@ -74,8 +83,8 @@ void SpectatorPanel::ActionSignal(int cmd)
 		case SPECTATOR_PANEL_CMD_CAMERA :		gViewPort->ShowCommandMenu( gViewPort->m_SpectatorCameraMenu );
 												break;
 		
-		case SPECTATOR_PANEL_CMD_TOGGLE_INSET : gHUD.m_Spectator.SetModes( -1, 
-													gHUD.m_Spectator.ToggleInset(false) );
+		case SPECTATOR_PANEL_CMD_TOGGLE_INSET : if( pSpectator ) pSpectator->SetModes( -1,
+																					   pSpectator->ToggleInset(false) );
 												break;
 		
 
@@ -145,7 +154,7 @@ void SpectatorPanel::Initialize()
 	
 	// Initialize command buttons.
 //	m_OptionButton = new ColorButton( CHudTextMessage::BufferedLocaliseTextString( "#SPECT_OPTIONS" ), XRES(15), YRES(6), XRES(OPTIONS_BUTTON_X), YRES(20), false, false );
-	m_OptionButton = new DropDownButton( CHudTextMessage::BufferedLocaliseTextString( "#SPECT_OPTIONS" ), XRES(15), YRES(6), XRES(OPTIONS_BUTTON_X), YRES(20), false, false );
+	m_OptionButton = new DropDownButton( Localize().BufferedLocaliseTextString( "#SPECT_OPTIONS" ), XRES(15), YRES(6), XRES(OPTIONS_BUTTON_X), YRES(20), false, false );
 	m_OptionButton->setParent( m_BottomBorder );
 	m_OptionButton->setContentAlignment( vgui::Label::a_center );
 	m_OptionButton->setBoundKey( (char)255 );	// special no bound to avoid leading spaces in name 
@@ -155,7 +164,7 @@ void SpectatorPanel::Initialize()
 	m_OptionButton->setUnArmedColor ( 143, 143, 54, 0 );
 	m_OptionButton->setArmedColor ( 194, 202, 54, 0 );
 
-	m_CamButton = new DropDownButton( CHudTextMessage::BufferedLocaliseTextString( "#CAM_OPTIONS" ),  ScreenWidth - ( XRES ( CAMOPTIONS_BUTTON_X ) + 15 ), YRES(6), XRES ( CAMOPTIONS_BUTTON_X ), YRES(20), false, false );
+	m_CamButton = new DropDownButton( Localize().BufferedLocaliseTextString( "#CAM_OPTIONS" ),  ScreenWidth - ( XRES ( CAMOPTIONS_BUTTON_X ) + 15 ), YRES(6), XRES ( CAMOPTIONS_BUTTON_X ), YRES(20), false, false );
 	m_CamButton->setParent( m_BottomBorder );
 	m_CamButton->setContentAlignment( vgui::Label::a_center );
 	m_CamButton->setBoundKey( (char)255 );	// special no bound to avoid leading spaces in name 
@@ -273,12 +282,7 @@ void SpectatorPanel::ShowMenu(bool isVisible)
 		// if switching from visible menu to invisible menu, show help text
 		if ( m_menuVisible && this->isVisible() )
 		{
-			char string[ 64 ];
-
-			_snprintf( string, sizeof( string ) - 1, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( "#Spec_Duck" ) );
-			string[ sizeof( string ) - 1 ] = '\0';
-
-			gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( string ) + 1, string );
+			UTIL_LocalizedTextMsg( HUD_PRINTCENTER, "%s", Localize().BufferedLocaliseTextString( "#Spec_Duck" ) );
 		}
 	}
 
@@ -320,10 +324,15 @@ const char *GetSpectatorLabel ( int iMode )
 
 void SpectatorPanel::EnableInsetView(bool isEnabled)
 {
-	int x = gHUD.m_Spectator.m_OverviewData.insetWindowX;
-	int y = gHUD.m_Spectator.m_OverviewData.insetWindowY;
-	int wide = gHUD.m_Spectator.m_OverviewData.insetWindowWidth;
-	int tall = gHUD.m_Spectator.m_OverviewData.insetWindowHeight;
+	auto pSpectator = GETHUDCLASS( CHudSpectator );
+
+	if( !pSpectator )
+		return;
+
+	int x = pSpectator->m_OverviewData.insetWindowX;
+	int y = pSpectator->m_OverviewData.insetWindowY;
+	int wide = pSpectator->m_OverviewData.insetWindowWidth;
+	int tall = pSpectator->m_OverviewData.insetWindowHeight;
 	int offset = x + wide + 2;
 	
 	if ( isEnabled )
@@ -364,7 +373,7 @@ void SpectatorPanel::EnableInsetView(bool isEnabled)
 
 	Update();
 
-	m_CamButton->setText( CHudTextMessage::BufferedLocaliseTextString( GetSpectatorLabel( g_iUser1 ) ) );
+	m_CamButton->setText( Localize().BufferedLocaliseTextString( GetSpectatorLabel( g_iUser1 ) ) );
 }
 
 
@@ -372,16 +381,21 @@ void SpectatorPanel::EnableInsetView(bool isEnabled)
 
 void SpectatorPanel::Update()
 {
+	auto pSpectator = GETHUDCLASS( CHudSpectator );
+
+	if( !pSpectator )
+		return;
+
 	int iTextWidth, iTextHeight;
 	int iTimeHeight, iTimeWidth;
 	int offset,j;
 
 	if ( m_insetVisible )
-		offset = gHUD.m_Spectator.m_OverviewData.insetWindowX + gHUD.m_Spectator.m_OverviewData.insetWindowWidth + 2;
+		offset = pSpectator->m_OverviewData.insetWindowX + pSpectator->m_OverviewData.insetWindowWidth + 2;
 	else
 		offset = 0;
 
-	bool visible = gHUD.m_Spectator.m_drawstatus->value != 0;
+	bool visible = pSpectator->m_drawstatus->value != 0;
 	
 	m_ExtraInfo->setVisible( visible );
 	m_TimerImage->setVisible( visible );

@@ -44,7 +44,7 @@ void CFurniture::Die( void )
 //=========================================================
 // ID's Furniture as neutral (noone will attack it)
 //=========================================================
-int CFurniture::Classify( void )
+EntityClassification_t CFurniture::GetClassification()
 {
-	return	CLASS_NONE;
+	return EntityClassifications().GetNoneId();
 }

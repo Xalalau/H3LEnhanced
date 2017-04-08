@@ -83,9 +83,9 @@ int TrainSpeed( int iSpeed, int iMax )
 //
 // ID's player as such.
 //
-int CBasePlayer::Classify()
+EntityClassification_t CBasePlayer::GetClassification()
 {
-	return CLASS_PLAYER;
+	return EntityClassifications().GetClassificationId( classify::PLAYER );
 }
 
 void CBasePlayer::Precache()
@@ -130,10 +130,10 @@ void CBasePlayer::InitialSpawn()
 
 void CBasePlayer::Spawn()
 {
-	pev->classname		= MAKE_STRING( "player" );
+	SetClassname("player");
 	// ############ hu3lifezado ############ //
 	// Era 100
-	pev->health = 169;
+	pev->health			= 169;
 	// ############ //
 	pev->armorvalue		= 0;
 	pev->takedamage		= DAMAGE_AIM;
@@ -767,7 +767,12 @@ void CBasePlayer::UpdateStatusBar()
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-			if (pEntity->Classify() == CLASS_PLAYER )
+			//Use my own classification instead of classify::PLAYER, this accounts for class changes. - Solokiller
+			const auto myClassId = Classify();
+
+			//Only do this when my class is not NONE. Otherwise every bit of scenery shows status info.
+			//Unfortunately this will cause issues when resetting classes, so adding the PLAYER class back is a requirement to fix this. - Solokiller
+			if( myClassId != EntityClassifications().GetNoneId() && pEntity->Classify() == myClassId )
 			{
 				newSBarState[ SBAR_ID_TARGETNAME ] = pEntity->entindex();
 				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );

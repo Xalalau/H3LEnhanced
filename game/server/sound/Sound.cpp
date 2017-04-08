@@ -135,7 +135,7 @@ float TEXTURETYPE_PlaySound(const TraceResult& tr, Vector vecSrc, Vector vecEnd,
 
 	char chTextureType = CHAR_TEX_CONCRETE;
 
-	if (pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
+	if (pEntity && pEntity->Classify() != EntityClassifications().GetNoneId() && pEntity->Classify() != EntityClassifications().GetClassificationId( classify::MACHINE ))
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
 	else

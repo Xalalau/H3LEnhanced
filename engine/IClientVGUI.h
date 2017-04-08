@@ -3,19 +3,7 @@
 
 #include "interface.h"
 
-//TODO: remove once VGUI1 is removed.
-#undef VGUI_H
-
-#if USE_VGUI2
-#include "../../source_sdk/public/vgui/VGUI.h"
-#include "../../source_sdk/public/vgui/ipanel.h"
-#endif
-
-//Forward declare it for now, avoids including headers that cause compilation issues on Linux - Solokiller
-namespace vgui2
-{
-typedef unsigned int VPANEL;
-}
+#include <vgui/VGUI2.h>
 
 /**
 *	Client VGUI2 interface. Enables the client library to use VGUI2.
@@ -73,6 +61,7 @@ public:
 
 	/**
 	*	Shuts down the client UI.
+	*	Note: only called for CS & CZero, do not use! - Solokiller
 	*/
 	virtual void Shutdown() = 0;
 };

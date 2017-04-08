@@ -120,9 +120,9 @@ void CShockBeam::Spawn()
 	}
 }
 
-int CShockBeam::Classify()
+EntityClassification_t CShockBeam::GetClassification()
 {
-	return CLASS_NONE;
+	return EntityClassifications().GetNoneId();
 }
 
 void CShockBeam::FlyThink()

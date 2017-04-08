@@ -21,7 +21,7 @@ LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket );
 //=========================================================
 CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher )
 {
-	CRpgRocket *pRocket = GetClassPtr( ( CRpgRocket * ) NULL );
+	auto pRocket = static_cast<CRpgRocket*>( UTIL_CreateNamedEntity( "rpg_rocket" ) );
 
 	pRocket->SetAbsOrigin( vecOrigin );
 	pRocket->pev->angles = vecAngles;
@@ -46,8 +46,6 @@ void CRpgRocket::Spawn( void )
 	SetModel( "models/rpgrocket.mdl" );
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 	SetAbsOrigin( GetAbsOrigin() );
-
-	pev->classname = MAKE_STRING( "rpg_rocket" );
 
 	SetThink( &CRpgRocket::IgniteThink );
 	SetTouch( &CRpgRocket::ExplodeTouch );

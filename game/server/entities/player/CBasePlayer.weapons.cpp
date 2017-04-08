@@ -24,6 +24,8 @@
 #include "Server.h"
 #include "ServerInterface.h"
 
+#include "CBasePlayerUtils.h"
+
 //Wasn't initialized - Solokiller
 bool DLL_GLOBAL gEvilImpulse101 = false;
 
@@ -639,6 +641,15 @@ void CBasePlayer::ItemPreFrame()
 		return;
 	}
 
+	//Update all holstered weapons. - Solokiller
+	ForEachPlayerWeapon( *this, []( CBasePlayer& player, CBasePlayerWeapon& weapon )
+	{
+		if( &weapon == player.m_pActiveItem )
+			return;
+
+		weapon.WeaponHolsterPreFrame();
+	});
+
 	if( !m_pActiveItem )
 		return;
 
@@ -658,17 +669,26 @@ void CBasePlayer::ItemPostFrame()
 	if( m_pTank != NULL )
 		return;
 
-	if( m_flNextAttack > UTIL_WeaponTimeBase() )
+	const bool bCanAttack = m_flNextAttack <= UTIL_WeaponTimeBase();
+
+	//The original code would only check for impulse commands if the weapon could fire.
+	//If this cvar is non-zero we'll let players perform impulse commands whenever they want (Source engine behavior) - Solokiller
+	if( sv_new_impulse_check.value == 1 || bCanAttack )
 	{
-		return;
+		ImpulseCommands();
 	}
 
-	ImpulseCommands();
-
-	if( !m_pActiveItem )
-		return;
-
-	m_pActiveItem->ItemPostFrame();
+	if( m_pActiveItem )
+	{
+		if( !bCanAttack )
+		{
+			m_pActiveItem->WeaponBusyPostFrame();
+		}
+		else
+		{
+			m_pActiveItem->ItemPostFrame();
+		}
+	}
 }
 
 void CBasePlayer::GiveNamedItem( const char *pszName )

@@ -53,6 +53,8 @@ public:
 
 	void Reload() override;
 
+	void WeaponHolsterPreFrame() override;
+
 	void ItemPostFrame() override;
 
 public:
@@ -62,6 +64,9 @@ public:
 	void UpdateSpot();
 	void RemoveSpot();
 	// ############ //
+
+private:
+	void RechargeAmmo( bool bLoud );
 
 private:
 	int m_iSpriteTexture;

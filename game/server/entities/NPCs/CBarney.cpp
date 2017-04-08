@@ -193,9 +193,9 @@ int CBarney :: ISoundMask ( void)
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CBarney :: Classify ( void )
+EntityClassification_t CBarney::GetClassification()
 {
-	return	CLASS_PLAYER_ALLY;
+	return EntityClassifications().GetClassificationId( classify::PLAYER_ALLY );
 }
 
 //=========================================================
@@ -690,6 +690,8 @@ Schedule_t *CBarney :: GetSchedule ( void )
 		// try to say something about smells
 		TrySmellTalk();
 		break;
+
+	default: break;
 	}
 	
 	return CTalkMonster::GetSchedule();

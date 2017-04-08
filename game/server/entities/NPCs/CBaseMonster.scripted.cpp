@@ -76,7 +76,7 @@ bool CBaseMonster::CineCleanup()
 	}
 	m_pCine = NULL;
 	m_hTargetEnt = NULL;
-	m_pGoalEnt = NULL;
+	m_hGoalEnt = NULL;
 	if (pev->deadflag == DEAD_DYING)
 	{
 		// last frame of death animation?

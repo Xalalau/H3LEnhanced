@@ -91,26 +91,29 @@ void CPenguinGrenade::Spawn()
 	ResetSequenceInfo();
 }
 
-int CPenguinGrenade::Classify()
+EntityClassification_t CPenguinGrenade::GetClassification()
 {
-	if( m_iMyClass != 0 )
+	if( m_iMyClass != EntityClassifications().GetNoneId() )
 		return m_iMyClass; // protect against recursion
 
 	if( CBaseEntity* pEnemy = m_hEnemy )
 	{
-		m_iMyClass = CLASS_INSECT; // no one cares about it
-		switch( pEnemy->Classify() )
+		m_iMyClass = EntityClassifications().GetClassificationId( classify::INSECT ); // no one cares about it
+
+		const auto classId = pEnemy->Classify();
+
+		if( classId == EntityClassifications().GetClassificationId( classify::PLAYER ) ||
+			classId == EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE ) ||
+			classId == EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY ) )
 		{
-		case CLASS_PLAYER:
-		case CLASS_HUMAN_PASSIVE:
-		case CLASS_HUMAN_MILITARY:
-			m_iMyClass = 0;
-			return CLASS_ALIEN_MILITARY; // barney's get mad, grunts get mad at it
+			m_iMyClass = EntityClassifications().GetNoneId();
+			return EntityClassifications().GetClassificationId( classify::ALIEN_MILITARY ); // barney's get mad, grunts get mad at it
 		}
-		m_iMyClass = 0;
+
+		m_iMyClass = EntityClassifications().GetNoneId();
 	}
 
-	return CLASS_ALIEN_BIOWEAPON;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_BIOWEAPON );
 }
 
 void CPenguinGrenade::Killed( const CTakeDamageInfo& info, GibAction gibAction )

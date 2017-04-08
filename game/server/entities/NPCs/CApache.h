@@ -26,7 +26,7 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	int  Classify( void ) override { return CLASS_HUMAN_MILITARY; };
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY ); }
 	int  BloodColor() const override { return DONT_BLEED; }
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 	void GibMonster( void ) override;

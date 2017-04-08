@@ -100,7 +100,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	pev->owner = nullptr; // can't traceline attack owner if this is set
 
-	RadiusDamage( this, pOwner, pev->dmg, CLASS_NONE, bitsDamageType );
+	RadiusDamage( this, pOwner, pev->dmg, EntityClassifications().GetNoneId(), bitsDamageType );
 
 	if ( RANDOM_FLOAT( 0 , 1 ) < 0.5 )
 	{
@@ -351,7 +351,6 @@ void CGrenade :: TumbleThink( void )
 void CGrenade:: Spawn( void )
 {
 	pev->movetype = MOVETYPE_BOUNCE;
-	pev->classname = MAKE_STRING( "grenade" );
 	
 	pev->solid = SOLID_BBOX;
 
@@ -362,10 +361,16 @@ void CGrenade:: Spawn( void )
 	m_fRegisteredSound = false;
 }
 
+CGrenade* CGrenade::GrenadeCreate()
+{
+	auto pGrenade = static_cast<CGrenade*>( UTIL_CreateNamedEntity( "grenade" ) );
+
+	return pGrenade;
+}
 
 CGrenade* CGrenade::ShootContact( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity )
 {
-	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	auto pGrenade = GrenadeCreate();
 	pGrenade->Spawn();
 	// contact grenades arc lower
 	pGrenade->pev->gravity = 0.5;// lower gravity since grenade is aerodynamic and engine doesn't know it.
@@ -392,7 +397,7 @@ CGrenade* CGrenade::ShootContact( CBaseEntity* pOwner, Vector vecStart, Vector v
 
 CGrenade* CGrenade::ShootTimed( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity, float time )
 {
-	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+	auto pGrenade = GrenadeCreate();
 	pGrenade->Spawn();
 	pGrenade->SetAbsOrigin( vecStart );
 	pGrenade->pev->velocity = vecVelocity;

@@ -70,7 +70,7 @@ CSpiral *CSpiral::Create( const Vector &origin, float height, float radius, floa
 	if( duration <= 0 )
 		return NULL;
 
-	CSpiral *pSpiral = GetClassPtr( ( CSpiral * ) NULL );
+	auto pSpiral = static_cast<CSpiral*>( UTIL_CreateNamedEntity( "streak_spiral" ) );
 	pSpiral->Spawn();
 	pSpiral->pev->dmgtime = pSpiral->pev->nextthink;
 	pSpiral->pev->origin = origin;

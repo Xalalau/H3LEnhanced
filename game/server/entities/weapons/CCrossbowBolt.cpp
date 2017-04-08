@@ -31,9 +31,7 @@ LINK_ENTITY_TO_CLASS( crossbow_bolt, CCrossbowBolt );
 CCrossbowBolt *CCrossbowBolt::BoltCreate()
 {
 	// Create a new entity with CCrossbowBolt private data
-	CCrossbowBolt *pBolt = GetClassPtr( ( CCrossbowBolt * ) NULL );
-	//TODO: classname doesn't match LINK_ENTITY_TO_CLASS. - Solokiller
-	pBolt->pev->classname = MAKE_STRING( "bolt" );
+	auto pBolt = static_cast<CCrossbowBolt*>( UTIL_CreateNamedEntity( "crossbow_bolt" ) );
 	pBolt->Spawn();
 
 	return pBolt;
@@ -70,9 +68,9 @@ void CCrossbowBolt::Precache()
 }
 
 
-int	CCrossbowBolt::Classify()
+EntityClassification_t CCrossbowBolt::GetClassification()
 {
-	return	CLASS_NONE;
+	return EntityClassifications().GetNoneId();
 }
 
 void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
@@ -189,7 +187,7 @@ void CCrossbowBolt::ExplodeThink()
 
 	pev->owner = nullptr; // can't traceline attack owner if this is set
 
-	::RadiusDamage( GetAbsOrigin(), CTakeDamageInfo( this, pOwner, pev->dmg, DMG_BLAST | DMG_ALWAYSGIB ), 128, CLASS_NONE );
+	::RadiusDamage( GetAbsOrigin(), CTakeDamageInfo( this, pOwner, pev->dmg, DMG_BLAST | DMG_ALWAYSGIB ), 128, EntityClassifications().GetNoneId() );
 
 	UTIL_Remove( this );
 }

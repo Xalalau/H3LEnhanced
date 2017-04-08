@@ -24,7 +24,8 @@ public:
 	DECLARE_CLASS( CDeadHEV, CBaseMonster );
 
 	void Spawn( void ) override;
-	int	Classify( void ) override { return	CLASS_HUMAN_MILITARY; }
+	//TODO: why is this human military? Shouldn't this be human passive like dead scientists? - Solokiller
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY ); }
 
 	void KeyValue( KeyValueData *pkvd ) override;
 

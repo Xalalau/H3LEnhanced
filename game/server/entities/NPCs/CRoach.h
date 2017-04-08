@@ -42,7 +42,7 @@ public:
 
 	float	m_flLastLightLevel;
 	float	m_flNextSmellTime;
-	int		Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 	void	Look( int iDistance ) override;
 	int		ISoundMask( void ) override;
 

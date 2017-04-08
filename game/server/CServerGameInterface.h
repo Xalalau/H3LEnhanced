@@ -1,7 +1,11 @@
 #ifndef GAME_SERVER_CSERVERGAMEINTERFACE_H
 #define GAME_SERVER_CSERVERGAMEINTERFACE_H
 
+#include <memory>
+
 #include "CBaseGameInterface.h"
+
+class CServerConfig;
 
 /**
 *	The server's representation of itself.
@@ -46,6 +50,8 @@ public:
 
 	void ClientUserInfoChanged( edict_t* pEntity, char* infobuffer );
 
+	void WorldInit();
+
 	void Activate( edict_t* pEdictList, const int edictCount, const int clientMax );
 
 	void Deactivate();
@@ -73,6 +79,8 @@ public:
 private:
 	bool m_bMapStartedLoading = false;
 	bool m_bActive = false;
+
+	std::unique_ptr<CServerConfig> m_ServerConfig;
 
 private:
 	CServerGameInterface( const CServerGameInterface& ) = delete;

@@ -30,9 +30,9 @@ LINK_ENTITY_TO_CLASS( monster_bloater, CBloater );
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CBloater :: Classify ( void )
+EntityClassification_t CBloater::GetClassification()
 {
-	return	CLASS_ALIEN_MONSTER;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
 }
 
 //=========================================================

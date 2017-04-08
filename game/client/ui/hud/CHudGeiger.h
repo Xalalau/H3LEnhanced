@@ -15,13 +15,20 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDGEIGER_H
 #define GAME_CLIENT_UI_HUD_CHUDGEIGER_H
 
-class CHudGeiger : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudGeiger : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
-	bool Draw( float flTime );
-	int MsgFunc_Geiger( const char *pszName, int iSize, void *pbuf );
+	DECLARE_CLASS( CHudGeiger, CBaseHudElement<CHLHud> );
+
+	CHudGeiger( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
+	bool Draw( float flTime ) override;
+	void MsgFunc_Geiger( const char *pszName, int iSize, void *pbuf );
 
 private:
 	int m_iGeigerRange;

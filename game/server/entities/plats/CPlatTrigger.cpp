@@ -5,6 +5,8 @@
 
 #include "CPlatTrigger.h"
 
+LINK_ENTITY_TO_CLASS( plat_trigger, CPlatTrigger );
+
 //
 // Create a trigger entity for a platform.
 //
@@ -64,5 +66,6 @@ void CPlatTrigger::Touch( CBaseEntity *pOther )
 
 void CPlatTrigger::PlatSpawnInsideTrigger( CFuncPlat* pPlatform )
 {
-	GetClassPtr( ( CPlatTrigger* ) nullptr )->SpawnInsideTrigger( pPlatform );
+	auto pTrigger = static_cast<CPlatTrigger*>( UTIL_CreateNamedEntity( "plat_trigger" ) );
+	pTrigger->SpawnInsideTrigger( pPlatform );
 }

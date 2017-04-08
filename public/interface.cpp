@@ -265,5 +265,27 @@ CreateInterfaceFn Sys_GetFactory( const char *pModuleName )
 #endif
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: finds a particular interface in the factory set
+//-----------------------------------------------------------------------------
+void *InitializeInterface( char const *interfaceName, CreateInterfaceFn *factoryList, int numFactories )
+{
+	void *retval;
 
+	for( int i = 0; i < numFactories; i++ )
+	{
+		CreateInterfaceFn factory = factoryList[ i ];
+		if( !factory )
+			continue;
+
+		retval = factory( interfaceName, NULL );
+		if( retval )
+			return retval;
+	}
+
+	// No provider for requested interface!!!
+	// Assert( !"No provider for requested interface!!!" );
+
+	return NULL;
+}
 

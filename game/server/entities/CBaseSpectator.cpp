@@ -37,7 +37,7 @@ void CBaseSpectator::SpectatorConnect()
 	SetSolidType( SOLID_NOT );
 	SetMoveType( MOVETYPE_NOCLIP );
 	
-	m_pGoalEnt = nullptr;
+	m_hGoalEnt = nullptr;
 }
 
 /*
@@ -145,5 +145,5 @@ void CBaseSpectator::Spawn()
 	SetSolidType( SOLID_NOT );
 	SetMoveType( MOVETYPE_NOCLIP );
 	
-	m_pGoalEnt = nullptr;
+	m_hGoalEnt = nullptr;
 }

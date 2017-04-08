@@ -27,7 +27,7 @@ public:
 	*/
 	CBasePlayer* GetLocalPlayer() { return m_pPlayer; }
 
-	int MsgFunc_WpnBody( const char* pszName, int iSize, void* pBuf );
+	void MsgFunc_WpnBody( const char* pszName, int iSize, void* pBuf );
 
 	void Initialize();
 
@@ -67,11 +67,6 @@ private:
 	CBasePlayerWeapon* m_pWeapons[ MAX_WEAPONS ] = {};
 
 	CBasePlayer* m_pPlayer = nullptr;
-
-	/**
-	*	The Id of the last weapon that the player was holding. - Solokiller
-	*/
-	int m_iLastId = WEAPON_NONE;
 
 private:
 	CClientPrediction( const CClientPrediction& ) = delete;

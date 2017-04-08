@@ -8,7 +8,10 @@
 #include "steam/steamtypes.h"
 
 #ifndef _WIN32
+//TODO: resolve the multiple definitions of this constant. - Solokiller
+#ifndef MAX_PATH
 #define MAX_PATH PATH_MAX
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <limits.h>

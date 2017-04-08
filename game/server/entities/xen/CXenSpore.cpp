@@ -115,12 +115,11 @@ void CXenSporeLarge::Spawn( void )
 
 CXenHull *CXenHull::CreateHull( CBaseEntity *source, const Vector &mins, const Vector &maxs, const Vector &offset )
 {
-	CXenHull *pHull = GetClassPtr( ( CXenHull * ) NULL );
+	auto pHull = static_cast<CXenHull*>( UTIL_CreateNamedEntity( "xen_hull" ) );
 
 	pHull->SetAbsOrigin( source->GetAbsOrigin() + offset );
 	pHull->SetModel( STRING( source->pev->model ) );
 	pHull->pev->solid = SOLID_BBOX;
-	pHull->pev->classname = MAKE_STRING( "xen_hull" );
 	pHull->pev->movetype = MOVETYPE_NONE;
 	pHull->pev->owner = source->edict();
 	pHull->SetSize( mins, maxs );

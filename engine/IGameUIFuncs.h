@@ -3,7 +3,7 @@
 
 #include "interface.h"
 
-#include "vgui/iinput.h"
+#include "vgui/IInput.h"
 
 /**
 *	Represents a single video mode.

@@ -310,7 +310,7 @@ void CCrossbow::SecondaryAttack()
 
 void CCrossbow::Reload( void )
 {
-	if ( m_pPlayer->GetAmmoCount( "bolts" ) <= 0 )
+	if ( m_pPlayer->GetAmmoCountByID( PrimaryAmmoIndex() ) <= 0 )
 		return;
 
 	// ############ hu3lifezado ############ //

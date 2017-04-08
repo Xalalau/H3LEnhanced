@@ -51,6 +51,8 @@ CBaseEntity
 
 #include "CTakeDamageInfo.h"
 
+#include "EntityClasses.h"
+
 #if USE_ANGELSCRIPT && defined( SERVER_DLL )
 #include <Angelscript/util/CASRefPtr.h>
 
@@ -75,7 +77,7 @@ public:
 	entvars_t *pev;		// Don't need to save/restore this pointer, the engine resets it
 
 						// path corners
-	CBaseEntity			*m_pGoalEnt;// path corner we are heading towards
+	EHANDLE				m_hGoalEnt;// path corner we are heading towards
 	CBaseEntity			*m_pLink;// used for temporary link-list operations. 
 
 	/*
@@ -88,11 +90,21 @@ public:
 	const char* GetClassname() const { return STRING( pev->classname ); }
 
 	/**
+	*	Sets this entity's classname.
+	*	It is assumed that pszClassName is either a string in the program's string table or allocated using ALLOC_STRING,
+	*	or otherwise has a lifetime that is at least as long as the rest of the map.
+	*/
+	void SetClassname( const char* pszClassName )
+	{
+		pev->classname = MAKE_STRING( pszClassName );
+	}
+
+	/**
 	*	@return Whether this entity's classname matches the given classname.
 	*/
 	bool ClassnameIs( const char* const pszClassName ) const
 	{
-		return FClassnameIs( this, pszClassName );
+		return FStrEq( GetClassname(), pszClassName );
 	}
 
 	/**
@@ -100,7 +112,7 @@ public:
 	*/
 	bool ClassnameIs( const string_t iszClassName ) const
 	{
-		return FClassnameIs( this, STRING( iszClassName ) );
+		return ClassnameIs( STRING( iszClassName ) );
 	}
 
 	/**
@@ -1795,7 +1807,7 @@ public:
 	*	Called once for each keyvalue provided in the bsp file for this entity.
 	*	@param pkvd Keyvalue data. Set pkvd->fHandled to true if you handled the key.
 	*/
-	virtual void KeyValue( KeyValueData* pkvd ) { pkvd->fHandled = false; }
+	virtual void KeyValue( KeyValueData* pkvd );
 
 	/**
 	*	Called when the entity should precache its resources.
@@ -2004,12 +2016,6 @@ public:
 	*	@return Newly created entity, or null if the entity could not be created.
 	*/
 	static CBaseEntity* Create( const char* const pszName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = nullptr, const bool bSpawnEntity = true );
-
-	/*
-	*	Returns the type of group (i.e, "houndeye", or "human military" so that monsters with different classnames
-	*	still realize that they are teammates. (overridden for monsters that form groups)
-	*/
-	virtual int Classify() { return CLASS_NONE; }
 
 	/**
 	*	@return This entity's blood color.
@@ -2339,7 +2345,81 @@ public:
 	*/
 	bool FBoxVisible( const CBaseEntity* pTarget, Vector& vecTargetOrigin, float flSize = 0.0 ) const;
 
+	//New classification system start. - Solokiller
+private:
+	//Overrideable by user. Save/restored manually to store off names instead of temporary Ids.
+	EntityClassification_t m_ClassificationOverride = INVALID_ENTITY_CLASSIFICATION;
+
+protected:
+	/*
+	*	The classification for this entity, as defined by the entity itself.
+	*	Subclasses can override this to define a classification for themselves.
+	*	Classification override is handled by Classify.
+	*	Do not call directly.
+	*	@see Classify
+	*/
+	virtual EntityClassification_t GetClassification()
+	{
+		return EntityClassifications().GetNoneId();
+	}
+
+public:
+	/**
+	*	Gets the original classification. If the classification is overridden, this is the only way to get this value.
+	*	Always use Classify unless you need the original classification defined by the entity.
+	*	Note: do not replace with GetClassification(), if caching is needed then this is where that caching will be implemented.
+	*	@see Classify
+	*/
+	EntityClassification_t GetOriginalClassification()
+	{
+		return GetClassification();
+	}
+
+	/**
+	*	Gets the overridden classification, or INVALID_ENTITY_CLASSIFICATION if it isn't overridden.
+	*/
+	EntityClassification_t GetClassificationOverride() { return m_ClassificationOverride; }
+
+	/**
+	*	Sets the classification of this entity.
+	*/
+	void SetClassificationOverride( EntityClassification_t classification )
+	{
+		m_ClassificationOverride = classification;
+	}
+
+	/**
+	*	Clears the overridden classification.
+	*/
+	void ClearOverriddenClassification()
+	{
+		SetClassificationOverride( INVALID_ENTITY_CLASSIFICATION );
+	}
+
+	/**
+	*	@return Whether the classification for this entity is overridden.
+	*/
+	bool IsClassificationOverridden() { return GetClassificationOverride() != INVALID_ENTITY_CLASSIFICATION; }
+
+	/*
+	*	Returns the type of group (i.e, "houndeye", or "human military" so that monsters with different classnames
+	*	still realize that they are teammates. (overridden for monsters that form groups)
+	*/
+	EntityClassification_t Classify()
+	{
+		//User has overridden the classification, return setting.
+		if( m_ClassificationOverride != INVALID_ENTITY_CLASSIFICATION )
+		{
+			return m_ClassificationOverride;
+		}
+
+		return GetOriginalClassification();
+	}
+
+	//New classification system end. - Solokiller
+
 #if USE_ANGELSCRIPT && defined( SERVER_DLL )
+public:
 	//Angelscript specific extensions. - Solokiller
 	CScriptDictionary* GetUserData() const;
 

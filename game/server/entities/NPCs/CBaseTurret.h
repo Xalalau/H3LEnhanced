@@ -57,7 +57,7 @@ public:
 
 	virtual void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
 	virtual void OnTakeDamage( const CTakeDamageInfo& info ) override;
-	virtual int	 Classify( void ) override;
+	virtual EntityClassification_t GetClassification() override;
 
 	int BloodColor() const override { return DONT_BLEED; }
 	void GibMonster( void ) override {}	// UNDONE: Throw turret gibs?

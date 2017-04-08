@@ -69,7 +69,7 @@ int CBullsquid::IgnoreConditions ( void )
 // IRelationship - overridden for bullsquid so that it can
 // be made to ignore its love of headcrabs for a while.
 //=========================================================
-int CBullsquid::IRelationship ( CBaseEntity *pTarget )
+Relationship CBullsquid::IRelationship ( CBaseEntity *pTarget )
 {
 	if ( gpGlobals->time - m_flLastHurtTime < 5 && pTarget->ClassnameIs( "monster_headcrab" ) )
 	{
@@ -224,9 +224,9 @@ int CBullsquid :: ISoundMask ( void )
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CBullsquid :: Classify ( void )
+EntityClassification_t CBullsquid::GetClassification()
 {
-	return	CLASS_ALIEN_PREDATOR;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_PREDATOR );
 }
 
 //=========================================================
@@ -922,6 +922,8 @@ Schedule_t *CBullsquid :: GetSchedule( void )
 
 			break;
 		}
+
+	default: break;
 	}
 
 	return CBaseMonster :: GetSchedule();
@@ -1072,6 +1074,8 @@ MONSTERSTATE CBullsquid :: GetIdealState ( void )
 			}
 			break;
 		}
+
+	default: break;
 	}
 
 	m_IdealMonsterState = CBaseMonster :: GetIdealState();

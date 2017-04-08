@@ -108,8 +108,8 @@ inline void RegisterScriptCBaseEntity( asIScriptEngine& engine, const char* cons
 	as::RegisterCasts<CBaseEntity, CLASS>( engine, AS_CBASEENTITY_NAME, pszObjectName, &as::Cast_UpCast, &as::Cast_DownCast );
 
 	engine.RegisterObjectProperty(
-		pszObjectName, "CBaseEntity@ m_pGoalEnt",
-		asOFFSET( CLASS, m_pGoalEnt ) );
+		pszObjectName, "EHANDLE m_hGoalEnt",
+		asOFFSET( CLASS, m_hGoalEnt ) );
 
 	engine.RegisterObjectProperty(
 		pszObjectName, "CBaseEntity@ m_pLink",
@@ -991,7 +991,7 @@ inline void RegisterScriptCBaseEntity( asIScriptEngine& engine, const char* cons
 		asMETHOD( CLASS, Blocked ), asCALL_THISCALL );
 
 	engine.RegisterObjectMethod(
-		pszObjectName, "int Classify()",
+		pszObjectName, "EntityClassification_t Classify()",
 		asMETHOD( CLASS, Classify ), asCALL_THISCALL );
 
 	engine.RegisterObjectMethod(
@@ -1299,7 +1299,7 @@ void BaseEntity_Blocked( CLASS* pThis, CBaseEntity* pOther )
 }
 
 template<typename CLASS>
-int BaseEntity_Classify( CLASS* pThis )
+EntityClassification_t BaseEntity_Classify( CLASS* pThis )
 {
 	return pThis->CLASS::Classify();
 }
@@ -1546,7 +1546,7 @@ void RegisterScriptBaseEntity( asIScriptEngine& engine, const char* const pszObj
 		asFUNCTION( BaseEntity_Blocked<CLASS> ), asCALL_CDECL_OBJFIRST );
 
 	engine.RegisterObjectMethod(
-		pszObjectName, "int Classify()",
+		pszObjectName, "EntityClassification_t Classify()",
 		asFUNCTION( BaseEntity_Classify<CLASS> ), asCALL_CDECL_OBJFIRST );
 
 	engine.RegisterObjectMethod(

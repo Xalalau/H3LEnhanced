@@ -620,7 +620,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				vecDest = vecSrc + vecDir * 8192;
 
 				// explode a bit
-				m_pPlayer->RadiusDamage( tr.vecEndPos, this, m_pPlayer, flDamage * n, CLASS_NONE, DMG_BLAST );
+				m_pPlayer->RadiusDamage( tr.vecEndPos, this, m_pPlayer, flDamage * n, EntityClassifications().GetNoneId(), DMG_BLAST );
 
 				nTotal += 34;
 				
@@ -657,7 +657,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 							nTotal += 21;
 
 							// exit blast damage
-							//m_pPlayer->RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, CLASS_NONE, DMG_BLAST );
+							//m_pPlayer->RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, EntityClassifications().GetNoneId(), DMG_BLAST );
 							float damage_radius;
 							
 
@@ -670,7 +670,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 								damage_radius = flDamage * 2.5;
 							}
 
-							::RadiusDamage( beam_tr.vecEndPos + vecDir * 8, CTakeDamageInfo( this, m_pPlayer, flDamage, DMG_BLAST ), damage_radius, CLASS_NONE );
+							::RadiusDamage( beam_tr.vecEndPos + vecDir * 8, CTakeDamageInfo( this, m_pPlayer, flDamage, DMG_BLAST ), damage_radius, EntityClassifications().GetNoneId() );
 
 							CSoundEnt::InsertSound ( bits_SOUND_COMBAT, GetAbsOrigin(), NORMAL_EXPLOSION_VOLUME, 3.0 );
 
@@ -934,7 +934,7 @@ void CGauss::SonicAttack(int force)
 	{
 		if (pEntity->pev->takedamage != DAMAGE_NO)
 		{
-			if ( !FClassnameIs(pEntity->pev, STRING(pClient->v.classname)) )
+			if ( !pEntity->ClassnameIs(STRING(pClient->v.classname)) )
 			{// houndeyes don't hurt other houndeyes with their attack
 
 				// Para nao ser tao OP, dano durante o anel supremo tem que ser calculado bem mais leve do que o de um anel ъnico
@@ -957,7 +957,7 @@ void CGauss::SonicAttack(int force)
 						// so that monsters in other parts of the level don't take the damage and get pissed.
 						flAdjustedDamage *= 0.5;
 					}
-					else if (!FClassnameIs(pEntity->pev, "func_breakable") && !FClassnameIs(pEntity->pev, "func_pushable"))
+					else if (!pEntity->ClassnameIs("func_breakable") && !pEntity->ClassnameIs("func_pushable"))
 					{
 						// do not hurt nonclients through walls, but allow damage to be done to breakables
 						flAdjustedDamage = 0;

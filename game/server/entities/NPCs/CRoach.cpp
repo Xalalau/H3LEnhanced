@@ -46,9 +46,9 @@ int CRoach :: ISoundMask ( void )
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CRoach :: Classify ( void )
+EntityClassification_t CRoach::GetClassification()
 {
-	return CLASS_INSECT;
+	return EntityClassifications().GetClassificationId( classify::INSECT );
 }
 
 //=========================================================
@@ -418,7 +418,7 @@ void CRoach :: Look ( int iDistance )
 				case	R_NO:
 					break;
 				default:
-					ALERT ( at_console, "%s can't asses %s\n", GetClassname(), pSightEnt->GetClassname() );
+					ALERT ( at_console, "%s can't assess %s\n", GetClassname(), pSightEnt->GetClassname() );
 					break;
 				}
 			}

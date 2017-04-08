@@ -13,6 +13,11 @@ public:
 	~CClientGameInterface() = default;
 
 	/**
+	*	@return The map name.
+	*/
+	const char* GetMapName() const { return m_szMapName; }
+
+	/**
 	*	Initializes the client.
 	*	@return true on success, false on failure.
 	*/
@@ -52,6 +57,8 @@ private:
 private:
 	bool m_bNewMapStarted = false;
 	bool m_bParseMapData = false;
+
+	char m_szMapName[ MAX_PATH ] = {};
 
 private:
 	CClientGameInterface( const CClientGameInterface& ) = delete;

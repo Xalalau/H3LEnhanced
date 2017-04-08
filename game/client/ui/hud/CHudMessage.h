@@ -15,15 +15,39 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDMESSAGE_H
 #define GAME_CLIENT_UI_HUD_CHUDMESSAGE_H
 
-class CHudMessage : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+struct message_parms_t
+{
+	client_textmessage_t	*pMessage;
+	float	time;
+	int x, y;
+	int	totalWidth, totalHeight;
+	int width;
+	int lines;
+	int lineLength;
+	int length;
+	int r, g, b;
+	int text;
+	int fadeBlend;
+	float charTime;
+	float fadeTime;
+};
+
+class CHudMessage : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudMessage, CBaseHudElement<CHLHud> );
+
+	CHudMessage( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
-	int MsgFunc_HudText( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_HudTextPro( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_GameTitle( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_HudText( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_HudTextPro( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_GameTitle( const char *pszName, int iSize, void *pbuf );
 
 	float FadeBlend( float fadein, float fadeout, float hold, float localTime );
 	int	XPosition( float x, int width, int lineWidth );

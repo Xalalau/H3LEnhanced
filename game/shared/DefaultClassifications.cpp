@@ -1,0 +1,43 @@
+#include "Platform.h"
+
+#include "DefaultClassifications.h"
+
+namespace classify
+{
+const char NONE[] = "NONE";
+const char MACHINE[] = "MACHINE";
+const char PLAYER[] = "PLAYER";
+const char HUMAN_PASSIVE[] = "HUMAN_PASSIVE";
+const char HUMAN_MILITARY[] = "HUMAN_MILITARY";
+const char ALIEN_MILITARY[] = "ALIEN_MILITARY";
+const char ALIEN_PASSIVE[] = "ALIEN_PASSIVE";
+const char ALIEN_MONSTER[] = "ALIEN_MONSTER";
+const char ALIEN_PREY[] = "ALIEN_PREY";
+const char ALIEN_PREDATOR[] = "ALIEN_PREDATOR";
+const char INSECT[] = "INSECT";
+const char PLAYER_ALLY[] = "PLAYER_ALLY";
+const char PLAYER_BIOWEAPON[] = "PLAYER_BIOWEAPON";
+const char ALIEN_BIOWEAPON[] = "ALIEN_BIOWEAPON";
+const char IGNORE[] = "IGNORE";
+
+const char* const DEFAULT_CLASSIFICATIONS[] =
+{
+	NONE,
+	MACHINE,
+	PLAYER,
+	HUMAN_PASSIVE,
+	HUMAN_MILITARY,
+	ALIEN_MILITARY,
+	ALIEN_PASSIVE,
+	ALIEN_MONSTER,
+	ALIEN_PREY,
+	ALIEN_PREDATOR,
+	INSECT,
+	PLAYER_ALLY,
+	PLAYER_BIOWEAPON,
+	ALIEN_BIOWEAPON,
+	IGNORE
+};
+
+const size_t MAX_DEFAULT_CLASSIFICATIONS = ARRAYSIZE( DEFAULT_CLASSIFICATIONS );
+}

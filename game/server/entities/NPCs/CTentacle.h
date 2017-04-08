@@ -123,7 +123,7 @@ public:
 	MONSTERSTATE GetIdealState() override { return MONSTERSTATE_IDLE; };
 	bool CanPlaySequence( const bool fDisregardState ) const { return true; }
 
-	int Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 
 	int Level( float dz );
 	int MyLevel( void );

@@ -1161,7 +1161,7 @@ void CreateInstancedBaselines()
 	memset( &state, 0, sizeof( state ) );
 
 	// Create any additional baselines here for things like grenades, etc.
-	// iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );
+	// iret = ENGINE_INSTANCE_BASELINE( MAKE_STRING( pc->GetClassname() ), &state );
 
 	// Destroy objects.
 	//UTIL_Remove( pc );

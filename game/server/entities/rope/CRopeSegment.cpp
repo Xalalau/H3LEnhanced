@@ -48,8 +48,6 @@ void CRopeSegment::Precache()
 
 void CRopeSegment::Spawn()
 {
-	pev->classname = MAKE_STRING( "rope_segment" );
-
 	Precache();
 
 	SetModel( STRING( m_iszModelName ) );
@@ -135,7 +133,7 @@ void CRopeSegment::Touch( CBaseEntity* pOther )
 
 CRopeSegment* CRopeSegment::CreateSegment( CRopeSample* pSample, string_t iszModelName )
 {
-	CRopeSegment* pSegment = GetClassPtr<CRopeSegment>( nullptr );
+	auto pSegment = static_cast<CRopeSegment*>( UTIL_CreateNamedEntity( "rope_segment" ) );
 
 	pSegment->m_iszModelName = iszModelName;
 

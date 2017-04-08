@@ -32,7 +32,6 @@ LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit );
 void CSquidSpit::Spawn( void )
 {
 	pev->movetype = MOVETYPE_FLY;
-	pev->classname = MAKE_STRING( "squidspit" );
 
 	pev->solid = SOLID_BBOX;
 	pev->rendermode = kRenderTransAlpha;
@@ -52,7 +51,7 @@ void CSquidSpit::Spawn( void )
 
 void CSquidSpit::Shoot( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity )
 {
-	CSquidSpit *pSpit = GetClassPtr( ( CSquidSpit * ) NULL );
+	auto pSpit = static_cast<CSquidSpit*>( UTIL_CreateNamedEntity( "squidspit" ) );
 	pSpit->Spawn();
 
 	pSpit->SetAbsOrigin( vecStart );

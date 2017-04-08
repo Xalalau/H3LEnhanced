@@ -12,11 +12,13 @@
 #include<VGUI_IntChangeSignal.h>
 #include<VGUI_MouseCode.h>
 
+#include "vgui_defaultinputsignal.h"
+
 using namespace vgui;
 
 namespace
 {
-class FooDefaultSliderSignal : public InputSignal
+class FooDefaultSliderSignal : public CDefaultInputSignal
 {
 private:
 	Slider2* _slider;
@@ -30,22 +32,16 @@ public:
 	{
 		_slider->privateCursorMoved(x,y,panel);
 	}
-	void cursorEntered(Panel* panel){}
-	void cursorExited(Panel* panel){}
-	void mouseDoublePressed(MouseCode code,Panel* panel){}
+
 	void mousePressed(MouseCode code,Panel* panel)
 	{
 		_slider->privateMousePressed(code,panel);
 	}
+
 	void mouseReleased(MouseCode code,Panel* panel)
 	{
 		_slider->privateMouseReleased(code,panel);
 	}
-	void mouseWheeled(int delta,Panel* panel){}
-	void keyPressed(KeyCode code,Panel* panel){}
-	void keyTyped(KeyCode code,Panel* panel){}
-	void keyReleased(KeyCode code,Panel* panel){}
-	void keyFocusTicked(Panel* panel){}
 };
 }
 

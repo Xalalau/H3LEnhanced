@@ -49,7 +49,6 @@ void CFlockingFlyer::Precache()
 void CFlockingFlyer::SpawnCommonCode()
 {
 	pev->deadflag = DEAD_NO;
-	pev->classname = MAKE_STRING( "monster_flyer" );
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_FLY;
 	pev->takedamage = DAMAGE_NO;

@@ -26,6 +26,8 @@ public:
 
 	void Spawn( void ) override;
 
+	static CGrenade* GrenadeCreate();
+
 	static CGrenade* ShootTimed( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity, float time );
 	static CGrenade* ShootContact( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity );
 

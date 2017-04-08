@@ -15,11 +15,14 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDAMMO_H
 #define GAME_CLIENT_UI_HUD_CHUDAMMO_H
 
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
 #include "Color.h"
 
 class CBasePlayerWeapon;
 
-class CHudAmmo : public CHudBase
+class CHudAmmo : public CBaseHudElement<CHLHud>
 {
 private:
 	/**
@@ -42,21 +45,24 @@ private:
 		*/
 		CROSS_USERSCALE = 2,
 	};
-
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudAmmo, CBaseHudElement<CHLHud> );
+
+	CHudAmmo( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
 	void Think() override;
 	void Reset() override;
 
 	int DrawWList( float flTime );
-	int MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_AmmoX( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_AmmoPickup( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ItemPickup( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf );
+	bool MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_AmmoX( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_AmmoPickup( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_ItemPickup( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf );
 
 	void SlotInput( int iSlot );
 	void _cdecl UserCmd_Slot1( void );
@@ -80,14 +86,18 @@ public:
 	// ############ hu3lifezado ############ //
 	// Funcao para religar o crosshair na primeira pessoa
 	void hu3ReativarCrosshair(void);
+	bool isPlayerDead(void);
 	// ############ //
 
 private:
+	int DrawBar( int x, int y, int width, int height, float f );
+	void DrawAmmoBar( CBasePlayerWeapon *p, int x, int y, int width, int height );
+
 	void UpdateWeaponHUD( CBasePlayerWeapon* pWeapon, bool bOnTarget );
 
 private:
 	float m_fFade;
-	Color  m_rgba;
+	::Color  m_rgba;
 	CBasePlayerWeapon *m_pWeapon;
 	int	m_HUD_bucket0;
 	int m_HUD_selection;
@@ -120,6 +130,8 @@ private:
 
 	// Ammo Bar width and height
 	int m_iBucketHeight, m_iBucketWidth, m_iABHeight, m_iABWidth;
+
+	bool m_bPlayerDead = false;
 };
 
 #endif //GAME_CLIENT_UI_HUD_CHUDAMMO_H

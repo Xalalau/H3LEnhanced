@@ -18,6 +18,8 @@
 #ifndef GAME_CLIENT_CL_UTIL_H
 #define GAME_CLIENT_CL_UTIL_H
 
+#include <type_traits>
+
 #include "cvardef.h"
 
 #include <stdio.h> // for safe_sprintf()
@@ -28,31 +30,54 @@
 
 // Macros to hook function calls into the HUD object
 /**
-*	Declares a function that calls the HUD class method for the given network message.
-*	@param className HUD class name.
-*	@param messageName Name of the message. The HUD class method should be named MsgFunc_<messageName>.
+*	Gets the Hud class instance of the given class name.
 */
-#define DECLARE_MESSAGE( className, messageName )							\
-int __MsgFunc_##messageName( const char *pszName, int iSize, void *pbuf )	\
-{																			\
-	return gHUD.className.MsgFunc_##messageName( pszName, iSize, pbuf );	\
-}
+#define GETHUDCLASS( className )									\
+( static_cast<className*>( Hud().GetHud().HudList().GetElementByName( #className ) ) )
+
+#define __HOOK_MESSAGE_ON_HANDLER( handler, object, messageName )				\
+handler.Add( 																	\
+	#messageName, 																\
+	object, 																	\
+	&std::remove_reference<decltype( object )>::type::MsgFunc_##messageName )
+
+/**
+*	Hooks a message for an object on the global message handlers.
+*/
+#define HOOK_GLOBAL_MESSAGE( object, messageName )						\
+__HOOK_MESSAGE_ON_HANDLER( MessageHandlers(), object, messageName )
+
+/**
+*	Hooks a message for an object on a specific Hud.
+*/
+#define HOOK_OBJECT_MESSAGE( hud, object, messageName )						\
+__HOOK_MESSAGE_ON_HANDLER( hud.GetMessageHandlers(), object, messageName )
+
+/**
+*	Same as HOOK_MESSAGE, but for classes deriving from CBaseHud. Uses the local message handlers.
+*/
+#define HOOK_HUD_MESSAGE( messageName )				\
+HOOK_OBJECT_MESSAGE( ( *this ), *this, messageName )
 
 /**
 *	Hooks a network message function.
-*	@param messageName Name of the message whose function should be hooked. The function name is __MsgFunc_<messageName>.
+*	@param messageName Name of the message whose function should be hooked. The function name is ThisClass::MsgFunc_<messageName>.
 */
-#define HOOK_MESSAGE( messageName ) gEngfuncs.pfnHookUserMsg( #messageName, __MsgFunc_##messageName );
+#define HOOK_MESSAGE( messageName )					\
+HOOK_OBJECT_MESSAGE( GetHud(), *this, messageName )
 
 /**
 *	Declares a function that calls the HUD class method for the given command.
 *	@param className HUD class name.
 *	@param commandFuncName Name of the command. The HUD class method should be named UserCmd_<commandFuncName>.
 */
-#define DECLARE_COMMAND( className, commandFuncName )	\
-void __CmdFunc_##commandFuncName()						\
-{														\
-	gHUD.className.UserCmd_##commandFuncName();			\
+#define DECLARE_COMMAND( className, commandFuncName )								\
+void __CmdFunc_##commandFuncName()													\
+{																					\
+	if( auto pElement = Hud().GetHud().HudList().GetElementByName( #className ) )	\
+	{																				\
+		( static_cast<className*>( pElement ) )->UserCmd_##commandFuncName();		\
+	}																				\
 }
 
 /**
@@ -106,9 +131,9 @@ client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, int iRe
 
 
 // ScreenHeight returns the height of the screen, in pixels
-#define ScreenHeight (gHUD.m_scrinfo.iHeight)
+#define ScreenHeight (Hud().ScreenInfo().iHeight)
 // ScreenWidth returns the width of the screen, in pixels
-#define ScreenWidth (gHUD.m_scrinfo.iWidth)
+#define ScreenWidth (Hud().ScreenInfo().iWidth)
 
 // use this to project world coordinates to screen coordinates
 #define XPROJECT(x)	( (1.0f+(x))*ScreenWidth*0.5f )
@@ -261,5 +286,31 @@ inline void UnpackRGB( int& r, int& g, int& b, unsigned long ulRGB )
 *	@copydoc cl_enginefunc_t::GetPlayerUniqueID
 */
 bool UTIL_GetPlayerUniqueID( int iPlayer, char playerID[ PLAYERID_BUFFER_SIZE ] );
+
+#define MSG_BUF_SIZE 128
+
+/**
+*	Prints a text message with up to 4 string arguments.
+*/
+void UTIL_TextMsg( const ClientPrintDest msgDest, 
+				   const char* pszMessage, 
+				   const char* pszString1 = nullptr, const char* pszString2 = nullptr, const char* pszString3 = nullptr, const char* pszString4 = nullptr );
+
+/**
+*	Localized version of UTIL_TextMsg.
+*	@see UTIL_TextMsg
+*/
+void UTIL_LocalizedTextMsg( const ClientPrintDest msgDest,
+				   const char* pszMessage,
+				   const char* pszString1 = nullptr, const char* pszString2 = nullptr, const char* pszString3 = nullptr, const char* pszString4 = nullptr );
+
+/**
+*	Gets the name of the current map, without maps/ and .bsp.
+*	The destination buffer is only modified if the function returns true.
+*	@param[ out ] pszBuffer Destination buffer.	Should ideally be MAX_PATH or greater.
+*	@param uiSizeInBytes Size of the destination buffer, in bytes.
+*	@return Whether the map name was successfully extracted.
+*/
+bool UTIL_GetMapName( char* pszBuffer, const size_t uiSizeInBytes );
 
 #endif //GAME_CLIENT_CL_UTIL_H

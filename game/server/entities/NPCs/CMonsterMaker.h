@@ -38,6 +38,9 @@ public:
 	void DeathNotice( CBaseEntity* pChild ) override;// monster maker children use this to tell the monster maker that they have died.
 	void MakeMonster( void );
 
+	bool Save( CSave& save ) override;
+	bool Restore( CRestore& restore ) override;
+
 	string_t m_iszMonsterClassname;// classname of the monster(s) that will be created.
 
 	int	 m_cNumMonsters;// max number of monsters this ent can create
@@ -50,6 +53,8 @@ public:
 
 	bool m_fActive;
 	bool m_fFadeChildren;// should we make the children fadeout?
+
+	EntityClassification_t m_MonsterClassificationOverride = INVALID_ENTITY_CLASSIFICATION;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CMONSTERMAKER_H

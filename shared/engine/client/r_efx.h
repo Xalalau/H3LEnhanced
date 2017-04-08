@@ -438,7 +438,7 @@ struct efx_api_t
 	*	Creates a muzzleflash sprite.
 	*	@param vecOrigin Origin.
 	*	@param type The scale and sprite to use.
-	*				If not 0, calculates the scale as follows: ( ( double ) type / 10 ) * 0.1
+	*				If not 0, calculates the scale as follows: ( type / 10 ) * 0.1
 	*				Sprite is determined as follows: type % 10 % 3
 	*				Maps to the following sprites:
 	*				sprites/muzzleflash1.spr

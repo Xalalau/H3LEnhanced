@@ -15,6 +15,8 @@
 //
 // $NoKeywords: $
 //=============================================================================
+#include <memory>
+
 #include<VGUI_Cursor.h>
 #include<VGUI_Frame.h>
 #include<VGUI_Label.h>
@@ -48,123 +50,31 @@
 #include "demo_api.h"
 
 #include "vgui_int.h"
+#include "vgui_ActionSignalHandlers.h"
+#include "vgui_InputSignalHandlers.h"
 #include "vgui_TeamFortressViewport.h"
+#include "vgui_TeamMenu.h"
 #include "vgui_ScorePanel.h"
 #include "vgui_SpectatorPanel.h"
 
 #include "shake.h"
 #include "screenfade.h"
 
+#include "shared/CLocalize.h"
+
+#include "vgui_CommandMenu.h"
+
 extern int g_iVisibleMouse;
-class CCommandMenu;
 int g_iPlayerClass;
 int g_iTeamNumber;
 int g_iUser1 = 0;
 int g_iUser2 = 0;
 int g_iUser3 = 0;
 
-// Scoreboard positions
-#define SBOARD_INDENT_X			XRES(104)
-#define SBOARD_INDENT_Y			YRES(40)
-
-// low-res scoreboard indents
-#define SBOARD_INDENT_X_512		30
-#define SBOARD_INDENT_Y_512		30
-
-#define SBOARD_INDENT_X_400		0
-#define SBOARD_INDENT_Y_400		20
-
 void IN_ResetMouse( void );
 extern CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall );
 
 using namespace vgui;
-
-// Team Colors
-int iNumberOfTeamColors = 5;
-int iTeamColors[5][3] =
-{
-	{ 255, 170, 0 },	// HL orange (default)
-	{ 125, 165, 210 },	// Blue
-	{ 200, 90, 70 },	// Red
-	{ 225, 205, 45 },	// Yellow
-	{ 145, 215, 140 },	// Green
-};
-
-
-// Used for Class specific buttons
-const char* const sTFClasses[] =
-{
-	"",
-	"SCOUT",
-	"SNIPER",
-	"SOLDIER",
-	"DEMOMAN",
-	"MEDIC",
-	"HWGUY",
-	"PYRO",
-	"SPY",
-	"ENGINEER",
-	"CIVILIAN",
-};
-
-const char* const sLocalisedClasses[] = 
-{
-	"#Civilian",
-	"#Scout",
-	"#Sniper",
-	"#Soldier",
-	"#Demoman",
-	"#Medic",
-	"#HWGuy",
-	"#Pyro",
-	"#Spy",
-	"#Engineer",
-	"#Random",
-	"#Civilian",
-};
-
-const char* const sTFClassSelection[] = 
-{
-	"civilian",
-	"scout",
-	"sniper",
-	"soldier",
-	"demoman",
-	"medic",
-	"hwguy",
-	"pyro",
-	"spy",
-	"engineer",
-	"randompc",
-	"civilian",
-};
-
-#ifdef _TFC
-int iBuildingCosts[] =
-{
-	BUILD_COST_DISPENSER,
-	BUILD_COST_SENTRYGUN,
-	BUILD_COST_TELEPORTER
-};
-
-// This maps class numbers to the Invalid Class bit.
-// This is needed for backwards compatability in maps that were finished before
-// all the classes were in TF. Hence the wacky sequence.
-int sTFValidClassInts[] =
-{
-	0,
-	TF_ILL_SCOUT,
-	TF_ILL_SNIPER,
-	TF_ILL_SOLDIER,
-	TF_ILL_DEMOMAN,
-	TF_ILL_MEDIC,
-	TF_ILL_HVYWEP,
-	TF_ILL_PYRO,
-	TF_ILL_SPY,
-	TF_ILL_ENGINEER,
-	TF_ILL_RANDOMPC,
-};
-#endif
 
 // Get the name of TGA file, based on GameDir
 char* GetVGUITGAName(const char *pszName)
@@ -186,258 +96,17 @@ char* GetVGUITGAName(const char *pszName)
 	return gd;
 }
 
-//================================================================
-// COMMAND MENU
-//================================================================
-void CCommandMenu::AddButton( CommandButton *pButton )
+CMenuHandler_SpectateFollow::CMenuHandler_SpectateFollow( const char *player )
 {
-	if (m_iButtons >= MAX_BUTTONS)
-		return;
-
-	m_aButtons[m_iButtons] = pButton;
-	m_iButtons++;
-	pButton->setParent( this );
-	pButton->setFont( Scheme::sf_primary3 );
-
-	// give the button a default key binding
-	if ( m_iButtons < 10 )
-	{
-		pButton->setBoundKey( m_iButtons + '0' );
-	}
-	else if ( m_iButtons == 10 )
-	{
-		pButton->setBoundKey( '0' );
-	}
+	strncpy( m_szplayer, player, MAX_COMMAND_SIZE );
+	m_szplayer[ MAX_COMMAND_SIZE - 1 ] = '\0';
 }
 
-void CCommandMenu::RemoveAllButtons(void)
+void CMenuHandler_SpectateFollow::actionPerformed( vgui::Panel* panel )
 {
-	/*
-	for(int i=0;i<m_iButtons;i++)
-	{
-		CommandButton *pTemp = m_aButtons[i]; 
-		m_aButtons[i] = NULL;
-		
-		pTemp
-		if(pTemp)
-		{
-			delete(pTemp);
-		}
-		
-	}
-	*/
-	removeAllChildren();
-	m_iButtons=0;
-	
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Tries to find a button that has a key bound to the input, and
-//			presses the button if found
-// Input  : keyNum - the character number of the input key
-// Output : Returns true if the command menu should close, false otherwise
-//-----------------------------------------------------------------------------
-bool CCommandMenu::KeyInput( int keyNum )
-{
-	// loop through all our buttons looking for one bound to keyNum
-	for ( int i = 0; i < m_iButtons; i++ )
-	{
-		if ( !m_aButtons[i]->IsNotValid() )
-		{
-			if ( m_aButtons[i]->getBoundKey() == keyNum )
-			{
-				// hit the button
-				if ( m_aButtons[i]->GetSubMenu() )
-				{
-					// open the sub menu
-					gViewPort->SetCurrentCommandMenu( m_aButtons[i]->GetSubMenu() );
-					return false;
-				}
-				else
-				{
-					// run the bound command
-					m_aButtons[i]->fireActionSignal();
-					return true;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: clears the current menus buttons of any armed (highlighted) 
-//			state, and all their sub buttons
-//-----------------------------------------------------------------------------
-void CCommandMenu::ClearButtonsOfArmedState( void )
-{
-	for ( int i = 0; i < GetNumButtons(); i++ )
-	{
-		m_aButtons[i]->setArmed( false );
-
-		if ( m_aButtons[i]->GetSubMenu() )
-		{
-			m_aButtons[i]->GetSubMenu()->ClearButtonsOfArmedState();
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-// Input  : *pSubMenu - 
-// Output : CommandButton
-//-----------------------------------------------------------------------------
-CommandButton *CCommandMenu::FindButtonWithSubmenu( CCommandMenu *pSubMenu )
-{
-	for ( int i = 0; i < GetNumButtons(); i++ )
-	{
-		if ( m_aButtons[i]->GetSubMenu() == pSubMenu )
-			return m_aButtons[i];
-	}
-
-	return NULL;
-}
-
-// Recalculate the visible buttons
-bool CCommandMenu::RecalculateVisibles( int iYOffset, bool bHideAll )
-{
-	int		i, iCurrentY = 0;
-	int		iVisibleButtons = 0;
-
-	// Cycle through all the buttons in this menu, and see which will be visible
-	for (i = 0; i < m_iButtons; i++)
-	{
-		int iClass = m_aButtons[i]->GetPlayerClass();
-
-		if ( (iClass && iClass != g_iPlayerClass ) || ( m_aButtons[i]->IsNotValid() ) || bHideAll )
-		{
-			m_aButtons[i]->setVisible( false );
-			if ( m_aButtons[i]->GetSubMenu() != NULL )
-			{
-				(m_aButtons[i]->GetSubMenu())->RecalculateVisibles( 0, true );
-			}
-		}
-		else
-		{
- 			// If it's got a submenu, force it to check visibilities
-			if ( m_aButtons[i]->GetSubMenu() != NULL )
-			{
-				if ( !(m_aButtons[i]->GetSubMenu())->RecalculateVisibles( 0 , false ) )
-				{
-					// The submenu had no visible buttons, so don't display this button
-					m_aButtons[i]->setVisible( false );
-					continue;
-				}
-			}
-
-			m_aButtons[i]->setVisible( true );
-			iVisibleButtons++;
-		}
-	}
-
-	// Set Size
-	setSize( _size[0], (iVisibleButtons * (m_flButtonSizeY-1)) + 1 );
-
-	if ( iYOffset )
-	{
-		m_iYOffset = iYOffset;
-	}
-
-	for (i = 0; i < m_iButtons; i++)
-	{
-		if ( m_aButtons[i]->isVisible() )
-		{
-			if ( m_aButtons[i]->GetSubMenu() != NULL )
-				(m_aButtons[i]->GetSubMenu())->RecalculateVisibles( iCurrentY + m_iYOffset, false );
-			
-
-			// Make sure it's at the right Y position
-			// m_aButtons[i]->getPos( iXPos, iYPos );
-
-			if ( m_iDirection )
-			{
-				m_aButtons[i]->setPos( 0, (iVisibleButtons-1) * (m_flButtonSizeY-1) - iCurrentY );
-			}
-			else
-			{
-				m_aButtons[i]->setPos( 0, iCurrentY );
-			}
-
-			iCurrentY += (m_flButtonSizeY-1);
-		}
-	}
-
-	return iVisibleButtons?true:false;
-}
-
-// Make sure all submenus can fit on the screen
-void CCommandMenu::RecalculatePositions( int iYOffset )
-{
-	int iTop;
-	int iAdjust = 0;
-
-	m_iYOffset+= iYOffset;
-
-	if ( m_iDirection )
-		iTop = ScreenHeight - (m_iYOffset + _size[1] );
-	else
-		iTop = m_iYOffset;
-
-	if ( iTop < 0 )
-		iTop = 0;
-
-	// Calculate if this is going to fit onscreen, and shuffle it up if it won't
-	int iBottom = iTop + _size[1];
-
-	if ( iBottom > ScreenHeight )
-	{
-		// Move in increments of button sizes
-		while (iAdjust < (iBottom - ScreenHeight))
-		{
-			iAdjust += m_flButtonSizeY - 1;
-		}
-
-		iTop -= iAdjust;
-
-		// Make sure it doesn't move off the top of the screen (the menu's too big to fit it all)
-		if ( iTop < 0 )
-		{
-			iAdjust -= (0 - iTop);
-			iTop = 0;
-		}
-	}
-
-	setPos( _pos[0], iTop );
-
-	// We need to force all menus below this one to update their positions now, because they
-	// might have submenus riding off buttons in this menu that have just shifted.
-	for (int i = 0; i < m_iButtons; i++)
-		m_aButtons[i]->UpdateSubMenus( iAdjust );
-}
-
-
-// Make this menu and all menus above it in the chain visible
-void CCommandMenu::MakeVisible( CCommandMenu *pChildMenu )
-{
-/*
-	// Push down the button leading to the child menu
-	for (int i = 0; i < m_iButtons; i++)
-	{
-		if ( (pChildMenu != NULL) && (m_aButtons[i]->GetSubMenu() == pChildMenu) )
-		{
-			m_aButtons[i]->setArmed( true );
-		}
-		else
-		{
-			m_aButtons[i]->setArmed( false );
-		}
-	}
-*/
-
-	setVisible(true);
-	if (m_pParentMenu)
-		m_pParentMenu->MakeVisible( this );
+	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
+		pSpectator->FindPlayer( m_szplayer );
+	gViewPort->HideCommandMenu();
 }
 
 //================================================================
@@ -499,37 +168,27 @@ void *TeamFortressViewport::operator new( size_t stAllocateBlock )
 //-----------------------------------------------------------------------------
 // Purpose: InputSignal handler for the main viewport
 //-----------------------------------------------------------------------------
-class CViewPortInputHandler : public InputSignal
+class CViewPortInputHandler : public CDefaultInputSignal
 {
 public:
-	bool bPressed;
-
 	CViewPortInputHandler()
 	{
 	}
 
-	virtual void cursorMoved(int x,int y,Panel* panel) {}
-	virtual void cursorEntered(Panel* panel) {}
-	virtual void cursorExited(Panel* panel) {}
 	virtual void mousePressed(MouseCode code,Panel* panel) 
 	{
 		if ( code != MOUSE_LEFT )
 		{
 			// send a message to close the command menu
 			// this needs to be a message, since a direct call screws the timing
+			//TODO: find out why - Solokiller
 			gEngfuncs.pfnClientCmd( "ForceCloseCommandMenu\n" );
 		}
 	}
+
 	virtual void mouseReleased(MouseCode code,Panel* panel)
 	{
 	}
-
-	virtual void mouseDoublePressed(MouseCode code,Panel* panel) {}
-	virtual void mouseWheeled(int delta,Panel* panel) {}
-	virtual void keyPressed(KeyCode code,Panel* panel) {}
-	virtual void keyTyped(KeyCode code,Panel* panel) {}
-	virtual void keyReleased(KeyCode code,Panel* panel) {}
-	virtual void keyFocusTicked(Panel* panel) {}
 };
 
 
@@ -623,6 +282,28 @@ TeamFortressViewport::TeamFortressViewport(int x,int y,int wide,int tall) : Pane
 	m_pCommandMenus[m_PlayerMenu]->m_iSpectCmdMenu = 1;
 
 	UpdatePlayerMenu(m_PlayerMenu);
+
+	//TODO: this viewport might be tied to a specific Hud instance, so make sure it gets bound to the right message handlers. - Solokiller
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, ValClass );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, TeamNames );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, Feign );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, Detpack );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, MOTD );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, BuildSt );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, RandomPC );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, ServerName );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, ScoreInfo );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, TeamScore );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, TeamInfo );
+
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, Spectator );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, AllowSpec );
+
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, SpecFade );
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, ResetFade );
+
+	// VGUI Menus
+	HOOK_OBJECT_MESSAGE( Hud().GetHud(), *gViewPort, VGUIMenu );
 }
 
 //-----------------------------------------------------------------------------
@@ -696,9 +377,15 @@ int TeamFortressViewport::CreateCommandMenu( const char* const pszMenuFile, int 
 
 	// Read Command Menu from the txt file
 	char token[1024];
-	byte* pBuffer = gEngfuncs.COM_LoadFile( pszMenuFile, 5, NULL);
 
-	const char* pfile = ( char* ) pBuffer;
+	//Automatically free the file so it doesn't leak if it fails to parse correctly. - Solokiller
+	std::unique_ptr<byte[], void( *)( byte* )> buffer( gEngfuncs.COM_LoadFile( pszMenuFile, 5, NULL ), []( byte* pBuffer )
+	{
+		gEngfuncs.COM_FreeFile( pBuffer );
+	}
+	);
+
+	const char* pfile = ( char* ) buffer.get();
 
 	if (!pfile)
 	{
@@ -710,9 +397,9 @@ int TeamFortressViewport::CreateCommandMenu( const char* const pszMenuFile, int 
 	// First, read in the localisation strings
 
 	// Detpack strings
-	gHUD.m_TextMessage.LocaliseTextString( "#DetpackSet_For5Seconds",   m_sDetpackStrings[0], MAX_BUTTON_SIZE );
-	gHUD.m_TextMessage.LocaliseTextString( "#DetpackSet_For20Seconds",   m_sDetpackStrings[1], MAX_BUTTON_SIZE );
-	gHUD.m_TextMessage.LocaliseTextString( "#DetpackSet_For50Seconds",   m_sDetpackStrings[2], MAX_BUTTON_SIZE );
+	Localize().LocaliseTextString( "#DetpackSet_For5Seconds",   m_sDetpackStrings[0], MAX_BUTTON_SIZE );
+	Localize().LocaliseTextString( "#DetpackSet_For20Seconds",   m_sDetpackStrings[1], MAX_BUTTON_SIZE );
+	Localize().LocaliseTextString( "#DetpackSet_For50Seconds",   m_sDetpackStrings[2], MAX_BUTTON_SIZE );
 
 	// Now start parsing the menu structure
 	m_pCurrentCommandMenu = m_pCommandMenus[newIndex];
@@ -923,7 +610,6 @@ int TeamFortressViewport::CreateCommandMenu( const char* const pszMenuFile, int 
 
 	SetCurrentMenu( NULL );
 	SetCurrentCommandMenu( NULL );
-	gEngfuncs.COM_FreeFile( pBuffer );
 
 	m_iInitialized = true;
 	return newIndex;
@@ -991,12 +677,12 @@ CommandButton *TeamFortressViewport::CreateCustomButton( char *pButtonText, char
 		}
 
 		// Auto Assign button
-		m_pTeamButtons[4] = new TeamButton(5, gHUD.m_TextMessage.BufferedLocaliseTextString( "#Team_AutoAssign" ), 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y);
+		m_pTeamButtons[4] = new TeamButton(5, Localize().BufferedLocaliseTextString( "#Team_AutoAssign" ), 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y);
 		m_pTeamButtons[4]->addActionSignal(new CMenuHandler_StringCommand( "jointeam 5" ));
 		pMenu->AddButton( m_pTeamButtons[4] ); 
 
 		// Spectate button
-		m_pTeamButtons[5] = new SpectateButton( CHudTextMessage::BufferedLocaliseTextString( "#Menu_Spectate" ), 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y, false);
+		m_pTeamButtons[5] = new SpectateButton( Localize().BufferedLocaliseTextString( "#Menu_Spectate" ), 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y, false);
 		m_pTeamButtons[5]->addActionSignal(new CMenuHandler_StringCommand( "spectate" ));
 		pMenu->AddButton( m_pTeamButtons[5] ); 
 	}
@@ -1118,7 +804,7 @@ CommandButton *TeamFortressViewport::CreateCustomButton( char *pButtonText, char
 	else if ( !strcmp( pButtonName, "!DETPACKSTART" ) )
 	{
 		// Detpack Submenu
-		pButton = new DetpackButton(2, pButtonText, 0, BUTTON_SIZE_Y * 2, CMENU_SIZE_X, BUTTON_SIZE_Y);
+		pButton = new DetpackButton(DetpackState::IDLE, pButtonText, 0, BUTTON_SIZE_Y * 2, CMENU_SIZE_X, BUTTON_SIZE_Y);
 
 		// Create the submenu
 		pMenu = CreateSubMenu(pButton, m_pCurrentCommandMenu, iYOffset );
@@ -1140,7 +826,7 @@ CommandButton *TeamFortressViewport::CreateCustomButton( char *pButtonText, char
 	// Stop setting a Detpack
 	else if ( !strcmp( pButtonName, "!DETPACKSTOP" ) )
 	{
-		pButton = new DetpackButton(1, pButtonText, 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y);
+		pButton = new DetpackButton(DetpackState::IS_DEPLOYING, pButtonText, 0, BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y);
 		pButton->addActionSignal(new CMenuHandler_StringCommand( "detstop" ));
 		// Create an input signal that'll popup the current menu
 		pButton->addInputSignal( new CMenuHandler_PopupSubMenuInput(pButton, m_pCurrentCommandMenu) );
@@ -1280,7 +966,7 @@ void TeamFortressViewport::ShowCommandMenu(int menuIndex)
 	}
 
 	// Not visible while in intermission
-	if ( gHUD.m_iIntermission )
+	if ( Hud().IsInIntermission() )
 		return;
 
 	// Recalculate visible menus
@@ -1288,7 +974,7 @@ void TeamFortressViewport::ShowCommandMenu(int menuIndex)
 	HideVGUIMenu();
 
 	SetCurrentCommandMenu( m_pCommandMenus[menuIndex] );
-	m_flMenuOpenTime = gHUD.m_flTime;
+	m_flMenuOpenTime = Hud().GetTime();
 	UpdateCursorState();
 
 	// get command menu parameters
@@ -1316,7 +1002,7 @@ void TeamFortressViewport::InputSignalHideCommandMenu()
 		return;
 
 	// if they've just tapped the command menu key, leave it open
-	if ( (m_flMenuOpenTime + 0.3) > gHUD.m_flTime )
+	if ( (m_flMenuOpenTime + 0.3) > Hud().GetTime() )
 		return;
 
 	HideCommandMenu();
@@ -1389,7 +1075,7 @@ bool TeamFortressViewport::IsScoreBoardVisible( void )
 void TeamFortressViewport::HideScoreBoard( void )
 {
 	// Prevent removal of scoreboard during intermission
-	if ( gHUD.m_iIntermission )
+	if ( Hud().IsInIntermission() )
 		return;
 
 	if (m_pScoreBoard)
@@ -1462,6 +1148,10 @@ void TeamFortressViewport::UpdatePlayerMenu(int menuIndex)
 	float flLabelSize = ( (ScreenWidth - (XRES ( CAMOPTIONS_BUTTON_X ) + 15)) - XRES ( 24 + 15 ) ) - XRES( (15 + OPTIONS_BUTTON_X + 15) + 38 );
 	gViewPort->GetAllPlayersInfo();
 
+	auto pSpectator = GETHUDCLASS( CHudSpectator );
+
+	if( !pSpectator )
+		return;
 
 	for (int i = 1; i < MAX_PLAYERS; i++ )
 	{
@@ -1470,7 +1160,7 @@ void TeamFortressViewport::UpdatePlayerMenu(int menuIndex)
 	
 		pEnt = gEngfuncs.GetEntityByIndex( i );
 
-		if ( !gHUD.m_Spectator.IsActivePlayer( pEnt ) )
+		if ( !pSpectator->IsActivePlayer( pEnt ) )
 			continue;
 
 		//if ( g_PlayerExtraInfo[i].teamname[0] == 0 )
@@ -1495,10 +1185,6 @@ void TeamFortressViewport::UpdatePlayerMenu(int menuIndex)
 
 }
 
-
-
-void COM_FileBase ( const char *in, char *out);
-
 void TeamFortressViewport::UpdateSpectatorPanel()
 {
 	m_iUser1 = g_iUser1;
@@ -1508,27 +1194,28 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 	if (!m_pSpectatorPanel)
 		return;
 
-	if ( g_iUser1 && gHUD.m_pCvarDraw->value && !gHUD.m_iIntermission)	// don't draw in dev_overview mode
+	auto pSpectator = GETHUDCLASS( CHudSpectator );
+
+	if( !pSpectator )
+		return;
+
+	if ( g_iUser1 && gHUD.m_pCvarDraw->value && !Hud().IsInIntermission() )	// don't draw in dev_overview mode
 	{
 		char bottomText[128];
 		char helpString2[128];
-		char tempString[128];
 		char * name;
 		char *pBottomText = NULL;
 		int player = 0;
 
 		// check if spectator combinations are still valid
-		gHUD.m_Spectator.CheckSettings();
+		pSpectator->CheckSettings();
 
 		if ( !m_pSpectatorPanel->isVisible() )
 		{
 			m_pSpectatorPanel->setVisible( true );	// show spectator panel, but
 			m_pSpectatorPanel->ShowMenu( false );	// dsiable all menus/buttons
-			
-			_snprintf( tempString, sizeof( tempString ) - 1, "%c%s", HUD_PRINTCENTER, CHudTextMessage::BufferedLocaliseTextString( "#Spec_Duck" ) );
-			tempString[ sizeof( tempString ) - 1 ] = '\0';
 
-			gHUD.m_TextMessage.MsgFunc_TextMsg( NULL, strlen( tempString ) + 1, tempString );
+			UTIL_LocalizedTextMsg( HUD_PRINTCENTER, "%s", Localize().BufferedLocaliseTextString( "#Spec_Duck" ) );
 		}
 		
 		sprintf(bottomText,"#Spec_Mode%d", g_iUser1 );
@@ -1544,7 +1231,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		}
 
 		// special case in free map and inset off, don't show names
-		if ( (g_iUser1 == OBS_MAP_FREE) && !gHUD.m_Spectator.m_pip->value )
+		if ( (g_iUser1 == OBS_MAP_FREE) && !pSpectator->m_pip->value )
 			name = NULL;
 		else
 			name = g_PlayerInfoList[player].name;
@@ -1558,7 +1245,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		}
 		else
 		{
-			pBottomText = CHudTextMessage::BufferedLocaliseTextString( bottomText );
+			pBottomText = Localize().BufferedLocaliseTextString( bottomText );
 		}
 
 		// in first person mode colorize player names
@@ -1580,7 +1267,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		}
 
 		// add sting auto if we are in auto directed mode
-		if ( gHUD.m_Spectator.m_autoDirector->value )
+		if ( pSpectator->m_autoDirector->value )
 		{
 			char tempString[128];
 			snprintf(tempString, sizeof( tempString ), "#Spec_Auto %s", helpString2);
@@ -1597,18 +1284,19 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		if ( gEngfuncs.IsSpectateOnly() )
 		{
 			// in HLTV mode show number of spectators
-			_snprintf( szText, 63, "%s: %d", CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ), gHUD.m_Spectator.m_iSpectatorNumber );
+			V_sprintf_safe( szText, "%s: %d", Localize().BufferedLocaliseTextString( "#Spectators" ), pSpectator->m_iSpectatorNumber );
 		}
 		else
 		{
 			// otherwise show map name
 			char szMapName[64];
-			COM_FileBase( gEngfuncs.pfnGetLevelName(), szMapName );
+			if( !COM_FileBase( gEngfuncs.pfnGetLevelName(), szMapName ) )
+				Q_strncpy( szMapName, "Unknown map", sizeof( szMapName ) );
 
-			_snprintf ( szText, 63, "%s: %s",CHudTextMessage::BufferedLocaliseTextString( "#Spec_Map" ), szMapName );
+			V_sprintf_safe( szText, "%s: %s", Localize().BufferedLocaliseTextString( "#Spec_Map" ), szMapName );
 		}
 
-		szText[63] = 0;
+		szText[ sizeof( szText ) - 1 ] = '\0';
 
 		m_pSpectatorPanel->m_ExtraInfo->setText ( szText );
 		
@@ -1618,7 +1306,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		if ( timer < 0 )
 			 timer	= 0;
 
-		_snprintf ( szText, 63, "%d:%02d\n", (timer / 60), (timer % 60) );
+		V_sprintf_safe( szText, "%d:%02d\n", (timer / 60), (timer % 60) );
 		
 		szText[63] = 0;
 				
@@ -1636,7 +1324,7 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		}
 	}
 
-	m_flSpectatorPanelLastUpdated = gHUD.m_flTime + 1.0; // update every second
+	m_flSpectatorPanelLastUpdated = Hud().GetTime() + 1.0; // update every second
 }
 
 //======================================================================
@@ -1789,10 +1477,10 @@ CMenuPanel* TeamFortressViewport::CreateTextWindow( int iTextToShow )
 #endif
 	else if ( iTextToShow == SHOW_SPECHELP )
 	{
-		CHudTextMessage::LocaliseTextString( "#Spec_Help_Title", cTitle, MAX_TITLE_LENGTH );
+		Localize().LocaliseTextString( "#Spec_Help_Title", cTitle, MAX_TITLE_LENGTH );
 		cTitle[MAX_TITLE_LENGTH-1] = 0;
 		
-		char* pfile = CHudTextMessage::BufferedLocaliseTextString( "#Spec_Help_Text" );
+		char* pfile = Localize().BufferedLocaliseTextString( "#Spec_Help_Text" );
 		if ( pfile )
 		{
 			cText = pfile;
@@ -1822,7 +1510,7 @@ void TeamFortressViewport::ShowVGUIMenu( int iMenu )
 	// Don't open any menus except the MOTD during intermission
 	// MOTD needs to be accepted because it's sent down to the client 
 	// after map change, before intermission's turned off
-	if ( gHUD.m_iIntermission && iMenu != MENU_INTRO )
+	if ( Hud().IsInIntermission() && iMenu != MENU_INTRO )
 		return;
 
 	// Don't create one if it's already in the list
@@ -2094,58 +1782,21 @@ void TeamFortressViewport::paintBackground()
 
 	// See if the Spectator Menu needs to be update
 	if (	( g_iUser1 != m_iUser1 || g_iUser2 != m_iUser2 ) ||
-			( m_flSpectatorPanelLastUpdated < gHUD.m_flTime ) )
+			( m_flSpectatorPanelLastUpdated < Hud().GetTime() ) )
 	{
 		UpdateSpectatorPanel();
 	}
 
 	// Update the Scoreboard, if it's visible
-	if ( m_pScoreBoard->isVisible() && (m_flScoreBoardLastUpdated < gHUD.m_flTime) )
+	if ( m_pScoreBoard->isVisible() && (m_flScoreBoardLastUpdated < Hud().GetTime() ) )
 	{
 		m_pScoreBoard->Update();
-		m_flScoreBoardLastUpdated = gHUD.m_flTime + 0.5;
+		m_flScoreBoardLastUpdated = Hud().GetTime() + 0.5;
 	}
 
 	int extents[4];
 	getAbsExtents(extents[0],extents[1],extents[2],extents[3]);
 	VGui_ViewportPaintBackground(extents);
-}
-
-//================================================================
-// Input Handler for Drag N Drop panels
-void CDragNDropHandler::cursorMoved(int x,int y,Panel* panel)
-{
-	if(m_bDragging)
-	{
-		App::getInstance()->getCursorPos(x,y);			
-		m_pPanel->setPos(m_iaDragOrgPos[0]+(x-m_iaDragStart[0]),m_iaDragOrgPos[1]+(y-m_iaDragStart[1]));
-		
-		if(m_pPanel->getParent()!=null)
-		{			
-			m_pPanel->getParent()->repaint();
-		}
-	}
-}
-
-void CDragNDropHandler::mousePressed(MouseCode code,Panel* panel)
-{
-	int x,y;
-	App::getInstance()->getCursorPos(x,y);
-	m_bDragging=true;
-	m_iaDragStart[0]=x;
-	m_iaDragStart[1]=y;
-	m_pPanel->getPos(m_iaDragOrgPos[0],m_iaDragOrgPos[1]);
-	App::getInstance()->setMouseCapture(panel);
-
-	m_pPanel->setDragged(m_bDragging);
-	m_pPanel->requestFocus();
-} 
-
-void CDragNDropHandler::mouseReleased(MouseCode code,Panel* panel)
-{
-	m_bDragging=false;
-	m_pPanel->setDragged(m_bDragging);
-	App::getInstance()->setMouseCapture(null);
 }
 
 //================================================================
@@ -2247,7 +1898,7 @@ int	TeamFortressViewport::KeyInput( int down, int keynum, const char *pszCurrent
 
 //================================================================
 // Message Handlers
-int TeamFortressViewport::MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_ValClass(const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	
@@ -2256,11 +1907,9 @@ int TeamFortressViewport::MsgFunc_ValClass(const char *pszName, int iSize, void 
 
 	// Force the menu to update
 	UpdateCommandMenu( m_StandardMenu );
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_TeamNames(const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_TeamNames(const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	
@@ -2270,7 +1919,7 @@ int TeamFortressViewport::MsgFunc_TeamNames(const char *pszName, int iSize, void
 	{
 		int teamNum = i + 1;
 
-		gHUD.m_TextMessage.LocaliseTextString( reader.ReadString(), m_sTeamNames[teamNum], MAX_TEAMNAME_SIZE );
+		Localize().LocaliseTextString( reader.ReadString(), m_sTeamNames[teamNum], MAX_TEAMNAME_SIZE );
 
 		// Set the team name buttons
 		if (m_pTeamButtons[i])
@@ -2288,11 +1937,9 @@ int TeamFortressViewport::MsgFunc_TeamNames(const char *pszName, int iSize, void
 	// Update the Team Menu
 	if (m_pTeamMenu)
 		m_pTeamMenu->Update();
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_Feign(const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_Feign(const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	
@@ -2300,23 +1947,19 @@ int TeamFortressViewport::MsgFunc_Feign(const char *pszName, int iSize, void *pb
 
 	// Force the menu to update
 	UpdateCommandMenu( m_StandardMenu );
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_Detpack(const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
-	m_iIsSettingDetpack = reader.ReadByte();
+	m_DetpackState = static_cast<DetpackState>( reader.ReadByte() );
 
 	// Force the menu to update
 	UpdateCommandMenu( m_StandardMenu );
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_VGUIMenu(const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
@@ -2331,11 +1974,9 @@ int TeamFortressViewport::MsgFunc_VGUIMenu(const char *pszName, int iSize, void 
 
 	// Bring up the menu6
 	ShowVGUIMenu( iMenu );
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_MOTD( const char *pszName, int iSize, void *pbuf )
 {
 	if (m_iGotAllMOTD)
 		m_szMOTD[0] = 0;
@@ -2354,11 +1995,9 @@ int TeamFortressViewport::MsgFunc_MOTD( const char *pszName, int iSize, void *pb
 	{
 		ShowVGUIMenu( MENU_INTRO );
 	}
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
@@ -2366,30 +2005,24 @@ int TeamFortressViewport::MsgFunc_BuildSt( const char *pszName, int iSize, void 
 
 	// Force the menu to update
 	UpdateCommandMenu( m_StandardMenu );
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	m_iRandomPC = reader.ReadByte();
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	strncpy( m_szServerName, reader.ReadString(), sizeof(m_szServerName) );
 	m_szServerName[sizeof(m_szServerName) - 1] = 0;
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	short cl = reader.ReadByte();
@@ -2411,8 +2044,6 @@ int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, voi
 
 		UpdateOnPlayerInfo();
 	}
-
-	return 1;
 }
 
 // Message handler for TeamScore message
@@ -2421,7 +2052,7 @@ int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, voi
 //		short: teams kills
 //		short: teams deaths 
 // if this message is never received, then scores will simply be the combined totals of the players.
-int TeamFortressViewport::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	char *TeamName = reader.ReadString();
@@ -2435,24 +2066,22 @@ int TeamFortressViewport::MsgFunc_TeamScore( const char *pszName, int iSize, voi
 	}
 
 	if ( i > m_pScoreBoard->m_iNumTeams )
-		return 1;
+		return;
 
 	// use this new score data instead of combined player scoresw
 	g_TeamInfo[i].scores_overriden = true;
 	g_TeamInfo[i].frags = reader.ReadShort();
 	g_TeamInfo[i].deaths = reader.ReadShort();
-
-	return 1;
 }
 
 // Message handler for TeamInfo message
 // accepts two values:
 //		byte: client number
 //		string: client team name
-int TeamFortressViewport::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf )
 {
 	if (!m_pScoreBoard)
-		return 1;
+		return;
 
 	CBufferReader reader( pbuf, iSize );
 	short cl = reader.ReadByte();
@@ -2465,8 +2094,6 @@ int TeamFortressViewport::MsgFunc_TeamInfo( const char *pszName, int iSize, void
 
 	// rebuild the list of teams
 	m_pScoreBoard->RebuildTeams();
-
-	return 1;
 }
 
 void TeamFortressViewport::DeathMsg( int killer, int victim )
@@ -2474,7 +2101,7 @@ void TeamFortressViewport::DeathMsg( int killer, int victim )
 	m_pScoreBoard->DeathMsg(killer,victim);
 }
 
-int TeamFortressViewport::MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
@@ -2483,15 +2110,13 @@ int TeamFortressViewport::MsgFunc_Spectator( const char *pszName, int iSize, voi
 	{
 		g_IsSpectator[cl] = reader.ReadByte();
 	}
-
-	return 1;
 }
 
-int TeamFortressViewport::MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
-	m_iAllowSpectators = reader.ReadByte();
+	m_bAllowSpectators = reader.ReadByte() != 0;
 
 	// Force the menu to update
 	UpdateCommandMenu( m_StandardMenu );
@@ -2499,8 +2124,6 @@ int TeamFortressViewport::MsgFunc_AllowSpec( const char *pszName, int iSize, voi
 	// If the team menu is up, update it too
 	if (m_pTeamMenu)
 		m_pTeamMenu->Update();
-
-	return 1;
 }
 
 #if defined( _TFC )
@@ -2509,11 +2132,16 @@ extern globalvars_t *gpGlobals;
 #endif 
 
 // used to reset the player's screen immediately
-int TeamFortressViewport::MsgFunc_ResetFade( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_ResetFade( const char *pszName, int iSize, void *pbuf )
+{
+	ResetFade();
+}
+
+void TeamFortressViewport::ResetFade()
 {
 #if defined( _TFC )
-	if ( !gpGlobals )
-		return 0;
+	if( !gpGlobals )
+		return;
 
 	screenfade_t sf;
 	gEngfuncs.pfnGetScreenFade( &sf );
@@ -2534,12 +2162,10 @@ int TeamFortressViewport::MsgFunc_ResetFade( const char *pszName, int iSize, voi
 
 	gEngfuncs.pfnSetScreenFade( &sf );
 #endif
-
-	return 1;
 }
 
 // used to fade a player's screen out/in when they're spectating someone who is teleported
-int TeamFortressViewport::MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf )
+void TeamFortressViewport::MsgFunc_SpecFade( const char *pszName, int iSize, void *pbuf )
 {
 #if defined( _TFC )
 	CBufferReader reader( pbuf, iSize );
@@ -2597,6 +2223,4 @@ int TeamFortressViewport::MsgFunc_SpecFade( const char *pszName, int iSize, void
 		}
 	}
 #endif
-
-	return 1;
 }

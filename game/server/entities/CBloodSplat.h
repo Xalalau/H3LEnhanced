@@ -19,6 +19,7 @@ class CBloodSplat : public CBaseEntity
 {
 public:
 	DECLARE_CLASS( CBloodSplat, CBaseEntity );
+	DECLARE_DATADESC();
 
 	void	Spawn( CBaseEntity* pOwner );
 	void	Spray();

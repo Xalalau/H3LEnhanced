@@ -29,9 +29,9 @@ LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster );
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CGenericMonster :: Classify ( void )
+EntityClassification_t CGenericMonster::GetClassification()
 {
-	return	CLASS_PLAYER_ALLY;
+	return EntityClassifications().GetClassificationId( classify::PLAYER_ALLY );
 }
 
 //=========================================================

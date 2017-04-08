@@ -19,6 +19,7 @@ add_sources(
 	Decals.cpp
 	Effects.h
 	globals.cpp
+	KeyValuesCompat.cpp
 	MapCycle.h
 	MapCycle.cpp
 	SaveRestore.h
@@ -44,6 +45,7 @@ add_sources(
 if( USE_ANGELSCRIPT )
 	add_subdirectory( Angelscript )
 endif()
+add_subdirectory( config )
 add_subdirectory( engine )
 add_subdirectory( entities )
 add_subdirectory( gamerules )

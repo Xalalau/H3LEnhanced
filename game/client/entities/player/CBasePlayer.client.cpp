@@ -162,9 +162,9 @@ void CBasePlayer::DeathSound( void )
 {
 }
 
-int CBasePlayer::Classify( void )
+EntityClassification_t CBasePlayer::GetClassification()
 {
-	return 0;
+	return EntityClassifications().GetNoneId();
 }
 
 void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
@@ -199,19 +199,48 @@ bool CBasePlayer::AddPlayerItem( CBasePlayerWeapon* pItem )
 {
 	ASSERT( pItem );
 
-	CBasePlayerWeapon* pInsert = m_rgpPlayerItems[ pItem->iItemSlot() ];
+	if( !pItem )
+		return false;
 
-	while( pInsert )
+	auto pWpnInfo = pItem->GetWeaponInfo();
+
+	for( CBasePlayerWeapon* pInsert = m_rgpPlayerItems[ pWpnInfo->GetBucket() ]; pInsert; pInsert = pInsert->m_pNext )
 	{
 		if( pInsert->ClassnameIs( pItem->GetClassname() ) )
 		{
 			return false;
 		}
-		pInsert = pInsert->m_pNext;
 	}
 
-	pItem->m_pNext = m_rgpPlayerItems[ pItem->iItemSlot() ];
-	m_rgpPlayerItems[ pItem->iItemSlot() ] = pItem;
+	//Sort the weapon by position.
+	//If the positions for 2 weapons match, sort by weapon ID.
+	CBasePlayerWeapon* pInsert = m_rgpPlayerItems[ pWpnInfo->GetBucket() ];
+
+	CBasePlayerWeapon* pPrev = nullptr;
+
+	for( ; pInsert; pPrev = pInsert, pInsert = pInsert->m_pNext )
+	{
+		if( pInsert->GetWeaponInfo()->GetPosition() < pWpnInfo->GetPosition() )
+		{
+			continue;
+		}
+
+		if( pInsert->GetWeaponInfo()->GetPosition() == pWpnInfo->GetPosition() )
+		{
+			//Sort by weapon ID.
+			if( pInsert->m_iId < pWpnInfo->GetID() )
+				continue;
+		}
+
+		break;
+	}
+
+	if( pPrev )
+		pPrev->m_pNext = pItem;
+	else
+		m_rgpPlayerItems[ pWpnInfo->GetBucket() ] = pItem;
+
+	pItem->m_pNext = pInsert;
 
 	return true;
 }

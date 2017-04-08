@@ -586,7 +586,7 @@ bool CBaseMonster::FRefreshRoute()
 		case MOVEGOAL_PATHCORNER:
 			{
 				// monster is on a path_corner loop
-				pPathCorner = m_pGoalEnt;
+				pPathCorner = m_hGoalEnt;
 				i = 0;
 
 				while ( pPathCorner && i < ROUTE_SIZE )
@@ -1383,9 +1383,9 @@ void CBaseMonster :: AdvanceRoute ( float distance )
 	{
 		if ( ! (m_Route[ m_iRouteIndex ].iType & bits_MF_IS_GOAL) )
 		{
-			// If we've just passed a path_corner, advance m_pGoalEnt
+			// If we've just passed a path_corner, advance m_hGoalEnt
 			if ( (m_Route[ m_iRouteIndex ].iType & ~bits_MF_NOT_TO_MASK) == bits_MF_TO_PATHCORNER )
-				m_pGoalEnt = m_pGoalEnt->GetNextTarget();
+				m_hGoalEnt = m_hGoalEnt->GetNextTarget();
 
 			// IF both waypoints are nodes, then check for a link for a door and operate it.
 			//
@@ -2024,21 +2024,21 @@ void CBaseMonster :: StartMonster ( void )
 	if ( HasTarget() )// this monster has a target
 	{
 		// Find the monster's initial target entity, stash it
-		m_pGoalEnt = UTIL_FindEntityByTargetname( nullptr, GetTarget() );
+		m_hGoalEnt = UTIL_FindEntityByTargetname( nullptr, GetTarget() );
 
-		if ( !m_pGoalEnt )
+		if ( !m_hGoalEnt )
 		{
 			ALERT(at_error, "ReadyMonster()--%s couldn't find target %s", GetClassname(), GetTarget() );
 		}
 		else
 		{
 			// Monster will start turning towards his destination
-			MakeIdealYaw ( m_pGoalEnt->GetAbsOrigin() );
+			MakeIdealYaw ( m_hGoalEnt->GetAbsOrigin() );
 
 			// JAY: How important is this error message?  Big Momma doesn't obey this rule, so I took it out.
 #if 0
 			// At this point, we expect only a path_corner as initial goal
-			if( !m_pGoalEnt->ClassnameIs( "path_corner" ) )
+			if( !m_hGoalEnt->ClassnameIs( "path_corner" ) )
 			{
 				ALERT(at_warning, "ReadyMonster--monster's initial goal '%s' is not a path_corner", GetTarget() );
 			}
@@ -2118,27 +2118,11 @@ bool CBaseMonster::TaskIsRunning() const
 // IRelationship - returns an integer that describes the 
 // relationship between two types of monster.
 //=========================================================
-int CBaseMonster::IRelationship ( CBaseEntity *pTarget )
+Relationship CBaseMonster::IRelationship( CBaseEntity *pTarget )
 {
-	static int iEnemy[14][14] =
-	{			 //   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN
-	/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL	},
-	/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL	},
-	/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO	},
-	/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
-	/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO	},
-	/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL	},
-	/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO	}
-	};
+	ASSERT( pTarget );
 
-	return iEnemy[ Classify() ][ pTarget->Classify() ];
+	return EntityClassifications().GetRelationshipBetween( Classify(), pTarget->Classify() );
 }
 
 //=========================================================
@@ -3348,6 +3332,10 @@ CBaseEntity* CBaseMonster::DropItem( const char* const pszItemName, const Vector
 		// do we want this behavior to be default?! (sjb)
 		pItem->pev->velocity = pev->velocity;
 		pItem->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 0, 100 ), 0 );
+
+		//Dropped items should never respawn (unless this rule changes in the future). - Solokiller
+		pItem->GetSpawnFlags() |= SF_NORESPAWN;
+
 		return pItem;
 	}
 	else

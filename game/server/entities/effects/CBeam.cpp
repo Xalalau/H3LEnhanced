@@ -204,8 +204,7 @@ void CBeam::HoseInit( const Vector &start, const Vector &direction )
 CBeam *CBeam::BeamCreate( const char *pSpriteName, int width )
 {
 	// Create a new entity with CBeam private data
-	CBeam *pBeam = GetClassPtr( ( CBeam * ) NULL );
-	pBeam->pev->classname = MAKE_STRING( "beam" );
+	auto pBeam = static_cast<CBeam*>( UTIL_CreateNamedEntity( "beam" ) );
 
 	// ############ hu3lifezado ############ //
 	// Lasers grossos, sempre.

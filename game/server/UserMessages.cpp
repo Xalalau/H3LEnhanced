@@ -14,6 +14,9 @@
 ****/
 #include "extdll.h"
 #include "util.h"
+#include "cbase.h"
+#include "CBasePlayer.h"
+#include "gamerules/GameRules.h"
 #include "shake.h"
 
 #include "UserMessages.h"
@@ -58,6 +61,12 @@ int gmsgStatusValue = 0;
 int gmsgReceiveW = 0;
 int gmsgHudColors = 0;
 int gmsgWpnBody = 0;
+
+/**
+*	Sends game state to the player on connect.
+*	Byte: Whether it's a multiplayer game.
+*/
+int gmsgGameState = 0;
 
 void LinkUserMessages()
 {
@@ -109,4 +118,13 @@ void LinkUserMessages()
 	gmsgHudColors = REG_USER_MSG( "HudColors", 3 * 3 );
 
 	gmsgWpnBody = REG_USER_MSG( "WpnBody", 2 );
+
+	gmsgGameState = REG_USER_MSG( "GameState", 1 );
+}
+
+void UMSG_SendGameState( CBasePlayer& player )
+{
+	MESSAGE_BEGIN( MSG_ONE, gmsgGameState, NULL, &player );
+		WRITE_BYTE( g_pGameRules->IsMultiplayer() ? 1 : 0 );
+	MESSAGE_END();
 }

@@ -153,6 +153,20 @@ public:
 	*/
 	virtual void ItemPostFrame();
 
+	//These methods are based on Source SDK methods, they are named differently to be more accurate in meaning. - Solokiller
+	
+	/**
+	*	Called each frame by the player PreThink for inactive weapons.
+	*/
+	virtual void WeaponHolsterPreFrame() {}
+
+	/**
+	*	Called each frame by the player PostThink for the active weapon, if currently busy (awaiting timeout of attack delay).
+	*/
+	virtual void WeaponBusyPostFrame() {}
+
+	//End Source SDK methods. - Solokiller
+
 	// called by CBasePlayerWeapons ItemPostFrame()
 
 	/**

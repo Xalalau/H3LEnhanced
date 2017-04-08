@@ -32,12 +32,12 @@
 
 bool CBaseMonster::HasHumanGibs()
 {
-	int myClass = Classify();
+	EntityClassification_t myClass = Classify();
 
-	if ( myClass == CLASS_HUMAN_MILITARY ||
-		 myClass == CLASS_PLAYER_ALLY	||
-		 myClass == CLASS_HUMAN_PASSIVE  ||
-		 myClass == CLASS_PLAYER )
+	if ( myClass == EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY ) ||
+		 myClass == EntityClassifications().GetClassificationId( classify::PLAYER_ALLY )	||
+		 myClass == EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE )  ||
+		 myClass == EntityClassifications().GetClassificationId( classify::PLAYER ) )
 
 		 return true;
 
@@ -47,14 +47,14 @@ bool CBaseMonster::HasHumanGibs()
 
 bool CBaseMonster::HasAlienGibs()
 {
-	int myClass = Classify();
+	EntityClassification_t myClass = Classify();
 
-	if ( myClass == CLASS_ALIEN_MILITARY ||
-		 myClass == CLASS_ALIEN_MONSTER	||
-		 myClass == CLASS_ALIEN_PASSIVE  ||
-		 myClass == CLASS_INSECT  ||
-		 myClass == CLASS_ALIEN_PREDATOR  ||
-		 myClass == CLASS_ALIEN_PREY )
+	if ( myClass == EntityClassifications().GetClassificationId( classify::ALIEN_MILITARY ) ||
+		 myClass == EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER )	||
+		 myClass == EntityClassifications().GetClassificationId( classify::ALIEN_PASSIVE )  ||
+		 myClass == EntityClassifications().GetClassificationId( classify::INSECT )  ||
+		 myClass == EntityClassifications().GetClassificationId( classify::ALIEN_PREDATOR )  ||
+		 myClass == EntityClassifications().GetClassificationId( classify::ALIEN_PREY ) )
 
 		 return true;
 
@@ -631,7 +631,7 @@ float CBaseMonster :: DamageForce( float damage )
 // only damage ents that can clearly be seen by the explosion!
 
 	
-void RadiusDamage( Vector vecSrc, const CTakeDamageInfo& info, float flRadius, int iClassIgnore )
+void RadiusDamage( Vector vecSrc, const CTakeDamageInfo& info, float flRadius, EntityClassification_t iClassIgnore )
 {
 	CBaseEntity *pEntity = NULL;
 	TraceResult	tr;
@@ -658,7 +658,7 @@ void RadiusDamage( Vector vecSrc, const CTakeDamageInfo& info, float flRadius, i
 		if ( pEntity->pev->takedamage != DAMAGE_NO )
 		{
 			// UNDONE: this should check a damage mask, not an ignore
-			if ( iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore )
+			if ( iClassIgnore != EntityClassifications().GetNoneId() && pEntity->Classify() == iClassIgnore )
 			{// houndeyes don't hurt other houndeyes with their attack
 				continue;
 			}
@@ -709,13 +709,13 @@ void RadiusDamage( Vector vecSrc, const CTakeDamageInfo& info, float flRadius, i
 }
 
 
-void CBaseMonster::RadiusDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType )
+void CBaseMonster::RadiusDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType )
 {
 	::RadiusDamage( GetAbsOrigin(), CTakeDamageInfo( pInflictor, pAttacker, flDamage, bitsDamageType ), flDamage * 2.5, iClassIgnore );
 }
 
 
-void CBaseMonster :: RadiusDamage( Vector vecSrc, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType )
+void CBaseMonster :: RadiusDamage( Vector vecSrc, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType )
 {
 	::RadiusDamage( vecSrc, CTakeDamageInfo( pInflictor, pAttacker, flDamage, bitsDamageType ), flDamage * 2.5, iClassIgnore );
 }

@@ -38,7 +38,7 @@ public:
 	void Precache() override;
 
 	void SetYawSpeed() override;
-	int  Classify() override;
+	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	void RunTask( const Task_t* pTask ) override;
 	void StartTask( const Task_t* pTask ) override;

@@ -449,7 +449,7 @@ void IN_ScaleMouse( float *x, float *y )
 	float my = *y;
 
 	// This is the default sensitivity
-	float mouse_senstivity = ( gHUD.GetSensitivity() != 0 ) ? gHUD.GetSensitivity() : sensitivity->value;
+	float mouse_senstivity = ( Hud().GetSensitivity() != 0 ) ? Hud().GetSensitivity() : sensitivity->value;
 
 	// Using special accleration values
 	if ( m_customaccel->value != 0 ) 
@@ -520,7 +520,7 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 
 	//jjb - this disbles normal mouse control if the user is trying to 
 	//      move the camera, or if the mouse cursor is visible or if we're in intermission
-	if ( !iMouseInUse && !gHUD.m_iIntermission && !g_iVisibleMouse )
+	if ( !iMouseInUse && !Hud().IsInIntermission() && !g_iVisibleMouse )
 	{
 		int deltaX, deltaY;
 #ifdef _WIN32

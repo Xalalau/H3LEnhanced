@@ -25,7 +25,7 @@ public:
 
 	void Spawn() override;
 	void Die();
-	int	 Classify() override;
+	EntityClassification_t GetClassification() override;
 	virtual int	ObjectCaps() const override { return ( CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ); }
 };
 

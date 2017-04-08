@@ -15,23 +15,30 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDFLASHLIGHT_H
 #define GAME_CLIENT_UI_HUD_CHUDFLASHLIGHT_H
 
-class CHudFlashlight : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudFlashlight : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudFlashlight, CBaseHudElement<CHLHud> );
+
+	CHudFlashlight( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
 	void Reset() override;
-	int MsgFunc_Flashlight( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_FlashBat( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Flashlight( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_FlashBat( const char *pszName, int iSize, void *pbuf );
 
 private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
 	HSPRITE m_hBeam;
-	wrect_t *m_prc1;
-	wrect_t *m_prc2;
-	wrect_t *m_prcBeam;
+	const wrect_t *m_prc1;
+	const wrect_t *m_prc2;
+	const wrect_t *m_prcBeam;
 	float m_flBat;
 	int	  m_iBat;
 	int	  m_fOn;

@@ -24,7 +24,7 @@ public:
 	DECLARE_CLASS( CDeadHGrunt, CBaseMonster );
 
 	void Spawn( void ) override;
-	int	Classify( void ) override { return	CLASS_HUMAN_MILITARY; }
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY ); }
 
 	void KeyValue( KeyValueData *pkvd ) override;
 

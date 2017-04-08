@@ -76,9 +76,9 @@ int CHAssassin :: ISoundMask ( void)
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CHAssassin :: Classify ( void )
+EntityClassification_t CHAssassin::GetClassification()
 {
-	return	CLASS_HUMAN_MILITARY;
+	return EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY );
 }
 
 //=========================================================
@@ -869,6 +869,8 @@ Schedule_t *CHAssassin :: GetSchedule ( void )
 			return GetScheduleOfType ( SCHED_ALERT_STAND );
 		}
 		break;
+
+	default: break;
 	}
 
 	return CBaseMonster :: GetSchedule();

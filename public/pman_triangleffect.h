@@ -67,6 +67,10 @@ private:
 public:
 
 	void * operator new(size_t size)
+		//TODO: why is this different on Windows? - Solokiller
+#ifndef _WIN32
+		throw()
+#endif
 	{
 		// Requested size should match size of class.
         if ( size != sizeof( CCoreTriangleEffect ) )

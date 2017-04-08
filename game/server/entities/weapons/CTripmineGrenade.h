@@ -15,6 +15,11 @@
 #ifndef GAME_SERVER_ENTITIES_WEAPONS_CTRIPMINEGRENADE_H
 #define GAME_SERVER_ENTITIES_WEAPONS_CTRIPMINEGRENADE_H
 
+enum
+{
+	SF_TRIPMINE_INSTANT_ON = 1 << 0, //! Instantly turn on after spawning
+};
+
 class CTripmineGrenade : public CGrenade
 {
 public:

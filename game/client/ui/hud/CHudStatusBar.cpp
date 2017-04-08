@@ -22,12 +22,13 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
+#include "strtools.h"
 
 #include <string.h>
 #include <stdio.h>
 
-DECLARE_MESSAGE( m_StatusBar, StatusText );
-DECLARE_MESSAGE( m_StatusBar, StatusValue );
+#include "shared/CLocalize.h"
+#include "CHudStatusBar.h"
 
 #ifdef _TFC
 #define STATUSBAR_ID_LINE		2
@@ -35,32 +36,31 @@ DECLARE_MESSAGE( m_StatusBar, StatusValue );
 #define STATUSBAR_ID_LINE		1
 #endif
 
-bool CHudStatusBar::Init()
+CHudStatusBar::CHudStatusBar( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
 {
-	gHUD.AddHudElem( this );
+}
 
+void CHudStatusBar::Init()
+{
 	HOOK_MESSAGE( StatusText );
 	HOOK_MESSAGE( StatusValue );
 
 	Reset();
 
 	CVAR_CREATE( "hud_centerid", "0", FCVAR_ARCHIVE );
-
-	return true;
 }
 
-bool CHudStatusBar::VidInit()
+void CHudStatusBar::VidInit()
 {
 	// Load sprites here
-
-	return true;
 }
 
 void CHudStatusBar::Reset()
 {
 	int i = 0;
 
-	m_iFlags &= ~HUD_ACTIVE;  // start out inactive
+	GetFlags() &= ~HUD_ACTIVE;  // start out inactive
 	for ( i = 0; i < MAX_STATUSBAR_LINES; i++ )
 		m_szStatusText[i][0] = 0;
 	memset( m_iStatusValues, 0, sizeof m_iStatusValues );
@@ -77,7 +77,7 @@ void CHudStatusBar::ParseStatusString( int line_num )
 	// localise string first
 	char szBuffer[MAX_STATUSTEXT_LENGTH];
 	memset( szBuffer, 0, sizeof szBuffer );
-	gHUD.m_TextMessage.LocaliseTextString( m_szStatusText[line_num], szBuffer, MAX_STATUSTEXT_LENGTH );
+	Localize().LocaliseTextString( m_szStatusText[line_num], szBuffer, MAX_STATUSTEXT_LENGTH );
 
 	// parse m_szStatusText & m_iStatusValues into m_szStatusBar
 	memset( m_szStatusBar[line_num], 0, MAX_STATUSTEXT_LENGTH );
@@ -152,7 +152,7 @@ void CHudStatusBar::ParseStatusString( int line_num )
 
 							break;
 						case 'i':  // number
-							sprintf( szRepString, "%d", indexval );
+							V_sprintf_safe( szRepString, "%d", indexval );
 							break;
 						default:
 							szRepString[0] = 0;
@@ -224,39 +224,35 @@ bool CHudStatusBar::Draw( float fTime )
 // if StatusValue[slotnum] != 0, the following string is drawn, upto the next newline - otherwise the text is skipped upto next newline
 // %pX, where X is an integer, will substitute a player name here, getting the player index from StatusValue[X]
 // %iX, where X is an integer, will substitute a number here, getting the number from StatusValue[X]
-int CHudStatusBar::MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf )
+void CHudStatusBar::MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	int line = reader.ReadByte();
 
 	if ( line < 0 || line > MAX_STATUSBAR_LINES )
-		return 1;
+		return;
 
 	strncpy( m_szStatusText[line], reader.ReadString(), MAX_STATUSTEXT_LENGTH );
 	m_szStatusText[line][MAX_STATUSTEXT_LENGTH-1] = 0;  // ensure it's null terminated ( strncpy() won't null terminate if read string too long)
 
-	m_iFlags |= HUD_ACTIVE;
+	GetFlags() |= HUD_ACTIVE;
 	m_bReparseString = true;
-
-	return 1;
 }
 
 // Message handler for StatusText message
 // accepts two values:
 //		byte: index into the status value array
 //		short: value to store
-int CHudStatusBar::MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf )
+void CHudStatusBar::MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	int index = reader.ReadByte();
 	if ( index < 1 || index > MAX_STATUSBAR_VALUES )
-		return 1; // index out of range
+		return; // index out of range
 
 	m_iStatusValues[index] = reader.ReadShort();
 
 	m_bReparseString = true;
-	
-	return 1;
 }

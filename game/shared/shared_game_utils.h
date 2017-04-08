@@ -12,6 +12,8 @@
 #include "cl_dll.h"
 #endif
 
+#include "strtools.h"
+
 /**
 *	dll agnostic game utility functionality - Solokiller
 */
@@ -339,5 +341,26 @@ void UTIL_DestructEntity( CBaseEntity* pEntity );
 
 void UTIL_Remove( CBaseEntity* pEntity );
 void UTIL_RemoveNow( CBaseEntity* pEntity );
+
+/**
+*	Extracts the base name of a file (no path, no extension, assumes '/' as path separator)
+*/
+bool COM_FileBase( const char *in, char *out, size_t uiSizeInCharacters );
+
+template<size_t SIZE>
+bool COM_FileBase( const char *in, char ( & out )[ SIZE ] )
+{
+	return COM_FileBase( in, out, SIZE );
+}
+
+/**
+*	@return Whether the current game is the given game name. This is the name of the game directory
+*/
+bool UTIL_IsGame( const char* game );
+
+/**
+*	Can cheats (e.g. impulse 101) be used?
+*/
+bool UTIL_CheatsAllowed();
 
 #endif //GAME_SHARED_SHARED_GAME_UTILS_H

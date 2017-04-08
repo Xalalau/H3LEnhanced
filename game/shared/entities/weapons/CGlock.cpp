@@ -38,7 +38,7 @@ CGlock::CGlock()
 
 void CGlock::Spawn( )
 {
-	pev->classname = MAKE_STRING("weapon_9mmhandgun"); // hack to allow for old names
+	SetClassname("weapon_9mmhandgun"); // hack to allow for old names
 	Precache( );
 
 	SetModel( "models/w_9mmhandgun.mdl");

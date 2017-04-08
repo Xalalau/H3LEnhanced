@@ -15,19 +15,22 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDTEXTMESSAGE_H
 #define GAME_CLIENT_UI_HUD_CHUDTEXTMESSAGE_H
 
-class CHudTextMessage : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudTextMessage : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	static char *LocaliseTextString( const char *msg, char *dst_buffer, int buffer_size );
-	static char *BufferedLocaliseTextString( const char *msg );
-	const char* LookupString( const char* msg_name, int *msg_dest = NULL );
-	int MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf );
-};
+	DECLARE_CLASS( CHudTextMessage, CBaseHudElement<CHLHud> );
 
-// ############ hu3lifezado ############ //
-// Nova funcao para facilitar a escrita de mensagens
-void hu3_mensagem(char string[128], int opcao);
-// ############ //
+	CHudTextMessage( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf );
+	// ############ hu3lifezado ############ //
+	// Nova funcao para facilitar a escrita de mensagens
+	void hu3_mensagem(char string[128], int opcao);
+	// ############ //
+};
 
 #endif //GAME_CLIENT_UI_HUD_CHUDTEXTMESSAGE_H

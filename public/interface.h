@@ -139,6 +139,11 @@ extern void					Sys_UnloadModule( CSysModule *pModule );
 
 extern CreateInterfaceFn	Sys_GetFactory( CSysModule *pModule );
 
+/**
+*	Finds a particular interface in the factory set
+*/
+void *InitializeInterface( char const *interfaceName, CreateInterfaceFn *factoryList, int numFactories );
+
 
 #endif
 //#endif // MSVC 6.0

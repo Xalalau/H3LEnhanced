@@ -32,7 +32,7 @@ public:
 	void		OnTakeDamage( const CTakeDamageInfo& info ) override { Attack(); }
 	void		HandleAnimEvent( AnimEvent_t& event ) override;
 	void		Attack( void );
-	int			Classify() override { return CLASS_IGNORE; }
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetNoneId(); }
 
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];

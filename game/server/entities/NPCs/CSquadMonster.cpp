@@ -302,7 +302,7 @@ int CSquadMonster :: SquadCount( void )
 int CSquadMonster :: SquadRecruit( int searchRadius, int maxMembers )
 {
 	int squadCount;
-	int iMyClass = Classify();// cache this monster's class
+	EntityClassification_t iMyClass = Classify();// cache this monster's class
 
 
 	// Don't recruit if I'm already in a group
@@ -350,7 +350,7 @@ int CSquadMonster :: SquadRecruit( int searchRadius, int maxMembers )
 			{
 				// Can we recruit this guy?
 				if ( !pRecruit->InSquad() && pRecruit->Classify() == iMyClass &&
-				   ( (iMyClass != CLASS_ALIEN_MONSTER) || FStrEq( GetClassname(), pRecruit->GetClassname() )) &&
+				   ( (iMyClass != EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER )) || FStrEq( GetClassname(), pRecruit->GetClassname() )) &&
 				    !pRecruit->HasNetName() )
 				{
 					TraceResult tr;
@@ -525,6 +525,8 @@ MONSTERSTATE CSquadMonster :: GetIdealState ( void )
 			SquadMakeEnemy ( m_hEnemy );
 		}
 		break;
+
+	default: break;
 	}
 
 	return CBaseMonster :: GetIdealState();

@@ -24,27 +24,25 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
-DECLARE_MESSAGE( m_Message, HudText )
-DECLARE_MESSAGE( m_Message, GameTitle )
+#include "CHudMessage.h"
 
-bool CHudMessage::Init()
+CHudMessage::CHudMessage( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
+
+void CHudMessage::Init()
 {
 	HOOK_MESSAGE( HudText );
 	HOOK_MESSAGE( GameTitle );
 
-	gHUD.AddHudElem(this);
-
 	Reset();
-
-	return true;
 }
 
-bool CHudMessage::VidInit()
+void CHudMessage::VidInit()
 {
-	m_HUD_title_half = gHUD.GetSpriteIndex( "title_half" );
-	m_HUD_title_life = gHUD.GetSpriteIndex( "title_life" );
-
-	return true;
+	m_HUD_title_half = GetHud().GetSpriteIndex( "title_half" );
+	m_HUD_title_life = GetHud().GetSpriteIndex( "title_life" );
 }
 
 
@@ -190,7 +188,7 @@ void CHudMessage::MessageScanNextChar()
 
 	if ( m_parms.pMessage->effect == 1 && m_parms.charTime != 0 )
 	{
-		if ( m_parms.x >= 0 && m_parms.y >= 0 && (m_parms.x + gHUD.m_scrinfo.charWidths[ m_parms.text ]) <= ScreenWidth )
+		if ( m_parms.x >= 0 && m_parms.y >= 0 && (m_parms.x + Hud().ScreenInfo().charWidths[ m_parms.text ]) <= ScreenWidth )
 			TextMessageDrawChar( m_parms.x, m_parms.y, m_parms.text, m_parms.pMessage->r2, m_parms.pMessage->g2, m_parms.pMessage->b2 );
 	}
 }
@@ -261,12 +259,12 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 			width = 0;
 		}
 		else
-			width += gHUD.m_scrinfo.charWidths[*pText];
+			width += Hud().ScreenInfo().charWidths[*pText];
 		pText++;
 		length++;
 	}
 	m_parms.length = length;
-	m_parms.totalHeight = (m_parms.lines * gHUD.m_scrinfo.iCharHeight);
+	m_parms.totalHeight = (m_parms.lines * Hud().ScreenInfo().iCharHeight);
 
 
 	m_parms.y = YPosition( pMessage->y, m_parms.totalHeight );
@@ -284,7 +282,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 		{
 			unsigned char c = *pText;
 			line[m_parms.lineLength] = c;
-			m_parms.width += gHUD.m_scrinfo.charWidths[c];
+			m_parms.width += Hud().ScreenInfo().charWidths[c];
 			m_parms.lineLength++;
 			pText++;
 		}
@@ -296,7 +294,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 		for ( j = 0; j < m_parms.lineLength; j++ )
 		{
 			m_parms.text = line[j];
-			int next = m_parms.x + gHUD.m_scrinfo.charWidths[ m_parms.text ];
+			int next = m_parms.x + Hud().ScreenInfo().charWidths[ m_parms.text ];
 			MessageScanNextChar();
 			
 			if ( m_parms.x >= 0 && m_parms.y >= 0 && next <= ScreenWidth )
@@ -304,7 +302,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 			m_parms.x = next;
 		}
 
-		m_parms.y += gHUD.m_scrinfo.iCharHeight;
+		m_parms.y += Hud().ScreenInfo().iCharHeight;
 	}
 }
 
@@ -319,12 +317,12 @@ bool CHudMessage::Draw( float fTime )
 
 	if ( m_gameTitleTime > 0 )
 	{
-		float localTime = gHUD.m_flTime - m_gameTitleTime;
+		float localTime = Hud().GetTime() - m_gameTitleTime;
 		float brightness;
 
 		// Maybe timer isn't set yet
-		if ( m_gameTitleTime > gHUD.m_flTime )
-			m_gameTitleTime = gHUD.m_flTime;
+		if ( m_gameTitleTime > Hud().GetTime() )
+			m_gameTitleTime = Hud().GetTime();
 
 		if ( localTime > (m_pGameTitle->fadein + m_pGameTitle->holdtime + m_pGameTitle->fadeout) )
 			m_gameTitleTime = 0;
@@ -332,19 +330,19 @@ bool CHudMessage::Draw( float fTime )
 		{
 			brightness = FadeBlend( m_pGameTitle->fadein, m_pGameTitle->fadeout, m_pGameTitle->holdtime, localTime );
 
-			int halfWidth = gHUD.GetSpriteRect(m_HUD_title_half).right - gHUD.GetSpriteRect(m_HUD_title_half).left;
-			int fullWidth = halfWidth + gHUD.GetSpriteRect(m_HUD_title_life).right - gHUD.GetSpriteRect(m_HUD_title_life).left;
-			int fullHeight = gHUD.GetSpriteRect(m_HUD_title_half).bottom - gHUD.GetSpriteRect(m_HUD_title_half).top;
+			int halfWidth = GetHud().GetSpriteRect(m_HUD_title_half).right - GetHud().GetSpriteRect(m_HUD_title_half).left;
+			int fullWidth = halfWidth + GetHud().GetSpriteRect(m_HUD_title_life).right - GetHud().GetSpriteRect(m_HUD_title_life).left;
+			int fullHeight = GetHud().GetSpriteRect(m_HUD_title_half).bottom - GetHud().GetSpriteRect(m_HUD_title_half).top;
 
 			int x = XPosition( m_pGameTitle->x, fullWidth, fullWidth );
 			int y = YPosition( m_pGameTitle->y, fullHeight );
 
 
-			SPR_Set( gHUD.GetSprite(m_HUD_title_half), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
-			SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect(m_HUD_title_half) );
+			SPR_Set( GetHud().GetSprite(m_HUD_title_half), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
+			SPR_DrawAdditive( 0, x, y, &GetHud().GetSpriteRect(m_HUD_title_half) );
 
-			SPR_Set( gHUD.GetSprite(m_HUD_title_life), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
-			SPR_DrawAdditive( 0, x + halfWidth, y, &gHUD.GetSpriteRect(m_HUD_title_life) );
+			SPR_Set( GetHud().GetSprite(m_HUD_title_life), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
+			SPR_DrawAdditive( 0, x + halfWidth, y, &GetHud().GetSpriteRect(m_HUD_title_life) );
 
 			drawn = 1;
 		}
@@ -356,8 +354,8 @@ bool CHudMessage::Draw( float fTime )
 		if ( m_pMessages[i] )
 		{
 			pMessage = m_pMessages[i];
-			if ( m_startTime[i] > gHUD.m_flTime )
-				m_startTime[i] = gHUD.m_flTime + m_parms.time - m_startTime[i] + 0.2;	// Server takes 0.2 seconds to spawn, adjust for this
+			if ( m_startTime[i] > Hud().GetTime() )
+				m_startTime[i] = Hud().GetTime() + m_parms.time - m_startTime[i] + 0.2;	// Server takes 0.2 seconds to spawn, adjust for this
 		}
 	}
 
@@ -402,10 +400,10 @@ bool CHudMessage::Draw( float fTime )
 	}
 
 	// Remember the time -- to fix up level transitions
-	m_parms.time = gHUD.m_flTime;
+	m_parms.time = Hud().GetTime();
 	// Don't call until we get another message
 	if ( !drawn )
-		m_iFlags &= ~HUD_ACTIVE;
+		GetFlags() &= ~HUD_ACTIVE;
 
 	return true;
 }
@@ -476,53 +474,49 @@ void CHudMessage::MessageAdd( const char *pName, float time )
 }
 
 
-int CHudMessage::MsgFunc_HudText( const char *pszName,  int iSize, void *pbuf )
+void CHudMessage::MsgFunc_HudText( const char *pszName,  int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	char *pString = reader.ReadString();
 
-	MessageAdd( pString, gHUD.m_flTime );
+	MessageAdd( pString, Hud().GetTime() );
 	// Remember the time -- to fix up level transitions
-	m_parms.time = gHUD.m_flTime;
+	m_parms.time = Hud().GetTime();
 
 	// Turn on drawing
-	if ( !(m_iFlags & HUD_ACTIVE) )
-		m_iFlags |= HUD_ACTIVE;
-
-	return 1;
+	if ( !( GetFlags() & HUD_ACTIVE) )
+		GetFlags() |= HUD_ACTIVE;
 }
 
 
-int CHudMessage::MsgFunc_GameTitle( const char *pszName,  int iSize, void *pbuf )
+void CHudMessage::MsgFunc_GameTitle( const char *pszName,  int iSize, void *pbuf )
 {
 	m_pGameTitle = TextMessageGet( "GAMETITLE" );
 	if ( m_pGameTitle != NULL )
 	{
-		m_gameTitleTime = gHUD.m_flTime;
+		m_gameTitleTime = Hud().GetTime();
 
 		// Turn on drawing
-		if ( !(m_iFlags & HUD_ACTIVE) )
-			m_iFlags |= HUD_ACTIVE;
+		if ( !( GetFlags() & HUD_ACTIVE) )
+			GetFlags() |= HUD_ACTIVE;
 	}
-
-	return 1;
 }
 
 void CHudMessage::MessageAdd(client_textmessage_t * newMessage )
 {
-	m_parms.time = gHUD.m_flTime;
+	m_parms.time = Hud().GetTime();
 
 	// Turn on drawing
-	if ( !(m_iFlags & HUD_ACTIVE) )
-		m_iFlags |= HUD_ACTIVE;
+	if ( !( GetFlags() & HUD_ACTIVE) )
+		GetFlags() |= HUD_ACTIVE;
 	
 	for ( int i = 0; i < maxHUDMessages; i++ )
 	{
 		if ( !m_pMessages[i] )
 		{
 			m_pMessages[i] = newMessage;
-			m_startTime[i] = gHUD.m_flTime;
+			m_startTime[i] = Hud().GetTime();
 			return;
 		}
 	}

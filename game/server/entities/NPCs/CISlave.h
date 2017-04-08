@@ -39,8 +39,8 @@ public:
 
 	void SetYawSpeed( void ) override;
 	int	 ISoundMask( void ) override;
-	int  Classify( void ) override;
-	int  IRelationship( CBaseEntity *pTarget ) override;
+	EntityClassification_t GetClassification() override;
+	Relationship  IRelationship( CBaseEntity *pTarget ) override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
 	bool CheckRangeAttack2( float flDot, float flDist ) override;

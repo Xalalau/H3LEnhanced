@@ -25,7 +25,6 @@ LINK_ENTITY_TO_CLASS( garg_stomp, CStomp );
 void CStomp::Spawn( void )
 {
 	pev->nextthink = gpGlobals->time;
-	pev->classname = MAKE_STRING( "garg_stomp" );
 	pev->dmgtime = gpGlobals->time;
 
 	pev->framerate = 30;
@@ -95,7 +94,7 @@ void CStomp::Think( void )
 
 CStomp *CStomp::StompCreate( const Vector &origin, const Vector &end, float speed )
 {
-	CStomp *pStomp = GetClassPtr( ( CStomp * ) NULL );
+	auto pStomp = static_cast<CStomp*>( UTIL_CreateNamedEntity( "garg_stomp"  ) );
 
 	pStomp->pev->origin = origin;
 	Vector dir = ( end - origin );

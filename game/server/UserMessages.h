@@ -59,4 +59,9 @@ extern int gmsgWpnBody;
 
 void LinkUserMessages();
 
+/**
+*	Sends the game state to the player.
+*/
+void UMSG_SendGameState( CBasePlayer& player );
+
 #endif //GAME_SERVER_USERMESSAGES_H

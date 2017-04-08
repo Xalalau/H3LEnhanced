@@ -97,7 +97,7 @@ LINK_ENTITY_TO_CLASS( monster_alien_grunt, CAGrunt );
 // IRelationship - overridden because Human Grunts are 
 // Alien Grunt's nemesis.
 //=========================================================
-int CAGrunt::IRelationship ( CBaseEntity *pTarget )
+Relationship CAGrunt::IRelationship ( CBaseEntity *pTarget )
 {
 	if ( pTarget->ClassnameIs( "monster_human_grunt" ) )
 	{
@@ -290,9 +290,9 @@ void CAGrunt :: PainSound ( void )
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CAGrunt :: Classify ( void )
+EntityClassification_t CAGrunt::GetClassification()
 {
-	return	CLASS_ALIEN_MILITARY;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MILITARY );
 }
 
 //=========================================================
@@ -1021,6 +1021,8 @@ Schedule_t *CAGrunt :: GetSchedule ( void )
 
 			return GetScheduleOfType ( SCHED_STANDOFF );
 		}
+
+	default: break;
 	}
 
 	return CSquadMonster :: GetSchedule();

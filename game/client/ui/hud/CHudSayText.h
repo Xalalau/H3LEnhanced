@@ -15,9 +15,12 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDSAYTEXT_H
 #define GAME_CLIENT_UI_HUD_CHUDSAYTEXT_H
 
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
 struct cvar_t;
 
-class CHudSayText : public CHudBase
+class CHudSayText : public CBaseHudElement<CHLHud>
 {
 private:
 	// ############ hu3lifezado ############ //
@@ -30,14 +33,18 @@ private:
 	static const size_t MAX_CHARS_PER_LINE = 256;
 
 public:
-	bool Init() override;
+	DECLARE_CLASS( CHudSayText, CBaseHudElement<CHLHud> );
+
+	CHudSayText( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
 	void InitHUDData() override;
-	bool VidInit() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
-	int MsgFunc_SayText( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_SayText( const char *pszName, int iSize, void *pbuf );
 	void SayTextPrint( const char *pszBuf, size_t uiBufSize, int clientIndex = -1 );
 	void EnsureTextFitsInOneLineAndWrapIfHaveTo( int line );
-	friend class CHudSpectator;
+	friend class CHudSpectator; //TODO: needed? - Solokiller
 
 private:
 	int ScrollTextUp();

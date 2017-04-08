@@ -69,7 +69,7 @@ extern DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for bl
 extern void DecalGunshot( TraceResult *pTrace, int iBulletType );
 extern void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
 extern int DamageDecal( CBaseEntity *pEntity, int bitsDamageType );
-extern void RadiusDamage( Vector vecSrc, const CTakeDamageInfo& info, float flRadius, int iClassIgnore );
+extern void RadiusDamage( Vector vecSrc, const CTakeDamageInfo& info, float flRadius, EntityClassification_t iClassIgnore );
 
 #ifdef SERVER_DLL
 extern CMultiDamage g_MultiDamage;

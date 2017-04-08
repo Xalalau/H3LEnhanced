@@ -40,7 +40,6 @@ void CBaseMonster :: SetState ( MONSTERSTATE State )
 	
 	switch( State )
 	{
-	
 	// Drop enemy pointers when going to idle
 	case MONSTERSTATE_IDLE:
 
@@ -50,6 +49,8 @@ void CBaseMonster :: SetState ( MONSTERSTATE State )
 			ALERT ( at_aiconsole, "Stripped\n" );
 		}
 		break;
+
+	default: break;
 	}
 
 	m_MonsterState = State;
@@ -227,6 +228,8 @@ MONSTERSTATE CBaseMonster :: GetIdealState ( void )
 	case MONSTERSTATE_DEAD:
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
 		break;
+
+	default: break;
 	}
 
 	return m_IdealMonsterState;

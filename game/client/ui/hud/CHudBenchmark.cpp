@@ -14,6 +14,7 @@
 #include "event_api.h"
 #include "com_model.h"
 #include "mathlib.h"
+#include "strtools.h"
 
 #include "bench.h"
 
@@ -31,6 +32,8 @@
 #include "entity_types.h"
 
 #include "mathlib.h"
+
+#include "CHudBenchmark.h"
 
 #define NUM_BENCH_OBJ 12
 #define BENCH_CYCLE_TIME 10.0
@@ -84,7 +87,10 @@ static float g_benchSwitchTimes[ LAST_STAGE + 1 ] = { 0.0, 10.0, 12.0, 10.0, 5.0
 
 #define SCORE_TIME_UP 1.5
 
-DECLARE_MESSAGE(m_Benchmark, Bench);
+CHudBenchmark::CHudBenchmark( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
 
 void Bench_SetStage( int stage )
 {
@@ -121,28 +127,24 @@ int Bench_Active( void )
 	return g_currentstage != 0 ? 1 : 0;
 }
 
-void __CmdFunc_BenchMark( void )
-{
-	gHUD.m_Benchmark.Restart();
-}
-
+DECLARE_COMMAND( CHudBenchmark, BenchMark );
 
 void CHudBenchmark::Restart( void )
 {
 	Bench_SetStage( FIRST_STAGE );
-	g_benchSwitchTime = gHUD.m_flTime + g_benchSwitchTimes[ FIRST_STAGE ];
+	g_benchSwitchTime = Hud().GetTime() + g_benchSwitchTimes[ FIRST_STAGE ];
 	StartNextSection( FIRST_STAGE );
 
-	gHUD.m_Benchmark.m_iFlags |= HUD_ACTIVE;
-	gHUD.m_Benchmark.m_fDrawTime = gHUD.m_flTime + BENCH_TIME;
+	GetFlags() |= HUD_ACTIVE;
+	m_fDrawTime = Hud().GetTime() + BENCH_TIME;
 }
 
-int CHudBenchmark::MsgFunc_Bench(const char *pszName, int iSize, void *pbuf)
+void CHudBenchmark::MsgFunc_Bench(const char *pszName, int iSize, void *pbuf)
 {
 	CBufferReader reader;
 	int section = reader.ReadByte();
 
-	m_fReceiveTime = gHUD.m_flTime;
+	m_fReceiveTime = Hud().GetTime();
 	m_StoredLatency = ( m_fReceiveTime - m_fSendTime );
 
 	m_StoredLatency = min( 1.0f, m_StoredLatency );
@@ -161,7 +163,7 @@ int CHudBenchmark::MsgFunc_Bench(const char *pszName, int iSize, void *pbuf)
 		{
 			adr = status.remote_address;
 
-			sprintf( sz, "%i.%i.%i.%i",
+			V_sprintf_safe( sz, "%i.%i.%i.%i",
 				adr.ip[ 0 ], adr.ip[ 1 ], adr.ip[ 2 ], adr.ip[ 3 ] );
 
 			if ( adr.type == NA_IP )
@@ -174,8 +176,6 @@ int CHudBenchmark::MsgFunc_Bench(const char *pszName, int iSize, void *pbuf)
 			}
 		}
 	}
-
-	return 1;
 }
 
 void CHudBenchmark::StartNextSection( int section )
@@ -186,7 +186,7 @@ void CHudBenchmark::StartNextSection( int section )
 	{
 	case FIRST_STAGE:
 		// Stage 2 requires that we tell the server to "drop" an item
-		m_fSendTime = gHUD.m_flTime;
+		m_fSendTime = Hud().GetTime();
 		m_fReceiveTime = 0.0;
 		m_StoredLatency = 0.0;
 		m_StoredPacketLoss = 0.0;
@@ -217,8 +217,8 @@ void CHudBenchmark::StartNextSection( int section )
 		break;
 	}
 
-	m_fStageStarted = gHUD.m_flTime;
-	g_benchSwitchTime = gHUD.m_flTime + Bench_GetSwitchTime();
+	m_fStageStarted = Hud().GetTime();
+	g_benchSwitchTime = Hud().GetTime() + Bench_GetSwitchTime();
 }
 
 void CHudBenchmark::CountFrame( float dt )
@@ -272,7 +272,7 @@ void CHudBenchmark::Think( void )
 		m_fAvgFrameRate = 0.0;
 	}
 
-	if ( gHUD.m_flTime > g_benchSwitchTime )
+	if ( Hud().GetTime() > g_benchSwitchTime )
 	{
 		Bench_SetStage( Bench_GetStage() + 1 );
 		StartNextSection( Bench_GetStage() );
@@ -296,11 +296,11 @@ void CHudBenchmark::Think( void )
 			switch_time = m_fStageStarted + latency * total_time;
 			switch_time += 1.0;
 
-			if ( gHUD.m_flTime >= switch_time )
+			if ( Hud().GetTime() >= switch_time )
 			{
 				if ( !m_nSentFinish )
 				{
-					g_benchSwitchTime = gHUD.m_flTime + 1.0 + SCORE_TIME_UP;
+					g_benchSwitchTime = Hud().GetTime() + 1.0 + SCORE_TIME_UP;
 
 					ServerCmd( "ppdemo 1 finish\n" );
 					m_nSentFinish = 1;
@@ -308,7 +308,7 @@ void CHudBenchmark::Think( void )
 			}
 			else
 			{
-				g_benchSwitchTime = gHUD.m_flTime + 10.0;
+				g_benchSwitchTime = Hud().GetTime() + 10.0;
 			}
 		}
 	}
@@ -326,15 +326,15 @@ void CHudBenchmark::Think( void )
 		{
 			float dt;
 
-			dt = gHUD.m_flTime - lasttime;
+			dt = Hud().GetTime() - lasttime;
 			if ( dt > 0 )
 			{
 				CountFrame( dt );
 			}
 		}
-		lasttime = gHUD.m_flTime;
+		lasttime = Hud().GetTime();
 
-		elapsed = gHUD.m_flTime - m_fStageStarted;
+		elapsed = Hud().GetTime() - m_fStageStarted;
 		total = Bench_GetSwitchTime();
 		if ( total )
 		{
@@ -350,16 +350,16 @@ void CHudBenchmark::Think( void )
 		switch_time = m_fStageStarted + total;
 
 		/* BELOW ADDED BY minman */
-		if (gHUD.m_flTime >= switch_time)
+		if ( Hud().GetTime() >= switch_time)
 		{
 			if ( !m_nSentFinish)
 			{
-				g_benchSwitchTime = gHUD.m_flTime + SCORE_TIME_UP;
+				g_benchSwitchTime = Hud().GetTime() + SCORE_TIME_UP;
 				m_nSentFinish = 1;
 			}
 		}
 		else
-			g_benchSwitchTime = gHUD.m_flTime + 10.0;
+			g_benchSwitchTime = Hud().GetTime() + 10.0;
 	}
 
 	/* BELOW ADDED BY minman */
@@ -367,16 +367,16 @@ void CHudBenchmark::Think( void )
 	{
 		float switch_time = m_fStageStarted + Bench_GetSwitchTime();
 
-		if (gHUD.m_flTime >= switch_time)
+		if ( Hud().GetTime() >= switch_time)
 		{
 			if ( !m_nSentFinish)
 			{
-				g_benchSwitchTime = gHUD.m_flTime + SCORE_TIME_UP;
+				g_benchSwitchTime = Hud().GetTime() + SCORE_TIME_UP;
 				m_nSentFinish = 1;
 			}
 		}
 		else
-			g_benchSwitchTime = gHUD.m_flTime + 10.0;
+			g_benchSwitchTime = Hud().GetTime() + 10.0;
 	}
 
 	if ( Bench_InStage( FOURTH_STAGE ) )
@@ -384,32 +384,27 @@ void CHudBenchmark::Think( void )
 		if ( !m_nScoreComputed )
 		{
 			m_nScoreComputed = 1;
-			gHUD.m_Benchmark.SetCompositeScore();
+			SetCompositeScore();
 		}
 	}
 
 	if ( Bench_GetStage() > LAST_STAGE )
 	{
-		m_iFlags &= ~HUD_ACTIVE;
+		GetFlags() &= ~HUD_ACTIVE;
 		EngineClientCmd( "quit\n" );
 	}
 }
 
 
-bool CHudBenchmark::Init()
+void CHudBenchmark::Init()
 {
-	gHUD.AddHudElem( this );
-
 	HOOK_COMMAND( "ppdemostart", BenchMark );
 
 	HOOK_MESSAGE(Bench);
-
-	return true;
 }
 
-bool CHudBenchmark::VidInit()
+void CHudBenchmark::VidInit()
 {
-	return true;
 }
 
 int CHudBenchmark::Bench_ScoreForValue( int stage, float raw )
@@ -481,22 +476,22 @@ bool CHudBenchmark::Draw( float flTime )
 
 	if ( m_fDrawTime < flTime || !Bench_Active() )
 	{
-		m_iFlags &= ~HUD_ACTIVE;
+		GetFlags() &= ~HUD_ACTIVE;
 		return true;
 	}
 
 	x = 10;
 	y = 25; //480 - 150;
 
-	sprintf( sz, "%s: %s", g_title , pp_strings[ Bench_GetPowerPlay() ? 0 : 1]);
+	V_sprintf_safe( sz, "%s: %s", g_title , pp_strings[ Bench_GetPowerPlay() ? 0 : 1]);
 
-	gHUD.DrawHudString( x, y, 320, sz, 251, 237, 7);// , 200, 200); //255, 255, 255 );
+	GetHud().DrawHudString( x, y, 320, sz, 251, 237, 7);// , 200, 200); //255, 255, 255 );
 
 	y += 20;
 	
-//	sprintf( sz, pp_strings[ Bench_GetPowerPlay() ? 0 : 1 ] );
+//	V_sprintf_safe( sz, pp_strings[ Bench_GetPowerPlay() ? 0 : 1 ] );
 
-//	gHUD.DrawHudString( x, y, 320, sz, 31, 200, 200 );
+//	Hud().DrawHudString( x, y, 320, sz, 31, 200, 200 );
 
 //	y += 20;
 
@@ -505,13 +500,13 @@ bool CHudBenchmark::Draw( float flTime )
 	{
 		if ( m_fReceiveTime && m_nSentFinish )
 		{
-			sprintf( sz, g_stage1[1], Bench_ScoreForValue( FIRST_STAGE, m_StoredLatency ));
+			V_sprintf_safe( sz, g_stage1[1], Bench_ScoreForValue( FIRST_STAGE, m_StoredLatency ));
 		}
 		else
 		{
 			strcpy( sz, g_stage1[0] );
 		}
-		gHUD.DrawHudString( x, y, 320, sz, 255, 255, 255 );
+		GetHud().DrawHudString( x, y, 320, sz, 255, 255, 255 );
 
 		y += 20;
 
@@ -530,13 +525,13 @@ bool CHudBenchmark::Draw( float flTime )
 
 		if ( m_nSentFinish /* Bench_InStage( THIRD_STAGE ) */|| Bench_InStage( FOURTH_STAGE ) )
 		{
-			sprintf( sz, g_stage2[1], Bench_ScoreForValue( SECOND_STAGE, m_fAvgFrameRate ) );
+			V_sprintf_safe( sz, g_stage2[1], Bench_ScoreForValue( SECOND_STAGE, m_fAvgFrameRate ) );
 		}
 		else
 		{
 			strcpy( sz, g_stage2[0] );
 		}
-		gHUD.DrawHudString( x, y, 320, sz, 255, 255, 255 );
+		GetHud().DrawHudString( x, y, 320, sz, 255, 255, 255 );
 		y += 20;
 	}
 
@@ -545,25 +540,25 @@ bool CHudBenchmark::Draw( float flTime )
 	{
 		if ( m_nSentFinish || Bench_InStage( FOURTH_STAGE ) )
 		{
-			sprintf( sz, g_stage3[1], Bench_ScoreForValue( THIRD_STAGE, m_fAvgScore ) );
+			V_sprintf_safe( sz, g_stage3[1], Bench_ScoreForValue( THIRD_STAGE, m_fAvgScore ) );
 		}
 		else
 		{
 			strcpy( sz, g_stage3[0] );
 		}
 
-		gHUD.DrawHudString( x, y, 320, sz, 255, 255, 255 );
+		GetHud().DrawHudString( x, y, 320, sz, 255, 255, 255 );
 
 		y += 20;
 	}
 
 	if ( Bench_InStage( FOURTH_STAGE ) )
 	{
-		sprintf( sz, g_stage4, m_nCompositeScore );
-		gHUD.DrawHudString( x, y, 320, sz, 31, 200, 200 );
+		V_sprintf_safe( sz, g_stage4, m_nCompositeScore );
+		GetHud().DrawHudString( x, y, 320, sz, 31, 200, 200 );
 	}
 
-	m_fDrawTime = gHUD.m_flTime + BENCH_TIME;
+	m_fDrawTime = Hud().GetTime() + BENCH_TIME;
 
 	return true;
 }
@@ -577,7 +572,7 @@ void CHudBenchmark::SetScore( float score )
 		return;
 
 	m_fDrawScore = score;
-	m_fDrawTime = gHUD.m_flTime + BENCH_TIME;
+	m_fDrawTime = Hud().GetTime() + BENCH_TIME;
 
 	m_fAvgScore = ( SCORE_AVG ) * m_fAvgScore + ( 1.0 - SCORE_AVG ) * m_fDrawScore;
 }
@@ -597,7 +592,8 @@ void Bench_SpotPosition( const Vector& dot, const Vector& target )
 	// Compute new score
 	Vector delta = target - dot;
 
-	gHUD.m_Benchmark.SetScore( delta.Length() );
+	if( auto pBenchmark = GETHUDCLASS( CHudBenchmark ) )
+		pBenchmark->SetScore( delta.Length() );
 }
 
 static Vector g_dotorg;
@@ -628,7 +624,7 @@ void Bench_CheckEntity( int type, cl_entity_t *ent, const char *modelname )
 			float fRate = Bench_GetPowerPlay() ? 4.0 : 8.0;
 			float fBounds = Bench_GetPowerPlay() ? 8.0 : 15.0;
 
-			dt = gHUD.m_flTime - fLastTime;
+			dt = Hud().GetTime() - fLastTime;
 			if ( dt > 0.0 && dt < 1.0 )
 			{
 				fZAdjust += gEngfuncs.pfnRandomFloat( -fRate, fRate );
@@ -639,7 +635,7 @@ void Bench_CheckEntity( int type, cl_entity_t *ent, const char *modelname )
 
 				g_fZAdjust = fZAdjust;
 			}
-			fLastTime = gHUD.m_flTime;
+			fLastTime = Hud().GetTime();
 		}
 	}
 }
@@ -689,7 +685,7 @@ int HUD_SetupBenchObjects( cl_entity_t *bench, int plindex, const Vector origin 
 	// Move center out from here
 	centerspot = centerspot + BENCH_VIEW_OFFSET * forward;
 	
-	g_flStartTime = gHUD.m_flTime;
+	g_flStartTime = Hud().GetTime();
 
 	for ( i = 0; i < NUM_BENCH_OBJ; i++ )
 	{
@@ -756,6 +752,11 @@ int HUD_SetupBenchObjects( cl_entity_t *bench, int plindex, const Vector origin 
 //TODO: this looks an awful lot like the function above. Consider refactoring - Solokiller
 void HUD_CreateBenchObjects( const Vector& origin )
 {
+	auto pBenchmark = GETHUDCLASS( CHudBenchmark );
+
+	if( !pBenchmark )
+		return;
+
 	static cl_entity_t bench[ NUM_BENCH_OBJ ];
 	cl_entity_t *player;
 	Vector forward, right, up;
@@ -772,11 +773,11 @@ void HUD_CreateBenchObjects( const Vector& origin )
 	pmtrace_t tr;
 	int i = 0;
 
-	if ( gHUD.m_flTime == last_time )
+	if ( Hud().GetTime() == last_time )
 		return;
 
-	frametime = gHUD.m_flTime - last_time;
-	last_time = gHUD.m_flTime;
+	frametime = Hud().GetTime() - last_time;
+	last_time = Hud().GetTime();
 
 	if ( frametime <= 0.0 )
 		return;
@@ -812,7 +813,7 @@ void HUD_CreateBenchObjects( const Vector& origin )
 
 	gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
 
-	dt = gHUD.m_flTime - g_flStartTime;
+	dt = Hud().GetTime() - g_flStartTime;
 	if ( dt < 0 )
 		return;
 
@@ -873,7 +874,7 @@ void HUD_CreateBenchObjects( const Vector& origin )
 
 		bench[ i ].curstate.angles = bench[ i ].curstate.angles.Normalize();
 		
-		jfrac = ( (float)gHUD.m_Benchmark.GetObjects() / (float)NUM_BENCH_OBJ );
+		jfrac = ( (float)pBenchmark->GetObjects() / (float)NUM_BENCH_OBJ );
 
 		// Adjust velocity
 		//bench[ i ].curstate.velocity[ 2 ] -= bench[ i ].curstate.gravity * frametime * 800;
@@ -947,7 +948,7 @@ void HUD_CreateBenchObjects( const Vector& origin )
 		// Force no interpolation, etc., probably not necessary
 		bench[ i ].prevstate		= bench[ i ].curstate;
 
-		if ( ( NUM_BENCH_OBJ - i - 1 ) < gHUD.m_Benchmark.GetObjects() )
+		if ( ( NUM_BENCH_OBJ - i - 1 ) < pBenchmark->GetObjects() )
 		{
 			if ( bench[ i ].curstate.renderamt == 255 )
 			{
@@ -1062,7 +1063,7 @@ void Bench_SetViewOrigin( Vector& vieworigin, float frametime )
 	if ( !Bench_InStage( SECOND_STAGE ) )
 		return;
 
-	dt = gHUD.m_flTime - g_flStartTime;
+	dt = Hud().GetTime() - g_flStartTime;
 	if ( dt < 0 )
 		return;
 

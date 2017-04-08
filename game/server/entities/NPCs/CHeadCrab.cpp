@@ -116,9 +116,9 @@ const char *CHeadCrab::pBiteSounds[] =
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CHeadCrab :: Classify ( void )
+EntityClassification_t CHeadCrab::GetClassification()
 {
-	return	CLASS_ALIEN_PREY;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_PREY );
 }
 
 //=========================================================

@@ -32,6 +32,13 @@
 
 #include "../engine/cdll_int.h"
 
+class CMessageHandlers;
+
 extern cl_enginefunc_t gEngfuncs;
+
+/**
+*	Gets the global message handlers map.
+*/
+CMessageHandlers& MessageHandlers();
 
 #endif //GAME_CLIENT_CL_DLL_H

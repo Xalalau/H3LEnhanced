@@ -55,7 +55,7 @@ void CTripmineGrenade::Spawn()
 	SetSize( Vector( -8, -8, -8 ), Vector( 8, 8, 8 ) );
 	SetAbsOrigin( GetAbsOrigin() );
 
-	if( pev->spawnflags & 1 )
+	if( pev->spawnflags & SF_TRIPMINE_INSTANT_ON )
 	{
 		// power up quickly
 		m_flPowerUp = gpGlobals->time + 1.0;

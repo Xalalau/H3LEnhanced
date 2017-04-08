@@ -31,12 +31,8 @@
 #include "voice_status.h"
 #include "vgui_SpectatorPanel.h"
 
-extern hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
-extern extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
-team_info_t			 g_TeamInfo[MAX_TEAMS+1];
-int					 g_IsSpectator[MAX_PLAYERS+1];
+#include "shared/CLocalize.h"
 
-int HUD_IsGame( const char *game );
 int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 );
 
 // Scoreboard dimensions
@@ -133,7 +129,7 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	for(int i=0; i < NUM_COLUMNS; i++)
 	{
 		if (g_ColumnInfo[i].m_pTitle && g_ColumnInfo[i].m_pTitle[0] == '#')
-			m_HeaderLabels[i].setText(CHudTextMessage::BufferedLocaliseTextString(g_ColumnInfo[i].m_pTitle));
+			m_HeaderLabels[i].setText( Localize().BufferedLocaliseTextString(g_ColumnInfo[i].m_pTitle));
 		else if(g_ColumnInfo[i].m_pTitle)
 			m_HeaderLabels[i].setText(g_ColumnInfo[i].m_pTitle);
 
@@ -277,7 +273,7 @@ void ScorePanel::Update()
 	}
 
 	// If it's not teamplay, sort all the players. Otherwise, sort the teams.
-	if ( !gHUD.m_Teamplay )
+	if ( !Hud().IsTeamplay() )
 		SortPlayers( 0, NULL );
 	else
 		SortTeams();
@@ -661,10 +657,10 @@ void ScorePanel::FillGrid()
 										iTeamColors[ g_PlayerExtraInfo[ m_iSortedRows[row] ].teamnumber % iNumberOfTeamColors ][2],
 										196 );
 				}
-				else if ( m_iSortedRows[row] == m_iLastKilledBy && m_fLastKillTime && m_fLastKillTime > gHUD.m_flTime )
+				else if ( m_iSortedRows[row] == m_iLastKilledBy && m_fLastKillTime && m_fLastKillTime > Hud().GetTime() )
 				{
 					// Killer's name
-					pLabel->setBgColor( 255,0,0, 255 - ((float)15 * (float)(m_fLastKillTime - gHUD.m_flTime)) );
+					pLabel->setBgColor( 255,0,0, 255 - ((float)15 * (float)(m_fLastKillTime - Hud().GetTime() )) );
 				}
 			}				
 
@@ -693,7 +689,7 @@ void ScorePanel::FillGrid()
 				case COLUMN_NAME:
 					if ( m_iIsATeam[row] == TEAM_SPECTATORS )
 					{
-						strcpy( sz2, CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ) );
+						strcpy( sz2, Localize().BufferedLocaliseTextString( "#Spectators" ) );
 					}
 					else
 					{
@@ -707,11 +703,11 @@ void ScorePanel::FillGrid()
 					{
 						if (team_info->players == 1)
 						{
-							sprintf(sz2, "(%d %s)", team_info->players, CHudTextMessage::BufferedLocaliseTextString( "#Player" ) );
+							sprintf(sz2, "(%d %s)", team_info->players, Localize().BufferedLocaliseTextString( "#Player" ) );
 						}
 						else
 						{
-							sprintf(sz2, "(%d %s)", team_info->players, CHudTextMessage::BufferedLocaliseTextString( "#Player_plural" ) );
+							sprintf(sz2, "(%d %s)", team_info->players, Localize().BufferedLocaliseTextString( "#Player_plural" ) );
 						}
 
 						pLabel->setText2(sz2);
@@ -790,7 +786,7 @@ void ScorePanel::FillGrid()
 						if (bNoClass)
 							strcpy( sz, "" );
 						else
-							strcpy( sz, CHudTextMessage::BufferedLocaliseTextString( sLocalisedClasses[ g_PlayerExtraInfo[ m_iSortedRows[row] ].playerclass ] ) );
+							strcpy( sz, Localize().BufferedLocaliseTextString( sLocalisedClasses[ g_PlayerExtraInfo[ m_iSortedRows[row] ].playerclass ] ) );
 					}
 					else
 					{
@@ -872,7 +868,7 @@ void ScorePanel::DeathMsg( int killer, int victim )
 	if ( victim == m_iPlayerNum || killer == 0 )
 	{
 		m_iLastKilledBy = killer ? killer : m_iPlayerNum;
-		m_fLastKillTime = gHUD.m_flTime + 10;	// display who we were killed by for 10 seconds
+		m_fLastKillTime = Hud().GetTime() + 10;	// display who we were killed by for 10 seconds
 
 		if ( killer == m_iPlayerNum )
 			m_iLastKilledBy = m_iPlayerNum;
@@ -890,7 +886,7 @@ void ScorePanel::Open( void )
 
 void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 {
-	if(gHUD.m_iIntermission)
+	if( Hud().IsInIntermission() )
 		return;
 
 	if (!GetClientVoiceMgr()->IsInSquelchMode())
@@ -909,7 +905,6 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 
 			if (pl_info && pl_info->name && pl_info->name[0])
 			{
-				char string[256];
 				if (GetClientVoiceMgr()->IsPlayerBlocked(iPlayer))
 				{
 					char string1[1024];
@@ -917,10 +912,8 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 					// remove mute
 					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, false);
 
-					sprintf( string1, CHudTextMessage::BufferedLocaliseTextString( "#Unmuted" ), pl_info->name );
-					sprintf( string, "%c** %s\n", HUD_PRINTTALK, string1 );
-
-					gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string)+1, string );
+					sprintf( string1, Localize().BufferedLocaliseTextString( "#Unmuted" ), pl_info->name );
+					UTIL_LocalizedTextMsg( HUD_PRINTTALK, "** %s\n", string1 );
 				}
 				else
 				{
@@ -930,11 +923,10 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 					// mute the player
 					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, true);
 
-					sprintf( string1, CHudTextMessage::BufferedLocaliseTextString( "#Muted" ), pl_info->name );
-					strcpy( string2, CHudTextMessage::BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
-					sprintf( string, "%c** %s %s\n", HUD_PRINTTALK, string1, string2 );
-
-					gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string)+1, string );
+					//TODO: can probably simplify this a bit - Solokiller
+					sprintf( string1, Localize().BufferedLocaliseTextString( "#Muted" ), pl_info->name );
+					strcpy( string2, Localize().BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
+					UTIL_LocalizedTextMsg( HUD_PRINTTALK, "** %s %s\n", string1, string2 );
 				}
 			}
 		}

@@ -24,25 +24,24 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
-DECLARE_MESSAGE(m_Train, Train )
+#include "CHudTrain.h"
 
+CHudTrain::CHudTrain( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
 
-bool CHudTrain::Init()
+void CHudTrain::Init()
 {
 	HOOK_MESSAGE( Train );
 
 	m_iPos = 0;
-	m_iFlags = 0;
-	gHUD.AddHudElem(this);
-
-	return true;
+	GetFlags() = 0;
 }
 
-bool CHudTrain::VidInit()
+void CHudTrain::VidInit()
 {
 	m_hSprite = 0;
-
-	return true;
 }
 
 bool CHudTrain::Draw(float fTime)
@@ -54,11 +53,11 @@ bool CHudTrain::Draw(float fTime)
 	{
 		int r, g, b, x, y;
 
-		gHUD.GetPrimaryColor().UnpackRGB(r,g,b);
+		GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
 		SPR_Set(m_hSprite, r, g, b );
 
 		// This should show up to the right and part way up the armor number
-		y = ScreenHeight - SPR_Height(m_hSprite,0) - gHUD.m_iFontHeight;
+		y = ScreenHeight - SPR_Height(m_hSprite,0) - GetHud().GetFontHeight();
 		x = ScreenWidth/3 + SPR_Width(m_hSprite,0)/4;
 
 		SPR_DrawAdditive( m_iPos - 1,  x, y, NULL);
@@ -68,8 +67,7 @@ bool CHudTrain::Draw(float fTime)
 	return true;
 }
 
-
-int CHudTrain::MsgFunc_Train(const char *pszName,  int iSize, void *pbuf)
+void CHudTrain::MsgFunc_Train(const char *pszName,  int iSize, void *pbuf)
 {
 	CBufferReader reader( pbuf, iSize );
 
@@ -77,9 +75,7 @@ int CHudTrain::MsgFunc_Train(const char *pszName,  int iSize, void *pbuf)
 	m_iPos = reader.ReadByte();
 
 	if (m_iPos)
-		m_iFlags |= HUD_ACTIVE;
+		GetFlags() |= HUD_ACTIVE;
 	else
-		m_iFlags &= ~HUD_ACTIVE;
-
-	return 1;
+		GetFlags() &= ~HUD_ACTIVE;
 }

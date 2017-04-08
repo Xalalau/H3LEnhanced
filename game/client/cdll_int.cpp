@@ -43,14 +43,28 @@
 
 #include "effects/CEnvironment.h"
 
+#include "MessageHandler.h"
+
+#include "CHudSpectator.h"
+
 cl_enginefunc_t gEngfuncs;
-CHud gHUD;
+CHLHud gHUD;
 TeamFortressViewport *gViewPort = NULL;
 
 
 #include "particleman.h"
 CSysModule *g_hParticleManModule = NULL;
 IParticleMan *g_pParticleMan = NULL;
+
+namespace
+{
+static CMessageHandlers g_MessageHandlers;
+}
+
+CMessageHandlers& MessageHandlers()
+{
+	return g_MessageHandlers;
+}
 
 void CL_LoadParticleMan();
 void CL_UnloadParticleMan();
@@ -143,6 +157,9 @@ int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	EV_HookEvents();
 	CL_LoadParticleMan();
 
+	//TODO: use a dynamically allocated instance - Solokiller
+	Hud().SetHud( &gHUD );
+
 	if( !g_Client.Initialize() )
 		return false;
 
@@ -161,6 +178,8 @@ void DLLEXPORT HUD_Shutdown( void )
 	CL_UnloadParticleMan();
 
 	g_Client.Shutdown();
+
+	Hud().SetHud( nullptr );
 }
 
 
@@ -179,7 +198,7 @@ int DLLEXPORT HUD_VidInit( void )
 	//Clear the string pool now.
 	g_StringPool.Clear();
 
-	gHUD.VidInit();
+	Hud().VidInit();
 
 	VGui_Startup();
 
@@ -198,8 +217,10 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
+	msghandler::Initialize();
+
 	InitInput();
-	gHUD.Init();
+	Hud().Init();
 	Scheme_Init();
 
 	g_Prediction.Initialize();
@@ -217,7 +238,7 @@ redraw the HUD.
 
 int DLLEXPORT HUD_Redraw( float time, int intermission )
 {
-	gHUD.Redraw( time, intermission );
+	Hud().Redraw( time, intermission != 0 );
 
 	return 1;
 }
@@ -240,7 +261,8 @@ int DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
 {
 	IN_Commands();
 
-	return gHUD.UpdateClientData(pcldata, flTime );
+	//Note: flTime isn't being passed in anymore because cl_enginefunc_t::GetClientTime returns the same value. - Solokiller
+	return Hud().UpdateClientData( pcldata );
 }
 
 /*
@@ -253,7 +275,7 @@ Called at start and end of demos to restore to "non"HUD state.
 
 void DLLEXPORT HUD_Reset( void )
 {
-	gHUD.VidInit();
+	Hud().VidInit();
 }
 
 /*
@@ -295,7 +317,8 @@ Called when a director event message was received
 
 void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 {
-	gHUD.m_Spectator.DirectorMessage( iSize, pbuf );
+	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
+		pSpectator->DirectorMessage( iSize, pbuf );
 }
 
 void CL_UnloadParticleMan( void )

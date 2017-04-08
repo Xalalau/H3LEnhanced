@@ -119,9 +119,9 @@ void CDisplacerBall::Spawn()
 	InitBeams();
 }
 
-int CDisplacerBall::Classify()
+EntityClassification_t CDisplacerBall::GetClassification()
 {
-	return CLASS_NONE;
+	return EntityClassifications().GetNoneId();
 }
 
 void CDisplacerBall::BallTouch( CBaseEntity* pOther )

@@ -82,7 +82,7 @@ void CEnvironment::SetupGrass()
 
 void CEnvironment::Update()
 {
-	Vector vecOrigin = gHUD.m_vecOrigin;
+	Vector vecOrigin = Hud().GetOrigin();
 
 	if( g_iUser1 > 0 && g_iUser1 != OBS_ROAMING )
 	{
@@ -353,7 +353,7 @@ void CEnvironment::UpdateRain()
 
 					vecWindOrigin.x = vecOrigin.x;
 					vecWindOrigin.y = vecOrigin.y;
-					vecWindOrigin.z = gHUD.m_vecOrigin.z;
+					vecWindOrigin.z = Hud().GetOrigin().z;
 
 					if( gEngfuncs.pTriAPI->BoxInPVS( vecWindOrigin, vecWindOrigin ) )
 					{

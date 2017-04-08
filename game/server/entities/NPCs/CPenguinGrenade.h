@@ -36,7 +36,7 @@ public:
 
 	void Spawn() override;
 
-	int Classify() override;
+	EntityClassification_t GetClassification() override;
 
 	int BloodColor() const override { return BLOOD_COLOR_YELLOW; }
 
@@ -59,7 +59,7 @@ private:
 	float m_flNextHit;
 	Vector m_posPrev;
 	EHANDLE m_hOwner;
-	int  m_iMyClass;
+	EntityClassification_t  m_iMyClass = EntityClassifications().GetNoneId();
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CPENGUINGRENADE_H

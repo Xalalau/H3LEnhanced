@@ -13,10 +13,16 @@ add_sources(
 	CWeaponInfoCache.h
 	CWeaponInfoCache.cpp
 	Damage.h
+	DefaultClassifications.cpp
+	DefaultClassifications.h
 	enginecallback.h
+	EntityClasses.cpp
+	EntityClasses.h
 	extdll.h
 	GameConstants.h
 	HudColors.h
+	Relationship.cpp
+	Relationship.h
 	ScriptEvent.h
 	shared_game_utils.h
 	shared_game_utils.cpp

@@ -60,6 +60,10 @@
 #undef VOID
 #endif
 
+#ifndef HL_USE_IGNORE_DEF
+#undef IGNORE
+#endif
+
 /**
 *	@defgroup InheritanceDecls
 *	Declarations used to specify a class has a specific inheritance model.
@@ -84,7 +88,9 @@
 #include <sys/types.h>
 #include <alloca.h>
 
+#ifndef MAX_PATH
 #define MAX_PATH PATH_MAX
+#endif
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
@@ -99,6 +105,7 @@
 #define FILESYSTEM_PATH_SEPARATOR_CHAR '/'
 #define FILESYSTEM_OTHER_PATH_SEPARATOR_CHAR '\\'
 
+#define _cdecl
 #define __cdecl
 
 //TODO: GLM has ivec2, use that. - Solokiller

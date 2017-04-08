@@ -1330,7 +1330,7 @@ case TASK_GET_PATH_TO_BESTSCENT:
 //=========================================================
 const Task_t* CBaseMonster::GetTask() const 
 {
-	if ( m_iScheduleIndex < 0 || m_iScheduleIndex >= m_pSchedule->cTasks )
+	if ( m_iScheduleIndex >= m_pSchedule->cTasks )
 	{
 		// m_iScheduleIndex is not within valid range for the monster's current schedule.
 		return nullptr;

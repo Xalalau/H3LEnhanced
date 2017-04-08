@@ -43,7 +43,7 @@ public:
 	void Stop() override;
 
 	int BloodColor() const override { return DONT_BLEED; }
-	int Classify() override { return CLASS_MACHINE; }
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::MACHINE ); }
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
 	Vector BodyTarget( const Vector &posSrc ) const override { return GetAbsOrigin(); }

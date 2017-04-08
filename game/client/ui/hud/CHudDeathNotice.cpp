@@ -24,41 +24,20 @@
 
 #include "vgui_TeamFortressViewport.h"
 
-DECLARE_MESSAGE( m_DeathNotice, DeathMsg );
+#include "CHudDeathNotice.h"
 
 #define DEATHNOTICE_TOP		32
 
-//TODO: this should be moved - Solokiller
-
-const Vector g_ColorBlue	= { 0.6f, 0.8f, 1.0f };
-const Vector g_ColorRed		= { 1.0f, 0.25f, 0.25f };
-const Vector g_ColorGreen	= { 0.6f, 1.0f, 0.6f };
-const Vector g_ColorYellow	= { 1.0f, 0.7f, 0.0f };
-const Vector g_ColorGrey	= { 0.8f, 0.8f, 0.8f };
-
-const Vector& GetClientColor( int clientIndex )
+CHudDeathNotice::CHudDeathNotice( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
 {
-	switch ( g_PlayerExtraInfo[clientIndex].teamnumber )
-	{
-	case 1:	return g_ColorBlue;
-	case 2: return g_ColorRed;
-	case 3: return g_ColorYellow;
-	case 4: return g_ColorGreen;
-	case 0: return g_ColorYellow;
-
-	default	: return g_ColorGrey;
-	}
 }
 
-bool CHudDeathNotice::Init()
+void CHudDeathNotice::Init()
 {
-	gHUD.AddHudElem( this );
-
 	HOOK_MESSAGE( DeathMsg );
 
 	m_phud_deathnotice_time = CVAR_CREATE( "hud_deathnotice_time", "6", 0 );
-
-	return true;
 }
 
 
@@ -68,11 +47,9 @@ void CHudDeathNotice::InitHUDData()
 }
 
 
-bool CHudDeathNotice::VidInit()
+void CHudDeathNotice::VidInit()
 {
-	m_HUD_d_skull = gHUD.GetSpriteIndex( "d_skull" );
-
-	return true;
+	m_HUD_d_skull = GetHud().GetSpriteIndex( "d_skull" );
 }
 
 bool CHudDeathNotice::Draw( float flTime )
@@ -92,7 +69,7 @@ bool CHudDeathNotice::Draw( float flTime )
 			continue;
 		}
 
-		m_rgDeathNoticeList[i].flDisplayTime = min( m_rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + m_phud_deathnotice_time->value );
+		m_rgDeathNoticeList[i].flDisplayTime = min( m_rgDeathNoticeList[i].flDisplayTime, Hud().GetTime() + m_phud_deathnotice_time->value );
 
 		// Only draw if the viewport will let me
 		if ( gViewPort && gViewPort->AllowedToPrintText() )
@@ -101,7 +78,7 @@ bool CHudDeathNotice::Draw( float flTime )
 			y = DEATHNOTICE_TOP + 2 + (20 * i);  //!!!
 
 			int id = ( m_rgDeathNoticeList[i].iId == -1) ? m_HUD_d_skull : m_rgDeathNoticeList[i].iId;
-			x = ScreenWidth - ConsoleStringLen( m_rgDeathNoticeList[i].szVictim) - (gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left);
+			x = ScreenWidth - ConsoleStringLen( m_rgDeathNoticeList[i].szVictim) - ( GetHud().GetSpriteRect(id).right - GetHud().GetSpriteRect(id).left);
 
 			if ( !m_rgDeathNoticeList[i].bSuicide )
 			{
@@ -120,10 +97,10 @@ bool CHudDeathNotice::Draw( float flTime )
 			}
 
 			// Draw death weapon
-			SPR_Set( gHUD.GetSprite(id), r, g, b );
-			SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect(id) );
+			SPR_Set( GetHud().GetSprite(id), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &GetHud().GetSpriteRect(id) );
 
-			x += (gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left);
+			x += ( GetHud().GetSpriteRect(id).right - GetHud().GetSpriteRect(id).left);
 
 			// Draw victims name (if it was a player that was killed)
 			if ( !m_rgDeathNoticeList[i].bNonPlayerKill )
@@ -139,9 +116,9 @@ bool CHudDeathNotice::Draw( float flTime )
 }
 
 // This message handler may be better off elsewhere
-int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbuf )
+void CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbuf )
 {
-	m_iFlags |= HUD_ACTIVE;
+	GetFlags() |= HUD_ACTIVE;
 
 	CBufferReader reader( pbuf, iSize );
 
@@ -155,7 +132,8 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 	if (gViewPort)
 		gViewPort->DeathMsg( killer, victim );
 
-	gHUD.m_Spectator.DeathMessage(victim);
+	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
+		pSpectator->DeathMessage(victim);
 	int i;
 	for ( i = 0; i < MAX_DEATHNOTICES; i++ )
 	{
@@ -220,11 +198,11 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 	}
 
 	// Find the sprite in the list
-	int spr = gHUD.GetSpriteIndex( killedwith );
+	int spr = GetHud().GetSpriteIndex( killedwith );
 
 	m_rgDeathNoticeList[i].iId = spr;
 
-	m_rgDeathNoticeList[i].flDisplayTime = gHUD.m_flTime + m_phud_deathnotice_time->value;
+	m_rgDeathNoticeList[i].flDisplayTime = Hud().GetTime() + m_phud_deathnotice_time->value;
 
 	if ( m_rgDeathNoticeList[i].bNonPlayerKill )
 	{
@@ -277,8 +255,6 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 
 		ConsolePrint( "\n" );
 	}
-
-	return 1;
 }
 
 

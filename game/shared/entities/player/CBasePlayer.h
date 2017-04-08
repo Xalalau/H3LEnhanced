@@ -280,7 +280,7 @@ public:
 	// Player is moved across the transition by other means
 	int ObjectCaps() const override { return BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
-	int Classify() override;
+	EntityClassification_t GetClassification() override;
 
 	void Precache() override;
 

@@ -38,6 +38,11 @@ message(STATUS "")
 #C++14 support
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
 
+if( UNIX )
+	#Additional debug info for GDB.
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g" )
+endif()
+
 #Get the steam/steamapps/common directory
 set( STEAMCOMMON "$ENV{SteamCommon}" CACHE PATH "Steam common directory path" )
 
@@ -58,6 +63,7 @@ set( EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external )
 set( USE_ANGELSCRIPT "0" CACHE BOOL "Whether to include Angelscript" )
 set( USE_AS_SQL "0" CACHE BOOL "Whether to include Angelscript SQL APIs" )
 set( USE_OPFOR "0" CACHE BOOL "Whether to include Opposing Force related stuff" )
+set( USE_VGUI2 "0" CACHE BOOL "Whether to include VGUI2 features" )
 
 #Some libraries that we use don't come with .a files (import libraries) for Cygwin compilation (Unix Makefiles on Windows).
 #This isn't really supported, and since we only use Makefiles on Windows for the compile_commands.json file right now this isn't really an issue.
@@ -87,6 +93,13 @@ else()
 	set( USE_OPFOR_DEFINE 0 )
 endif()
 
+#Default to false
+if( USE_VGUI2 )
+	set( USE_VGUI2_DEFINE 1 )
+else()
+	set( USE_VGUI2_DEFINE 0 )
+endif()
+
 if( CLANG_DB_BUILD )
 	MESSAGE( STATUS "Exporting Compile Commands" )
 	set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
@@ -106,8 +119,11 @@ if( MSVC )
 	set( LINUX_32BIT_FLAG "" )
 else()
 	#All non-MSVC targets need this. That includes Cygwin and Mingw.
+	#Match Source 2013 in defining GNUC for UNIX platforms.
+	#Match Source 2013 in defining POSIX for UNIX platforms.
 	set( SHARED_DEFS
 		${SHARED_DEFS}
+		GNUC
 		POSIX
 	)
 
@@ -167,7 +183,7 @@ elseif( UNIX )
 endif()
 
 #Shared directories
-
+#Include paths for external dependencies. Should always come after all project paths.
 set( SHARED_EXTERNAL_INCLUDE_PATHS
 )
 
@@ -183,13 +199,16 @@ set( SHARED_INCLUDE_PATHS
 	public
 	public/math
 	engine
-	shared/engine
+	pm_shared
 	game_shared
 	game/shared
 	game/shared/entities/player
-	pm_shared
 	game/server
-	${CMAKE_SOURCE_DIR}
+	shared/engine
+	source_sdk/public/tier1
+	source_sdk/public
+	source_sdk/common
+	${CMAKE_SOURCE_DIR}  #Should ideally get rid of this.
 )
 
 #keyvalues and utility are temporary until the code between these repositories can be shared. - Solokiller
@@ -220,7 +239,18 @@ else()
 	set( ANGELSCRIPTUTILSD )
 endif()
 
+if( WIN32 )
+	find_library( TIER0 ${CMAKE_SHARED_LIBRARY_PREFIX}tier0${CMAKE_STATIC_LIBRARY_SUFFIX} PATHS ${CMAKE_SOURCE_DIR}/lib/public/ )
+	find_library( VSTDLIB vstdlib${CMAKE_STATIC_LIBRARY_SUFFIX} PATHS ${CMAKE_SOURCE_DIR}/lib/public/ )
+else()
+	find_library( TIER0 ${CMAKE_SHARED_LIBRARY_PREFIX}tier0${CMAKE_SHARED_LIBRARY_SUFFIX} PATHS ${STEAMCOMMON}/Half-Life/ ${CMAKE_SOURCE_DIR}/lib/public/ )
+	find_library( VSTDLIB ${CMAKE_SHARED_LIBRARY_PREFIX}vstdlib${CMAKE_SHARED_LIBRARY_SUFFIX} PATHS ${STEAMCOMMON}/Half-Life/ ${CMAKE_SOURCE_DIR}/lib/public/ )
+endif()
+
 set( SHARED_DEPENDENCIES
+	${TIER0}
+	${VSTDLIB}
+	tier1
 )
 
 set( THREADS_PREFER_PTHREAD_FLAG ON )
@@ -231,6 +261,10 @@ if( UNIX AND NOT APPLE )
 else()
 	set( UNIX_FS_LIB )
 endif()
+
+
+#Set up source_sdk projects first
+add_subdirectory( source_sdk )
 
 #
 #Client library
@@ -243,6 +277,8 @@ add_sources( "${SHARED_SRCS}" )
 add_subdirectory( game/client )
 add_subdirectory( vgui_utils )
 add_subdirectory( shared/engine/client )
+add_subdirectory( source_sdk/common )
+add_subdirectory( source_sdk/public )
 
 preprocess_sources()
 
@@ -253,27 +289,20 @@ target_include_directories( client PRIVATE
 	utils/vgui/include
 	vgui_utils
 	game/client
+	game/client/ui
 	game/client/ui/hud
 	game/client/ui/vgui
 	${SHARED_INCLUDE_PATHS}
-	source_sdk/public/tier1
-	source_sdk/public
-	source_sdk/common
 	external/SDL2/include
 	${SHARED_EXTERNAL_INCLUDE_PATHS}
 )
-
-#Default to false
-#TODO: change to cached var
-if( NOT DEFINED USE_VGUI2 )
-	set( USE_VGUI2 0 )
-endif()
 
 target_compile_definitions( client PRIVATE
 	${SHARED_DEFS}
 	${SHARED_GAME_DEFS}
 	CLIENT_DLL
-	USE_VGUI2=${USE_VGUI2}
+	USE_VGUI2=${USE_VGUI2_DEFINE}
+	NO_MALLOC_OVERRIDE
 )
 
 #Find client dependencies
@@ -309,22 +338,11 @@ else()
 	set( SDL2 )
 endif()
 
-if( "${USE_VGUI2}" STREQUAL "1" )
-	find_library( VGUI2 vgui_controls PATHS source_sdk/lib/public/ )
-	find_library( TIER0 ${CMAKE_SHARED_LIBRARY_PREFIX}tier0${CMAKE_STATIC_LIBRARY_SUFFIX} PATHS lib/public/ )
-	find_library( TIER1 tier1 PATHS source_sdk/lib/public/ )
 
-	if( WIN32 )
-		find_library( VSTDLIB vstdlib PATHS lib/public/ )
-	else()
-		set( VSTDLIB "" )
-	endif()
-	
+
+if( USE_VGUI2 )
 	set( VGUI2_LIBS
-		VGUI2
-		TIER0
-		TIER1
-		VSTDLIB
+		vgui2_controls
 	)
 else()
 	set( VGUI2_LIBS "" )

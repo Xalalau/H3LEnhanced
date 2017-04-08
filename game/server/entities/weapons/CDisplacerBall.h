@@ -29,7 +29,7 @@ public:
 
 	void Spawn() override;
 
-	int Classify() override;
+	EntityClassification_t GetClassification() override;
 
 	void BallTouch( CBaseEntity* pOther );
 

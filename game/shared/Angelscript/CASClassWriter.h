@@ -126,11 +126,15 @@ public:
 
 	/**
 	*	Starts a class declaration. Also starts a new scope.
+	*	@param bAbstract Whether this is an abstract class
 	*	@param pszInterfaces Optional. Interfaces to inherit from.
 	*/
-	void StartClassDeclaration( const char* pszInterfaces = nullptr )
+	void StartClassDeclaration( bool bAbstract = false, const char* pszInterfaces = nullptr )
 	{
 		WriteTabs();
+
+		if( bAbstract )
+			m_Stream << "abstract ";
 
 		m_Stream << "class " << m_szClassName;
 

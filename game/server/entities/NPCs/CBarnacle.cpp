@@ -42,9 +42,9 @@ LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle );
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CBarnacle :: Classify ( void )
+EntityClassification_t CBarnacle::GetClassification()
 {
-	return	CLASS_ALIEN_MONSTER;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
 }
 
 //=========================================================

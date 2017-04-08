@@ -1,10 +1,25 @@
 add_sources(
+	vgui_ActionSignalHandlers.h
+	vgui_ActionSignalHandlers.cpp
 	vgui_ClassMenu.cpp
+	vgui_CommandButton.h
+	vgui_CommandButton.cpp
+	vgui_CommandLabel.h
+	vgui_CommandMenu.h
+	vgui_CommandMenu.cpp
 	vgui_ControlConfigPanel.h
 	vgui_ControlConfigPanel.cpp
 	vgui_CustomObjects.cpp
+	vgui_Defs.h
+	vgui_Defs.cpp
+	vgui_DragNDropPanel.h
+	vgui_DragNDropPanel.cpp
+	vgui_InputSignalHandlers.h
+	vgui_InputSignalHandlers.cpp
 	vgui_int.h
 	vgui_int.cpp
+	vgui_MenuPanel.h
+	vgui_MenuPanel.cpp
 	vgui_MOTDWindow.cpp
 	vgui_SchemeManager.h
 	vgui_SchemeManager.cpp
@@ -14,5 +29,7 @@ add_sources(
 	vgui_SpectatorPanel.cpp
 	vgui_TeamFortressViewport.h
 	vgui_TeamFortressViewport.cpp
-	vgui_teammenu.cpp
+	vgui_TeamMenu.h
+	vgui_TeamMenu.cpp
+	vgui_TransparentPanel.h
 )

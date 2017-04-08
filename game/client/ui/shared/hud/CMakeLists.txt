@@ -1,0 +1,10 @@
+add_sources(
+	CBaseHud.h
+	CBaseHud.cpp
+	CHud.cpp
+	CHud.h
+	CHudElement.h
+	CHudElement.cpp
+	CHudList.h
+	CHudList.cpp
+)

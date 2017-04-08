@@ -535,6 +535,12 @@ void CBaseTurret::SetTurretAnim(TURRET_ANIM anim)
 
 		switch(anim)
 		{
+			//Explicitly handle these in case more are added. - Solokiller
+		case TURRET_ANIM_NONE:
+		case TURRET_ANIM_FIRE:
+		case TURRET_ANIM_SPIN:
+		case TURRET_ANIM_DEPLOY: break;
+
 		case TURRET_ANIM_RETIRE:
 			pev->frame			= 255;
 			pev->framerate		= -1.0;
@@ -860,9 +866,9 @@ int CBaseTurret::MoveTurret(void)
 //
 // ID as a machine
 //
-int	CBaseTurret::Classify ( void )
+EntityClassification_t CBaseTurret::GetClassification()
 {
 	if ( m_bOn || m_bAutoStart )
-		return	CLASS_MACHINE;
-	return CLASS_NONE;
+		return EntityClassifications().GetClassificationId( classify::MACHINE );
+	return EntityClassifications().GetNoneId();
 }

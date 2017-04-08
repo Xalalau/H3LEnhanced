@@ -24,30 +24,32 @@
 #include <time.h>
 #include <stdio.h>
 
+#include "strtools.h"
+
 #include "parsemsg.h"
 
-DECLARE_MESSAGE(m_Geiger, Geiger )
+#include "CHudGeiger.h"
 
-bool CHudGeiger::Init()
+CHudGeiger::CHudGeiger( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
+
+void CHudGeiger::Init()
 {
 	HOOK_MESSAGE( Geiger );
 
 	m_iGeigerRange = 0;
-	m_iFlags = 0;
-
-	gHUD.AddHudElem(this);
+	GetFlags() = 0;
 
 	srand( (unsigned)time( NULL ) );
-
-	return true;
 }
 
-bool CHudGeiger::VidInit()
+void CHudGeiger::VidInit()
 {
-	return true;
 }
 
-int CHudGeiger::MsgFunc_Geiger(const char *pszName,  int iSize, void *pbuf)
+void CHudGeiger::MsgFunc_Geiger(const char *pszName,  int iSize, void *pbuf)
 {
 	CBufferReader reader( pbuf, iSize );
 
@@ -55,9 +57,7 @@ int CHudGeiger::MsgFunc_Geiger(const char *pszName,  int iSize, void *pbuf)
 	m_iGeigerRange = reader.ReadByte();
 	m_iGeigerRange = m_iGeigerRange << 2;
 	
-	m_iFlags |= HUD_ACTIVE;
-
-	return 1;
+	GetFlags() |= HUD_ACTIVE;
 }
 
 bool CHudGeiger::Draw(float flTime)
@@ -169,7 +169,7 @@ bool CHudGeiger::Draw(float flTime)
 			if (i > 2)
 				j += rand() & 1;
 
-			sprintf(sz, "player/geiger%d.wav", j + 1);
+			V_sprintf_safe(sz, "player/geiger%d.wav", j + 1);
 			PlaySound(sz, flvol);
 			
 		}

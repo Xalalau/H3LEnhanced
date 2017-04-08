@@ -199,7 +199,7 @@ void CFuncTank::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( pev->spawnflags & SF_TANK_CANCONTROL )
 	{  // player controlled turret
 
-		if( pActivator->Classify() != CLASS_PLAYER )
+		if( pActivator->Classify() != EntityClassifications().GetClassificationId( classify::PLAYER ) )
 			return;
 
 		if( value == 2 && useType == USE_SET )

@@ -27,7 +27,7 @@ public:
 	void Spawn( void ) override;
 	void Precache( void ) override;
 	void SetYawSpeed( void ) override;
-	int  Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CRAT_H

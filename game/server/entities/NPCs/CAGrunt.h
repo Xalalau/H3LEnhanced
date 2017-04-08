@@ -62,7 +62,7 @@ public:
 	void Spawn( void ) override;
 	void Precache( void ) override;
 	void SetYawSpeed( void ) override;
-	int  Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 	int  ISoundMask( void ) override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	void SetObjectCollisionBox( void ) override
@@ -83,7 +83,7 @@ public:
 	void AttackSound( void );
 	void PrescheduleThink( void ) override;
 	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
-	int IRelationship( CBaseEntity *pTarget ) override;
+	Relationship IRelationship( CBaseEntity *pTarget ) override;
 	void StopTalking( void );
 	bool ShouldSpeak();
 	DECLARE_SCHEDULES() override;

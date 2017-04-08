@@ -25,10 +25,8 @@ LINK_ENTITY_TO_CLASS( eagle_laser, CDesertEagleLaser );
 //=========================================================
 CDesertEagleLaser *CDesertEagleLaser::CreateSpot()
 {
-	CDesertEagleLaser *pSpot = GetClassPtr( ( CDesertEagleLaser* ) NULL );
+	auto pSpot = static_cast<CDesertEagleLaser*>( UTIL_CreateNamedEntity( "eagle_laser" ) );
 	pSpot->Spawn();
-
-	pSpot->pev->classname = MAKE_STRING( "eagle_laser" );
 
 	return pSpot;
 }

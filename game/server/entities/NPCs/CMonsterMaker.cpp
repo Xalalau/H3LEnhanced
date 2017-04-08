@@ -59,6 +59,11 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = true;
 	}
+	if( FStrEq( "makerClassificationOverride", pkvd->szKeyName ) )
+	{
+		m_MonsterClassificationOverride = EntityClassifications().GetClassificationId( pkvd->szValue );
+		pkvd->fHandled = true;
+	}
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
@@ -183,6 +188,12 @@ void CMonsterMaker::MakeMonster( void )
 		pEntity->SetTargetname( GetNetName() );
 	}
 
+	if( m_MonsterClassificationOverride != INVALID_ENTITY_CLASSIFICATION )
+	{
+		//If i have an overridden classification, give the child monster that classification.
+		pEntity->SetClassificationOverride( m_MonsterClassificationOverride );
+	}
+
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;
 
@@ -192,6 +203,26 @@ void CMonsterMaker::MakeMonster( void )
 		SetThink( NULL );
 		SetUse( NULL );
 	}
+}
+
+bool CMonsterMaker::Save( CSave& save )
+{
+	if( !BaseClass::Save( save ) )
+		return false;
+
+	save.WriteString( "makerClassificationOverride", EntityClassifications().GetClassificationName( m_MonsterClassificationOverride ).c_str() );
+
+	return true;
+}
+
+bool CMonsterMaker::Restore( CRestore& restore )
+{
+	if( !BaseClass::Restore( restore ) )
+		return false;
+
+	m_MonsterClassificationOverride = EntityClassifications().GetClassificationId( restore.ReadNamedString( "makerClassificationOverride" ) );
+
+	return true;
 }
 
 //=========================================================

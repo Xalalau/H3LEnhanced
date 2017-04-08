@@ -14,10 +14,8 @@ LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
 //=========================================================
 CLaserSpot *CLaserSpot::CreateSpot()
 {
-	CLaserSpot *pSpot = GetClassPtr( ( CLaserSpot * ) NULL );
+	auto pSpot = static_cast<CLaserSpot*>( UTIL_CreateNamedEntity( "laser_spot" ) );
 	pSpot->Spawn();
-
-	pSpot->pev->classname = MAKE_STRING( "laser_spot" );
 
 	return pSpot;
 }

@@ -27,38 +27,38 @@
 #include <string.h>
 #include <stdio.h>
 
-DECLARE_MESSAGE(m_Battery, Battery)
+#include "CHudBattery.h"
 
-bool CHudBattery::Init()
+CHudBattery::CHudBattery( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
+
+void CHudBattery::Init()
 {
 	m_iBat = 0;
 	m_fFade = 0;
-	m_iFlags = 0;
+	GetFlags() = 0;
 
 	HOOK_MESSAGE(Battery);
-
-	gHUD.AddHudElem(this);
-
-	return true;
 }
 
 
-bool CHudBattery::VidInit()
+void CHudBattery::VidInit()
 {
-	int HUD_suit_empty = gHUD.GetSpriteIndex( "suit_empty" );
-	int HUD_suit_full = gHUD.GetSpriteIndex( "suit_full" );
+	int HUD_suit_empty = GetHud().GetSpriteIndex( "suit_empty" );
+	int HUD_suit_full = GetHud().GetSpriteIndex( "suit_full" );
 
 	m_hSprite1 = m_hSprite2 = 0;  // delaying get sprite handles until we know the sprites are loaded
-	m_prc1 = &gHUD.GetSpriteRect( HUD_suit_empty );
-	m_prc2 = &gHUD.GetSpriteRect( HUD_suit_full );
+	m_prc1 = &GetHud().GetSpriteRect( HUD_suit_empty );
+	m_prc2 = &GetHud().GetSpriteRect( HUD_suit_full );
 	m_iHeight = m_prc2->bottom - m_prc1->top;
 	m_fFade = 0;
-	return true;
 }
 
-int CHudBattery:: MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
+void CHudBattery::MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
 {
-	m_iFlags |= HUD_ACTIVE;
+	GetFlags() |= HUD_ACTIVE;
 	
 	CBufferReader reader( pbuf, iSize );
 	int x = reader.ReadShort();
@@ -79,14 +79,12 @@ int CHudBattery:: MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
 		m_iBat = x;
 	}
 #endif
-
-	return 1;
 }
 
 
 bool CHudBattery::Draw(float flTime)
 {
-	if ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
+	if ( GetHud().GetHideHudBits().Any( HIDEHUD_HEALTH ) )
 		return true;
 
 	wrect_t rc;
@@ -108,14 +106,14 @@ bool CHudBattery::Draw(float flTime)
 	// ############ //
 #endif
 
-	if (!(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) ))
+	if (!( Hud().GetWeaponBits() & (1<<(WEAPON_SUIT)) ))
 		return true;
 
 	int r, g, b, x, y, a = MIN_ALPHA;
 
 	// ############ hu3lifezado ############ //
 	// Mudei a cor do HUD (RGB_YELLOWISH)
-	//gHUD.GetPrimaryColor().UnpackRGB( r, g, b );
+	//GetHud().GetPrimaryColor().UnpackRGB( r, g, b );
 	UnpackRGB(r, g, b, RGB_WHITEISH);
 	// ############ //
 
@@ -125,7 +123,7 @@ bool CHudBattery::Draw(float flTime)
 		if (m_fFade > FADE_TIME)
 			m_fFade = FADE_TIME;
 
-		m_fFade -= (gHUD.m_flTimeDelta * 20);
+		m_fFade -= ( Hud().GetTimeDelta() * 20);
 		if (m_fFade <= 0)
 		{
 			m_fFade = 0;
@@ -143,17 +141,17 @@ bool CHudBattery::Draw(float flTime)
 
 	// ############ hu3lifezado ############ //
 	// Movi a armadura para baixo do sangue
-	// y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight / 2;
+	// y = ScreenHeight - GetHud().GetFontHeight() - GetHud().GetFontHeight() / 2;
 	// x = ScreenWidth/5;
-	y = ScreenHeight - 2 * gHUD.m_iFontHeight;
+	y = ScreenHeight - 2 * GetHud().GetFontHeight();
 	x = 12;
 	// ############ //
 
 	// make sure we have the right sprite handles
 	if ( !m_hSprite1 )
-		m_hSprite1 = gHUD.GetSprite( gHUD.GetSpriteIndex( "suit_empty" ) );
+		m_hSprite1 = GetHud().GetSprite( GetHud().GetSpriteIndex( "suit_empty" ) );
 	if ( !m_hSprite2 )
-		m_hSprite2 = gHUD.GetSprite( gHUD.GetSpriteIndex( "suit_full" ) );
+		m_hSprite2 = GetHud().GetSprite( GetHud().GetSpriteIndex( "suit_full" ) );
 
 	SPR_Set(m_hSprite1, r, g, b );
 	SPR_DrawAdditive( 0,  x, y - iOffset, m_prc1);
@@ -169,7 +167,7 @@ bool CHudBattery::Draw(float flTime)
 	// x += (m_prc1->right - m_prc1->left);
 	x += (m_prc1->right - m_prc1->left) + 4;
 	// ############ //
-	x = gHUD.DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
+	x = GetHud().DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iBat, r, g, b);
 
 	return true;
 }

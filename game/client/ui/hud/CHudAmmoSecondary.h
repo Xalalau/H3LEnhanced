@@ -15,16 +15,23 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDAMMOSECONDARY_H
 #define GAME_CLIENT_UI_HUD_CHUDAMMOSECONDARY_H
 
-class CHudAmmoSecondary : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudAmmoSecondary : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudAmmoSecondary, CBaseHudElement<CHLHud> );
+
+	CHudAmmoSecondary( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	void Reset() override;
 	bool Draw( float flTime ) override;
 
-	int MsgFunc_SecAmmoVal( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_SecAmmoVal( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf );
 
 private:
 	enum {

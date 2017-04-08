@@ -40,17 +40,20 @@ public:
 
 	CHornetGun();
 
-	void Spawn( void ) override;
-	void Precache( void ) override;
+	void Spawn() override;
+	void Precache() override;
 	bool AddToPlayer( CBasePlayer *pPlayer ) override;
 
-	void PrimaryAttack( void ) override;
-	void SecondaryAttack( void ) override;
+	void PrimaryAttack() override;
+	void SecondaryAttack() override;
 	bool Deploy() override;
 	bool IsUseable() override;
 	void Holster() override;
-	void Reload( void ) override;
-	void WeaponIdle( void ) override;
+	void Reload() override;
+	void WeaponIdle() override;
+
+	void WeaponHolsterPreFrame() override;
+
 	float m_flNextAnimTime;
 
 	float m_flRechargeTime;

@@ -49,7 +49,7 @@ bool CPython::AddToPlayer( CBasePlayer *pPlayer )
 
 void CPython::Spawn( )
 {
-	pev->classname = MAKE_STRING("weapon_357"); // hack to allow for old names
+	SetClassname("weapon_357"); // hack to allow for old names
 	Precache( );
 	SetModel( "models/w_357.mdl");
 

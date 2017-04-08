@@ -4,6 +4,12 @@
 
 #include "CBloodSplat.h"
 
+BEGIN_DATADESC( CBloodSplat )
+	DEFINE_THINKFUNC( Spray ),
+END_DATADESC()
+
+LINK_ENTITY_TO_CLASS( blood_splat, CBloodSplat );
+
 void CBloodSplat::Spawn( CBaseEntity* pOwner )
 {
 	pev->origin = pOwner->GetAbsOrigin() + Vector( 0, 0, 32 );

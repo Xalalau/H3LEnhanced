@@ -19,6 +19,10 @@ add_sources(
 	eventscripts.h
 	Exports.h
 	global_consts.h
+	KeyValuesCompat.h
+	KeyValuesCompat.cpp
+	MessageHandler.h
+	MessageHandler.cpp
 	player_info.h
 	voice_banmgr.h
 	voice_banmgr.cpp

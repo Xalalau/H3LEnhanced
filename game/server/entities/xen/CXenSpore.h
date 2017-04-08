@@ -73,7 +73,7 @@ public:
 	DECLARE_CLASS( CXenHull, CPointEntity );
 
 	static CXenHull	*CreateHull( CBaseEntity *source, const Vector &mins, const Vector &maxs, const Vector &offset );
-	int Classify() override { return CLASS_IGNORE; }
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetNoneId(); }
 };
 
 #endif //GAME_SERVER_ENTITIES_XEN_CXENSPORE_H

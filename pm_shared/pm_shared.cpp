@@ -39,7 +39,7 @@ void V_DropPunchAngle( float frametime, Vector& ev_punchangle );
 
 #ifdef CLIENT_DLL
 	// Spectator Mode
-	int		iJumpSpectator;
+	bool	g_bJumpSpectator;
 #ifndef DISABLE_JUMP_ORIGIN
 	Vector vJumpOrigin;
 	Vector vJumpAngles;
@@ -1540,12 +1540,12 @@ void PM_SpectatorMove()
 
 #ifdef CLIENT_DLL
 		// jump only in roaming mode
-		if ( iJumpSpectator )
+		if ( g_bJumpSpectator )
 		{
 			pmove->origin = vJumpOrigin;
 			pmove->angles = vJumpAngles;
 			pmove->velocity = vec3_origin;
-			iJumpSpectator	= 0;
+			g_bJumpSpectator = false;
 			return;
 		}
 #endif

@@ -32,7 +32,7 @@ public:
 	void Spawn( void ) override;
 	void Precache( void ) override;
 	void SetYawSpeed( void ) override;
-	int  Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	int IgnoreConditions( void ) override;
 

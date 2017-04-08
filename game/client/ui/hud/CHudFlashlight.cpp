@@ -27,14 +27,16 @@
 #include <string.h>
 #include <stdio.h>
 
-
-
-DECLARE_MESSAGE(m_Flash, FlashBat)
-DECLARE_MESSAGE(m_Flash, Flashlight)
+#include "CHudFlashlight.h"
 
 #define BAT_NAME "sprites/%d_Flashlight.spr"
 
-bool CHudFlashlight::Init()
+CHudFlashlight::CHudFlashlight( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
+
+void CHudFlashlight::Init()
 {
 	m_fFade = 0;
 	m_fOn = 0;
@@ -42,11 +44,7 @@ bool CHudFlashlight::Init()
 	HOOK_MESSAGE(Flashlight);
 	HOOK_MESSAGE(FlashBat);
 
-	m_iFlags |= HUD_ACTIVE;
-
-	gHUD.AddHudElem(this);
-
-	return true;
+	GetFlags() |= HUD_ACTIVE;
 }
 
 void CHudFlashlight::Reset()
@@ -55,53 +53,47 @@ void CHudFlashlight::Reset()
 	m_fOn = 0;
 }
 
-bool CHudFlashlight::VidInit()
+void CHudFlashlight::VidInit()
 {
-	int HUD_flash_empty = gHUD.GetSpriteIndex( "flash_empty" );
-	int HUD_flash_full = gHUD.GetSpriteIndex( "flash_full" );
-	int HUD_flash_beam = gHUD.GetSpriteIndex( "flash_beam" );
+	int HUD_flash_empty = GetHud().GetSpriteIndex( "flash_empty" );
+	int HUD_flash_full = GetHud().GetSpriteIndex( "flash_full" );
+	int HUD_flash_beam = GetHud().GetSpriteIndex( "flash_beam" );
 
-	m_hSprite1 = gHUD.GetSprite(HUD_flash_empty);
-	m_hSprite2 = gHUD.GetSprite(HUD_flash_full);
-	m_hBeam = gHUD.GetSprite(HUD_flash_beam);
-	m_prc1 = &gHUD.GetSpriteRect(HUD_flash_empty);
-	m_prc2 = &gHUD.GetSpriteRect(HUD_flash_full);
-	m_prcBeam = &gHUD.GetSpriteRect(HUD_flash_beam);
+	m_hSprite1 = GetHud().GetSprite(HUD_flash_empty);
+	m_hSprite2 = GetHud().GetSprite(HUD_flash_full);
+	m_hBeam = GetHud().GetSprite(HUD_flash_beam);
+	m_prc1 = &GetHud().GetSpriteRect(HUD_flash_empty);
+	m_prc2 = &GetHud().GetSpriteRect(HUD_flash_full);
+	m_prcBeam = &GetHud().GetSpriteRect(HUD_flash_beam);
 	m_iWidth = m_prc2->right - m_prc2->left;
-
-	return true;
 }
 
-int CHudFlashlight:: MsgFunc_FlashBat(const char *pszName,  int iSize, void *pbuf )
+void CHudFlashlight:: MsgFunc_FlashBat(const char *pszName,  int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	int x = reader.ReadByte();
 	m_iBat = x;
 	m_flBat = ((float)x)/100.0;
-
-	return 1;
 }
 
-int CHudFlashlight:: MsgFunc_Flashlight(const char *pszName,  int iSize, void *pbuf )
+void CHudFlashlight:: MsgFunc_Flashlight(const char *pszName,  int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 	m_fOn = reader.ReadByte();
 	int x = reader.ReadByte();
 	m_iBat = x;
 	m_flBat = ((float)x)/100.0;
-
-	return 1;
 }
 
 bool CHudFlashlight::Draw(float flTime)
 {
-	if ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) )
+	if ( GetHud().GetHideHudBits().Any( HIDEHUD_FLASHLIGHT | HIDEHUD_ALL ) )
 		return true;
 
 	int r, g, b, x, y, a;
 	wrect_t rc;
 
-	if (!(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) ))
+	if (!( Hud().GetWeaponBits() & (1<<(WEAPON_SUIT)) ))
 		return true;
 
 	if (m_fOn)
@@ -110,11 +102,11 @@ bool CHudFlashlight::Draw(float flTime)
 		a = MIN_ALPHA;
 
 	if (m_flBat < 0.20)
-		gHUD.GetEmptyItemColor().UnpackRGB(r,g,b);
+		GetHud().GetEmptyItemColor().UnpackRGB(r,g,b);
 	else
 		// ############ hu3lifezado ############ //
 		// Mudei a cor do HUD (RGB_YELLOWISH)
-		//gHUD.GetPrimaryColor().UnpackRGB(r,g,b);
+		//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
 		UnpackRGB(r,g,b, RGB_WHITEISH);
 		// ############ //
 

@@ -15,13 +15,20 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDTRAIN_H
 #define GAME_CLIENT_UI_HUD_CHUDTRAIN_H
 
-class CHudTrain : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudTrain : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudTrain, CBaseHudElement<CHLHud> );
+
+	CHudTrain( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
-	int MsgFunc_Train( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Train( const char *pszName, int iSize, void *pbuf );
 
 private:
 	HSPRITE m_hSprite;

@@ -122,8 +122,6 @@ void CRope::Precache()
 
 void CRope::Spawn()
 {
-	pev->classname = MAKE_STRING( "env_rope" );
-
 	m_bMakeSound = true;
 
 	Precache();

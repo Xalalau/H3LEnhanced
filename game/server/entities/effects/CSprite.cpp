@@ -159,9 +159,8 @@ void CSprite::AnimateUntilDead( void )
 
 CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, const bool animate )
 {
-	CSprite *pSprite = GetClassPtr( ( CSprite * ) NULL );
+	auto pSprite = static_cast<CSprite*>( UTIL_CreateNamedEntity( "env_sprite" ) );
 	pSprite->SpriteInit( pSpriteName, origin );
-	pSprite->pev->classname = MAKE_STRING( "env_sprite" );
 	pSprite->pev->solid = SOLID_NOT;
 	pSprite->pev->movetype = MOVETYPE_NOCLIP;
 	if( animate )

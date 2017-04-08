@@ -57,9 +57,7 @@ void CEnvShooter::KeyValue( KeyValueData *pkvd )
 
 CGib *CEnvShooter::CreateGib( void )
 {
-	CGib *pGib = GetClassPtr( ( CGib * ) NULL );
-
-	pGib->Spawn( STRING( pev->model ) );
+	auto pGib = CGib::GibCreate( STRING( pev->model ) );
 
 	int bodyPart = 0;
 

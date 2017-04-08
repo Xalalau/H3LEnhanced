@@ -236,9 +236,9 @@ bool CBaseMonster::TaskIsRunning() const
 	return false;
 }
 
-int CBaseMonster::IRelationship( CBaseEntity* pTarget )
+Relationship CBaseMonster::IRelationship( CBaseEntity* pTarget )
 {
-	return 0;
+	return R_NO;
 }
 
 bool CBaseMonster::FindCover( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist )
@@ -389,11 +389,11 @@ CBaseEntity* CBaseMonster::DropItem( const char* const pszItemName, const Vector
 	return nullptr;
 }
 
-void CBaseMonster::RadiusDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType )
+void CBaseMonster::RadiusDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType )
 {
 }
 
-void CBaseMonster::RadiusDamage( Vector vecSrc, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType )
+void CBaseMonster::RadiusDamage( Vector vecSrc, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType )
 {
 }
 

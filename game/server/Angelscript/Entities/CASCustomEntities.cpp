@@ -285,7 +285,7 @@ CBaseEntity* CASCustomEntities::CreateCustomEntity( const char* const pszMapName
 	}
 
 	//Note: the string has to be ALLOC_STRING'd or a static string.
-	pCPPInstance->pev->classname = MAKE_STRING( pszMapName );
+	pCPPInstance->SetClassname( pszMapName );
 
 	auto pCustom = dynamic_cast<IASCustomEntity*>( pCPPInstance );
 

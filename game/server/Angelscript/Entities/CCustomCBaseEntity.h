@@ -265,9 +265,9 @@ public:
 		CALL_EXTEND_FUNC_DIFFFUNC( Blocked, DefaultScriptBlocked, "(CBaseEntity@)", pOther );
 	}
 
-	int Classify() override
+	EntityClassification_t GetClassification() override
 	{
-		CALL_EXTEND_FUNC_RET( int, Classify, "()" );
+		CALL_EXTEND_FUNC_RET( EntityClassification_t, GetClassification, "()" );
 	}
 
 	int BloodColor() const override

@@ -73,8 +73,8 @@ public:
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 	void Activate( void ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
-	int	Classify( void ) override { return CLASS_INSECT; }
-	int IRelationship( CBaseEntity *pTarget ) override;
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::INSECT ); }
+	Relationship IRelationship( CBaseEntity *pTarget ) override;
 
 	static const char *pAttackSounds[];
 	static const char *pAlertSounds[];

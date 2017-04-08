@@ -30,9 +30,9 @@ LINK_ENTITY_TO_CLASS( monster_rat, CRat );
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CRat :: Classify ( void )
+EntityClassification_t CRat::GetClassification()
 {
-	return	CLASS_INSECT;
+	return EntityClassifications().GetClassificationId( classify::INSECT );
 }
 
 //=========================================================

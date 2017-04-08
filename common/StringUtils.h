@@ -168,4 +168,29 @@ inline std::string& Trim( std::string& s )
 *	End based on code.
 */
 
+/**
+*	If the given string ends with a newline character, the newline is removed.
+*/
+inline void UTIL_StripEndNewlineFromString( char* str )
+{
+	int s = strlen( str ) - 1;
+	if( str[ s ] == '\n' || str[ s ] == '\r' )
+		str[ s ] = '\0';
+}
+
+/**
+*	Converts all '\r' characters to '\n', so that the engine can deal with them properly
+*	@return A pointer to str
+*/
+inline char* UTIL_ConvertCRtoNL( char* str )
+{
+	for( char *ch = str; *ch != '\0'; ++ch )
+	{
+		if( *ch == '\r' )
+			*ch = '\n';
+	}
+
+	return str;
+}
+
 #endif //COMMON_STRINGUTILS_H

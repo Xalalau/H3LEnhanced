@@ -24,6 +24,8 @@ extern IParticleMan *g_pParticleMan;
 
 #include "effects/CEnvironment.h"
 
+#include "CHudSpectator.h"
+
 /*
 =================
 HUD_DrawNormalTriangles
@@ -33,7 +35,9 @@ Non-transparent triangles-- add them here
 */
 void DLLEXPORT HUD_DrawNormalTriangles( void )
 {
-	gHUD.m_Spectator.DrawOverview();
+
+	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
+		pSpectator->DrawOverview();
 }
 
 #if defined( _TFC )

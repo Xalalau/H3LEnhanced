@@ -15,7 +15,10 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDDEATHNOTICE_H
 #define GAME_CLIENT_UI_HUD_CHUDDEATHNOTICE_H
 
-class CHudDeathNotice : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudDeathNotice : public CBaseHudElement<CHLHud>
 {
 private:
 	struct DeathNoticeItem
@@ -34,11 +37,15 @@ private:
 	static const size_t MAX_DEATHNOTICES = 4;
 
 public:
-	bool Init() override;
+	DECLARE_CLASS( CHudDeathNotice, CBaseHudElement<CHLHud> );
+
+	CHudDeathNotice( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
 	void InitHUDData() override;
-	bool VidInit() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
-	int MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbuf );
 
 private:
 	int m_HUD_d_skull;  // sprite index of skull icon

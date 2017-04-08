@@ -27,6 +27,7 @@
 
 #include "CTentacle.h"
 
+//TODO: initialize - Solokiller
 bool CTentacle::g_fFlySound;
 bool CTentacle::g_fSquirmSound;
 
@@ -91,9 +92,9 @@ LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle );
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CTentacle :: Classify ( void )
+EntityClassification_t CTentacle::GetClassification()
 {
-	return	CLASS_ALIEN_MONSTER;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
 }
 
 //

@@ -15,11 +15,18 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDBENCHMARK_H
 #define GAME_CLIENT_UI_HUD_CHUDBENCHMARK_H
 
-class CHudBenchmark : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudBenchmark : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
+	DECLARE_CLASS( CHudBenchmark, CBaseHudElement<CHLHud> );
+
+	CHudBenchmark( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
 	bool Draw( float flTime ) override;
 
 	void SetScore( float score );
@@ -28,7 +35,7 @@ public:
 
 	void StartNextSection( int section );
 
-	int MsgFunc_Bench( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_Bench( const char *pszName, int iSize, void *pbuf );
 
 	void CountFrame( float dt );
 
@@ -37,6 +44,11 @@ public:
 	void SetCompositeScore();
 
 	void Restart();
+
+	void UserCmd_BenchMark()
+	{
+		Restart();
+	}
 
 	int Bench_ScoreForValue( int stage, float raw );
 

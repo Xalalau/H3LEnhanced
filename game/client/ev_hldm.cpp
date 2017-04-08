@@ -1331,7 +1331,7 @@ void EV_EgonFire( event_args_t *args )
 
 		if ( pl )
 		{
-			Vector angles = gHUD.m_vecAngles;
+			Vector angles = Hud().GetAngles();
 			Vector forward, right, up;
 			
 			AngleVectors( angles, forward, right, up );

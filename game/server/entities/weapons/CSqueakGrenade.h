@@ -26,7 +26,7 @@ public:
 
 	void Spawn() override;
 	void Precache() override;
-	int Classify() override;
+	EntityClassification_t GetClassification() override;
 	void SuperBounceTouch( CBaseEntity *pOther );
 	void HuntThink();
 	int BloodColor() const override { return BLOOD_COLOR_YELLOW; }
@@ -42,7 +42,7 @@ public:
 	float m_flNextHit;
 	Vector m_posPrev;
 	EHANDLE m_hOwner;
-	int  m_iMyClass;
+	EntityClassification_t  m_iMyClass = EntityClassifications().GetNoneId();
 };
 
 #endif //GAME_SERVER_ENTITIES_WEAPONS_CSQUEAKGRENADE_H

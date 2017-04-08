@@ -251,7 +251,7 @@ int CSentenceGroups::Lookup( const char* sample, char* sentencenum )
 		{
 			if( sentencenum )
 			{
-				snprintf( sentencenum, MAX_SENTENCENUM_NAME, "!%d", i );
+				snprintf( sentencenum, MAX_SENTENCENUM_NAME, "!%zu", i );
 			}
 
 			return static_cast<int>( i );

@@ -31,7 +31,7 @@ public:
 
 	void Spawn() override;
 	void Precache() override;
-	int Classify() override;
+	EntityClassification_t GetClassification() override;
 	void BubbleThink();
 	void BoltTouch( CBaseEntity *pOther );
 	void ExplodeThink();

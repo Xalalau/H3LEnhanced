@@ -117,7 +117,7 @@ void CShockRifle::RemoveSpot()
 void CShockRifle::Spawn()
 {
 	// Hack to allow for old names.
-	pev->classname = MAKE_STRING( "weapon_shockrifle" );
+	SetClassname( "weapon_shockrifle" );
 
 	Precache();
 
@@ -309,6 +309,26 @@ void CShockRifle::SecondaryAttack()
 
 void CShockRifle::Reload()
 {
+	RechargeAmmo( true );
+}
+
+void CShockRifle::WeaponHolsterPreFrame()
+{
+	BaseClass::WeaponHolsterPreFrame();
+
+	//Silently recharge in the background. - Solokiller
+	RechargeAmmo( false );
+}
+
+void CShockRifle::ItemPostFrame()
+{
+	BaseClass::ItemPostFrame();
+
+	Reload();
+}
+
+void CShockRifle::RechargeAmmo( bool bLoud )
+{
 	const int iMax = GetWeaponInfo()->GetDefaultAmmo();
 
 	if( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] >= iMax )
@@ -323,9 +343,12 @@ void CShockRifle::Reload()
 
 		++m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ];
 
-		EMIT_SOUND_DYN( 
-			m_pPlayer, CHAN_WEAPON, 
-			"weapons/shock_recharge.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM );
+		if( bLoud )
+		{
+			EMIT_SOUND_DYN(
+				m_pPlayer, CHAN_WEAPON,
+				"weapons/shock_recharge.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM );
+		}
 
 		if( bIsMultiplayer() )
 		{
@@ -336,12 +359,5 @@ void CShockRifle::Reload()
 			m_flRechargeTime += 0.5;
 		}
 	}
-}
-
-void CShockRifle::ItemPostFrame()
-{
-	BaseClass::ItemPostFrame();
-
-	Reload();
 }
 #endif //USE_OPFOR

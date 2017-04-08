@@ -15,17 +15,24 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDSTATUSBAR_H
 #define GAME_CLIENT_UI_HUD_CHUDSTATUSBAR_H
 
-class CHudStatusBar : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudStatusBar : public CBaseHudElement<CHLHud>
 {
 public:
-	bool Init() override;
-	bool VidInit() override;
-	bool Draw( float flTime );
-	void Reset();
+	DECLARE_CLASS( CHudStatusBar, CBaseHudElement<CHLHud> );
+
+	CHudStatusBar( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
+	void VidInit() override;
+	bool Draw( float flTime ) override;
+	void Reset() override;
 	void ParseStatusString( int line_num );
 
-	int MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf );
+	void MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf );
 
 protected:
 	enum {

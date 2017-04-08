@@ -24,23 +24,24 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
-DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal );
-DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon );
+#include "CHudAmmoSecondary.h"
 
-bool CHudAmmoSecondary::Init()
+CHudAmmoSecondary::CHudAmmoSecondary( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
+
+void CHudAmmoSecondary::Init()
 {
 	HOOK_MESSAGE( SecAmmoVal );
 	HOOK_MESSAGE( SecAmmoIcon );
 
-	gHUD.AddHudElem(this);
 	m_HUD_ammoicon = 0;
 
 	for ( int i = 0; i < MAX_SEC_AMMO_VALUES; i++ )
 		m_iAmmoAmounts[i] = -1;  // -1 means don't draw this value
 
 	Reset();
-
-	return true;
 }
 
 void CHudAmmoSecondary::Reset()
@@ -48,42 +49,41 @@ void CHudAmmoSecondary::Reset()
 	m_fFade = 0;
 }
 
-bool CHudAmmoSecondary::VidInit()
+void CHudAmmoSecondary::VidInit()
 {
-	return true;
 }
 
 bool CHudAmmoSecondary::Draw(float flTime)
 {
-	if ( (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )
+	if ( GetHud().GetHideHudBits().Any( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 		return true;
 
 	// draw secondary ammo icons above normal ammo readout
 	int a, x, y, r, g, b, AmmoWidth;
-	gHUD.GetPrimaryColor().UnpackRGB( r, g, b );
+	GetHud().GetPrimaryColor().UnpackRGB( r, g, b );
 	a = (int) max( static_cast<float>( MIN_ALPHA ), m_fFade );
 	if (m_fFade > 0)
-		m_fFade -= (gHUD.m_flTimeDelta * 20);  // slowly lower alpha to fade out icons
+		m_fFade -= ( Hud().GetTimeDelta() * 20);  // slowly lower alpha to fade out icons
 	ScaleColors( r, g, b, a );
 
-	AmmoWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
+	AmmoWidth = GetHud().GetSpriteRect( GetHud().GetHudNumber0Index() ).right - GetHud().GetSpriteRect( GetHud().GetHudNumber0Index() ).left;
 
-	y = ScreenHeight - (gHUD.m_iFontHeight*4);  // this is one font height higher than the weapon ammo values
+	y = ScreenHeight - ( GetHud().GetFontHeight() *4);  // this is one font height higher than the weapon ammo values
 	x = ScreenWidth - AmmoWidth;
 
 	if ( m_HUD_ammoicon )
 	{
 		// Draw the ammo icon
-		x -= (gHUD.GetSpriteRect(m_HUD_ammoicon).right - gHUD.GetSpriteRect(m_HUD_ammoicon).left);
-		y -= (gHUD.GetSpriteRect(m_HUD_ammoicon).top - gHUD.GetSpriteRect(m_HUD_ammoicon).bottom);
+		x -= ( GetHud().GetSpriteRect(m_HUD_ammoicon).right - GetHud().GetSpriteRect(m_HUD_ammoicon).left);
+		y -= ( GetHud().GetSpriteRect(m_HUD_ammoicon).top - GetHud().GetSpriteRect(m_HUD_ammoicon).bottom);
 
-		SPR_Set( gHUD.GetSprite(m_HUD_ammoicon), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect(m_HUD_ammoicon) );
+		SPR_Set( GetHud().GetSprite(m_HUD_ammoicon), r, g, b );
+		SPR_DrawAdditive( 0, x, y, &GetHud().GetSpriteRect(m_HUD_ammoicon) );
 	}
 	else
 	{  // move the cursor by the '0' char instead, since we don't have an icon to work with
 		x -= AmmoWidth;
-		y -= (gHUD.GetSpriteRect(gHUD.m_HUD_number_0).top - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).bottom);
+		y -= ( GetHud().GetSpriteRect( GetHud().GetHudNumber0Index() ).top - GetHud().GetSpriteRect( GetHud().GetHudNumber0Index() ).bottom);
 	}
 
 	// draw the ammo counts, in reverse order, from right to left
@@ -96,14 +96,14 @@ bool CHudAmmoSecondary::Draw(float flTime)
 		x -= (AmmoWidth / 2);
 
 		// draw the number, right-aligned
-		x -= (gHUD.GetNumWidth( m_iAmmoAmounts[i], DHN_DRAWZERO ) * AmmoWidth);
-		gHUD.DrawHudNumber( x, y, DHN_DRAWZERO, m_iAmmoAmounts[i], r, g, b );
+		x -= ( GetHud().GetNumWidth( m_iAmmoAmounts[i], DHN_DRAWZERO ) * AmmoWidth);
+		GetHud().DrawHudNumber( x, y, DHN_DRAWZERO, m_iAmmoAmounts[i], r, g, b );
 
 		if ( i != 0 )
 		{
 			// draw the divider bar
 			x -= (AmmoWidth / 2);
-			FillRGBA(x, y, (AmmoWidth/10), gHUD.m_iFontHeight, r, g, b, a);
+			FillRGBA(x, y, (AmmoWidth/10), GetHud().GetFontHeight(), r, g, b, a);
 		}
 	}
 
@@ -113,12 +113,10 @@ bool CHudAmmoSecondary::Draw(float flTime)
 // Message handler for Secondary Ammo Value
 // accepts one value:
 //		string:  sprite name
-int CHudAmmoSecondary :: MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf )
+void CHudAmmoSecondary::MsgFunc_SecAmmoIcon( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
-	m_HUD_ammoicon = gHUD.GetSpriteIndex( reader.ReadString() );
-
-	return 1;
+	m_HUD_ammoicon = GetHud().GetSpriteIndex( reader.ReadString() );
 }
 
 // Message handler for Secondary Ammo Icon
@@ -126,16 +124,16 @@ int CHudAmmoSecondary :: MsgFunc_SecAmmoIcon( const char *pszName, int iSize, vo
 // takes two values:
 //		byte:  ammo index
 //		byte:  ammo value
-int CHudAmmoSecondary :: MsgFunc_SecAmmoVal( const char *pszName, int iSize, void *pbuf )
+void CHudAmmoSecondary::MsgFunc_SecAmmoVal( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
 	int index = reader.ReadByte();
 	if ( index < 0 || index >= MAX_SEC_AMMO_VALUES )
-		return 1;
+		return;
 
 	m_iAmmoAmounts[index] = reader.ReadByte();
-	m_iFlags |= HUD_ACTIVE;
+	GetFlags() |= HUD_ACTIVE;
 
 	// check to see if there is anything left to draw
 	int count = 0;
@@ -146,14 +144,12 @@ int CHudAmmoSecondary :: MsgFunc_SecAmmoVal( const char *pszName, int iSize, voi
 
 	if ( count == 0 ) 
 	{	// the ammo fields are all empty, so turn off this hud area
-		m_iFlags &= ~HUD_ACTIVE;
-		return 1;
+		GetFlags() &= ~HUD_ACTIVE;
+		return;
 	}
 
 	// make the icons light up
 	m_fFade = 200.0f;
-
-	return 1;
 }
 
 

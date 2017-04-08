@@ -76,7 +76,7 @@ public:
 	bool ShouldGoToNode() const;
 
 	void SetYawSpeed( void ) override;
-	int  Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	void LayHeadcrab( void );
 

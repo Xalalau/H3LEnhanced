@@ -50,11 +50,6 @@ bool FNullEnt( const CBaseEntity* pEntity )
 	return pEntity == nullptr || FNullEnt( pEntity->pev );
 }
 
-bool FClassnameIs( const CBaseEntity* pEntity, const char* pszClassname )
-{
-	return pEntity ? FClassnameIs( pEntity->pev, pszClassname ) : false;
-}
-
 static unsigned int glSeed = 0;
 
 unsigned int seed_table[ 256 ] =
@@ -952,4 +947,71 @@ void UTIL_RemoveNow( CBaseEntity* pEntity )
 	//On the client, entities are allocated using byte arrays. - Solokiller
 	delete[] reinterpret_cast<byte*>( pEntity );
 #endif
+}
+
+bool COM_FileBase( const char *in, char *out, size_t uiSizeInCharacters )
+{
+	ASSERT( out );
+
+	if( uiSizeInCharacters == 0 )
+		return false;
+
+	size_t uiLength = strlen( in );
+
+	// scan backward for '.'
+	size_t end = uiLength - 1;
+	while( end && in[ end ] != '.' && in[ end ] != '/' && in[ end ] != '\\' )
+		--end;
+
+	if( in[ end ] != '.' )	// no '.', copy to end
+		end = uiLength - 1;
+	else
+		--end;				// Found ',', copy to left of '.'
+
+
+	// Scan backward for '/'
+	size_t start = uiLength;
+	while( start > 0 && in[ start - 1 ] != '/' && in[ start - 1 ] != '\\' )
+		--start;
+
+	// Length of new string
+	uiLength = end - start + 1;
+
+	if( uiSizeInCharacters < uiLength )
+		return false;
+
+	// Copy partial string
+	strncpy( out, &in[ start ], uiLength );
+	// Terminate it
+	out[ uiLength ] = '\0';
+
+	return true;
+}
+
+bool UTIL_IsGame( const char* game )
+{
+	char szGameDir[ MAX_PATH ];
+
+	UTIL_GetGameDir( szGameDir, sizeof( szGameDir ) );
+
+	if( szGameDir[ 0 ] )
+	{
+		char gd[ 1024 ];
+
+		if( COM_FileBase( szGameDir, gd ) && !stricmp( gd, game ) )
+			return true;
+	}
+	return false;
+}
+
+static cvar_t* sv_cheats = nullptr;
+
+bool UTIL_CheatsAllowed()
+{
+	if( !sv_cheats )
+		sv_cheats = CVAR_GET_POINTER( "sv_cheats" );
+
+	ASSERT( sv_cheats );
+
+	return sv_cheats->value != 0;
 }

@@ -20,6 +20,8 @@
 
 #include "mathlib.h"
 
+#include "CHudSpectator.h"
+
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;
 
@@ -56,12 +58,14 @@ int DLLEXPORT HUD_AddEntity( int type, cl_entity_t *ent, const char *modelname )
 
 	if ( g_iUser1 )
 	{
-		gHUD.m_Spectator.AddOverviewEntity( type, ent, modelname );
+		if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
+		{
+			pSpectator->AddOverviewEntity( type, ent, modelname );
 
-		if ( (	g_iUser1 == OBS_IN_EYE || gHUD.m_Spectator.m_pip->value == INSET_IN_EYE ) &&
-				ent->index == g_iUser2 )
-			return 0;	// don't draw the player we are following in eye
-
+			if ( (	g_iUser1 == OBS_IN_EYE || pSpectator->m_pip->value == INSET_IN_EYE ) &&
+					ent->index == g_iUser2 )
+				return 0;	// don't draw the player we are following in eye
+		}
 	}
 
 	return 1;

@@ -93,6 +93,8 @@ void CClientGameInterface::Shutdown()
 	g_ASManager.Shutdown();
 #endif
 
+	Hud().GameShutdown();
+
 	ShutdownCommon();
 }
 
@@ -158,28 +160,11 @@ void CClientGameInterface::CheckNewMapStarted()
 	{
 		m_bNewMapStarted = false;
 
-		const char* pszLevelName = gEngfuncs.pfnGetLevelName();
+		memset( m_szMapName, 0, sizeof( m_szMapName ) );
 
-		char szMapName[ MAX_PATH ];
-
-		const int iResult = sscanf( pszLevelName, "maps/%s.bsp", szMapName );
-
-		if( iResult == 1 )
+		if( UTIL_GetMapName( m_szMapName, sizeof( m_szMapName ) ) )
 		{
-			szMapName[ sizeof( szMapName ) - 1 ] = '\0';
-
-			const size_t uiLength = strlen( szMapName );
-
-			//These checks are mostly to prevent crashes if the engine screws up. Better safe than sorry, it's only done once a map load.
-			const size_t uiExtLength = strlen( BSP_FILE_EXT );
-
-			//Trim the .bsp part.
-			if( uiLength > uiExtLength )
-			{
-				szMapName[ uiLength - uiExtLength ] = '\0';
-			}
-
-			NewMapStarted( szMapName, pszLevelName );
+			NewMapStarted( m_szMapName, gEngfuncs.pfnGetLevelName() );
 		}
 		else
 		{

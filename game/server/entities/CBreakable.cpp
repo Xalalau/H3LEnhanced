@@ -493,7 +493,7 @@ void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceR
 	{
 		switch( m_Material )
 		{
-			case matComputer:
+		case matComputer:
 			{
 				UTIL_Sparks( ptr->vecEndPos );
 
@@ -503,12 +503,16 @@ void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceR
 					case 0: EMIT_SOUND( this, CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_NORM);	break;
 					case 1: EMIT_SOUND( this, CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_NORM);	break;
 				}
+				break;
 			}
-			break;
 			
-			case matUnbreakableGlass:
+		case matUnbreakableGlass:
+			{
 				UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT(0.5,1.5) );
-			break;
+				break;
+			}
+
+		default: break;
 		}
 	}
 
@@ -659,6 +663,15 @@ void CBreakable::Die( void )
 	case matCeilingTile:
 		EMIT_SOUND_DYN( this, CHAN_VOICE, "debris/bustceiling.wav", fvol, ATTN_NORM, 0, pitch);
 		break;
+
+	case matUnbreakableGlass:
+		{
+			//Unbreakable glass can't break so this is rather weird.
+			//Report as much as possible information for debugging.
+			ALERT( at_warning, "CBreakable::Die(%s:\"%s\", %f %f %f): Unbreakable glass broken!\n", GetClassname(), GetTargetname(), GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z );
+		}
+	case matNone:
+	case matLastMaterial: break;
 	}
     
 		

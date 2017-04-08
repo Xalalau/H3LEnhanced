@@ -344,8 +344,8 @@ void CGargantua :: FlameUpdate( void )
 				streaks = true;
 				UTIL_DecalTrace( &trace, DECAL_SMALLSCORCH1 + RANDOM_LONG(0,2) );
 			}
-			// RadiusDamage( trace.vecEndPos, this, this, gSkillData.GetGargantuaDmgFire(), CLASS_ALIEN_MONSTER, DMG_BURN );
-			FlameDamage( vecStart, trace.vecEndPos, this, this, gSkillData.GetGargantuaDmgFire(), CLASS_ALIEN_MONSTER, DMG_BURN );
+			// RadiusDamage( trace.vecEndPos, this, this, gSkillData.GetGargantuaDmgFire(), EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER ), DMG_BURN );
+			FlameDamage( vecStart, trace.vecEndPos, this, this, gSkillData.GetGargantuaDmgFire(), EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER ), DMG_BURN );
 
 			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 				WRITE_BYTE( TE_ELIGHT );
@@ -368,7 +368,7 @@ void CGargantua :: FlameUpdate( void )
 
 
 
-void CGargantua::FlameDamage( Vector vecStart, Vector vecEnd, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType )
+void CGargantua::FlameDamage( Vector vecStart, Vector vecEnd, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType )
 {
 	CBaseEntity *pEntity = NULL;
 	TraceResult	tr;
@@ -387,7 +387,7 @@ void CGargantua::FlameDamage( Vector vecStart, Vector vecEnd, CBaseEntity* pInfl
 		if ( pEntity->pev->takedamage != DAMAGE_NO )
 		{
 			// UNDONE: this should check a damage mask, not an ignore
-			if ( iClassIgnore != CLASS_NONE && pEntity->Classify() == iClassIgnore )
+			if ( iClassIgnore != EntityClassifications().GetNoneId() && pEntity->Classify() == iClassIgnore )
 			{// houndeyes don't hurt other houndeyes with their attack
 				continue;
 			}
@@ -471,9 +471,9 @@ void CGargantua :: PrescheduleThink( void )
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CGargantua :: Classify ( void )
+EntityClassification_t CGargantua::GetClassification()
 {
-	return	CLASS_ALIEN_MONSTER;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
 }
 
 //=========================================================
@@ -909,9 +909,7 @@ void CGargantua::RunTask( const Task_t* pTask )
 			int parts = MODEL_FRAMES( gGargGibModel );
 			for ( i = 0; i < 10; i++ )
 			{
-				CGib *pGib = GetClassPtr( (CGib *)NULL );
-
-				pGib->Spawn( GARG_GIB_MODEL );
+				auto pGib = CGib::GibCreate( GARG_GIB_MODEL );
 				
 				int bodyPart = 0;
 				if ( parts > 1 )

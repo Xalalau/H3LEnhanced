@@ -18,6 +18,17 @@ BEGIN_DATADESC( CGib )
 	DEFINE_THINKFUNC( WaitTillLand ),
 END_DATADESC()
 
+LINK_ENTITY_TO_CLASS( gib, CGib );
+
+CGib* CGib::GibCreate( const char* szGibModel )
+{
+	auto pGib = static_cast<CGib*>( UTIL_CreateNamedEntity( "gib" ) );
+
+	pGib->Spawn( szGibModel );
+
+	return pGib;
+}
+
 //
 // Throw a chunk
 //
@@ -32,7 +43,6 @@ void CGib::Spawn( const char *szGibModel )
 	pev->rendermode = kRenderNormal;
 	pev->renderfx = kRenderFxNone;
 	pev->solid = SOLID_SLIDEBOX;/// hopefully this will fix the VELOCITY TOO LOW crap
-	pev->classname = MAKE_STRING( "gib" );
 
 	SetModel( szGibModel );
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
@@ -186,18 +196,20 @@ void CGib::LimitVelocity( void )
 
 void CGib::SpawnHeadGib( CBaseEntity* pVictim )
 {
-	CGib *pGib = GetClassPtr( ( CGib * ) NULL );
+	const char* pszModelName = nullptr;
 
 	if( g_Language == LANGUAGE_GERMAN )
 	{
-		pGib->Spawn( "models/germangibs.mdl" );// throw one head
-		pGib->pev->body = 0;
+		pszModelName = "models/germangibs.mdl";
 	}
 	else
 	{
-		pGib->Spawn( "models/hgibs.mdl" );// throw one head
-		pGib->pev->body = 0;
+		pszModelName = "models/hgibs.mdl";
 	}
+
+	// throw one head
+	auto pGib = CGib::GibCreate( pszModelName );
+	pGib->SetBody( 0 );
 
 	if( pVictim )
 	{
@@ -241,32 +253,34 @@ void CGib::SpawnHeadGib( CBaseEntity* pVictim )
 
 void CGib::SpawnRandomGibs( CBaseEntity* pVictim, int cGibs, int human )
 {
-	int cSplat;
-
-	for( cSplat = 0; cSplat < cGibs; cSplat++ )
+	for( int cSplat = 0; cSplat < cGibs; cSplat++ )
 	{
-		CGib *pGib = GetClassPtr( ( CGib * ) NULL );
+		const char* pszModelName = nullptr;
+		int body = 0;
 
 		if( g_Language == LANGUAGE_GERMAN )
 		{
-			pGib->Spawn( "models/germangibs.mdl" );
-			pGib->pev->body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
+			pszModelName = "models/germangibs.mdl";
+			body = RANDOM_LONG( 0, GERMAN_GIB_COUNT - 1 );
 		}
 		else
 		{
 			if( human )
 			{
 				// human pieces
-				pGib->Spawn( "models/hgibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
+				pszModelName = "models/hgibs.mdl";
+				body = RANDOM_LONG( 1, HUMAN_GIB_COUNT - 1 );// start at one to avoid throwing random amounts of skulls (0th gib)
 			}
 			else
 			{
 				// aliens
-				pGib->Spawn( "models/agibs.mdl" );
-				pGib->pev->body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
+				pszModelName = "models/agibs.mdl";
+				body = RANDOM_LONG( 0, ALIEN_GIB_COUNT - 1 );
 			}
 		}
+
+		auto pGib = CGib::GibCreate( pszModelName );
+		pGib->SetBody( body );
 
 		if( pVictim )
 		{
@@ -323,9 +337,7 @@ void CGib::SpawnStickyGibs( CBaseEntity* pVictim, Vector vecOrigin, int cGibs )
 
 	for( i = 0; i < cGibs; i++ )
 	{
-		CGib *pGib = GetClassPtr( ( CGib * ) NULL );
-
-		pGib->Spawn( "models/stickygib.mdl" );
+		auto pGib = CGib::GibCreate( "models/stickygib.mdl" );
 		pGib->pev->body = RANDOM_LONG( 0, 2 );
 
 		if( pVictim )

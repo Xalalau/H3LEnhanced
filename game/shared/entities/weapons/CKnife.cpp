@@ -182,7 +182,7 @@ bool CKnife::Swing( const bool bFirst )
 
 		if( pEntity )
 		{
-			if( pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
+			if( pEntity->Classify() != EntityClassifications().GetNoneId() && pEntity->Classify() != EntityClassifications().GetClassificationId( classify::MACHINE ) )
 			{
 				// play thwack or smack sound
 				switch( RANDOM_LONG( 0, 1 ) )

@@ -17,6 +17,8 @@
 
 #include "Platform.h"
 
+#include "DefaultClassifications.h"
+
 /**
 *	@file
 *	Forward declarations for entity classes and related types.
@@ -110,42 +112,6 @@ enum USE_TYPE
 	USE_ON		= 1,
 	USE_SET		= 2,
 	USE_TOGGLE	= 3
-};
-
-/**
-*	@see CBaseEntity::Classify
-*/
-enum Classification
-{
-	CLASS_NONE				= 0,
-	CLASS_MACHINE			= 1,
-	CLASS_PLAYER			= 2,
-	CLASS_HUMAN_PASSIVE		= 3,
-	CLASS_HUMAN_MILITARY	= 4,
-	CLASS_ALIEN_MILITARY	= 5,
-	CLASS_ALIEN_PASSIVE		= 6,
-	CLASS_ALIEN_MONSTER		= 7,
-	CLASS_ALIEN_PREY		= 8,
-	CLASS_ALIEN_PREDATOR	= 9,
-	CLASS_INSECT			= 10,
-	CLASS_PLAYER_ALLY		= 11,
-
-	/**
-	*	Hornets and snarks. Launched by players.
-	*/
-	CLASS_PLAYER_BIOWEAPON	= 12,
-
-	/**
-	*	Hornets and snarks. Launched by the alien menace.
-	*/
-	CLASS_ALIEN_BIOWEAPON	= 13,
-
-	/**
-	*	Entities that want to be ignored use this.
-	*	Used to be called CLASS_BARNACLE.
-	*	Special because no one pays attention to it, and it eats a wide cross-section of creatures.
-	*/
-	CLASS_IGNORE			= 99,
 };
 
 /**

@@ -7,6 +7,7 @@ add_sources(
 	customentity.h
 	edict.h
 	eiface.h
+	IBaseUI.h
 	IClientVGUI.h
 	IGameUIFuncs.h
 	kbutton.h

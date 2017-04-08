@@ -7,6 +7,8 @@
 
 #include "CSprayCan.h"
 
+LINK_ENTITY_TO_CLASS( spray_can, CSprayCan );
+
 void CSprayCan::Spawn( CBaseEntity* pOwner )
 {
 	pev->origin = pOwner->GetAbsOrigin() + Vector( 0, 0, 32 );

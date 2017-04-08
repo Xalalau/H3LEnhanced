@@ -15,18 +15,25 @@
 #ifndef GAME_CLIENT_UI_HUD_CHUDMENU_H
 #define GAME_CLIENT_UI_HUD_CHUDMENU_H
 
-class CHudMenu : public CHudBase
+#include "shared/hud/CHudElement.h"
+#include "hud.h"
+
+class CHudMenu : public CBaseHudElement<CHLHud>
 {
 private:
 	static const size_t MAX_MENU_STRING = 512;
 
 public:
-	bool Init() override;
+	DECLARE_CLASS( CHudMenu, CBaseHudElement<CHLHud> );
+
+	CHudMenu( const char* const pszName, CHLHud& hud );
+
+	void Init() override;
 	void InitHUDData() override;
-	bool VidInit() override;
+	void VidInit() override;
 	void Reset()  override;
-	bool Draw( float flTime );
-	int MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf );
+	bool Draw( float flTime ) override;
+	void MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf );
 
 	void SelectMenuItem( int menu_item );
 

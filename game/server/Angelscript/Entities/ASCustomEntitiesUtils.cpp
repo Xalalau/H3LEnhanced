@@ -12,7 +12,7 @@ void CASBaseClassCreator::GenerateCommonBaseClassContents( CASClassWriter& write
 	const std::string szEntHandle = pszEntityClass + std::string( "@" );
 	const std::string szBaseHandle = pszBaseClass + std::string( "@" );
 
-	writer.StartClassDeclaration( "ICustomEntity" );
+	writer.StartClassDeclaration( true, "ICustomEntity" );
 
 	writer.WriteProperty( CASClassWriter::Visibility::PRIVATE, szEntHandle.c_str(), "m_pSelf", "null" );
 	writer.StartPropDeclaration( CASClassWriter::Visibility::PUBLIC, szEntHandle.c_str(), "self" );

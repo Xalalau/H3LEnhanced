@@ -20,25 +20,28 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
+#include "strtools.h"
 
 #include <string.h>
 #include <stdio.h>
 
 #include "vgui_TeamFortressViewport.h"
 
+#include "shared/CLocalize.h"
+#include "CHudMenu.h"
+
 int KB_ConvertString( char *in, char **ppout );
 
-DECLARE_MESSAGE( m_Menu, ShowMenu );
-
-bool CHudMenu::Init()
+CHudMenu::CHudMenu( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
 {
-	gHUD.AddHudElem( this );
+}
 
+void CHudMenu::Init()
+{
 	HOOK_MESSAGE( ShowMenu );
 
 	InitHUDData();
-
-	return true;
 }
 
 void CHudMenu::InitHUDData()
@@ -54,9 +57,8 @@ void CHudMenu::Reset()
 	m_fWaitingForMore = false;
 }
 
-bool CHudMenu::VidInit()
+void CHudMenu::VidInit()
 {
-	return true;
 }
 
 
@@ -129,10 +131,10 @@ bool CHudMenu::Draw( float flTime )
 	// check for if menu is set to disappear
 	if ( m_flShutoffTime > 0 )
 	{
-		if ( m_flShutoffTime <= gHUD.m_flTime )
+		if ( m_flShutoffTime <= Hud().GetTime() )
 		{  // times up, shutoff
 			m_fMenuDisplayed = false;
-			m_iFlags &= ~HUD_ACTIVE;
+			GetFlags() &= ~HUD_ACTIVE;
 			return true;
 		}
 	}
@@ -191,11 +193,11 @@ bool CHudMenu::Draw( float flTime )
 			if ( menu_ralign )
 			{		
 				// IMPORTANT: Right-to-left rendered text does not parse escape tokens!
-				menu_x = gHUD.DrawHudStringReverse( menu_x, y, 0, menubuf, menu_r, menu_g, menu_b );
+				menu_x = GetHud().DrawHudStringReverse( menu_x, y, 0, menubuf, menu_r, menu_g, menu_b );
 			}
 			else
 			{
-				menu_x = gHUD.DrawHudString( menu_x, y, 320, menubuf, menu_r, menu_g, menu_b );
+				menu_x = GetHud().DrawHudString( menu_x, y, 320, menubuf, menu_r, menu_g, menu_b );
 			}
 		}
 	}
@@ -210,12 +212,12 @@ void CHudMenu :: SelectMenuItem( int menu_item )
 	if ( (menu_item > 0) && (m_bitsValidSlots & (1 << (menu_item-1))) )
 	{
 		char szbuf[32];
-		sprintf( szbuf, "menuselect %d\n", menu_item );
+		V_sprintf_safe( szbuf, "menuselect %d\n", menu_item );
 		EngineClientCmd( szbuf );
 
 		// remove the menu
 		m_fMenuDisplayed = false;
-		m_iFlags &= ~HUD_ACTIVE;
+		GetFlags() &= ~HUD_ACTIVE;
 	}
 }
 
@@ -227,7 +229,7 @@ void CHudMenu :: SelectMenuItem( int menu_item )
 //		byte : a boolean, true if there is more string yet to be received before displaying the menu, false if it's the last string
 //		string: menu string to display
 // if this message is never received, then scores will simply be the combined totals of the players.
-int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
+void CHudMenu::MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 {
 	char *temp = NULL;
 
@@ -238,7 +240,7 @@ int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 	const bool NeedMore = reader.ReadByte() != 0;
 
 	if ( DisplayTime > 0 )
-		m_flShutoffTime = DisplayTime + gHUD.m_flTime;
+		m_flShutoffTime = DisplayTime + Hud().GetTime();
 	else
 		m_flShutoffTime = -1;
 
@@ -256,7 +258,7 @@ int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 
 		if ( !NeedMore )
 		{  // we have the whole string, so we can localise it now
-			strcpy( m_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( m_szPrelocalisedMenuString ) );
+			strcpy( m_szMenuString, Localize().BufferedLocaliseTextString( m_szPrelocalisedMenuString ) );
 
 			// Swap in characters
 			if ( KB_ConvertString( m_szMenuString, &temp ) )
@@ -267,15 +269,13 @@ int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 		}
 
 		m_fMenuDisplayed = true;
-		m_iFlags |= HUD_ACTIVE;
+		GetFlags() |= HUD_ACTIVE;
 	}
 	else
 	{
 		m_fMenuDisplayed = false; // no valid slots means that the menu should be turned off
-		m_iFlags &= ~HUD_ACTIVE;
+		GetFlags() &= ~HUD_ACTIVE;
 	}
 
 	m_fWaitingForMore = NeedMore;
-
-	return 1;
 }

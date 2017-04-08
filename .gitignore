@@ -1,4 +1,3 @@
-source_sdk/*
 docs/*
 Doxyfile
 
@@ -11,3 +10,6 @@ gamerc/mapsrc/*.rmx
 
 # Ignore OSX junk files
 .DS_Store
+
+#Ignore temporary files created by Linux text editors like vim and gedit.
+*~

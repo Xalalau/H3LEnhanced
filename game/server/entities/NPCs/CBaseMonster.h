@@ -262,7 +262,7 @@ public:
 // stuff written for new state machine
 		virtual void MonsterThink( void );
 		void CallMonsterThink( void ) { this->MonsterThink(); }
-		virtual int IRelationship ( CBaseEntity *pTarget );
+		virtual Relationship IRelationship( CBaseEntity *pTarget );
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );
@@ -443,8 +443,8 @@ public:
 	virtual void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	void DeadTakeDamage( const CTakeDamageInfo& info );
 
-	void RadiusDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
-	void RadiusDamage( Vector vecSrc, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
+	void RadiusDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType );
+	void RadiusDamage( Vector vecSrc, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType );
 	virtual bool IsMoving() const override { return m_movementGoal != MOVEGOAL_NONE; }
 
 	void RouteClear( void );

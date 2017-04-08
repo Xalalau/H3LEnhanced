@@ -4,7 +4,8 @@
 //
 // $NoKeywords: $
 //=============================================================================
-
+#ifndef GAME_CLIENT_UI_VGUI_VGUI_SCHEMEMANAGER_H
+#define GAME_CLIENT_UI_VGUI_VGUI_SCHEMEMANAGER_H
 #include <VGUI_Font.h>
 
 
@@ -51,4 +52,4 @@ private:
 	CScheme *getSafeScheme( SchemeHandle_t schemeHandle );
 };
 
-
+#endif //GAME_CLIENT_UI_VGUI_VGUI_SCHEMEMANAGER_H

@@ -494,7 +494,7 @@ void CNihilanthHVR::ZapTouch( CBaseEntity *pOther )
 {
 	UTIL_EmitAmbientSound( this, GetAbsOrigin(), "weapons/electro4.wav", 1.0, ATTN_NORM, 0, RANDOM_LONG( 90, 95 ) );
 
-	RadiusDamage( this, this, 50, CLASS_NONE, DMG_SHOCK );
+	RadiusDamage( this, this, 50, EntityClassifications().GetNoneId(), DMG_SHOCK );
 	pev->velocity = pev->velocity * 0;
 
 	/*

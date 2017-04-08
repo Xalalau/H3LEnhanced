@@ -143,7 +143,7 @@ void CHornet :: Precache()
 //=========================================================
 // hornets will never get mad at each other, no matter who the owner is.
 //=========================================================
-int CHornet::IRelationship ( CBaseEntity *pTarget )
+Relationship CHornet::IRelationship ( CBaseEntity *pTarget )
 {
 	if ( pTarget->pev->modelindex == pev->modelindex )
 	{
@@ -156,15 +156,14 @@ int CHornet::IRelationship ( CBaseEntity *pTarget )
 //=========================================================
 // ID's Hornet as their owner
 //=========================================================
-int CHornet::Classify ( void )
+EntityClassification_t CHornet::GetClassification()
 {
-
-	if ( pev->owner && pev->owner->v.flags & FL_CLIENT)
+	if( GetOwner() && GetOwner()->GetFlags().Any( FL_CLIENT ) )
 	{
-		return CLASS_PLAYER_BIOWEAPON;
+		return EntityClassifications().GetClassificationId( classify::PLAYER_BIOWEAPON );
 	}
 
-	return	CLASS_ALIEN_BIOWEAPON;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_BIOWEAPON );
 }
 
 //=========================================================

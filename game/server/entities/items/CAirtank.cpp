@@ -46,13 +46,13 @@ void CAirtank::KeyValue( KeyValueData* pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "AirTime" ) )
 	{
-		m_flAirTimeToGive = abs( atof( pkvd->szValue ) );
+		m_flAirTimeToGive = fabs( atof( pkvd->szValue ) );
 
 		pkvd->fHandled = true;
 	}
 	else if( FStrEq( pkvd->szKeyName, "BaseRechargeTime" ) )
 	{
-		m_flBaseRechargeTime = abs( atof( pkvd->szValue ) );
+		m_flBaseRechargeTime = fabs( atof( pkvd->szValue ) );
 
 		pkvd->fHandled = true;
 	}

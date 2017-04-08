@@ -71,13 +71,13 @@ LINK_ENTITY_TO_CLASS( monster_vortigaunt, CISlave );
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CISlave :: Classify ( void )
+EntityClassification_t CISlave::GetClassification()
 {
-	return	CLASS_ALIEN_MILITARY;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_MILITARY );
 }
 
 
-int CISlave::IRelationship( CBaseEntity *pTarget )
+Relationship CISlave::IRelationship( CBaseEntity *pTarget )
 {
 	if ( (pTarget->IsPlayer()) )
 		if ( (pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) && ! (m_afMemory & bits_MEMORY_PROVOKED ))
@@ -337,7 +337,7 @@ void CISlave :: HandleAnimEvent( AnimEvent_t& event )
 				{
 					CBaseEntity *pNew = Create( "monster_alien_slave", m_hDead->GetAbsOrigin(), m_hDead->pev->angles );
 					CBaseMonster *pNewMonster = pNew->MyMonsterPointer( );
-					pNew->pev->spawnflags |= 1;
+					pNew->pev->spawnflags |= SF_MONSTER_WAIT_TILL_SEEN;
 					WackBeam( -1, pNew );
 					WackBeam( 1, pNew );
 					UTIL_Remove( m_hDead );
@@ -617,6 +617,8 @@ Schedule_t *CISlave :: GetSchedule( void )
 			}
 		}
 		break;
+
+	default: break;
 	}
 	return CSquadMonster::GetSchedule( );
 }

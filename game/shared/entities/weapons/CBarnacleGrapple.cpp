@@ -267,6 +267,8 @@ void CBarnacleGrapple::PrimaryAttack()
 
 			switch( m_pTip->GetGrappleType() )
 			{
+			case CBarnacleGrappleTip::TargetClass::NOT_A_TARGET: break;
+
 			case CBarnacleGrappleTip::TargetClass::SMALL:
 				pTarget->BarnacleVictimGrabbed( this );
 				m_pTip->SetAbsOrigin( pTarget->Center() );

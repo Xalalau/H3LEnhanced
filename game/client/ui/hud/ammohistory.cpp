@@ -61,7 +61,7 @@ void HistoryResource::AddToHistory( int iType, int iId, int iCount )
 	freeslot->type = iType;
 	freeslot->iId = iId;
 	freeslot->iCount = iCount;
-	freeslot->DisplayTime = gHUD.m_flTime + m_phud_drawhistory_time->value;
+	freeslot->DisplayTime = Hud().GetTime() + m_phud_drawhistory_time->value;
 }
 
 void HistoryResource::AddToHistory( int iType, const char *szName, int iCount )
@@ -79,7 +79,7 @@ void HistoryResource::AddToHistory( int iType, const char *szName, int iCount )
 
 	// I am really unhappy with all the code in this file
 
-	int i = gHUD.GetSpriteIndex( szName );
+	int i = Hud().GetHud().GetSpriteIndex( szName );
 	if ( i == -1 )
 		return;  // unknown sprite name, don't add it to history
 
@@ -87,7 +87,7 @@ void HistoryResource::AddToHistory( int iType, const char *szName, int iCount )
 	freeslot->type = iType;
 	freeslot->iCount = iCount;
 
-	freeslot->DisplayTime = gHUD.m_flTime + m_phud_drawhistory_time->value;
+	freeslot->DisplayTime = Hud().GetTime() + m_phud_drawhistory_time->value;
 }
 
 
@@ -113,7 +113,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 	{
 		if ( rgAmmoHistory[i].type )
 		{
-			rgAmmoHistory[i].DisplayTime = min( rgAmmoHistory[i].DisplayTime, gHUD.m_flTime + m_phud_drawhistory_time->value );
+			rgAmmoHistory[i].DisplayTime = min( rgAmmoHistory[i].DisplayTime, Hud().GetTime() + m_phud_drawhistory_time->value );
 
 			if ( rgAmmoHistory[i].DisplayTime <= flTime )
 			{  // pic drawing time has expired
@@ -148,7 +148,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 				}
 
 				// Draw the number
-				gHUD.DrawHudNumberString( xpos - 10, ypos, xpos - 100, rgAmmoHistory[i].iCount, r, g, b );
+				Hud().GetHud().DrawHudNumberString( xpos - 10, ypos, xpos - 100, rgAmmoHistory[i].iCount, r, g, b );
 			}
 			else if ( rgAmmoHistory[i].type == HISTSLOT_WEAP )
 			{
@@ -188,7 +188,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 				if ( !rgAmmoHistory[i].iId )
 					continue;  // sprite not loaded
 
-				wrect_t rect = gHUD.GetSpriteRect( rgAmmoHistory[i].iId );
+				wrect_t rect = Hud().GetHud().GetSpriteRect( rgAmmoHistory[i].iId );
 
 				// ############ hu3lifezado ############ //
 				// Mudei a cor do HUD (RGB_YELLOWISH)
@@ -205,7 +205,7 @@ int HistoryResource::DrawAmmoHistory( float flTime )
 				// ############ //  
 				int xpos = ScreenWidth - (rect.right - rect.left) - 10;
 
-				SPR_Set( gHUD.GetSprite( rgAmmoHistory[i].iId ), r, g, b );
+				SPR_Set( Hud().GetHud().GetSprite( rgAmmoHistory[i].iId ), r, g, b );
 				SPR_DrawAdditive( 0, xpos, ypos, &rect );
 			}
 		}

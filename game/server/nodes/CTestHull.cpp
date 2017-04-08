@@ -118,7 +118,8 @@ void CTestHull::BuildNodeGraph()
 	SetAbsOrigin( WorldGraph.m_pNodes[ 0 ].m_vecOrigin );
 
 	//Keep moving it down until it hits the floor. - Solokiller
-	while( UTIL_DropToFloor( this ) == DropToFloor::TOOFAR )
+	//Stop if we fall out of the world (avoids infinite loop)
+	while( UTIL_DropToFloor( this ) == DropToFloor::TOOFAR && IsInWorld() )
 	{
 		SetAbsOrigin( GetAbsOrigin() - Vector( 0, 0, 256 ) );
 	}
@@ -503,7 +504,8 @@ void CTestHull::BuildNodeGraph()
 	fprintf( file, "\n\n-------------------------------------------------------------------------------\n" );
 	fprintf( file, "Total Number of Connections in Pool: %d\n", cPoolLinks );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
-	fprintf( file, "Connection Pool: %u bytes\n", sizeof( CLink ) * cPoolLinks );
+	//Note: z requires C++11. - Solokiller
+	fprintf( file, "Connection Pool: %zu bytes\n", static_cast<size_t>( sizeof( CLink ) * cPoolLinks ) );
 	fprintf( file, "-------------------------------------------------------------------------------\n" );
 
 

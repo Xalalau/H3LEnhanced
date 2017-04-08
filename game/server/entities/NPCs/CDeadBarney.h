@@ -30,10 +30,10 @@ class CDeadBarney : public CBaseMonster
 public:
 	DECLARE_CLASS( CDeadBarney, CBaseMonster );
 
-	void Spawn( void );
-	int	Classify( void ) { return	CLASS_PLAYER_ALLY; }
+	void Spawn() override;
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::PLAYER_ALLY ); }
 
-	void KeyValue( KeyValueData *pkvd );
+	void KeyValue( KeyValueData *pkvd ) override;
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
 	static const char* const m_szPoses[ 3 ];

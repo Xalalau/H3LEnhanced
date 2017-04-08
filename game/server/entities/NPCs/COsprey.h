@@ -38,7 +38,7 @@ public:
 
 	void Spawn() override;
 	void Precache() override;
-	int  Classify() override { return CLASS_MACHINE; };
+	EntityClassification_t GetClassification() override { return EntityClassifications().GetClassificationId( classify::MACHINE ); }
 	int  BloodColor() const override { return DONT_BLEED; }
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 
@@ -59,7 +59,6 @@ public:
 	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
 	void ShowDamage( void );
 
-	CBaseEntity *m_pGoalEnt;
 	Vector m_vel1;
 	Vector m_vel2;
 	Vector m_pos1;

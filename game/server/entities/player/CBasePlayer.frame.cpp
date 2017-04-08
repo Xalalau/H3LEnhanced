@@ -39,8 +39,6 @@ extern DLL_GLOBAL bool			g_fGameOver;
 extern DLL_GLOBAL unsigned int	g_ulModelIndexPlayer;
 extern DLL_GLOBAL bool			gEvilImpulse101;
 
-extern float g_flWeaponCheat;
-
 bool g_bPrecacheGrunt = false;
 
 /*
@@ -885,7 +883,7 @@ void CBasePlayer::ImpulseCommands()
 		if( tr.flFraction != 1.0 )
 		{// line hit something, so paint a decal
 			m_flNextDecalTime = gpGlobals->time + decalfrequency.value;
-			CSprayCan *pCan = GetClassPtr( ( CSprayCan * ) NULL );
+			auto pCan = static_cast<CSprayCan*>( UTIL_CreateNamedEntity( "spray_can" ) );
 			pCan->Spawn( this );
 		}
 
@@ -904,7 +902,7 @@ void CBasePlayer::ImpulseCommands()
 //=========================================================
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
-	if( g_flWeaponCheat == 0.0 )
+	if( !UTIL_CheatsAllowed() )
 	{
 		return;
 	}
@@ -1076,7 +1074,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 		if( tr.flFraction != 1.0 )
 		{// line hit something, so paint a decal
-			CBloodSplat *pBlood = GetClassPtr( ( CBloodSplat * ) NULL );
+			auto pBlood = static_cast<CBloodSplat*>( UTIL_CreateNamedEntity( "blood_splat" ) );
 			pBlood->Spawn( this );
 		}
 		break;

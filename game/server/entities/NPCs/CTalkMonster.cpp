@@ -1352,7 +1352,7 @@ void CTalkMonster :: TrySmellTalk( void )
 
 
 
-int CTalkMonster::IRelationship( CBaseEntity *pTarget )
+Relationship CTalkMonster::IRelationship( CBaseEntity *pTarget )
 {
 	if ( pTarget->IsPlayer() )
 		if ( m_afMemory & bits_MEMORY_PROVOKED )

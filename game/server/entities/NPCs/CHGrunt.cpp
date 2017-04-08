@@ -90,7 +90,7 @@ void CHGrunt :: SpeakSentence( void )
 // IRelationship - overridden because Alien Grunts are 
 // Human Grunt's nemesis.
 //=========================================================
-int CHGrunt::IRelationship ( CBaseEntity *pTarget )
+Relationship CHGrunt::IRelationship ( CBaseEntity *pTarget )
 {
 	if ( pTarget->ClassnameIs( "monster_alien_grunt" ) || ( pTarget->ClassnameIs( "monster_gargantua" ) ) )
 	{
@@ -252,8 +252,8 @@ bool CHGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 	}
 
 	if ( flDist <= 64 && flDot >= 0.7	&& 
-		 pEnemy->Classify() != CLASS_ALIEN_BIOWEAPON &&
-		 pEnemy->Classify() != CLASS_PLAYER_BIOWEAPON )
+		 pEnemy->Classify() != EntityClassifications().GetClassificationId( classify::ALIEN_BIOWEAPON ) &&
+		 pEnemy->Classify() != EntityClassifications().GetClassificationId( classify::PLAYER_BIOWEAPON ) )
 	{
 		return true;
 	}
@@ -567,9 +567,9 @@ void CHGrunt :: CheckAmmo ( void )
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CHGrunt :: Classify ( void )
+EntityClassification_t CHGrunt::GetClassification()
 {
-	return	CLASS_HUMAN_MILITARY;
+	return EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY );
 }
 
 //=========================================================
@@ -1895,9 +1895,9 @@ Schedule_t *CHGrunt :: GetSchedule( void )
 								// player
 								g_Sentences.PlayRndSz( this, "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 							else if ((m_hEnemy != NULL) &&
-									(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) && 
-									(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) && 
-									(m_hEnemy->Classify() != CLASS_MACHINE))
+									(m_hEnemy->Classify() != EntityClassifications().GetClassificationId( classify::PLAYER_ALLY ) ) && 
+									(m_hEnemy->Classify() != EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE ) ) && 
+									(m_hEnemy->Classify() != EntityClassifications().GetClassificationId( classify::MACHINE ) ))
 								// monster
 								g_Sentences.PlayRndSz( this, "HG_MONST", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 
@@ -2037,7 +2037,11 @@ Schedule_t *CHGrunt :: GetSchedule( void )
 			{
 				return GetScheduleOfType ( SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE );
 			}
+
+			break;
 		}
+
+	default: break;
 	}
 	
 	// no special cases here, call the base class

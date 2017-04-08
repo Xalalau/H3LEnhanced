@@ -155,6 +155,11 @@ bool CBaseEntity::Save( CSave& save )
 			pDataMap = pDataMap->pParent;
 		}
 
+		if( bResult )
+		{
+			save.WriteString( "classificationOverride", EntityClassifications().GetClassificationName( GetClassificationOverride() ).c_str() );
+		}
+
 		return bResult;
 	}
 
@@ -179,6 +184,11 @@ bool CBaseEntity::Restore( CRestore &restore )
 
 			pDataMap = pDataMap->pParent;
 		}
+	}
+
+	if( bResult )
+	{
+		SetClassificationOverride( EntityClassifications().GetClassificationId( restore.ReadNamedString( "classificationOverride" ) ) );
 	}
 
 	if( pev->modelindex != 0 && !FStringNull( pev->model ) )

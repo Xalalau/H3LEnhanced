@@ -12,6 +12,9 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#ifndef GAME_SHARED_UTIL_H
+#define GAME_SHARED_UTIL_H
+
 #include "archtypes.h"     // DAL
 
 //
@@ -101,13 +104,6 @@ inline bool FNullEnt(entvars_t* pev)		{ return pev == NULL || FNullEnt(OFFSET(pe
 bool FNullEnt( const CBaseEntity* pEntity );
 
 // Misc useful
-inline bool FClassnameIs(edict_t* pent, const char* szClassname)
-	{ return FStrEq(STRING(VARS(pent)->classname), szClassname); }
-inline bool FClassnameIs(const entvars_t* pev, const char* szClassname)
-	{ return FStrEq(STRING(pev->classname), szClassname); }
-
-bool FClassnameIs( const CBaseEntity* pEntity, const char* pszClassname );
-
 CBaseEntity* UTIL_FindClientInPVS( const CBaseEntity* const pPVSEntity );
 
 struct TYPEDESCRIPTION;
@@ -393,3 +389,5 @@ void Cvar_DirectSet( cvar_t* pCvar, const float flValue );
 *	Determine the current # of active players on the server for map cycling logic
 */
 int UTIL_CountPlayers();
+
+#endif //GAME_SHARED_UTIL_H

@@ -11,6 +11,7 @@
 #include "gamerules/GameRules.h"
 #include "Server.h"
 #include "CMap.h"
+#include "config/CServerConfig.h"
 
 #include "nodes/Nodes.h"
 #include "nodes/CTestHull.h"
@@ -26,7 +27,6 @@
 #include "CServerGameInterface.h"
 
 extern DLL_GLOBAL bool			g_fGameOver;
-extern DLL_GLOBAL float			g_flWeaponCheat;
 extern DLL_GLOBAL int			g_teamplay;
 extern DLL_GLOBAL bool			g_bPrecacheGrunt;
 extern DLL_GLOBAL unsigned int	g_ulFrameCount;
@@ -41,6 +41,8 @@ bool CServerGameInterface::Initialize()
 {
 	if( !InitializeCommon() )
 		return false;
+
+	EntityClassifications().Initialize();
 
 #if USE_ANGELSCRIPT
 	if( !g_ASManager.Initialize() )
@@ -70,9 +72,7 @@ void CServerGameInterface::EntityCreated( entvars_t* pev )
 	{
 		m_bMapStartedLoading = false;
 
-		//A new map has started, initialize everything. - Solokiller
-		//This will be worldspawn for new maps and multiplayer maps, the first restored entity when transitioning or loading maps.
-		CMap::CreateIfNeeded();
+		WorldInit();
 	}
 }
 
@@ -103,7 +103,7 @@ void CServerGameInterface::ClientDisconnect( edict_t* pEdict )
 	if( pPlayer->HasNetName() )
 		// ############ hu3lifezado ############ //
 		// Nova mensagem ao sair do jogo
-		_snprintf( text, sizeof( text ), "[ %s fugiu do jogo porque eh uma puta ]\n", pPlayer->GetNetName() );
+		V_sprintf_safe(text, "[ %s fugiu do jogo porque eh uma puta ]\n", pPlayer->GetNetName());
 		// ############ //
 	text[ sizeof( text ) - 1 ] = 0;
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
@@ -180,7 +180,7 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	}
 	else if( FStrEq( pcmd, "give" ) )
 	{
-		if( g_flWeaponCheat != 0.0 )
+		if( UTIL_CheatsAllowed() )
 		{
 			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
 			pPlayer->GiveNamedItem( STRING( iszItem ) );
@@ -194,7 +194,7 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	}
 	else if( FStrEq( pcmd, "fov" ) )
 	{
-		if( g_flWeaponCheat && CMD_ARGC() > 1 )
+		if( UTIL_CheatsAllowed() && CMD_ARGC() > 1 )
 		{
 			pPlayer->m_iFOV = atoi( CMD_ARGV( 1 ) );
 		}
@@ -261,7 +261,7 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	}
 	else if( FStrEq( pcmd, "ent_setname" ) )
 	{
-		if( g_flWeaponCheat != 0 )
+		if( UTIL_CheatsAllowed() )
 		{
 			if( CMD_ARGC() >= 1 )
 			{
@@ -284,7 +284,7 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	}
 	else if( FStrEq( pcmd, "ent_trigger" ) )
 	{
-		if( g_flWeaponCheat != 0 )
+		if( UTIL_CheatsAllowed() )
 		{
 			if( CMD_ARGC() >= 1 )
 			{
@@ -299,7 +299,7 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	}
 	else if( FStrEq( pcmd, "listentityclass" ) )
 	{
-		if( g_flWeaponCheat != 0 )
+		if( UTIL_CheatsAllowed() )
 		{
 			if( CMD_ARGC() >= 1 )
 			{
@@ -320,7 +320,7 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	}
 	else if( FStrEq( pcmd, "listentityclasses" ) )
 	{
-		if( g_flWeaponCheat != 0 )
+		if( UTIL_CheatsAllowed() )
 		{
 			GetEntityDict().EnumEntityClasses(
 				[]( CBaseEntityRegistry& reg ) -> bool
@@ -513,6 +513,28 @@ void CServerGameInterface::ClientUserInfoChanged( edict_t* pEntity, char* infobu
 	g_pGameRules->ClientUserInfoChanged( pPlayer, infobuffer );
 }
 
+void CServerGameInterface::WorldInit()
+{
+	//Reload the server cfg file so the latest version can be used. - Solokiller
+	m_ServerConfig = std::make_unique<CServerConfig>();
+
+	//TODO: consider: a list of config files to process in order. Much cleaner than manually managing 2 or more instances. - Solokiller
+	if( !m_ServerConfig->Parse( server_cfg.string, "GAMECONFIG", false ) )
+		m_ServerConfig.reset();
+
+	//A new map has started, initialize everything. - Solokiller
+	//This will be worldspawn for new maps and multiplayer maps, the first restored entity when transitioning or loading maps.
+	CMap::CreateIfNeeded();
+
+	if( m_ServerConfig )
+	{
+		//Apply server classification settings first.
+		m_ServerConfig->ProcessEntityClassifications();
+	}
+
+	CMap::GetInstance()->WorldInit();
+}
+
 void CServerGameInterface::Activate( edict_t* pEdictList, const int edictCount, const int clientMax )
 {
 	CBaseEntity* pClass;
@@ -542,6 +564,14 @@ void CServerGameInterface::Activate( edict_t* pEdictList, const int edictCount, 
 		}
 	}
 
+	if( m_ServerConfig )
+	{
+		//Process server cvars first, then map cvars. - Solokiller
+		//TODO: the server should be able to enforce cvars if it wants to, adding a condition to cvars to allow execution after the map should be good enough. - Solokiller
+		m_ServerConfig->ProcessCVars();
+	}
+	CMap::GetInstance()->WorldActivated();
+
 #if USE_ANGELSCRIPT
 	g_ASManager.WorldActivated();
 #endif
@@ -550,7 +580,7 @@ void CServerGameInterface::Activate( edict_t* pEdictList, const int edictCount, 
 	if( !WorldGraph.m_fGraphPresent )
 	{
 		//spawn the test hull entity that builds and walks the node tree
-		CTestHull* pTestHull = GetClassPtr<CTestHull>( nullptr );
+		auto pTestHull = static_cast<CTestHull*>( UTIL_CreateNamedEntity( "testhull" ) );
 
 		pTestHull->Spawn();
 

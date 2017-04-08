@@ -332,7 +332,7 @@ void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )
 		}
 
 		pTable->location = pSaveData->size;		// Remember entity position for file I/O
-		pTable->classname = pEntity->pev->classname;	// Remember entity class for respawn
+		pTable->classname = MAKE_STRING( pEntity->GetClassname() );	// Remember entity class for respawn
 
 		CSave saveHelper( pSaveData );
 		pEntity->Save( saveHelper );

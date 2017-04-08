@@ -37,26 +37,29 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade );
 
-int CSqueakGrenade::Classify( void )
+EntityClassification_t CSqueakGrenade::GetClassification()
 {
-	if( m_iMyClass != 0 )
+	if( m_iMyClass != EntityClassifications().GetNoneId() )
 		return m_iMyClass; // protect against recursion
 
-	if( m_hEnemy != NULL )
+	if( CBaseEntity* pEnemy = m_hEnemy )
 	{
-		m_iMyClass = CLASS_INSECT; // no one cares about it
-		switch( m_hEnemy->Classify() )
+		m_iMyClass = EntityClassifications().GetClassificationId( classify::INSECT ); // no one cares about it
+
+		const auto classId = pEnemy->Classify();
+
+		if( classId == EntityClassifications().GetClassificationId( classify::PLAYER ) ||
+			classId == EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE ) ||
+			classId == EntityClassifications().GetClassificationId( classify::HUMAN_MILITARY ) )
 		{
-		case CLASS_PLAYER:
-		case CLASS_HUMAN_PASSIVE:
-		case CLASS_HUMAN_MILITARY:
-			m_iMyClass = 0;
-			return CLASS_ALIEN_MILITARY; // barney's get mad, grunts get mad at it
+			m_iMyClass = EntityClassifications().GetNoneId();
+			return EntityClassifications().GetClassificationId( classify::ALIEN_MILITARY ); // barney's get mad, grunts get mad at it
 		}
-		m_iMyClass = 0;
+
+		m_iMyClass = EntityClassifications().GetNoneId();
 	}
 
-	return CLASS_ALIEN_BIOWEAPON;
+	return EntityClassifications().GetClassificationId( classify::ALIEN_BIOWEAPON );
 }
 
 void CSqueakGrenade::Spawn( void )
@@ -129,9 +132,9 @@ void CSqueakGrenade::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 	UTIL_BloodDrips( GetAbsOrigin(), g_vecZero, BloodColor(), 80 );
 
 	if( m_hOwner != NULL )
-		RadiusDamage( this, m_hOwner, pev->dmg, CLASS_NONE, DMG_BLAST );
+		RadiusDamage( this, m_hOwner, pev->dmg, EntityClassifications().GetNoneId(), DMG_BLAST );
 	else
-		RadiusDamage( this, this, pev->dmg, CLASS_NONE, DMG_BLAST );
+		RadiusDamage( this, this, pev->dmg, EntityClassifications().GetNoneId(), DMG_BLAST );
 
 	// reset owner so death message happens
 	if( m_hOwner != NULL )

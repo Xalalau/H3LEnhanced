@@ -33,14 +33,12 @@ LINK_ENTITY_TO_CLASS( rope_sample, CRopeSample );
 
 void CRopeSample::Spawn()
 {
-	pev->classname = MAKE_STRING( "rope_sample" );
-
 	GetEffects() |= EF_NODRAW;
 }
 
 CRopeSample* CRopeSample::CreateSample()
 {
-	CRopeSample* pSample = GetClassPtr<CRopeSample>( nullptr );
+	auto pSample = static_cast<CRopeSample*>( UTIL_CreateNamedEntity( "rope_sample" ) );
 
 	pSample->Spawn();
 

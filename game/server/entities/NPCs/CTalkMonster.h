@@ -111,7 +111,7 @@ public:
 	void			OnTakeDamage( const CTakeDamageInfo& info ) override;
 	void			Touch(	CBaseEntity *pOther ) override;
 	void			Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
-	int				IRelationship ( CBaseEntity *pTarget ) override;
+	Relationship	IRelationship ( CBaseEntity *pTarget ) override;
 	virtual bool	CanPlaySentence( const bool fDisregardState ) const override;
 	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) override;
 	void			PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, const bool bConcurrent, CBaseEntity *pListener ) override;

@@ -99,6 +99,9 @@ void CBasePlayer::UpdateClientData()
 			MESSAGE_END();
 
 			g_pGameRules->InitHUD( this );
+
+			UMSG_SendGameState( *this );
+
 			m_fGameHUDInitialized = true;
 
 			m_iObserverLastMode = OBS_ROAMING;

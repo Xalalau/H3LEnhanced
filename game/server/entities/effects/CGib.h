@@ -24,6 +24,8 @@ public:
 	DECLARE_CLASS( CGib, CBaseEntity );
 	DECLARE_DATADESC();
 
+	static CGib* GibCreate( const char* szGibModel );
+
 	void Spawn( const char *szGibModel );
 	void BounceGibTouch( CBaseEntity *pOther );
 	void StickyGibTouch( CBaseEntity *pOther );

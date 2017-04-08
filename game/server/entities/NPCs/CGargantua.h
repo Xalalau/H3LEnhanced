@@ -49,7 +49,7 @@ public:
 	void UpdateOnRemove() override;
 
 	void SetYawSpeed( void ) override;
-	int  Classify( void ) override;
+	EntityClassification_t GetClassification() override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
@@ -83,7 +83,7 @@ public:
 	void FlameDestroy( void );
 	inline bool FlameIsOn() const { return m_pFlame[ 0 ] != nullptr; }
 
-	void FlameDamage( Vector vecStart, Vector vecEnd, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
+	void FlameDamage( Vector vecStart, Vector vecEnd, CBaseEntity* pInflictor, CBaseEntity* pAttacker, float flDamage, EntityClassification_t iClassIgnore, int bitsDamageType );
 
 	DECLARE_SCHEDULES() override;
 

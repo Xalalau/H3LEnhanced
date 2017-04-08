@@ -41,7 +41,8 @@ void CCycler :: GenericCyclerSpawn(char *szModel, Vector vecMin, Vector vecMax)
 		return;
 	}
 
-	pev->classname		= MAKE_STRING("cycler");
+	//TODO: needed? Only the "cycler" entity ever calls this method anyway. - Solokiller
+	SetClassname( "cycler" );
 	PRECACHE_MODEL( szModel );
 	SetModel(	szModel);
 

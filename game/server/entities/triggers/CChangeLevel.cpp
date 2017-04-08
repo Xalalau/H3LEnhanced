@@ -142,7 +142,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// Create an entity to fire the changetarget
 	if( m_changeTarget )
 	{
-		CFireAndDie *pFireAndDie = GetClassPtr( ( CFireAndDie * ) NULL );
+		auto pFireAndDie = static_cast<CFireAndDie*>( UTIL_CreateNamedEntity( "fireanddie" ) );
 		if( pFireAndDie )
 		{
 			// Set target and delay

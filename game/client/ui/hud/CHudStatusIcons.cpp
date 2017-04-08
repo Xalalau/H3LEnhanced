@@ -25,28 +25,28 @@
 #include "parsemsg.h"
 #include "event_api.h"
 
-DECLARE_MESSAGE( m_StatusIcons, StatusIcon );
+#include "CHudStatusIcons.h"
 
-bool CHudStatusIcons::Init()
+CHudStatusIcons::CHudStatusIcons( const char* const pszName, CHLHud& hud )
+	: BaseClass( pszName, hud )
+{
+}
+
+void CHudStatusIcons::Init()
 {
 	HOOK_MESSAGE( StatusIcon );
 
-	gHUD.AddHudElem( this );
-
 	Reset();
-
-	return true;
 }
 
-bool CHudStatusIcons::VidInit()
+void CHudStatusIcons::VidInit()
 {
-	return true;
 }
 
 void CHudStatusIcons::Reset()
 {
 	memset( m_IconList, 0, sizeof m_IconList );
-	m_iFlags &= ~HUD_ACTIVE;
+	GetFlags() &= ~HUD_ACTIVE;
 }
 
 // Draw status icons along the left-hand side of the screen
@@ -80,7 +80,7 @@ bool CHudStatusIcons::Draw( float flTime )
 //		byte   : red
 //		byte   : green
 //		byte   : blue
-int CHudStatusIcons::MsgFunc_StatusIcon( const char *pszName, int iSize, void *pbuf )
+void CHudStatusIcons::MsgFunc_StatusIcon( const char *pszName, int iSize, void *pbuf )
 {
 	CBufferReader reader( pbuf, iSize );
 
@@ -92,14 +92,12 @@ int CHudStatusIcons::MsgFunc_StatusIcon( const char *pszName, int iSize, void *p
 		int g = reader.ReadByte();
 		int b = reader.ReadByte();
 		EnableIcon( pszIconName, r, g, b );
-		m_iFlags |= HUD_ACTIVE;
+		GetFlags() |= HUD_ACTIVE;
 	}
 	else
 	{
 		DisableIcon( pszIconName );
 	}
-
-	return 1;
 }
 
 // add the icon to the icon list, and set it's drawing color
@@ -131,9 +129,9 @@ void CHudStatusIcons::EnableIcon( const char* const pszIconName, unsigned char r
 
 	// Load the sprite and add it to the list
 	// the sprite must be listed in hud.txt
-	int spr_index = gHUD.GetSpriteIndex( pszIconName );
-	m_IconList[i].spr = gHUD.GetSprite( spr_index );
-	m_IconList[i].rc = gHUD.GetSpriteRect( spr_index );
+	int spr_index = GetHud().GetSpriteIndex( pszIconName );
+	m_IconList[i].spr = GetHud().GetSprite( spr_index );
+	m_IconList[i].rc = GetHud().GetSpriteRect( spr_index );
 	m_IconList[i].r = red;
 	m_IconList[i].g = green;
 	m_IconList[i].b = blue;

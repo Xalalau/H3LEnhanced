@@ -16,6 +16,13 @@
 #include "mathlib.h"
 #include "Exports.h"
 
+// ############ hu3lifezado ############ //
+// No CHudAmmo nos mexemos no crosshair
+#include "CHudAmmo.h"
+// No CHudTextMessage esta a nossa funcao de print geral facilitada
+#include "CHudTextMessage.h"
+// ############ //
+
 #include "CClientGameInterface.h"
 
 #include "SDL2/SDL_mouse.h"
@@ -68,7 +75,6 @@ cvar_t	*c_mindistance;
 
 // pitch, yaw, dist
 Vector cam_ofs;
-
 
 // In third person
 int cam_thirdperson;
@@ -168,6 +174,11 @@ extern trace_t SV_ClipMoveToEntity (edict_t *ent, const Vector& start, const Vec
 // Funcao para trocar os modos de camera 1 a 1
 void CAM_ToggleHu3(void)
 {
+	// ############ hu3lifezado ############ //
+	// Pego o CHudAmmo em uso
+	auto pAmmoMenu = GETHUDCLASS(CHudAmmo);
+	// ############ //
+
 	gEngfuncs.Cvar_SetValue("cam_hu3", cam_hu3->value + 1);
 
 	// Primeira pessoa = 0 / 3 modos de camera na terceira pessoa = 1, 2 e 3
@@ -178,13 +189,20 @@ void CAM_ToggleHu3(void)
 // Funcao para escolher e aplicar um dos modos de camera entre 0 e 3
 void CAM_SetHu3()
 {
+	// ############ hu3lifezado ############ //
+	// Pego o CHudAmmo em uso
+	auto pAmmoMenu = GETHUDCLASS(CHudAmmo);
+	// Pego o CHudTextMessage em uso
+	auto pMessages = GETHUDCLASS(CHudTextMessage);
+	// ############ //
+
 	// Primeira pessoa = 0
 	if (cam_hu3->value > 3 || cam_hu3->value <= 0)
 	{
-		gHUD.m_Ammo.hu3ReativarCrosshair();
+		pAmmoMenu->hu3ReativarCrosshair();
 		gEngfuncs.Cvar_SetValue("cam_command", 2);
-		if (! (gHUD.m_Health.m_iHealth <= 0))
-			hu3_mensagem("Primeira pessoa", HUD_PRINTCENTER);
+		if (!pAmmoMenu->isPlayerDead())
+			pMessages->hu3_mensagem("Primeira pessoa", HUD_PRINTCENTER);
 		if (cam_hu3->value != 0)
 		{
 			gEngfuncs.Cvar_SetValue("cam_hu3", 0);
@@ -197,17 +215,22 @@ void CAM_SetHu3()
 		gEngfuncs.Cvar_SetValue("cam_command", 1);
 
 		if (cam_hu3->value == 1)
-			hu3_mensagem("Terceira pessoa", HUD_PRINTCENTER);
+			pMessages->hu3_mensagem("Terceira pessoa", HUD_PRINTCENTER);
 		else if (cam_hu3->value == 2)
-			hu3_mensagem("Terceira pessoa com camera solta", HUD_PRINTCENTER);
+			pMessages->hu3_mensagem("Terceira pessoa com camera solta", HUD_PRINTCENTER);
 		else if (cam_hu3->value == 3)
-			hu3_mensagem("Terceira pessoa com jogador solto", HUD_PRINTCENTER);
+			pMessages->hu3_mensagem("Terceira pessoa com jogador solto", HUD_PRINTCENTER);
 	}
 }
 // ############ //
 
 void DLLEXPORT CAM_Think( void )
 {
+	// ############ hu3lifezado ############ //
+	// Pego o CHudAmmo em uso
+	auto pAmmoMenu = GETHUDCLASS(CHudAmmo);
+	// ############ //
+
 	g_Client.CAM_Think();
 
 	Vector origin;
@@ -248,16 +271,13 @@ void DLLEXPORT CAM_Think( void )
 	}
 	// ############ //
 
-	if( !cam_thirdperson )
-		return;
-
 	// ############ hu3lifezado ############ //
 	// O player morre apenas em primeira pessoa
-	if (gHUD.m_Health.m_iHealth <= 0)
+	if (pAmmoMenu->isPlayerDead())
 	{
 		if (cam_thirdperson)
 		{
-			gHUD.m_Ammo.hu3ReativarCrosshair();
+			pAmmoMenu->hu3ReativarCrosshair();
 			gEngfuncs.Cvar_SetValue("cam_command", 2);
 			if (cam_hu3->value != 0)
 			{
@@ -349,7 +369,7 @@ void DLLEXPORT CAM_Think( void )
 		//set old mouse coordinates to current mouse coordinates
 		//since we are done with the mouse
 
-		if ( ( flSensitivity = gHUD.GetSensitivity() ) != 0 )
+		if ( ( flSensitivity = Hud().GetSensitivity() ) != 0 )
 		{
 			cam_old_mouse_x=cam_mouse.x*flSensitivity;
 			cam_old_mouse_y=cam_mouse.y*flSensitivity;
@@ -415,8 +435,8 @@ void DLLEXPORT CAM_Think( void )
 		}
 		//set old mouse coordinates to current mouse coordinates
 		//since we are done with the mouse
-		cam_old_mouse_x=cam_mouse.x*gHUD.GetSensitivity();
-		cam_old_mouse_y=cam_mouse.y*gHUD.GetSensitivity();
+		cam_old_mouse_x=cam_mouse.x*Hud().GetSensitivity();
+		cam_old_mouse_y=cam_mouse.y*Hud().GetSensitivity();
 		SDL_SetCursorPos (gEngfuncs.GetWindowCenterX(), gEngfuncs.GetWindowCenterY());
 	}
 #ifdef LATER
@@ -650,7 +670,7 @@ void CAM_StartMouseMove(void)
 			iMouseInUse=1;
 			SDL_GetCursorPos (&cam_mouse);
 
-			if ( ( flSensitivity = gHUD.GetSensitivity() ) != 0 )
+			if ( ( flSensitivity = Hud().GetSensitivity() ) != 0 )
 			{
 				cam_old_mouse_x=cam_mouse.x*flSensitivity;
 				cam_old_mouse_y=cam_mouse.y*flSensitivity;
@@ -696,8 +716,8 @@ void CAM_StartDistance(void)
 		  cam_mousemove=1;
 		  iMouseInUse=1;
 		  SDL_GetCursorPos (&cam_mouse);
-		  cam_old_mouse_x=cam_mouse.x*gHUD.GetSensitivity();
-		  cam_old_mouse_y=cam_mouse.y*gHUD.GetSensitivity();
+		  cam_old_mouse_x=cam_mouse.x*Hud().GetSensitivity();
+		  cam_old_mouse_y=cam_mouse.y*Hud().GetSensitivity();
 	  }
 	}
 	//we are not in 3rd person view..therefore do not allow camera movement
