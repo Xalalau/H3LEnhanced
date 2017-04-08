@@ -84,10 +84,9 @@ void CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbu
 // Nova funcao para facilitar a escrita de mensagens
 void CHudTextMessage::hu3_mensagem(char string[], int opcao)
 {
-	char string_aux[128];
+	char string_aux[MSG_BUF_SIZE];
 
-	safe_strcpy(string_aux, string, strlen(string) + 1);
-	sprintf(string_aux, "%c%s", opcao, string_aux);
+	sprintf(string_aux, "%c%s", opcao, string);
 
 	const char *pszName = NULL;
 	int iSize = strlen(string_aux) + 1;
