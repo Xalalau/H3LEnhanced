@@ -212,9 +212,16 @@ int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf
 // Nova funcao para facilitar a escrita de mensagens
 void hu3_mensagem( char string[], int opcao)
 {
-	char string_aux[128];
-	safe_strcpy(string_aux, string, strlen(string)+1);
-	sprintf(string_aux, "%c%s", opcao, CHudTextMessage::BufferedLocaliseTextString(string_aux));
-	gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string_aux)+1, string_aux);
+	char string_aux[MSG_BUF_SIZE];
+
+	sprintf(string_aux, "%c%s", opcao, string);
+
+	const char *pszName = NULL;
+	int iSize = strlen(string_aux) + 1;
+	void *pbuf = string_aux;
+
+	gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, iSize, pbuf);
+
+	return;
 }
 // ############ //
