@@ -927,7 +927,11 @@ int CHudAmmo::DrawWList(float flTime)
 
 	// ############ hu3lifezado ############ //
 	// Variaveis para fazer calculos
-	int sprite_da_arma = pPlayer->GetFirstPos(iActiveSlot)->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.right - pPlayer->GetFirstPos(iActiveSlot)->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.left;
+	int sprite_da_arma;
+	if (m_pActiveSel == (CBasePlayerWeapon *)1)
+		sprite_da_arma = 0;
+	else
+		sprite_da_arma = m_pActiveSel->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.right - m_pActiveSel->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.left;
 	int quadrado_das_armas = m_iBucketWidth;
 	int numero_de_quadrados = 7;
 	
