@@ -8,6 +8,8 @@ add_sources(
 	CHalfLifeRules.cpp
 	CHalfLifeTeamplay.h
 	CHalfLifeTeamplay.cpp
+   	CHu3LifeCoop.h
+   	CHu3LifeCoop.cpp
 	GameRules.h
 	GameRules.cpp
 )

@@ -22,6 +22,11 @@
 
 #include "entities/weapons/CAmmoTypes.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/CHu3LifeCoop.h"
+// ############ //
+
 struct WeaponHUDSprite;
 
 #if USE_OPFOR
@@ -151,6 +156,11 @@ public:
 	// ############ hu3lifezado ############ //
 	// Variavel para controlar o icone de recarga na terceira pessoa
 	bool cam_hu3_reload_icon;
+	// [MODO COOP]:
+	// Carregamento do jogador
+	void LoadPlayerHu3CoOp();
+	// Controla o nome dos jogadores
+	int PlayerHu3CoOpName();
 	// ############
 
 	// Spectator camera
@@ -357,6 +367,17 @@ public:
 
 	void RenewItems();
 	void PackDeadPlayerItems();
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Salva as armas e municao antes de mudancas de mapa
+	void CoOpSavePlayerItems(playerCoopSaveRestore* CoopPlyData);
+	// Auxiliar
+	void CoOpSaveItemsAux(playerCoopSaveRestore* CoopPlyData, CBasePlayerWeapon *pWeapon, int j);
+	// Carrega as armas e municao depois de mudancas de mapa
+	void CoOpLoadPlayerItems(playerCoopSaveRestore* CoopPlyData, CBasePlayer *pOther);
+	// ############ //
+
 	void RemoveAllItems( const bool removeSuit );
 	bool SwitchWeapon( CBasePlayerWeapon *pWeapon );
 
@@ -423,7 +444,11 @@ public:
 	void SelectItem( const char *pstr );
 	void ItemPreFrame();
 	void ItemPostFrame();
-	void GiveNamedItem( const char *szName );
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Retorno a entidade para poder lidar com ela
+	CBaseEntity* GiveNamedItem( const char *szName );
+	// ############ //
 
 	int GiveAmmo( int iAmount, const char *szName );
 	void SendAmmoUpdate();

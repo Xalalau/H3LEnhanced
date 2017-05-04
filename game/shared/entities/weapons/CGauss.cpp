@@ -827,7 +827,7 @@ LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo );
 
 
 // ##############################
-// HU3-LIFE Ataque Secudбrio
+// HU3-LIFE Ataque Secudario
 // ##############################
 // Roubei e ajustei o ataque do houndeye
 
