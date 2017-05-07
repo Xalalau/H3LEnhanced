@@ -363,11 +363,11 @@ void CScientist::DeclineFollowing( void )
 
 void CScientist :: Scream( void )
 {
-	if ( FOkToSpeak() )
+	if (FOkToSpeak())
 	{
-		Talk( 10 );
+		Talk(10);
 		m_hTalkTarget = m_hEnemy;
-		PlaySentence( "SC_SCREAM", RANDOM_FLOAT(3, 6), VOL_NORM, ATTN_NORM );
+		PlaySentence("SC_SCREAM", RANDOM_FLOAT(3, 6), VOL_NORM, ATTN_NORM);
 	}
 }
 
