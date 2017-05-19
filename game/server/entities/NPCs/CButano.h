@@ -1,32 +1,37 @@
-/***
-*
-*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*
-*	This product contains software technology licensed from Id
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
-*	All Rights Reserved.
-*
-*   This source code contains proprietary and confidential information of
-*   Valve LLC and its suppliers.  Access to this code is restricted to
-*   persons who have executed a written SDK license with Valve.  Any access,
-*   use or distribution of this code by or to any unlicensed person is illegal.
-*
-****/
 #ifndef GAME_SERVER_ENTITIES_NPCS_CBUTANO_H
 #define GAME_SERVER_ENTITIES_NPCS_CBUTANO_H
 
-//=========================================================
-// Monster's Anim Events Go Here
-//=========================================================
+// Definimos o tempo de vazamento do gas
+// Para explodir depois de um tmepo
+#define VAZAMENTO_BUTANO 15.0
 
 class CButano : public CZombie
 {
 public:
-	DECLARE_CLASS( CButano, CZombie);
+	DECLARE_CLASS(CButano, CZombie);
 
-	void Spawn( void ) override;
+	void Spawn(void) override;
+	void Precache() override;
 
-	void SetNewSpawn( void );
+	void SetNewSpawn(void);
+
+	void HandleAnimEvent(AnimEvent_t& event) override;
+	void Killed(const CTakeDamageInfo& info, GibAction gibAction) override;
+
+	void AtaqueCabuloso(void);
+	void ExplodeButano(int dano, int magn);
+
+	void PainSound(void) override;
+	void AlertSound(void) override;
+	void IdleSound(void) override;
+	void AttackSound(void);
+
+	static const char *pAttackSounds[];
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CBUTANO_H
