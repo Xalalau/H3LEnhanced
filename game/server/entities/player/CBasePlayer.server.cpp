@@ -307,50 +307,44 @@ void CBasePlayer::LoadPlayerHu3CoOp()
 // Se o nome do jogador for "Player" ou estiver igual ao de outra pessoa, nos o trocamos
 int CBasePlayer::PlayerHu3CoOpName()
 {
-	const char *currentName;
+	char *name;
 	bool needsToGenerateNewName = false;
 	const int TOTALNAMES = 120;
 	int i = 1, j = 1;
 
 	// Pego o nome atual
-	currentName = STRING(pev->netname);
+	name = (char*) STRING(pev->netname);
 
 	// Inicio um loop ate que o nome esteja correto
 	while (true)
 	{
-		// Verifico se o nome do jogador eh "Player". Ele nao pode ser utilizado
-		if (strcmp(currentName, "Player") == 0)
+		// Inicio um loop para encontrar o index do jogador na tabela coop e processar os nomes
+		while (CoopPlyData[i].pName)
 		{
-			needsToGenerateNewName = true;
-		}
-		else
-		{
-			while (CoopPlyData[i].pName)
+			// Identifico um jogador com o nome igual ao "name"
+			if (strcmp(name, CoopPlyData[i].pName) == 0)
 			{
-				// Identifico o indice do jogador
-				if (strcmp(currentName, CoopPlyData[i].pName) == 0)
-				{
-					j = i;
+				// Indice guardado em j
+				j = i;
 
-					// Se nao houver um nome proposto para alteracao eu posso parar o loop aqui
-					if (strcmp(hu3NetName, "") == 0)
-						break;
-				}
-
-				// Caso haja um nome proposto para alteracao, verifico se outro jogador ja esta o utilizando
-				if (strcmp(hu3NetName, CoopPlyData[i].pName) == 0)
+				// 1) Verifico se o jogador se chama "Player". Esse nome nao pode ser utilizado...
+				// 2) Se o nome em "name" estiver proposto para troca no hu3NetName significa que o player em questao
+				// nao eh o player com que estamos lidando, ou seja, o nome ja esta usado. Precisamos gerar um novo.
+				if (strcmp(name, "Player") == 0 || strcmp(hu3NetName, "") == 0)
 				{
 					needsToGenerateNewName = true;
 					break;
 				}
-				i++;
+				else
+					break;
 			}
+			i++;
 		}
 
 		// Fim da execucao
 		if (needsToGenerateNewName == false)
 		{
-			// Caso seja necessacio, marco a necessidade do novo nome ser aplicado (por outro arquivo)
+			// Caso seja necessario, marco que existe um novo nome a ser aplicado (pelo CBasePlayer.server.game.cpp)
 			if (strcmp(hu3NetName, "") != 0)
 				hu3ChangeNetName = true;
 
@@ -364,40 +358,40 @@ int CBasePlayer::PlayerHu3CoOpName()
 			"Demente", // 0
 
 			"Jamelao", "Jararaca", "Wallita", "Pereba", "Gandalf",
-			"Bimbo", "Gonorreia", "Gordon", "Cleyton", "Espirro",  // 10
+			"Bimbo", "Gonorreia", "Gordon", "K-roço", "Espirro",  // 10
 
-			"Gambah", "Estupido", "Jirafa", "Gayzing", "Ceboso",
-			"Cajado", "Galudx", "Bebum", "Jiromba", "Comulixo", // 20
+			"GMBR", "Estupido", "Jirafa", "Gayzing", "Ceboso",
+			"Cajado", "Galudo", "Bebum", "Jiromba", "Comulixo", // 20
 
 			"Lalau", "Parabola", "Fuscazul", "Tangente", "Birinbau",
 			"Lampiao", "Lagrange", "Sapatao", "Gugu", "Platao", // 30
 
-			"Gilo", "Caganeira", "Diarreia", "Antena", "Amendoim",
-			"Bolinha", "Estrupicio", "Regina24", "Suvaco", "Bilau", // 40
+			"Amenopausa", "Caganeira", "Diarreia", "Televisao", "Amendoim",
+			"Ovocito", "Polichop", "Gulosa", "Suvaco", "Bilau", // 40
 
-			"Mindigu", "Gatuno", "Molenga", "Bostozo", "Fezaldo",
-			"Seu Estrume", "Resto", "SubFossa", "Niobio", "Coco", // 50
+			"Mindingu", "Gatuno", "Molenginho", "Bostolhozo", "Fezesaldo",
+			"Seu_Estrume", "Resto", "SubFossa", "Niobio", "Coco", // 50
 
-			"Arrombado", "Galudo", "Pistolao", "Papaco", "Teocu",
-			"Teopai", "Tuamae", "Meopao", "Mastur", "Bando", // 60
+			"Arrombado", "Piperodaptiloh", "Pistolao", "Papaco", "Teocu",
+			"Teopai", "Tuamae", "Cagapau", "Bizonho", "Pipistrelo", // 60
 
-			"Cegueta", "Mafagafo", "Noob", "XXXX", "Ratazana",
-			"Lhama", "Skilo", "Acreman", "Sr.Peitos", "Sr.Mijo", // 70
+			"Cegueta", "Cone", "Noob", "XXXX", "Ratazana",
+			"LhamaVerde", "Skilo89", "Acreman", "Sr.Peitos", "Sr.Mijaum", // 70
 
-			"Verruga", "Mercedes", "Farinha", "Gastrite", "Verme",
+			"Verruga", "Mercedes", "Otahrio", "Gastrite", "VermeLunar",
 			"Zigoto", "Somaliano", "Bozo", "Cretino", "Folgado", // 80
 
-			"Trapilho", "Lixozo", "Sem_pau", "Vigario", "1000two",
-			"Gargarejo", "Kitinet", "Ser Veja", "Dollynetx", "Cafetao" // 90
+			"Trapilho", "Cotoco", "Sem_pau", "Vigario", "1000otwo",
+			"Gargarejo", "Kitinet", "Ser.Veja", "Dollynetx", "Cafetao" // 90
 
 			"Entalado", "Baiano", "Bundao", "Hostil", "Maluko",
 			"Leitinho","Kakariko", "Castigador", "CHUTEME", "Bucetaldx", // 100
 
-			"Boludo", "Zarolha", "Maritmo", "Foca88", "Poderaldo",
-			"Inutil", "Virjao", "Aleijadinho", "Cotoco", "Motumbo", // 110
+			"Pirata13", "Zarolha", "Maritmo", "Sr.dos_anais", "Poderaldo",
+			"Inutil", "Virjao", "Aleijadinho", "TripleKill", "Motumbo", // 110
 
 			"Xalalau", "NickMBR", "Jonks", "M4n0Cr4zy", "Pepeu",
-			"R4t0", "DarteVerder", "Zuzu", "Pavomba", "TripaSeca", // 120
+			"R4t0", "DarteVerder", "Zuzu", "Pavomba", "Fabio", // 120
 		};
 
 		// Pego um nome aleatoriamente
@@ -406,7 +400,12 @@ int CBasePlayer::PlayerHu3CoOpName()
 		// Envio o nome a uma variavel global para que ele possa ser alterado no jogo atraves de outro arquivo (CBasePlayer.server.game.cpp)
 		strcpy(hu3NetName, randomName);
 
+		// Novo nome a ser analisado neste loop
+		strcpy(name, randomName);
+
+		// Reseto:
 		needsToGenerateNewName = false;
+		i = 1;
 	}
 
 	return j;
