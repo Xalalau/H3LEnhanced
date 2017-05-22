@@ -23,10 +23,10 @@ public:
 	DECLARE_DATADESC();
 
 	void Spawn(void);
-	void KeyValue(KeyValueData *pkvd);
+	void KeyValue(KeyValueData *pkvd) override;
 	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
-	float m_flCount;
+	int m_iCount;
 };
 
 #endif //GAME_SERVER_CPOINTCOUNTER_H
