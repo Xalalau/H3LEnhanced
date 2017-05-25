@@ -10,8 +10,6 @@
 
 LINK_ENTITY_TO_CLASS(monster_butano, CButano);
 
-float m_flTimeToExplode;
-
 // Sons butano
 const char *CButano::pAttackHitSounds[] =
 {
@@ -54,7 +52,7 @@ void CButano::Spawn()
 {
 	Precache();
 
-	SetModel("models/Butano.mdl");
+	SetModel("models/butano.mdl");
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -62,7 +60,7 @@ void CButano::Spawn()
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->health = gSkillData.GetZombieHealth();
 	pev->view_ofs = VEC_VIEW;
-	m_flFieldOfView = -1.0; // Ve 360 graus
+	m_flFieldOfView = -1.0; // Ver 360 graus
 	m_MonsterState = MONSTERSTATE_HUNT;
 	m_afCapability = bits_CAP_DOORS_GROUP;
 
@@ -71,12 +69,14 @@ void CButano::Spawn()
 
 	SetNewSpawn();
 
+	pev->body = RANDOM_LONG(0, 1); // 2 botijoes por escolher
+
 	MonsterInit();
 }
 
 void CButano::Precache()
 {
-	PRECACHE_MODEL("models/Butano.mdl");
+	PRECACHE_MODEL("models/butano.mdl");
 
 	//Sons butano
 	PRECACHE_SOUND("butano/gaas.wav");
@@ -140,29 +140,29 @@ void CButano::SetNewSpawn()
 }
 
 // HACKZAO
-// Evita que o som fique tocando após a morte do NPC tocando outro som no mesmo canal 'CHAN_VOICE'
+// Evita que o som fique tocando apos a morte do NPC tocando outro som no mesmo canal 'CHAN_VOICE'
 void CButano::Killed(const CTakeDamageInfo& info, GibAction gibAction)
 {
 	EMIT_SOUND_DYN(this, CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, 100);
 
-	// Faco a minima ideia pq tenho que chamar a classe herdada
+	// Roda o codigo da classe herdada
 	CZombie::Killed(info, gibAction);
 }
 
-// BUG Util! - Uma explosao de magnitude que nao mate o NPC faz ela repetir por algum motivo!!
+// BUG util! - Uma explosao de magnitude que nao mate o NPC faz ela repetir por algum motivo!!
 void CButano::ExplodeButano(int dano, int magn)
 {
-	// Çaporra cria um raio de dano que explode os gib tudo seloco cachuera
+	// Ssaporra cria um raio de dano que explode os gib tudo seloco cachuera
 	RadiusDamage(GetAbsOrigin(), this, this, dano, CLASS_NONE, DMG_BLAST);
 
-	// Cria a explosão, precisa importar o CEnvExplosion
+	// Cria a explosao, precisa importar o CEnvExplosion
 	UTIL_CreateExplosion(Center(), GetAbsAngles(), this, magn, true);
 }
 
 void CButano::AtaqueCabuloso(void)
 {
 	// Cria um tracer para detectar se acertou ou nao o jogador
-	// Esse tracer ja faz um dano, porem colocamos 0 para só detectar.
+	// Esse tracer ja faz um dano, porem colocamos 0 para so detectar.
 	CBaseEntity *pHurt = CheckTraceHullAttack(70, 0, DMG_BLAST);
 
 	// Se o trace atingiu o jogador
@@ -181,7 +181,7 @@ void CButano::AtaqueCabuloso(void)
 	}
 }
 
-// Precisa dessa função para manusear os ataques do zombie
+// Precisa dessa funcao para manusear os ataques do zombie
 // Ela da override nos sons de ataque vindos na array pAttackSounds, pAttackHitSounds e pAttackMissSounds
 void CButano::HandleAnimEvent(AnimEvent_t& event)
 {
@@ -192,37 +192,28 @@ void CButano::HandleAnimEvent(AnimEvent_t& event)
 		return;
 	}
 
+	// Todos os ataques levam a explosao
 	switch (event.event)
 	{
-		// Caso atacar com a mão direita
-		// TODO: Util para trocar o modelo do bujao???
 		case ZOMBIE_AE_ATTACK_RIGHT:
-		{
 			AtaqueCabuloso();
-		}
-		break;
+			break;
 
-		// Caso atacar com a mão esquerda
 		case ZOMBIE_AE_ATTACK_LEFT:
-		{
 			AtaqueCabuloso();
-		}
-		break;
+			break;
 
-		// Caso atacar com as duas mãos
 		case ZOMBIE_AE_ATTACK_BOTH:
-		{
 			AtaqueCabuloso();
-		}
-		break;
+			break;
 
-	default:
-		CBaseMonster::HandleAnimEvent(event);
-		break;
+		default:
+			CBaseMonster::HandleAnimEvent(event);
+			break;
 	}
 }
 
-//Override nas funções de som sem usar o pitch porque usaremos a musica do gas.
+//Override nas funcoes de som sem usar o pitch porque usaremos a musica do gas.
 void CButano::PainSound(void)
 {
 	// Emite o som de Dor sem efeito de pitch

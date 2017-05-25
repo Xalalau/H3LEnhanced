@@ -32,6 +32,8 @@ public:
 	static const char *pPainSounds[];
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];
+
+	float m_flTimeToExplode;
 };
 
 #endif //GAME_SERVER_ENTITIES_NPCS_CBUTANO_H
