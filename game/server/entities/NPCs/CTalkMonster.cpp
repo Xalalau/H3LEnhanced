@@ -1192,6 +1192,11 @@ void CTalkMonster :: SetAnswerQuestion( CTalkMonster *pSpeaker )
 
 void CTalkMonster::OnTakeDamage( const CTakeDamageInfo& info )
 {
+	if (FBitSet(pev->spawnflags, SF_MONSTER_GODMODE))
+	{
+		return;
+	}
+
 	if ( IsAlive() )
 	{
 		// if player damaged this entity, have other friends talk about it
