@@ -1192,10 +1192,11 @@ void CTalkMonster :: SetAnswerQuestion( CTalkMonster *pSpeaker )
 
 void CTalkMonster::OnTakeDamage( const CTakeDamageInfo& info )
 {
+	// ############ hu3lifezado ############ //
+	// Nao aplica dano caso a flag esteja marcada
 	if (FBitSet(pev->spawnflags, SF_MONSTER_GODMODE))
-	{
 		return;
-	}
+	// ############ //
 
 	if ( IsAlive() )
 	{

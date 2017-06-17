@@ -89,8 +89,10 @@ enum MonsterSpawnFlag
 */
 	SF_MONSTER_PRISONER				= 16,
 
-	// Hu3-Life IMORTAIS
+	// ############ hu3lifezado ############ //
+	// Hu3-Life NPCs IMORTAIS
 	SF_MONSTER_GODMODE				= 32,
+	// ############ //
 
 //										64
 
