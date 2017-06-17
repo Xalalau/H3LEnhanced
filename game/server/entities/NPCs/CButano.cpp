@@ -99,9 +99,8 @@ void CButano::SetNewSpawn()
 {
 	CBaseEntity* pSpawnPoint = nullptr;
 	CBaseEntity* hu3Player = nullptr;
-	int plyQuant = 0, targetsQuant = 0, random = 0;
-	const int MAXPOS = 20;
-	Vector InfoPositions[MAXPOS], dist, temp;
+	int plyQuant = 0;
+	Vector butanoDistSpawn, dist, temp;
 
 	// Numero de jogadores
 	while ((hu3Player = UTIL_FindEntityByClassname(hu3Player, "player")) != nullptr)
@@ -116,27 +115,20 @@ void CButano::SetNewSpawn()
 		// Vetor que vai do NPC ate o player (seu tamanho eh a distancia entre essas entidades)
 		dist = hu3Player->GetAbsOrigin() - pSpawnPoint->GetAbsOrigin();
 
-		// Detectar e armazenar pontos validos (entre 100 a 450 unidades de distancia)
+		// Detectar pontos validos (entre 100 a 450 unidades de distancia)
 		if (dist.Length() > 100 && dist.Length() < 450)
-		{
-			InfoPositions[targetsQuant] = pSpawnPoint->GetAbsOrigin();
-			targetsQuant++;
-
-			if (targetsQuant > MAXPOS) // Limite de pontos armazenados atingido
-				break;
-		}
+			butanoDistSpawn = pSpawnPoint->GetAbsOrigin();
 	}
 
-	// Reposiciono a origem do NPC aleatoriamente em local valido
-	if (targetsQuant > 0)
+	// Reposiciono a origem do NPC em local valido
+	if (butanoDistSpawn)
 	{
-		random = RANDOM_LONG(0, targetsQuant);
-		pev->origin = InfoPositions[random];
-	}
+		pev->origin = butanoDistSpawn;
 
-	// Faco o NPC olhar para o jogador escolhido
-	temp = UTIL_VecToAngles(hu3Player->GetAbsOrigin() - InfoPositions[random]);
-	pev->angles.y = temp.y;
+		// Faco o NPC olhar para o jogador escolhido
+		temp = UTIL_VecToAngles(hu3Player->GetAbsOrigin() - butanoDistSpawn);
+		pev->angles.y = temp.y;
+	}
 }
 
 // HACKZAO
