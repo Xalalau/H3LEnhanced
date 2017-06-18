@@ -49,6 +49,8 @@ add_sources(
 	CTriggerTeleport.cpp
 	CTriggerVolume.h
 	CTriggerVolume.cpp
+	CTriggerWeaponCondition.h
+	CTriggerWeaponCondition.cpp
 	CTriggerXenReturn.h
 	CTriggerXenReturn.cpp
 )
