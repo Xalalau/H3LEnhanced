@@ -1,7 +1,9 @@
 // #################################
 // HU3-LIFE trigger_weapon_condition
 // #################################
-// Trigger que detecta a situacao de armamento do jogador e chama outras entidades para reagir a essa situacao
+// O objetivo desse trigger eh ativar uma primeira entidade caso o jogador possua uma arma ou uma segunda caso nao ele possua.
+// Contudo, para que o codigo seja compativel com o modo coop eu estou verificando o estado de todos os jogadores de uma vez,
+// fazendo que qualquer um que esteja armado force o trigger a chamar a primeira entidade.
 
 #include "extdll.h"
 #include "util.h"
@@ -53,48 +55,49 @@ void CWeaponCondition::Use(CBaseEntity pActivator, CBaseEntity pCaller, USE_TYPE
 	WeaponConditional();
 }
 
-// Essa funcao foi feita para funcionar no modo coop!
 void CWeaponCondition::WeaponConditional()
 {
+	// Para verificar se um jogador possue alguma arma eu estou checando se o campo "pev->weaponmodel" esta configurado
+	// Ele fica vazio se o jogador ainda nao pegou nenhuma arma ou fica com o nome do worldmodel da ultima arma coletada
+
 	int plyHasWeapon = 0, plyQuant = 0, i = 1;
 	CBaseEntity* hu3Player = nullptr;
 
-	// Numero de jogadores
+	// Primeiro eu pego o numero de jogadores, no minimo tem 1 (funciona no singleplayer)
 	while ((hu3Player = UTIL_FindEntityByClassname(hu3Player, "player")) != nullptr)
 		plyQuant++;
 
-	// Vamos rodar todos os jogadores e ver se alguem possui arma. Se sim, ela tem que estar ativa e tem que ter um modelo de terceira pessoa
+	// Agora preciso rodar por todos os jogadores e ver se algum possui um nome de worldmodel de arma registrado
 	while (hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i)))
 	{
-		// Existe alguma arma para esse slot, no geral?
-		if (hu3Player->GetWeaponModelName())
+		// Se o campo do worldmodel tiver tamanho 0, nenhuma arma foi coletada ainda, caso contrario temos um jogador armado
+		if (strlen(hu3Player->GetWeaponModelName()) > 0)
 		{
-			// Essa arma esta ativa no jogador? Possui nome configurado?
-			if (strlen(hu3Player->GetWeaponModelName()) > 0)
-			{
-				plyHasWeapon = 1;
-				break;
-			}
+			plyHasWeapon = 1;
+			break;
 		}
 
-		// Verificar proximo jogador...
+		// Se o jogador atual estiver desarmado, vamos verificar os outros
 		i++;
 		if ( i > plyQuant )
 			break;
 	}
 
-	// Se algum jogador tiver arma, chama uma entidade, caso contrario, chama outra
+	// Momento principal: se algum jogador estiver armado, chama a primeira entidade, caso contrario, chama a segunda
 	if (plyHasWeapon)
 	{
+		// Primeira entidade
 		if (strcmp(STRING(m_TargetIfPlyHasWpn), "") != 0)
 			FireTargets(STRING(m_TargetIfPlyHasWpn), m_hActivator, this, USE_TOGGLE, 0);
 	}
 	else
 	{
+		// Segunda entidade
 		if (strcmp(STRING(m_TargetIfPlyDoesntHaveWpn), "") != 0)
 			FireTargets(STRING(m_TargetIfPlyDoesntHaveWpn), m_hActivator, this, USE_TOGGLE, 0);
 	}
 
+	// Removemos o "trigger_weapon_condition" para terminar
 	SetTouch(NULL);
 	UTIL_Remove(this);
 }
