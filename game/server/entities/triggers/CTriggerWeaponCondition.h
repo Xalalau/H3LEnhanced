@@ -13,9 +13,7 @@ public:
 	virtual void Use( CBaseEntity pActivator, CBaseEntity pCaller, USE_TYPE useType, float value );
 	void Touch ( CBaseEntity *pOther );
 		
-	void ProcessConditions(CBaseEntity *pOther);
-	int CheckAmmoQuantity(CBaseEntity *pOther);
-	void CallTheOtherEntity(int plyHasWeapon, int plyHasAmmo);
+	void ProcessConditions();
 
 	string_t m_TargetIfSomePlyHasWpnAndAmmo;
 	string_t m_TargetIfSomePlyHasWpn;

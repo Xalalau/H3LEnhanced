@@ -52,7 +52,7 @@ void CWeaponCondition::Touch(CBaseEntity *pOther)
 	if (!pOther->IsPlayer())
 		return;
 
-	ProcessConditions(pOther);
+	ProcessConditions();
 }
 
 void CWeaponCondition::Spawn(void)
@@ -62,124 +62,58 @@ void CWeaponCondition::Spawn(void)
 
 void CWeaponCondition::Use(CBaseEntity pActivator, CBaseEntity pCaller, USE_TYPE useType, float value)
 {
-	// NOTA: nao tenho certeza se estou fazendo a chama direito aqui, tem que testar essa ativacao!
-	ProcessConditions(&pActivator);
+	ProcessConditions();
 }
 
-void CWeaponCondition::ProcessConditions(CBaseEntity *pOther)
+// Verifica todos os jogadores e chama outra entidade de acordo com as condicoes
+void CWeaponCondition::ProcessConditions()
 {
-	// Verifica todos os jogadores e chama outra entidade de acordo com as condicoes
-
-	// Para checar rapidamente se um jogador possue alguma arma eu estou vendo se o campo "pev->weaponmodel" esta configurado
-	// Ele fica vazio se o jogador ainda nao pegou nenhuma arma ou fica com o nome do worldmodel da ultima arma coletada
-
-	int plyHasWeapon = 0, plyHasAmmo = 0, plyQuant = 0, i = 1;
+	int plyHasWeapon = 0, plyHasAmmo = 0, i = 1;
 	CBaseEntity* hu3Player = nullptr;
+	CBasePlayer* hu3PlayerCBP = nullptr;
+	string_t entity;
 
-	// Primeiro eu pego o numero de jogadores, no minimo tem 1 (isso tambem funciona no singleplayer)
+	// Vou rodar por todos os jogadores e ver se algum possui arma e municao
 	while ((hu3Player = UTIL_FindEntityByClassname(hu3Player, "player")) != nullptr)
-		plyQuant++;
-
-	// Agora preciso rodar por todos os jogadores e ver se algum possui um nome de worldmodel de arma registrado
-	while (hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i)))
 	{
-		// Se o campo do worldmodel tiver tamanho 0, nenhuma arma ainda foi coletada, caso contrario temos um jogador armado
-		if (strlen(hu3Player->GetWeaponModelName()) > 0)
+		// Pego o jogador na classe CBasePlayer
+		hu3PlayerCBP = (CBasePlayer *)hu3Player;
+
+		// Verifico se o jogador esta armado
+		if (hu3PlayerCBP->HasWeapons())
 		{
 			// Ativamos a variavel plyHasWeapon:
 			plyHasWeapon = 1;
 
 			// Entao vamos verificar se esse jogador eh perigoso: ele possui municao?
-			if (CheckAmmoQuantity(pOther) == 1)
+			if (hu3PlayerCBP->HasAnyAmmo())
 			{
 				// Ativamos a variavel plyHasAmmo:
 				plyHasAmmo = 1;
+
+				// Nao temos mais necessidade de checar mais jogadores, ja alcancamos a ativacao maxima
 				break;
 			}
 		}
-
-		// Se o jogador atual for pelo menos inofensivo (nao tiver municao), ainda temos que verificar os outros...
-		i++;
-		if ( i > plyQuant )
-			break;
 	}
 
-	// Hora de chamar a outra entidade de acordo com o que verificamos na partida:
-	CallTheOtherEntity(plyHasWeapon, plyHasAmmo);
+	// Agora vou chamar a outra entidade de acordo com o que verificamos na partida:
 
-	// Para finalizar, removemos o "trigger_weapon_condition" do mapa
+	// Se existirem jogadores armados e com municao, pego a primeira entidade
+	if (plyHasWeapon && plyHasAmmo)
+		entity = m_TargetIfSomePlyHasWpnAndAmmo;
+	// Se existirem jogadores armados mas todos sem municao, pego a segunda entidade
+	else if (plyHasWeapon)
+		entity = m_TargetIfSomePlyHasWpn;
+	// Se todos os jogadores estiverem desarmados, pego a terceira entidade
+	else
+		entity = m_TargetIfPlysAreDisarmed;
+
+	// Chamo a entidade selecionada
+	if (strcmp(STRING(entity), "") != 0)
+		FireTargets(STRING(entity), m_hActivator, this, USE_TOGGLE, 0);
+
+	// E para finalizar, removemos o "trigger_weapon_condition" do mapa
 	SetTouch(NULL);
 	UTIL_Remove(this);
-}
-
-int CWeaponCondition::CheckAmmoQuantity(CBaseEntity *pOther)
-{
-	// Checa se o jogador possui alguma municao guardada
-	// Retorna 1 caso sim ou 0 caso nao
-
-	CBasePlayer *pPlayer = (CBasePlayer *)pOther;
-	CBasePlayerWeapon *pWeapon;
-	int i, j = 0;
-
-	// Vamos ver todas as armas possiveis desse player agora...
-	for (i = 0; i < MAX_WEAPON_SLOTS; i++)
-	{
-		// Tenta acessar a particao atual de slots de armas
-		pWeapon = pPlayer->m_rgpPlayerItems[i];
-
-		// Se existir alguma primeira arma, vamos checar se ha municao nela...
-		while (pWeapon)
-		{
-			// Quantidade da municao 1 em uso
-			j = pWeapon->m_iClip;
-
-			// Quantidade da municao 1 guardada
-			if (pWeapon->pszAmmo1())
-				j = j + (*pPlayer).m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo1())];
-
-			// Quantidade da municao 2 guardada
-			if (pWeapon->pszAmmo2())
-				j = j + (*pPlayer).m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo2())];
-
-			// Print maroto de testes
-			//ALERT(at_console, "################# Muni_ativa: %d / Muni_A: %d / Muni_B: %d\n", pWeapon->m_iClip, (*pPlayer).m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo1())], (*pPlayer).m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo2())]);
-
-			// Se houver alguma municao disponivel, retornamos com a resposta "1"
-			if (j > 0)
-				return 1;
-
-			// Se nao houver municao aqui, vamos testar as proximas armas dessa particao de slots...
-			pWeapon = pWeapon->m_pNext;
-		}
-	}
-
-	// Nenhuma municao foi encontrada nesse jogador, portanto retornamos um "0"
-	return 0;
-}
-
-void CWeaponCondition::CallTheOtherEntity(int plyHasWeapon, int plyHasAmmo)
-{
-	// Hora H: vamos chamar a entidade correta para a nossa partida
-
-	// Se qualquer jogador estiver armado e com municao:
-	if (plyHasWeapon && plyHasAmmo)
-	{
-		// Chamo a primeira entidade
-		if (strcmp(STRING(m_TargetIfSomePlyHasWpnAndAmmo), "") != 0)
-			FireTargets(STRING(m_TargetIfSomePlyHasWpnAndAmmo), m_hActivator, this, USE_TOGGLE, 0);
-	}
-	// Se qualquer jogador estiver armado mas todos estiverem sem municao:
-	else if (plyHasWeapon)
-	{
-		// Chamo a segunda entidade
-		if (strcmp(STRING(m_TargetIfSomePlyHasWpn), "") != 0)
-			FireTargets(STRING(m_TargetIfSomePlyHasWpn), m_hActivator, this, USE_TOGGLE, 0);
-	}
-	// Se todos os jogadores estiverem desarmados:
-	else
-	{
-		// Chamo a terceira entidade
-		if (strcmp(STRING(m_TargetIfPlysAreDisarmed), "") != 0)
-			FireTargets(STRING(m_TargetIfPlysAreDisarmed), m_hActivator, this, USE_TOGGLE, 0);
-	}
 }
