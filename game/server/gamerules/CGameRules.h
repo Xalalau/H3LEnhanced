@@ -400,6 +400,12 @@ public:
 	*	Immediately end a multiplayer game
 	*/
 	virtual void EndMultiplayerGame() {}
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Novo changelevel gambiarrado
+	virtual void ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap);
+	// ############ //
 };
 
 inline CGameRules::~CGameRules()

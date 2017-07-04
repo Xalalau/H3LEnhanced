@@ -24,11 +24,6 @@
 #include "Server.h"
 #include "ServerInterface.h"
 
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-#include "gamerules/CHu3LifeCoop.h"
-// ############ //
-
 //Wasn't initialized - Solokiller
 bool DLL_GLOBAL gEvilImpulse101 = false;
 
@@ -173,146 +168,6 @@ void CBasePlayer::PackDeadPlayerItems()
 
 	RemoveAllItems( true );// now strip off everything that wasn't handled by the code above.
 }
-
-
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-
-// Salvar armas e municao antes de um changelevel
-void CBasePlayer::CoOpSavePlayerItems(playerCoopSaveRestore* CoopPlyData)
-{
-	CBasePlayerWeapon *pWeapon;
-	int i, j = 0;
-	bool activeWeaponHold = true, forceBreak = false;
-	
-	// Fazer uma lista vazia caso nao exista uma arma carregada
-	if (!m_pActiveItem)
-	{
-		strcpy((*CoopPlyData).keepweapons[0].name, "-1");
-		return;
-	}
-
-	// Vamos salvar as armas. O limite eh 64.
-	for (i = 0; i < MAX_WEAPON_SLOTS; i++)
-	{
-		// Tenta pegar a primeira arma do slot (10 slots)
-		pWeapon = m_rgpPlayerItems[i];
-		// Se existir a primeira arma, vamos salva-la e seguir fazendo o mesmo para as proximas caso estas existam
-		while (pWeapon)
-		{
-			// Se a arma em questao estiver ativa nos devemos pula-la
-			if (m_pActiveItem == pWeapon)
-			{
-				pWeapon = pWeapon->m_pNext;
-				continue;
-			}
-
-			// Salva as infos da arma
-			CoOpSaveItemsAux(CoopPlyData, pWeapon, j);
-
-			// Print maroto de testes
-			//ALERT(at_console, "%s: %s >> %d ||| %s >> %d\n", (*CoopPlyData).keepweapons[j].name, (*CoopPlyData).keepweapons[j].type1, (*CoopPlyData).keepweapons[j].amountammo1, (*CoopPlyData).keepweapons[j].type2, (*CoopPlyData).keepweapons[j].amountammo2);
-
-			// J eh importante pois pulamos posicoes. Nao usar i
-			j++;
-
-			// pWeapon eh apontado para a proxima arma
-			pWeapon = pWeapon->m_pNext;
-		}
-	}
-
-	// Adicionamosa arma ativa no ultimo slot da lista (vai fazer ela carregar corretamente apos o changelevel)
-	CoOpSaveItemsAux(CoopPlyData, m_pActiveItem, j);
-
-	// Lista termina no "-1"
-	strcpy((*CoopPlyData).keepweapons[j + 1].name, "-1");
-}
-
-// Salva as infos da arma
-void CBasePlayer::CoOpSaveItemsAux(playerCoopSaveRestore* CoopPlyData, CBasePlayerWeapon *pWeapon, int j)
-{
-	// Nome da arma
-	strcpy((*CoopPlyData).keepweapons[j].name, pWeapon->pszName());
-	// Quantidade da municao 1 em uso
-	(*CoopPlyData).keepweapons[j].currentammo = pWeapon->m_iClip;
-	// Tipo da municao 1
-	if (pWeapon->pszAmmo1())
-	{
-		strcpy((*CoopPlyData).keepweapons[j].type1, pWeapon->pszAmmo1());
-		// Quantidade da municao 1 em cartucho
-		(*CoopPlyData).keepweapons[j].amountammo1 = m_rgAmmo[GetAmmoIndex(pWeapon->pszAmmo1())];
-	}
-	else
-	{
-		strcpy((*CoopPlyData).keepweapons[j].type1, "-1");
-		(*CoopPlyData).keepweapons[j].amountammo1 = -1;
-	}
-	// Tipo da municao 2
-	if (pWeapon->pszAmmo2())
-	{
-		strcpy((*CoopPlyData).keepweapons[j].type2, pWeapon->pszAmmo2());
-		// Quantidade da municao 2 em cartucho
-		(*CoopPlyData).keepweapons[j].amountammo2 = m_rgAmmo[GetAmmoIndex(pWeapon->pszAmmo2())];
-	}
-	else
-	{
-		strcpy((*CoopPlyData).keepweapons[j].type2, "-1");
-		(*CoopPlyData).keepweapons[j].amountammo2 = -1;
-	}
-}
-
-// Restauracao das armas
-void CBasePlayer::CoOpLoadPlayerItems(playerCoopSaveRestore* CoopPlyData, CBasePlayer *pPlayer)
-{
-	int i = 0;
-	
-	while (strcmp((*CoopPlyData).keepweapons[i].name, "-1") != 0)
-	{
-		// Restauracao das municoes:
-
-		// Quantidade da municao 1 em cartucho
-		if (strcmp((*CoopPlyData).keepweapons[i].type1, "-1") != 0)
-			if (m_rgAmmo[GetAmmoIndex((*CoopPlyData).keepweapons[i].type1)] == 0)
-			{
-				// HACK!!!!
-				// Estao ocorrendo somas muito loucas na recarga aqui, nao sei de onde elas vem...
-				// Definitavamente nao sou eu o culpado disso, estou resolvendo na mao! Funciona
-				if (strcmp((*CoopPlyData).keepweapons[i].type1, "buckshot") == 0)
-					(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 4;
-				else if (strcmp((*CoopPlyData).keepweapons[i].type1, "rockets") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 1;
-				else if (strcmp((*CoopPlyData).keepweapons[i].type1, "uranium") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 80;
-				else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Hand Grenade") == 0)
-					(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 5;
-				else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Trip Mine") == 0)
-					(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 1;
-				else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Satchel Charge") == 0)
-					(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 1;
-				else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Snarks") == 0)
-					(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 5;
-				//--
-				this->GiveAmmo((*CoopPlyData).keepweapons[i].amountammo1, (*CoopPlyData).keepweapons[i].type1);
-			}
-
-		// Quantidade da municao 2 em cartucho
-		if (strcmp((*CoopPlyData).keepweapons[i].type2, "-1") != 0)
-			if (m_rgAmmo[GetAmmoIndex((*CoopPlyData).keepweapons[i].type2)] == 0)
-				this->GiveAmmo((*CoopPlyData).keepweapons[i].amountammo2, (*CoopPlyData).keepweapons[i].type2);
-
-		// Restauracao das armas:
-		CBaseEntity* pItem = GiveNamedItem((*CoopPlyData).keepweapons[i].name);
-
-		// Quantidade da municao 1 em cartucho
-		CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon*)pItem;
-		pWeapon->m_iClip = (*CoopPlyData).keepweapons[i].currentammo;
-
-		//Nota: as armas guardam a quantidade total de municao dos tipos. Devo adicionar apenas uma vez cada tipo.
-
-		i++;
-	}
-}
-// ############ //
 
 void CBasePlayer::RemoveAllItems( const bool removeSuit )
 {
@@ -835,6 +690,7 @@ CBaseEntity* CBasePlayer::GiveNamedItem( const char *pszName )
 	pEntity->Touch( this );
 
 	return pEntity;
+	
 }
 // ############ //
 
@@ -872,7 +728,7 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName )
 
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
-	// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em CoOpLoadPlayerItems
+	// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em LoadPlayerItems do CHalfLifeCoop.cpp
 	if (g_pGameRules->IsCoOp())
 	{
 		m_rgAmmo[i] += iCount;
@@ -891,7 +747,7 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName )
 	{
 		// ############ hu3lifezado ############ //
 		// [MODO COOP]
-		// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em CoOpLoadPlayerItems
+		// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em LoadPlayerItems do CHalfLifeCoop.cpp
 		// Send the message that ammo has been picked up
 		MESSAGE_BEGIN(MSG_ONE, gmsgAmmoPickup, NULL, this);
 		WRITE_BYTE(GetAmmoIndex(szName));		// ammo ID

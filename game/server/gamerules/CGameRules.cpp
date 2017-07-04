@@ -139,3 +139,10 @@ void CGameRules::PlayerRespawn( CBasePlayer* pPlayer, const bool bCopyCorpse )
 		SERVER_COMMAND( "reload\n" );
 	}
 }
+
+//=========================================================
+//=========================================================
+void CGameRules::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
+{
+	return;
+}

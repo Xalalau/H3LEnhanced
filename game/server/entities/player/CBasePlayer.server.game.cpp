@@ -51,10 +51,10 @@ void CBasePlayer::PlayerUse()
 		// No primeiro join o jogador sempre comeca acima do chao, entao eu aproveito o tempo de queda para rodar o comando sem problemas nessa situacao
 		if (pev->flags & FL_ONGROUND)
 		{
+			CBaseEntity *hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(hu3CoopPlyIndex));
 			char comando[35] = "name ";
-			strcat(strcat(comando, hu3NetName), "\n");
-			CLIENT_COMMAND(ENT(pev), comando);
-			strcpy(hu3NetName, "");
+			strcat(strcat(comando, hu3NetNewName), "\n");
+			CLIENT_COMMAND(ENT(hu3Player), comando);
 			hu3ChangeNetName = false;
 		}
 	// ############ //

@@ -35,11 +35,6 @@
 #include "nodes/Nodes.h"
 #include "hltv.h"
 
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-#include "gamerules/CHu3LifeCoop.h"
-// ############ //
-
 extern DLL_GLOBAL unsigned int	g_ulModelIndexPlayer;
 extern DLL_GLOBAL bool			g_fGameOver;
 extern DLL_GLOBAL bool			gDisplayTitle;
@@ -140,9 +135,9 @@ void CBasePlayer::Spawn()
 	// Era 100
 	pev->health = 169;
 	// ############ //
-	pev->armorvalue		= 0;
-	pev->takedamage		= DAMAGE_AIM;
-	pev->solid			= SOLID_SLIDEBOX;
+	pev->solid = SOLID_SLIDEBOX;
+	pev->armorvalue = 0;
+	pev->takedamage = DAMAGE_AIM;
 	pev->movetype		= MOVETYPE_WALK;
 	pev->max_health		= pev->health;
 	pev->flags			&= FL_PROXY;	// keep proxy flag sey by engine
@@ -186,12 +181,10 @@ void CBasePlayer::Spawn()
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
 
-	// ############ hu3lifezado ############ //
-	// Estou disponibilizando as infos da entidade do spawn
-	CBaseEntity* pSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( this );
-	// ############ //
+	g_pGameRules->GetPlayerSpawnSpot( this );
 
 	SetModel( "models/player.mdl" );
+
 	g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence = LookupActivity( ACT_IDLE );
 
@@ -229,188 +222,8 @@ void CBasePlayer::Spawn()
 
 	m_flNextChatTime = gpGlobals->time;
 
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Carregamento do jogador no modo cooperativo
-	LoadPlayerHu3CoOp();
-	// ############ //
-
 	g_pGameRules->PlayerSpawn( this );
 }
-
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-// Carregamento do jogador no modo cooperativo
-void CBasePlayer::LoadPlayerHu3CoOp()
-{
-	if (g_pGameRules->IsCoOp())
-	{
-		// NOME DO JOGADOR
-		// O retorno dessa funcao eh o indice do jogador na nossa tabela coop
-		int i = PlayerHu3CoOpName();
-
-		if (!CoopPlyData[i].used) // Essa verificacao faz nao reaproveitar nossas infos de spawn quando o jogador usa o comando changelevel no console
-		{
-			CBaseEntity* pLandmark = nullptr;
-
-			// PROPRIEDADES DIVERSAS DO JOGADOR
-			while ((pLandmark = UTIL_FindEntityByTargetname(pLandmark, Hu3LandmarkName)))
-			{
-				if (pLandmark->ClassnameIs("info_landmark"))
-				{
-					// Recalculo a posicao do jogador
-					Vector absPos = pLandmark->GetAbsOrigin() + CoopPlyData[i].relPos;
-
-					// Resolvo o agachamento durante a troca de mapa
-					// SOLUCAO TEMPORARIA! RUIM!
-					if (CoopPlyData[i].bInDuck)
-					{
-						absPos.z = absPos.z + 30; // Tira o jogador de dentro do chao
-						// Tentativas de solucao anteriores:
-						//CLIENT_COMMAND(ENT(this->pev), "noclip");
-						//CLIENT_COMMAND(ENT(pev), "+duck");
-						//CLIENT_COMMAND(ENT(pev), "noclip");
-						//CLIENT_COMMAND(ENT(pev), "-duck");
-						//this->pev->button = IN_DUCK;
-					}
-
-					// Posicionamento
-					this->pev->origin = absPos;
-					this->pev->v_angle = CoopPlyData[i].v_angle;
-					this->pev->velocity = CoopPlyData[i].velocity;
-					this->pev->angles = CoopPlyData[i].angles;
-					this->pev->punchangle = CoopPlyData[i].punchangle;
-					this->pev->fixangle = CoopPlyData[i].fixangle;
-					this->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
-
-					// Estados
-					this->pev->deadflag = CoopPlyData[i].deadflag;
-					this->pev->health = CoopPlyData[i].health;
-					this->pev->armorvalue = CoopPlyData[i].armorvalue;
-					this->pev->team = CoopPlyData[i].team;
-					this->pev->frags = CoopPlyData[i].frags;
-					this->pev->weapons = CoopPlyData[i].weapons;
-
-					// Carregar armas e municoes
-					this->CoOpLoadPlayerItems(&CoopPlyData[i], this);
-
-					// Finalizacao
-					CoopPlyData[i].used = true;
-					break;
-				}
-			}
-		}
-	}
-}
-
-// [MODO COOP]
-// Se o nome do jogador for "Player" ou estiver igual ao de outra pessoa, nos o trocamos
-int CBasePlayer::PlayerHu3CoOpName()
-{
-	char *name;
-	bool needsToGenerateNewName = false;
-	const int TOTALNAMES = 120;
-	int i = 1, j = 1;
-
-	// Pego o nome atual
-	name = (char*) STRING(pev->netname);
-
-	// Inicio um loop ate que o nome esteja correto
-	while (true)
-	{
-		// Inicio um loop para encontrar o index do jogador na tabela coop e processar os nomes
-		while (CoopPlyData[i].pName)
-		{
-			// Identifico um jogador com o nome igual ao "name"
-			if (strcmp(name, CoopPlyData[i].pName) == 0)
-			{
-				// Indice guardado em j
-				j = i;
-
-				// 1) Verifico se o jogador se chama "Player". Esse nome nao pode ser utilizado...
-				// 2) Se o nome em "name" estiver proposto para troca no hu3NetName significa que o player em questao
-				// nao eh o player com que estamos lidando, ou seja, o nome ja esta usado. Precisamos gerar um novo.
-				if (strcmp(name, "Player") == 0 || strcmp(hu3NetName, "") == 0)
-				{
-					needsToGenerateNewName = true;
-					break;
-				}
-				else
-					break;
-			}
-			i++;
-		}
-
-		// Fim da execucao
-		if (needsToGenerateNewName == false)
-		{
-			// Caso seja necessario, marco que existe um novo nome a ser aplicado (pelo CBasePlayer.server.game.cpp)
-			if (strcmp(hu3NetName, "") != 0)
-				hu3ChangeNetName = true;
-
-			break;
-		}
-
-		// Precisamos trocar de nome:
-
-		// Lista de nomes
-		char names[TOTALNAMES][25] = {
-			"Demente", // 0
-
-			"Jamelao", "Jararaca", "Wallita", "Pereba", "Gandalf",
-			"Bimbo", "Gonorreia", "Gordon", "K-roço", "Espirro",  // 10
-
-			"GMBR", "Estupido", "Jirafa", "Gayzing", "Ceboso",
-			"Cajado", "Galudo", "Bebum", "Jiromba", "Comulixo", // 20
-
-			"Lalau", "Parabola", "Fuscazul", "Tangente", "Birinbau",
-			"Lampiao", "Lagrange", "Sapatao", "Gugu", "Platao", // 30
-
-			"Amenopausa", "Caganeira", "Diarreia", "Televisao", "Amendoim",
-			"Ovocito", "Polichop", "Gulosa", "Suvaco", "Bilau", // 40
-
-			"Mindingu", "Gatuno", "Molenginho", "Bostolhozo", "Fezesaldo",
-			"Seu_Estrume", "Resto", "SubFossa", "Niobio", "Coco", // 50
-
-			"Arrombado", "Piperodaptiloh", "Pistolao", "Papaco", "Teocu",
-			"Teopai", "Tuamae", "Cagapau", "Bizonho", "Pipistrelo", // 60
-
-			"Cegueta", "Cone", "Noob", "XXXX", "Ratazana",
-			"LhamaVerde", "Skilo89", "Acreman", "Sr.Peitos", "Sr.Mijaum", // 70
-
-			"Verruga", "Mercedes", "Otahrio", "Gastrite", "VermeLunar",
-			"Zigoto", "Somaliano", "Bozo", "Cretino", "Folgado", // 80
-
-			"Trapilho", "Cotoco", "Sem_pau", "Vigario", "1000otwo",
-			"Gargarejo", "Kitinet", "Ser.Veja", "Dollynetx", "Cafetao" // 90
-
-			"Entalado", "Baiano", "Bundao", "Hostil", "Maluko",
-			"Leitinho","Kakariko", "Castigador", "CHUTEME", "Bucetaldx", // 100
-
-			"Pirata13", "Zarolha", "Maritmo", "Sr.dos_anais", "Poderaldo",
-			"Inutil", "Virjao", "Aleijadinho", "TripleKill", "Motumbo", // 110
-
-			"Xalalau", "NickMBR", "Jonks", "M4n0Cr4zy", "Pepeu",
-			"R4t0", "DarteVerder", "Zuzu", "Pavomba", "Fabio", // 120
-		};
-
-		// Pego um nome aleatoriamente
-		char *randomName = names[RANDOM_LONG(0, TOTALNAMES)];
-
-		// Envio o nome a uma variavel global para que ele possa ser alterado no jogo atraves de outro arquivo (CBasePlayer.server.game.cpp)
-		strcpy(hu3NetName, randomName);
-
-		// Novo nome a ser analisado neste loop
-		strcpy(name, randomName);
-
-		// Reseto:
-		needsToGenerateNewName = false;
-		i = 1;
-	}
-
-	return j;
-}
-// ############ //
 
 Vector CBasePlayer::GetGunPosition()
 {
@@ -705,27 +518,6 @@ void CBasePlayer::OnTakeDamage( const CTakeDamageInfo& info )
  */
 void CBasePlayer::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 {
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// libera o respawn de coop do jogador para uma nova utilizacao (respawn nas mesmas condicoes iniciais)
-	if (g_pGameRules->IsCoOp())
-	{
-		const char *currentName = STRING(pev->netname);;
-		int i = 1, j = 1;
-
-		while (CoopPlyData[i].pName)
-		{
-			if (strcmp(currentName, CoopPlyData[i].pName) == 0)
-			{
-				CoopPlyData[i].used = false;
-				break;
-			}
-
-			i++;
-		}
-	}
-	// ############ //
-
 	// Holster weapon immediately, to allow it to cleanup
 	if ( m_pActiveItem )
 		m_pActiveItem->Holster();

@@ -47,11 +47,12 @@ cvar_t	decalfrequency = {"decalfrequency","30", FCVAR_SERVER };
 cvar_t	teamlist = {"mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t	teamoverride = {"mp_teamoverride","1" };
 cvar_t	defaultteam = {"mp_defaultteam","0" };
-cvar_t	allowmonsters={"mp_allowmonsters","0", FCVAR_SERVER };
-
 // ############ hu3lifezado ############ //
 // Remover as armas do jogador
 cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
+// [MODO COOP]
+// Permitir monstros por padrao no multiplayer
+cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators

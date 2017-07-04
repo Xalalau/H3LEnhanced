@@ -27,10 +27,11 @@ Coop::Coop DetermineCoopMode()
 	if( iCoop == 0 )
 		return Coop::NO;
 
-	if( iCoop == 1 )
-		return Coop::SINGLEPLAYRULES;
-
-	return Coop::MULTIPLAYRULES;
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Valores do Hu3-Life
+	return Coop::YES;
+	// ############ //
 }
 }
 
@@ -62,10 +63,13 @@ static CGameRules* CreateGameRules()
 
 		switch( coopMode )
 		{
-			//Case to catch any missing cases if more modes are added. - Solokiller
-		case Coop::NO:					break;
-		case Coop::SINGLEPLAYRULES:		return new CHalfLifeSingleCoop;
-		case Coop::MULTIPLAYRULES:		return new CHalfLifeMultiCoop;
+		//Case to catch any missing cases if more modes are added. - Solokiller
+		case Coop::NO:		break;
+		// ############ hu3lifezado ############ //
+		// [MODO COOP]
+		// Valores do Hu3-Life
+		case Coop::YES:		return new CBaseHalfLifeCoop;
+		// ############ //
 		}
 	}
 

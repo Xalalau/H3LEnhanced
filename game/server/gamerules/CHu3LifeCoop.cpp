@@ -4,15 +4,19 @@
 #include "mathlib.h"
 #include "CHu3LifeCoop.h"
 
-// MOVER PARA DENTRO DE ALGUMA CLASSE!! NAO COMPILA NO LINUX!! PROBLEMA DE CONSTRUCTOR E INICIALIZACAO!!
-
-// Guardar a info dos jogadores
+// Guardar as infos dos jogadores
 struct playerCoopSaveRestore CoopPlyData[64];
-// Guardar o nome do landmark que esta sendo utilizado
+
+// Nome do landmark em uso
 char Hu3LandmarkName[32] = "";
-// Nome a ser atribuido ao jogador (caso necessario)
-char hu3NetName[32] = "";
-// Uso essa variavel para reduzir as checagens
+
+// Index de um jogador
+int hu3CoopPlyIndex = 1;
+
+// Novo nome de um jogador
+char hu3NetNewName[32] = "";
+
+// Se um nome precisa ser alterado ou nao
 bool hu3ChangeNetName = false;
 
 #endif //GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP

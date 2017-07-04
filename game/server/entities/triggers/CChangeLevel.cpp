@@ -8,12 +8,6 @@
 
 #include "CChangeLevel.h"
 
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-#include "CBasePlayer.h"
-#include "gamerules/CHu3LifeCoop.h"
-// ############ //
-
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity );
 
 extern DLL_GLOBAL bool		g_fGameOver;
@@ -182,73 +176,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
-	// Changelevel do coop eh feito atraves de comando de console
-	// Precisamos manter as informacoes dos jogadores
-	if ( g_pGameRules->IsCoOp() )
-	{
-		CBaseEntity *hu3Player;
-		int i = 1;
-
-		// Invalido a tabela de players atribuindo aos campos usados um nome impossivel
-		// No client MAX_PLAYERS eh 64...
-		for ( i; i<= 64; i++)
-            if ( CoopPlyData[i].used )
-                CoopPlyData[i].pName = "Player";
-
-		// Salvo o nome do landmark (sera usado no proximo mapa)
-		strcpy(Hu3LandmarkName, m_szLandmarkName);
-
-		// Preencho a tabela de infos dos players novamente
-		i = 1; // Tem que ser 1 para funcionar na funcao abaixo!
-		while ( hu3Player = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex(i) ) )
-		{
-			// Calculo a distancia do player ate o landmark
-			Vector absPos = pLandmark->GetAbsOrigin();
-			Vector plyPos = hu3Player->pev->origin;
-			Vector relPos;
-			
-			relPos = plyPos - absPos;
-
-			// Vejo se o jogador esta abaixado
-			bool inDuck = false;
-			if (hu3Player->pev->button & IN_DUCK)
-				inDuck = true;
-
-			// Salvo as infos gerais
-			CoopPlyData[i].pName = (char*) hu3Player->GetNetName();
-			CoopPlyData[i].relPos = relPos;
-			CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
-			CoopPlyData[i].velocity = hu3Player->pev->velocity;
-			CoopPlyData[i].angles = hu3Player->pev->angles;
-			CoopPlyData[i].punchangle = hu3Player->pev->punchangle;
-			CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
-			CoopPlyData[i].fixangle = hu3Player->pev->fixangle;
-			CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
-			CoopPlyData[i].bInDuck = inDuck;
-			CoopPlyData[i].team = hu3Player->pev->team;
-			CoopPlyData[i].frags = hu3Player->pev->frags;
-			CoopPlyData[i].health = hu3Player->pev->health;
-			CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
-			CoopPlyData[i].weapons = hu3Player->pev->weapons;
-			CoopPlyData[i].used = false;
-			
-			// Salvo as infos de municao e armas
-			CBasePlayer *pPlayer2 = NULL;
-
-			pPlayer2 = (CBasePlayer *)hu3Player;
-
-			pPlayer2->CoOpSavePlayerItems(&CoopPlyData[i]);
-
-			// Proximo player...
-			i++;
-		}
-
-		// >>> Agora comeco o processo de troca de mapa
-		char comando[30] = "changelevel ";
-
-		strcat(strcat(comando, st_szNextMap), ";");
-		SERVER_COMMAND(comando);
-	}
+	// Changelevel do coop eh diferente no final
+	if (g_pGameRules->IsCoOp())
+		g_pGameRules->ChangeLevelCoop(pLandmark, m_szLandmarkName, st_szNextMap);
 	else
 		CHANGE_LEVEL(st_szNextMap, st_szNextSpot);
 	// ############ //

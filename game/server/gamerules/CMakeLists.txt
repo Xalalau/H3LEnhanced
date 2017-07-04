@@ -2,6 +2,7 @@ add_sources(
 	CGameRules.h
 	CGameRules.cpp
 	CHalfLifeCoop.h
+	CHalfLifeCoop.cpp
 	CHalfLifeMultiplay.h
 	CHalfLifeMultiplay.cpp
 	CHalfLifeRules.h

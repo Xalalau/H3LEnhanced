@@ -17,6 +17,9 @@
 
 #include "CGameRules.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Valores do Hu3-Life
 namespace Coop
 {
 /**
@@ -25,21 +28,17 @@ namespace Coop
 enum Coop
 {
 	/**
-	*	Not in co-op game mode.
+	*	Sem coop.
 	*/
 	NO = 0,
 
 	/**
-	*	Using singleplayer gamerules.
+	*	Com coop.
 	*/
-	SINGLEPLAYRULES = 1,
-
-	/**
-	*	using multiplayer gamerules.
-	*/
-	MULTIPLAYRULES	= 2
+	YES = 1
 };
 }
+// ############ //
 
 namespace GameRules
 {
