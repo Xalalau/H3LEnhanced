@@ -30,6 +30,11 @@
 #include "Weapons.h"
 #include "entities/effects/CGib.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/GameRules.h"
+// ############ //
+
 bool CBaseMonster::HasHumanGibs()
 {
 	int myClass = Classify();
@@ -92,7 +97,12 @@ void CBaseMonster :: GibMonster( void )
 			CGib::SpawnHeadGib( this );
 			// ############ hu3lifezado ############ //
 			// Mais tripas (this,4,1)
-			CGib::SpawnRandomGibs( this, 5, 1 );	// throw some human gibs.
+			// [MODO COOP]
+			// Menos tripas
+			if (!g_pGameRules->IsCoOp())
+				CGib::SpawnRandomGibs(this, 5, 1); // throw some human gibs.
+			else
+				CGib::SpawnRandomGibs(this, 2, 1);
 			// ############ //
 		}
 		gibbed = true;
@@ -103,7 +113,12 @@ void CBaseMonster :: GibMonster( void )
 		{
 			// ############ hu3lifezado ############ //
 			// Mais tripas (this,4,1)
-			CGib::SpawnRandomGibs( this, 5, 1 );	// throw alien gibs.
+			// [MODO COOP]
+			// Menos tripas
+			if (!g_pGameRules->IsCoOp())
+				CGib::SpawnRandomGibs(this, 5, 1);	// throw alien gibs.
+			else
+				CGib::SpawnRandomGibs(this, 2, 1);
 			// ############ //
 		}
 		gibbed = true;
