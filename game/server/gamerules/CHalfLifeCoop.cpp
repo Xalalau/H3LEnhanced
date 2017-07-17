@@ -630,40 +630,40 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 				"Demente", // 0
 
 				"Jamelao", "Jararaca", "Wallita", "Pereba", "Gandalf",
-				"Bimbo", "Gonorreia", "Gordon", "K.rosso", "Espirro",  // 10
+				"Hipoglos", "Gonorreia", "Gordon", "UNO1.0", "Jabolane",  // 10
 
 				"GMBR", "Estupido", "Jirafa", "Gayzing", "Ceboso",
 				"Cajado", "Galudo", "Bebum", "Jiromba", "Comulixo", // 20
 
-				"Lalau", "Parabola", "Fuscazul", "Tangente", "Birinbau",
-				"Lampiao", "Lagrange", "Sapatao", "Gugu", "Platao", // 30
+				"Lalau", "Mesoclise", "Fuscazul", "FiDiKenga", "Birinbau",
+				"Lampiao", "Danoninho", "Sapatao", "Gugu", "Platao", // 30
 
 				"Amenopausa", "Caganeira", "Diarreia", "Televisao", "Amendoim",
 				"Ovocito", "Polichop", "Gulosa", "Suvaco", "Bilau", // 40
 
-				"Mindingu", "Gatuno", "Molenginho", "Bostolhozo", "Fezesaldo",
-				"Seu_Estrume", "Resto", "SubFossa", "Niobio", "Coco", // 50
+				"Mindingu", "Gatuno", "Loirinha18", "Bostolhozo", "Fezaldo",
+				"Trivago", "Resto", "Ganancia", "Niobio", "Coco", // 50
 
 				"Arrombado", "Piperodaptiloh", "Pistolao", "Papaco", "Teocu",
 				"Teopai", "Tuamae", "Cagapau", "Bizonho", "Pipistrelo", // 60
 
-				"Cegueta", "Cone", "Noob", "XXXX", "Ratazana",
-				"LhamaVerde", "Skilo89", "Acreman", "Sr.Peitos", "Sr.Mijaum", // 70
+				"Cegueta", "Metiolate", "Noob", "XXXX", "Ratazana",
+				"Xoraum", "Isk8tero", "Acreman", "Sr.Peitos", "Sr.Mijo", // 70
 
-				"Verruga", "Mercedes", "Otahrio", "Gastrite", "VermeLunar",
-				"Zigoto", "Somaliano", "Bozo", "Cretino", "Folgado", // 80
+				"Verruga", "Mercedes", "Otahrio", "Gastrite", "MC_Menor",
+				"Zigoto", "Pesadao", "Bozo", "Cretino", "Folgado", // 80
 
-				"Trapilho", "Cotoco", "Sem_pau", "Vigario", "1000otwo",
-				"Gargarejo", "Kitinet", "Ser.Veja", "Dollynetx", "Cafetao" // 90
+				"CuDeFoca", "Cotoco", "Sem_pau", "Vigario", "1000otwo",
+				"Gargarejo", "Kitinet", "Ser.Veja", "Dollynetx", "Cafetao", // 90
 
 				"Entalado", "Baiano", "Bundao", "Hostil", "Maluko",
-				"Leitinho","Kakariko", "Castigador", "CHUTEME", "Bucetaldx", // 100
+				"Leitinho","QuerAlho", "Castigador", "CHUTEME", "Bucetaldx", // 100
 
-				"Pirata13", "Zarolha", "Maritmo", "Sr.dos_anais", "Poderaldo",
-				"Inutil", "Virjao", "Aleijadinho", "TripleKill", "Motumbo", // 110
+				"Monosselha", "Zarolha", "Maritmo", "Sr.dos_anais", "Poderaldo",
+				"Inutil", "Virjao", "Aleijadinho", "Parideira", "Motumbo", // 110
 
 				"Xalalau", "NickMBR", "Jonks", "M4n0Cr4zy", "Pepeu",
-				"R4t0", "DarteVerder", "Zuzu", "Pavomba", "Fabio", // 120
+				"R4t0", "DarteVerder", "Zuzu", "Pavomba", "Gaben", // 120
 			};
 
 			// Pego um nome aleatoriamente

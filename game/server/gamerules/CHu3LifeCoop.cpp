@@ -1,3 +1,7 @@
+// ##############################
+// HU3-LIFE VARIAVEIS DO COOP
+// ##############################
+
 #ifndef GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP
 #define GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP
 
