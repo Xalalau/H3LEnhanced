@@ -578,7 +578,7 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 	char *name, *aux;
 	char newName[30] = "";
 	bool needsToGenerateNewName = false;
-	const int TOTALNAMES = 120;
+	const int TOTALNAMES = 125;
 	int i = 1, gambiarra = 0;
 
 	// Pego o nome atual
@@ -663,7 +663,7 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 				"Inutil", "Virjao", "Aleijadinho", "Parideira", "Motumbo", // 110
 
 				"Xalalau", "NickMBR", "Jonks", "M4n0Cr4zy", "Pepeu",
-				"R4t0", "DarteVerder", "Zuzu", "Pavomba", "Gaben", // 120
+				"R4t0", "DarteVerder", "Zuzu", "Pavomba", "Gaben" // 120
 			};
 
 			// Pego um nome aleatoriamente
