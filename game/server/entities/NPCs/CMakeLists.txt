@@ -91,6 +91,8 @@ add_sources(
 	CISlave.cpp
 	CLeech.h
 	CLeech.cpp
+	CPlant.h
+	CPlant.cpp
 	CMiniTurret.h
 	CMiniTurret.cpp
 	CMonsterMaker.h
