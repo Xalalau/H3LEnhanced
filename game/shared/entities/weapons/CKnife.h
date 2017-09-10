@@ -37,7 +37,9 @@ class CKnife : public CBasePlayerWeapon
 {
 public:
 	DECLARE_CLASS( CKnife, CBasePlayerWeapon );
-	DECLARE_DATADESC();
+	// ############ hu3lifezado ############ //
+	// DECLARE_DATADESC(); removido
+	// ############ //
 
 	CKnife();
 
@@ -51,17 +53,33 @@ public:
 
 	void PrimaryAttack() override;
 
-	bool Swing( const bool bFirst );
+	// ############ hu3lifezado ############ //
+	// Funcoes para mexer com pichacao
+	void SecondaryAttack() override;
 
-	void SwingAgain();
+	void DamageAnimationAndSound();
 
-	void Smack();
+	bool TraceSomeShit();
+
+	void PlaceColor();
+	// ############ //
 
 private:
 	unsigned short m_usKnife;
 
 	int m_iSwing;
 	TraceResult m_trHit;
+
+	// ############ hu3lifezado ############ //
+	// Tempo ate processar novamente dano, animacoes e sons
+	float m_nextthink;
+	// Tempo ate proxima mudanca de cor ser liberada
+	float m_nextcolorchange;
+	// Tempo que quando ultrapassado forca a rechecagem do primeiro acerto
+	float m_nextfirsthit;
+	// Tempo para o proximo som de spray aplicado em parede
+	float m_nextsprayonwallsound;
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CKNIFE_H
