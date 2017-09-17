@@ -50,6 +50,7 @@ void CKnife::Precache()
 	PRECACHE_SOUND( "weapons/spray_hit_flesh2.wav" );
 	PRECACHE_SOUND( "weapons/spray_hit_wall1.wav" );
 	PRECACHE_SOUND( "weapons/spray_hit_wall2.wav" );
+	PRECACHE_SOUND("weapons/spray_eupichavasim.wav");
 	// ############ //
 
 	m_usKnife = PRECACHE_EVENT( 1, "events/knife.sc" );
@@ -71,7 +72,7 @@ void CKnife::Spawn()
 	// Tempo para o proximo som de spray aplicado em parede
 	m_nextsprayonwallsound = 0;
 	// ############ //
-	
+
 	FallInit();
 }
 
@@ -95,7 +96,7 @@ void CKnife::Holster()
 }
 
 // ############ hu3lifezado ############ //
-// Pixar!
+// Pichar!
 // Funcionamentos
 // - Tenta colocar decals 40 vezes por segundo;
 // - Tenta aplicar danos, animacoes e sons em intervalos minimos de 1 segundo;
@@ -180,7 +181,7 @@ void CKnife::DamageAnimationAndSound()
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 	// Dano e sons mais abaixo...
-	// ############ //	
+	// ############ //
 
 	if ( tr.flFraction < 1.0 )
 	{
@@ -252,13 +253,13 @@ void CKnife::DamageAnimationAndSound()
 
 				if( g_pGameRules->IsMultiplayer() )
 				{
-					// override the volume here, cause we don't play texture sounds in multiplayer, 
+					// override the volume here, cause we don't play texture sounds in multiplayer,
 					// and fvolbar is going to be 0 from the above call.
 
 					fvolbar = 1;
 				}
 				*/
-			
+
 				float fvolbar = 1;
 
 				// Novos nomes de audios
@@ -353,6 +354,43 @@ void CKnife::PlaceColor()
 		UTIL_DecalTrace(pTrace, 50 + CVAR_GET_FLOAT("hu3_spray_color"));
 #endif
 	}
+}
+
+// Animacoes e sons de idle
+void CKnife::WeaponIdle()
+{
+	int iAnim;
+	float flRand = RANDOM_FLOAT(0, 1);
+
+	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
+		return;
+
+	if (RANDOM_LONG(0, 9) == 9)
+	{
+		iAnim = KNIFE_PICHAVASIM;
+		EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/spray_eupichavasim.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM);
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 8;
+	}
+	else
+	{
+		if (flRand <= 0.35)
+		{
+			iAnim = KNIFE_IDLE1;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+		}
+		else if (flRand <= 0.65)
+		{
+			iAnim = KNIFE_IDLE2;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
+		}
+		else
+		{
+			iAnim = KNIFE_IDLE3;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
+		}
+	}
+
+	SendWeaponAnim(iAnim);
 }
 // ############ //
 

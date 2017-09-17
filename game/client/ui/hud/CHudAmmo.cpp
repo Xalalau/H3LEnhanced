@@ -107,7 +107,7 @@ bool CHudAmmo::Init()
 	m_pCrosshairScale = CVAR_CREATE( "crosshair_scale", "1", FCVAR_ARCHIVE );
 
 	// ############ hu3lifezado ############ //
-	// Cores da Latinha de Pichacao no HUD (de 1 a 9)
+	// Cores da Latinha de Pichacao no HUD
 	m_pCvarLColor = gEngfuncs.pfnRegisterVariable("hu3_spray_color", "1", FCVAR_ARCHIVE);
 	// ############ //
 
@@ -899,7 +899,7 @@ bool CHudAmmo::Draw(float flTime)
 		HSPRITE sprite_itself = gHUD.GetSprite(sprite_index);
 
 		int iIconWidth = gHUD.GetSpriteRect(sprite_index).right - gHUD.GetSpriteRect(sprite_index).left;
-		int y2 = y - gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4 - 135;
+		int y2 = y - gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4 ;
 		int x2 = ScreenWidth - 4 * AmmoWidth - iIconWidth;
 
 		// Desenhar icone indicativo de cor

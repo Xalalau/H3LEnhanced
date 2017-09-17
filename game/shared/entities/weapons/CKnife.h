@@ -30,7 +30,8 @@ enum KnifeAnim
 	KNIFE_IDLE2,
 	KNIFE_IDLE3,
 	KNIFE_CHARGE,
-	KNIFE_STAB
+	KNIFE_STAB,
+	KNIFE_PICHAVASIM
 };
 
 class CKnife : public CBasePlayerWeapon
@@ -55,6 +56,8 @@ public:
 
 	// ############ hu3lifezado ############ //
 	// Funcoes para mexer com pichacao
+	void WeaponIdle() override;
+
 	void SecondaryAttack() override;
 
 	void DamageAnimationAndSound();
