@@ -36,6 +36,14 @@ CKnife::CKnife()
 {
 }
 
+const char *CKnife::pSelectionSounds[] = 
+{
+	"weapons/spray_selection1.wav",
+	"weapons/spray_selection2.wav",
+	"weapons/spray_selection3.wav",
+	"weapons/spray_selection4.wav",    
+};
+
 void CKnife::Precache()
 {
 	BaseClass::Precache();
@@ -50,7 +58,8 @@ void CKnife::Precache()
 	PRECACHE_SOUND( "weapons/spray_hit_flesh2.wav" );
 	PRECACHE_SOUND( "weapons/spray_hit_wall1.wav" );
 	PRECACHE_SOUND( "weapons/spray_hit_wall2.wav" );
-	PRECACHE_SOUND("weapons/spray_eupichavasim.wav");
+	PRECACHE_SOUND( "weapons/spray_eupichavasim.wav" );
+    PRECACHE_SOUND_ARRAY(pSelectionSounds);
 	// ############ //
 
 	m_usKnife = PRECACHE_EVENT( 1, "events/knife.sc" );
@@ -149,8 +158,17 @@ void CKnife::SecondaryAttack()
 	else
 		CVAR_SET_FLOAT("hu3_spray_color", 1);
 
-	// Faz a mudanca de cor ficar desativada por 0.15s
-	m_nextcolorchange = gpGlobals->time + 0.15;
+    EMIT_SOUND_DYN( m_pPlayer, CHAN_ITEM, RANDOM_SOUND_ARRAY(pSelectionSounds), 1, ATTN_IDLE, 0, PITCH_NORM );
+    
+	// Animacao e seu tempo:
+
+    SendWeaponAnim(KNIFE_SELECTION);
+
+	// Faz a mudanca de cor ficar desativada durante tempo da animacao
+	m_nextcolorchange = gpGlobals->time + 0.35;
+
+	// Idle tambem so volta depois desse tempo
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.35;
 #endif
 	return;
 }
@@ -365,7 +383,8 @@ void CKnife::WeaponIdle()
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	if (RANDOM_LONG(0, 9) == 9)
+	// 5% de chance de tocar EU PICHAVA SIM E CURTIA MUITO!
+	if (RANDOM_LONG(0, 99) >= 95)
 	{
 		iAnim = KNIFE_PICHAVASIM;
 		EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/spray_eupichavasim.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM);
@@ -373,12 +392,14 @@ void CKnife::WeaponIdle()
 	}
 	else
 	{
-		if (flRand <= 0.35)
+		// 15% de chance de olhar o rotulo
+		if (flRand <= 0.15)
 		{
 			iAnim = KNIFE_IDLE1;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 		}
-		else if (flRand <= 0.65)
+		// 85% de chance para eventos de segurar normalmente
+		else if (flRand <= 0.50)
 		{
 			iAnim = KNIFE_IDLE2;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);

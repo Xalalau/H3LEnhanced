@@ -31,7 +31,8 @@ enum KnifeAnim
 	KNIFE_IDLE3,
 	KNIFE_CHARGE,
 	KNIFE_STAB,
-	KNIFE_PICHAVASIM
+	KNIFE_PICHAVASIM,
+    KNIFE_SELECTION
 };
 
 class CKnife : public CBasePlayerWeapon
@@ -65,6 +66,8 @@ public:
 	bool TraceSomeShit();
 
 	void PlaceColor();
+    
+   	static const char *pSelectionSounds[];
 	// ############ //
 
 private:
