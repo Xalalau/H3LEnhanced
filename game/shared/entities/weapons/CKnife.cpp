@@ -383,27 +383,32 @@ void CKnife::WeaponIdle()
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	// 5% de chance de tocar EU PICHAVA SIM E CURTIA MUITO!
-	if (RANDOM_LONG(0, 99) >= 95)
+	// 3% de chance de tocar EU PICHAVA SIM E CURTIA MUITO!
+	if (RANDOM_LONG(0, 99) >= 97)
 	{
 		iAnim = KNIFE_PICHAVASIM;
 		EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/spray_eupichavasim.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM);
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 8;
+
+		// Impedir a troca de cores de funcionar por pouco tempo para impedir que o jogador corte bruscamente a animacao
+		m_nextcolorchange = gpGlobals->time + 3;
 	}
+	// 97% de chance de executar essa parte
 	else
 	{
-		// 15% de chance de olhar o rotulo
-		if (flRand <= 0.15)
+		// 15% de chance de olhar o rotulo caso o jogador nao tenha acabado de trocar a cor da arma
+		if (flRand <= 0.15 && m_nextcolorchange + 0.35 <= gpGlobals->time)
 		{
 			iAnim = KNIFE_IDLE1;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 		}
-		// 85% de chance para eventos de segurar normalmente
+		// 50% de chance para segurar normalmente mas com algum movimento - Tipo 1
 		else if (flRand <= 0.50)
 		{
 			iAnim = KNIFE_IDLE2;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10, 15);
 		}
+		// 35% de chance para segurar normalmente mas com algum movimento - Tipo 2
 		else
 		{
 			iAnim = KNIFE_IDLE3;
