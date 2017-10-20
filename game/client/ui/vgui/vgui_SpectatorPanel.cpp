@@ -35,6 +35,14 @@ void DLLEXPORT HUD_ChatInputPosition( int *x, int *y )
 			*y = YRES( gHUD.m_Spectator.m_OverviewData.insetWindowHeight + 5 );
 		}
 	}
+	// ############ hu3lifezado ############ //
+	// Chat movido para local mais adequado
+	else
+	{
+		*x = 10;
+		*y = ScreenHeight - 140;
+	}
+	// ############ //
 }
 
 //////////////////////////////////////////////////////////////////////
