@@ -238,15 +238,12 @@ set( SHARED_INCLUDE_PATHS
 	${XercesC_INCLUDE_DIRS}
 )
 
-#keyvalues and utility are temporary until the code between these repositories can be shared. - Solokiller
 add_subdirectory( common )
 add_subdirectory( engine )
 add_subdirectory( game/shared )
-add_subdirectory( keyvalues )
 add_subdirectory( pm_shared )
 add_subdirectory( public )
 add_subdirectory( shared/engine )
-add_subdirectory( utility )
 
 #Save the shares sources into SHARED_SRCS
 get_property(SHARED_SRCS GLOBAL PROPERTY SRCS_LIST)
