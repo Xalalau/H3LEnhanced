@@ -220,28 +220,6 @@ if( ${XercesC_VERSION} VERSION_LESS ${XERCESC_DEV_VERSION} )
 	message( WARNING "Xerces-C version is older than version used to develop with" )
 endif()
 
-#Extract the version number, needed for the library name
-string( REGEX MATCHALL "[0-9]+" XERCESC_VERSION_COMPONENTS ${XercesC_VERSION} )
-
-list( LENGTH XERCESC_VERSION_COMPONENTS XERCESC_VERSION_LENGTH )
-
-#Could be greater if it's followed by something like -rc3
-if( ${XERCESC_VERSION_LENGTH} LESS 3 )
-	message( FATAL_ERROR "Xerces-C version is invalid" )
-endif()
-
-list( GET XERCESC_VERSION_COMPONENTS 0 XERCESC_VERSION_MAJOR )
-list( GET XERCESC_VERSION_COMPONENTS 1 XERCESC_VERSION_MINOR )
-
-set( XERCESC_LIB_VERSION ${XERCESC_VERSION_MAJOR}_${XERCESC_VERSION_MINOR} )
-
-#Windows only: used for delay loading
-set( XERCESC_DELAYLOAD_NAME "xerces-c_${XERCESC_LIB_VERSION}.dll" )
-
-set( SHARED_GAME_DEFS ${SHARED_GAME_DEFS}
-	XERCESC_DELAYLOAD_NAME="${XERCESC_DELAYLOAD_NAME}"
-)
-
 set( SHARED_INCLUDE_PATHS
 	common
 	public
@@ -437,7 +415,7 @@ set_target_properties( client PROPERTIES
 set( CLIENT_LINK_FLAGS )
 
 if( MSVC )
-	set( CLIENT_LINK_FLAGS "${CLIENT_LINK_FLAGS} /DELAYLOAD:${XERCESC_DELAYLOAD_NAME} " )
+	set( CLIENT_LINK_FLAGS "${CLIENT_LINK_FLAGS} " )
 elseif( NOT APPLE )
 	#Generate a map file that provides information about the linking stage.
 	set( CLIENT_LINK_FLAGS
@@ -502,9 +480,7 @@ target_compile_definitions( hl PRIVATE
 )
 
 #Copy the libraries first so they can be found by the code below.
-set( LIBS_TO_COPY
-	${XERCESC_INSTALL_DIR}/bin/${CMAKE_SHARED_LIBRARY_PREFIX}xerces-c_${XERCESC_LIB_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}
-)
+set( LIBS_TO_COPY )
 
 if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
 	if( WIN32 )
@@ -608,7 +584,7 @@ if( MSVC )
 
 	#Add the module definition file. Needed for GiveFnptrsToDll function export.
 	#Add delay loaded libraries.
-	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD} /DELAYLOAD:${XERCESC_DELAYLOAD_NAME}" )
+	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD}" )
 else()
 	if( NOT APPLE )
 		#Generate a map file that provides information about the linking stage.

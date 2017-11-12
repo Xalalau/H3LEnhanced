@@ -32,11 +32,6 @@ HMODULE DelayLoad_LoadGameLib( const char* pszDLL, const char* pszLocalPath )
 */
 HMODULE DelayLoad_HandleSharedLibs( unsigned dliNotify, PDelayLoadInfo pdli )
 {
-	if( strcmp( pdli->szDll, XERCESC_DELAYLOAD_NAME ) == 0 )
-	{
-		return DelayLoad_LoadGameLib( pdli->szDll );
-	}
-
 	return nullptr;
 }
 
