@@ -5,7 +5,9 @@
 #include <cstddef>
 #include <memory>
 
+#include <xercesc/dom/DOMDocument.hpp>
 #include <xercesc/dom/DOMNamedNodeMap.hpp>
+#include <xercesc/dom/DOMNodeList.hpp>
 #include <xercesc/util/XercesDefs.hpp>
 #include <xercesc/util/XMLString.hpp>
 
@@ -37,35 +39,106 @@ public:
 template<typename T>
 using unique_xml_ptr = std::unique_ptr<T, XMLDeleter<T>>;
 
+template<size_t SIZE, size_t INDEX>
+struct InternalAsciiToXMLCh
+{
+	static void Convert( const char( &szString )[ SIZE ], std::array<XMLCh, SIZE>& result )
+	{
+		result[ INDEX ] = static_cast<XMLCh>( szString[ INDEX ] );
+
+		InternalAsciiToXMLCh<SIZE, INDEX - 1>::Convert( szString, result );
+	}
+};
+
+template<size_t SIZE>
+struct InternalAsciiToXMLCh<SIZE, 0>
+{
+	static void Convert( const char( &szString )[ SIZE ], std::array<XMLCh, SIZE>& result )
+	{
+		result[ 0 ] = static_cast<XMLCh>( szString[ 0 ] );
+	}
+};
+
+/**
+*	@brief Converts an Ascii string literal to its XMLCh equivalent
+*	Eliminates the need to check for errors during conversion
+*	Only supports a limited character set, use with caution
+*	@see xercesc/util/XMLUniDefs.hpp for the supported characters
+*/
+template<size_t SIZE>
+std::array<XMLCh, SIZE> AsciiToXMLCh( const char( &szString )[ SIZE ] )
+{
+	std::array<XMLCh, SIZE> result;
+
+	InternalAsciiToXMLCh<SIZE, SIZE - 1>::Convert( szString, result );
+
+	return result;
+}
+
 /**
 *	@brief Default maximum for stack buffers used to transcode strings
 */
 const size_t DEFAULT_MAX_TRANSCODE = 2048;
 
 /**
-*	@brief Gets a named item from a DOMNamedNodeMap using a stack allocated buffer to convert a native name to XMLCh
-*	More efficient than dynamically allocating strings, names are usually small
-*	@param map Map to get item from
-*	@param pszName Name of item to retrieve
-*	@param[ out ] pOutNode If found this is the node, otherwise null
-*	@return Whether transcode succeeded
-*	@tparam MAX Maximum number of characters to convert
+*	@brief Gets a list of elements by tag name
+*	Only supports a limited subset of characters in names
+*	@param doc Document to get item from
+*	@param szName Name of tags to find
+*	@return If successful this is the list, otherwise null
 */
-template<size_t MAX = DEFAULT_MAX_TRANSCODE>
-inline bool GetNamedItem( const xercesc::DOMNamedNodeMap& map, const char* pszName, xercesc::DOMNode*& pOutNode )
+template<size_t SIZE>
+inline xercesc::DOMNodeList* GetElementsByTagName( const xercesc::DOMDocument& doc, const char ( & szName )[ SIZE ] )
 {
-	std::array<XMLCh, MAX + 1> buffer;
+	auto xmlName = AsciiToXMLCh( szName );
 
-	if( xercesc::XMLString::transcode( pszName, buffer.data(), MAX ) )
+	return doc.getElementsByTagName( xmlName.data() );
+}
+
+/**
+*	@brief Find a root level node in a given node
+*	Only supports a limited subset of characters in names
+*	@param node Node to get item from
+*	@param szName Name of tags to find
+*	@return If found this is the node, otherwise null
+*/
+template<size_t SIZE>
+inline xercesc::DOMNode* FindRootNode( const xercesc::DOMNode& node, const char ( & szName )[ SIZE ] )
+{
+	auto xmlName = AsciiToXMLCh( szName );
+
+	auto pChildren = node.getChildNodes();
+
+	const auto count = pChildren->getLength();
+
+	for( decltype( pChildren->getLength() ) index = 0; index < count; ++index )
 	{
-		pOutNode = map.getNamedItem( buffer.data() );
+		auto pChild = pChildren->item( index );
 
-		return true;
+		if( xercesc::XMLString::compareString( pChild->getNodeName(), xmlName.data() ) == 0 )
+		{
+			return pChild;
+		}
 	}
 
-	pOutNode = nullptr;
+	return nullptr;
+}
 
-	return false;
+/**
+*	@brief Gets a named item from a DOMNamedNodeMap
+*	Only supports a limited subset of characters in names
+*	@param map Map to get item from
+*	@param szName Name of item to retrieve
+*	@return If found this is the node, otherwise null
+*/
+template<size_t SIZE>
+inline xercesc::DOMNode* GetNamedItem( const xercesc::DOMNamedNodeMap& map, const char ( & szName )[ SIZE ] )
+{
+	auto xmlName = AsciiToXMLCh( szName );
+
+	return map.getNamedItem( xmlName.data() );
+
+	return nullptr;
 }
 }
 
