@@ -58,6 +58,7 @@ bool CHudSayText::Init()
 }
 
 
+
 void CHudSayText::InitHUDData()
 {
 	memset( m_szLineBuffer, 0, sizeof( m_szLineBuffer ) );
@@ -184,7 +185,7 @@ bool CHudSayText::Draw( float flTime )
 				else if ((ch == 'y') || (ch == 'Y'))
 					color = g_ColorGrey;
 
-				// Se a cor estiver com letra maiusula, ponho no a mensagem no modo funcao
+				// Se a cor estiver com letra maiuscula, ponho a mensagem no modo funcao
 				if ((ch >= 65 && ch <= 90) && force_normal != -1)
 				{
 					force_normal = 1;
