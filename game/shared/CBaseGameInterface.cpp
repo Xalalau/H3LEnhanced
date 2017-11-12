@@ -11,6 +11,8 @@
 #include "interface.h"
 #include "FileSystem.h"
 
+#include "xml/CXMLManager.h"
+
 #include "CBaseGameInterface.h"
 
 CSysModule* g_pFileSystemModule = nullptr;
@@ -23,11 +25,23 @@ bool CBaseGameInterface::InitializeCommon()
 
 	g_pDeveloper = CVarGetPointer( "developer" );
 
-	return g_pDeveloper != nullptr;
+	if( nullptr == g_pDeveloper )
+	{
+		return false;
+	}
+
+	if( !xml::XMLManager().Initialize() )
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void CBaseGameInterface::ShutdownCommon()
 {
+	xml::XMLManager().Shutdown();
+
 	g_pDeveloper = nullptr;
 
 	ShutdownFileSystem();
