@@ -201,6 +201,47 @@ if( USE_ANGELSCRIPT )
 	)
 endif()
 
+#Xerces-C requirements
+#Version used for development. Older versions may not work properly.
+set( XERCESC_DEV_VERSION 3.2.0 )
+
+set( XERCESC_INSTALL_DIR "" CACHE PATH "Install directory for Xercesc-C" )
+
+find_package( XercesC PATHS ${XERCESC_INSTALL_DIR} NO_DEFAULT_PATH REQUIRED )
+
+if( NOT XercesC_FOUND )
+	message( FATAL_ERROR "Could not find Xercesc-C dependency" )
+endif()
+
+message( STATUS "Xerces-C version: ${XercesC_VERSION} (dev version: ${XERCESC_DEV_VERSION})" )
+
+#Warn user if they're using an outdated version
+if( ${XercesC_VERSION} VERSION_LESS ${XERCESC_DEV_VERSION} )
+	message( WARNING "Xerces-C version is older than version used to develop with" )
+endif()
+
+#Extract the version number, needed for the library name
+string( REGEX MATCHALL "[0-9]+" XERCESC_VERSION_COMPONENTS ${XercesC_VERSION} )
+
+list( LENGTH XERCESC_VERSION_COMPONENTS XERCESC_VERSION_LENGTH )
+
+#Could be greater if it's followed by something like -rc3
+if( ${XERCESC_VERSION_LENGTH} LESS 3 )
+	message( FATAL_ERROR "Xerces-C version is invalid" )
+endif()
+
+list( GET XERCESC_VERSION_COMPONENTS 0 XERCESC_VERSION_MAJOR )
+list( GET XERCESC_VERSION_COMPONENTS 1 XERCESC_VERSION_MINOR )
+
+set( XERCESC_LIB_VERSION ${XERCESC_VERSION_MAJOR}_${XERCESC_VERSION_MINOR} )
+
+#Windows only: used for delay loading
+set( XERCESC_DELAYLOAD_NAME "xerces-c_${XERCESC_LIB_VERSION}.dll" )
+
+set( SHARED_GAME_DEFS ${SHARED_GAME_DEFS}
+	XERCESC_DELAYLOAD_NAME="${XERCESC_DELAYLOAD_NAME}"
+)
+
 set( SHARED_INCLUDE_PATHS
 	common
 	public
@@ -216,6 +257,7 @@ set( SHARED_INCLUDE_PATHS
 	source_sdk/public
 	source_sdk/common
 	${CMAKE_SOURCE_DIR}  #Should ideally get rid of this.
+	${XercesC_INCLUDE_DIRS}
 )
 
 #keyvalues and utility are temporary until the code between these repositories can be shared. - Solokiller
@@ -258,6 +300,7 @@ set( SHARED_DEPENDENCIES
 	${TIER0}
 	${VSTDLIB}
 	tier1
+	${XercesC_LIBRARIES}
 )
 
 set( THREADS_PREFER_PTHREAD_FLAG ON )
@@ -373,6 +416,7 @@ if( USE_ANGELSCRIPT )
 endif()
 
 target_link_libraries( client 
+	${DELAYIMP}
 	vgui
 	${VGUI2_LIBS}
 	${CLIENT_PLAT_LIBS}
@@ -392,7 +436,9 @@ set_target_properties( client PROPERTIES
 
 set( CLIENT_LINK_FLAGS )
 
-if( NOT MSVC AND NOT APPLE )
+if( MSVC )
+	set( CLIENT_LINK_FLAGS "${CLIENT_LINK_FLAGS} /DELAYLOAD:${XERCESC_DELAYLOAD_NAME} " )
+elseif( NOT APPLE )
 	#Generate a map file that provides information about the linking stage.
 	set( CLIENT_LINK_FLAGS
 		${CLIENT_LINK_FLAGS} "-Wl,-Map,client_map.txt "
@@ -456,7 +502,9 @@ target_compile_definitions( hl PRIVATE
 )
 
 #Copy the libraries first so they can be found by the code below.
-set( LIBS_TO_COPY )
+set( LIBS_TO_COPY
+	${XERCESC_INSTALL_DIR}/bin/${CMAKE_SHARED_LIBRARY_PREFIX}xerces-c_${XERCESC_LIB_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}
+)
 
 if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
 	if( WIN32 )
@@ -560,7 +608,7 @@ if( MSVC )
 
 	#Add the module definition file. Needed for GiveFnptrsToDll function export.
 	#Add delay loaded libraries.
-	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD} " )
+	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD} /DELAYLOAD:${XERCESC_DELAYLOAD_NAME}" )
 else()
 	if( NOT APPLE )
 		#Generate a map file that provides information about the linking stage.
