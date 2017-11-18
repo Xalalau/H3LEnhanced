@@ -1,6 +1,7 @@
-#include <iostream>
-
 #include <xercesc/dom/DOMError.hpp>
+
+#include "extdll.h"
+#include "util.h"
 
 #include "CDOMPrintErrorHandler.h"
 #include "CStrX.h"
@@ -11,13 +12,13 @@ bool CDOMPrintErrorHandler::handleError( const xercesc::DOMError& domError )
 {
 	// Display whatever error message passed from the serializer
 	if( domError.getSeverity() == xercesc::DOMError::DOM_SEVERITY_WARNING )
-		std::cerr << "\nWarning Message: ";
+		Con_Printf( "\nWarning Message: " );
 	else if( domError.getSeverity() == xercesc::DOMError::DOM_SEVERITY_ERROR )
-		std::cerr << "\nError Message: ";
+		Con_Printf( "\nError Message: " );
 	else
-		std::cerr << "\nFatal Message: ";
+		Con_Printf( "\nFatal Message: " );
 
-	std::cerr << CStrX( domError.getMessage() ).LocalForm() << std::endl;
+	Con_Printf( "%s\n", CStrX( domError.getMessage() ).LocalForm() );
 
 	// Instructs the serializer to continue serialization if possible.
 	return true;
