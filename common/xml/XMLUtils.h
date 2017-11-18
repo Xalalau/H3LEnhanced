@@ -4,6 +4,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <string>
 
 #include <xercesc/dom/DOMDocument.hpp>
 #include <xercesc/dom/DOMElement.hpp>
@@ -152,6 +153,11 @@ inline xercesc::DOMNode* GetNamedItem( const xercesc::DOMNamedNodeMap& map, cons
 
 	return nullptr;
 }
+
+/**
+*	@brief Gets the key and value attributes from a given map
+*/
+bool GetKeyValue( const xercesc::DOMNamedNodeMap& map, std::string& szKey, std::string& szValue );
 }
 
 #endif //COMMON_XML_XMLUTILS_H

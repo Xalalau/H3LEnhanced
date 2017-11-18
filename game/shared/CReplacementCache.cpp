@@ -89,6 +89,8 @@ std::unique_ptr<CReplacementMap> CReplacementCache::LoadMap( const char* const p
 
 	auto map = std::make_unique<CReplacementMap>( pszAbsFileName );
 
+	std::string szKey, szValue;
+
 	for( decltype( pChildren->getLength() ) index = 0; index < count; ++index )
 	{
 		auto pChild = pChildren->item( index );
@@ -101,27 +103,21 @@ std::unique_ptr<CReplacementMap> CReplacementCache::LoadMap( const char* const p
 
 		auto& attrs = *pChild->getAttributes();
 
-		auto pKey = xml::GetNamedItem( attrs, "key" );
-		auto pValue = xml::GetNamedItem( attrs, "value" );
-
-		if( !pKey || !pValue )
+		if( !xml::GetKeyValue( attrs, szKey, szValue ) )
 		{
 			Alert( at_console, "CReplacementCache::LoadMap: File \"%s\": encountered keyvalue with one or more missing parameters, ignoring\n", pszFileName );
 			continue;
 		}
 
-		const xml::CStrX szKey{ pKey->getNodeValue() };
-		const xml::CStrX szValue{ pValue->getNodeValue() };
-
-		if( !( *szKey.LocalForm() ) )
+		if( szKey.empty() )
 		{
 			Alert( at_console, "CReplacementCache::LoadMap: File \"%s\": encountered keyvalue with empty key, ignoring\n", pszFileName );
 			continue;
 		}
 
-		if( !map->AddReplacement( szKey.LocalForm(), szValue.LocalForm() ) )
+		if( !map->AddReplacement( szKey.c_str(), szValue.c_str() ) )
 		{
-			Alert( at_warning, "CReplacementCache::LoadMap: File \"%s\": Duplicate original filename \"%s\", ignoring\n", pszFileName, szKey.LocalForm() );
+			Alert( at_warning, "CReplacementCache::LoadMap: File \"%s\": Duplicate original filename \"%s\", ignoring\n", pszFileName, szKey.c_str() );
 		}
 	}
 
