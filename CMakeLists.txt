@@ -151,6 +151,7 @@ endif()
 #Shared definitions for the client & server libaries.
 set( SHARED_GAME_DEFS
 	CLIENT_WEAPONS
+	NO_MALLOC_OVERRIDE
 	USE_ANGELSCRIPT=${USE_ANGELSCRIPT_DEFINE}
 	USE_OPFOR=${USE_OPFOR_DEFINE}
 )
@@ -327,7 +328,6 @@ target_compile_definitions( client PRIVATE
 	${SHARED_GAME_DEFS}
 	CLIENT_DLL
 	USE_VGUI2=${USE_VGUI2_DEFINE}
-	NO_MALLOC_OVERRIDE
 )
 
 #Find client dependencies
