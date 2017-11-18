@@ -116,6 +116,9 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseInputSource( const xerces
 
 	try
 	{
+		//TODO: all Xerces parsers except the DOM parser do this automatically. Could be a bug - Solokiller
+		m_ErrorHandler->resetErrors();
+
 		m_Parser->parse( source );
 
 		bErrorsOccurred = false;
