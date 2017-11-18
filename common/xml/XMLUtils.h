@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <xercesc/dom/DOMDocument.hpp>
+#include <xercesc/dom/DOMElement.hpp>
 #include <xercesc/dom/DOMNamedNodeMap.hpp>
 #include <xercesc/dom/DOMNodeList.hpp>
 #include <xercesc/util/XercesDefs.hpp>
@@ -93,6 +94,17 @@ inline xercesc::DOMNodeList* GetElementsByTagName( const xercesc::DOMDocument& d
 	auto xmlName = AsciiToXMLCh( szName );
 
 	return doc.getElementsByTagName( xmlName.data() );
+}
+
+/**
+*	@copydoc GetElementsByTagName( const xercesc::DOMDocument& doc, const char ( & szName )[ SIZE ] )
+*/
+template<size_t SIZE>
+inline xercesc::DOMNodeList* GetElementsByTagName( const xercesc::DOMElement& element, const char( &szName )[ SIZE ] )
+{
+	auto xmlName = AsciiToXMLCh( szName );
+
+	return element.getElementsByTagName( xmlName.data() );
 }
 
 /**
