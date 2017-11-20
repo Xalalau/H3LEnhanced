@@ -62,6 +62,19 @@ public:
 
 	void SetWeaponData( const weapon_data_t& data ) override;
 
+	// ############ hu3lifezado ############ //
+	// Chance da arma quebrar e sair voando
+	bool RandomlyBreak();
+	// Chance da arma travar e nao atirar mais
+	bool RandomlyJammed();
+	// Definir a qualidade da arma
+	void SetQuality();
+	// Dano por estilhacos
+	void ShrapnelDamage(int chance, int min_damage, int max_damage);
+	// Perder toda a municao
+	bool RandomlyLostAllAmmo(float chance);
+	// ############ //
+
 private:
 	void UpdateLaser();
 
@@ -72,6 +85,21 @@ private:
 	bool m_bSpotVisible;
 	bool m_bLaserActive;
 	CDesertEagleLaser* m_pLaser;
+
+	// ############ hu3lifezado ############ //
+	// Tempo ate processar a nova chance da arma atirar sozinha
+	float m_nextbadshootchance;
+	// Nos nao podemos imprimir mensagens assim que o jogo comeca
+	float m_waitforthegametobeready;
+	// Arma travada
+	bool m_jammedweapon;
+	// Qualidade da arma (de 1 ate 9, nunca 10)
+	float m_quality;
+	// A influencia da qualidade nos defeitos (30% a 0% de piora proporcional a qualidade de 1 ate 9)
+	float m_qualitypercentageeffect;
+	// Imprimir mensagem quando o jogador coleta a arma
+	bool m_firstmessage;
+	// ############ //
 };
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CDESERTEAGLE_H
 
