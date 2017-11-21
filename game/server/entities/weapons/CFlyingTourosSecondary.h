@@ -25,27 +25,30 @@
 // ---------------------------------------------------------------
 
 // ############ hu3lifezado ############ //
-// Arma Touros quebrando, adaptado de:
+// Tiro secundario da arma Touros, adaptado de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 // ############ //
 
-#ifndef C_FLYING_TOUROS
-#define C_FLYING_TOUROS
+#ifndef C_FLYING_TOUROS_SECONDARY
+#define C_FLYING_TOUROS_SECONDARY
 
-class CFlyingTouros : public CBaseEntity
+#include "entities/weapons/CDesertEagle.h"
+
+class CFlyingTourosSecondary : public CBaseEntity
 {
 public:
-	DECLARE_CLASS(CFlyingTouros, CBaseEntity);
+	DECLARE_CLASS(CFlyingTourosSecondary, CBaseEntity);
 	DECLARE_DATADESC();
 
 	void Spawn(void);
 	void Precache(void);
 	void BubbleThink(void);
 	void SpinTouch(CBaseEntity *pOther);
+	void SetQuality(int quality);
 	CBasePlayer *m_pPlayer;
 
 private:
-
+	int quality;
 	EHANDLE m_hOwner;        // Original owner is stored here so we can
 							 // allow the Touros to hit the user.
 };

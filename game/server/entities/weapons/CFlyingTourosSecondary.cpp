@@ -25,7 +25,7 @@
 // ---------------------------------------------------------------
 
 // ############ hu3lifezado ############ //
-// Arma Touros quebrando, adaptado de:
+// Tiro secundario da arma Touros, adaptado de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 // ############ //
 
@@ -37,17 +37,18 @@
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
 #include "gamerules/GameRules.h"
+#include "entities/weapons/CWeaponBox.h"
 
-#include "CFlyingTouros.h"
+#include "CFlyingTourosSecondary.h"
 
-BEGIN_DATADESC(CFlyingTouros)
+BEGIN_DATADESC(CFlyingTourosSecondary)
 	DEFINE_TOUCHFUNC( SpinTouch ),
 	DEFINE_THINKFUNC( BubbleThink ),
 END_DATADESC()
 
-LINK_ENTITY_TO_CLASS( flying_touros, CFlyingTouros);
+LINK_ENTITY_TO_CLASS( flying_touros_secondary, CFlyingTourosSecondary);
 
-void CFlyingTouros::Spawn()
+void CFlyingTourosSecondary::Spawn()
 {
 	Precache();
 
@@ -72,14 +73,14 @@ void CFlyingTouros::Spawn()
 		m_hOwner = Instance(pev->owner);
 
 	// Set the think funtion. 
-	SetThink(&CFlyingTouros::BubbleThink);
+	SetThink(&CFlyingTourosSecondary::BubbleThink);
 	pev->nextthink = gpGlobals->time + 0.25;
 
 	// Set the touch function.
-	SetTouch(&CFlyingTouros::SpinTouch);
+	SetTouch(&CFlyingTourosSecondary::SpinTouch);
 }
 
-void CFlyingTouros::Precache()
+void CFlyingTourosSecondary::Precache()
 {
 	PRECACHE_MODEL("models/w_desert_eagle.mdl");
 	PRECACHE_SOUND("weapons/cbar_hitbod1.wav");
@@ -87,7 +88,7 @@ void CFlyingTouros::Precache()
 	PRECACHE_SOUND("weapons/cbar_miss1.wav");
 }
 
-void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
+void CFlyingTourosSecondary::SpinTouch(CBaseEntity *pOther)
 {
 	SetTouch(NULL);
 	SetThink(NULL);
@@ -124,6 +125,33 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 		}
 	}
 
+	// Don't draw the flying Touros anymore. 
+	pev->effects |= EF_NODRAW;
+	pev->solid = SOLID_NOT;
+
+	// Spawn a Touros weapon
+	CBasePlayerWeapon *pItem = (CBasePlayerWeapon *)Create("weapon_eagle", pev->origin, pev->angles, edict());
+
+	// Ligo o item para acesso externo
+	CDesertEagle *pItem_hu3 = (CDesertEagle *) pItem;
+
+	// Salvo a qualidade da arma
+	pItem_hu3->m_quality = quality;
+
+	// Spawn a weapon box
+	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", GetAbsOrigin(), pev->angles, edict());
+
+	// don't let weapon box tilt.
+	pWeaponBox->pev->angles.x = 0;
+	pWeaponBox->pev->angles.z = 0;
+
+	// remove the weapon box after 2 mins. // Nope, 10 minutos
+	pWeaponBox->pev->nextthink = gpGlobals->time + 1200;
+	pWeaponBox->SetThink(&CWeaponBox::Kill);
+
+	// Pack the Touros in the weapon box
+	pWeaponBox->PackWeapon(pItem);
+
 	// Get the unit vector in the direction of motion.
 	Vector vecDir = pev->velocity.Normalize();
 
@@ -136,15 +164,23 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 	TraceResult tr;
 	UTIL_TraceLine(pev->origin, pev->origin + vecDir * 100, dont_ignore_monsters, ENT(pev), &tr);
 
-	// Throw Touros along the normal so it looks kinda
+	// Throw Touros or WB along the normal so it looks kinda
 	// like a ricochet. This would be better if I actually 
 	// calcualted the reflection angle, but I'm lazy. :)
-	pev->velocity = tr.vecPlaneNormal * 300;
-
+	pWeaponBox->pev->velocity = tr.vecPlaneNormal * 300;
+	
+	// Remove this flying_Touros from the world.
+	SetThink(&CBaseEntity::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 }
 
-void CFlyingTouros::BubbleThink(void)
+void CFlyingTourosSecondary::SetQuality(int m_quality)
+{
+	// Altero o valor da qualidade na arma
+	quality = m_quality;
+}
+
+void CFlyingTourosSecondary::BubbleThink(void)
 {
 	// We have no owner. We do this .25 seconds AFTER the Touros
 	// is thrown so that we don't hit the owner immediately when throwing

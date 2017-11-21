@@ -72,7 +72,7 @@ public:
 	// Dano por estilhacos
 	void ShrapnelDamage(int chance, int min_damage, int max_damage);
 	// Perder toda a municao
-	bool RandomlyLostAllAmmo(float chance);
+	bool RandomlyLostAllAmmo();
 	// ############ //
 
 private:
@@ -82,10 +82,6 @@ private:
 	int m_iShell;
 	unsigned short m_usFireEagle;
 
-	bool m_bSpotVisible;
-	bool m_bLaserActive;
-	CDesertEagleLaser* m_pLaser;
-
 	// ############ hu3lifezado ############ //
 	// Tempo ate processar a nova chance da arma atirar sozinha
 	float m_nextbadshootchance;
@@ -93,13 +89,19 @@ private:
 	float m_waitforthegametobeready;
 	// Arma travada
 	bool m_jammedweapon;
-	// Qualidade da arma (de 1 ate 9, nunca 10)
-	float m_quality;
-	// A influencia da qualidade nos defeitos (30% a 0% de piora proporcional a qualidade de 1 ate 9)
-	float m_qualitypercentageeffect;
 	// Imprimir mensagem quando o jogador coleta a arma
 	bool m_firstmessage;
+	// Comando para copiarmos valores de qualidade do server para o client
+	cvar_t	*hu3_touros_gambiarra_qualidade;
+
+public:
+	// Qualidade da arma (de 1 ate 9, nunca 10)
+	int m_quality;
+	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
+	float m_qualitypercentageeffect;
 	// ############ //
+
+
 };
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CDESERTEAGLE_H
 

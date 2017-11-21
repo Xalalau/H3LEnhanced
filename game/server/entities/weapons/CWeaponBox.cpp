@@ -3,6 +3,11 @@
 #include "cbase.h"
 #include "CBasePlayer.h"
 #include "Weapons.h"
+// ############ hu3lifezado ############ //
+// Usado para copiarmos valores de qualidade da Tauros do server para o client
+#include "entities/weapons/CDesertEagle.h"
+// ############ //
+
 
 #include "CWeaponBox.h"
 
@@ -122,9 +127,22 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 						}
 					}
 				}
+
+				// Comando para copiarmos valores de qualidade da Tauros do server para o client
+				CDesertEagle * pItem_hu3 = (CDesertEagle *) pItem;
+				if (pItem_hu3->m_quality)
+				{
+					char command[35] = "hu3_touros_gambiarra_qualidade ";
+					char value[2];
+					snprintf(value, 2, "%d", pItem_hu3->m_quality);
+					strcat(strcat(command, value), "\n");
+					CLIENT_COMMAND( ENT( pPlayer ), command);
+				}
 				// ############ //
 
 				m_rgpPlayerItems[ i ] = m_rgpPlayerItems[ i ]->m_pNext;// unlink this weapon from the box
+
+				
 
 				if( pPlayer->AddPlayerItem( pItem ) )
 				{

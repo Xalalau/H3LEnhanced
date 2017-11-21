@@ -19,9 +19,10 @@
 #include "Weapons.h"
 #include "CBasePlayer.h"
 // ############ hu3lifezado ############ //
-// Arma Touros quebrada voadora, codigo adaptado de:
+// Arma Touros quebrada voadora e tiro secundario, codigos adaptados de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 #include "entities/weapons/CFlyingTouros.h"
+#include "entities/weapons/CFlyingTourosSecondary.h"
 // Para balancar a tela:
 #include "shake.h"
 // Imprimir mensagens
@@ -31,9 +32,14 @@
 #endif
 // ############ //
 
-#include "entities/weapons/CDesertEagleLaser.h"
-
 #include "CDesertEagle.h"
+
+// ############ hu3lifezado ############ //
+// Para repassar a qualidade da arma do servar para o cliente (gambiarrada de noob)
+#ifdef CLIENT_DLL
+cvar_t	*hu3_touros_gambiarra_qualidade;
+#endif
+// ############ //
 
 LINK_ENTITY_TO_CLASS( weapon_eagle, CDesertEagle );
 
@@ -70,17 +76,22 @@ void CDesertEagle::Spawn()
 	SetModel( "models/w_desert_eagle.mdl" );
 
 	// ############ hu3lifezado ############ //
-	// Entre 5 e 10 segundos tem 20% de chance da arma atirar sozinha
-	m_nextbadshootchance = gpGlobals->time + RANDOM_LONG(5, 10);
+	// Tempo ate processar a nova chance da arma atirar sozinha
+	m_nextbadshootchance = gpGlobals->time + 6;
 	// Nos nao podemos imprimir mensagens assim que o jogo comeca
 	m_waitforthegametobeready = gpGlobals->time + 12;
 	// Arma travada
 	m_jammedweapon = false;
-	// Qualidade da arma e porcentagem extra de problemas (inicializadas com 0, alteradas no deploy)
+	// Qualidade da arma e porcentagem extra de problemas
 	m_quality = 0;
 	m_qualitypercentageeffect = 0;
 	// Imprimir mensagem quando o jogador coleta a arma
 	m_firstmessage = true;
+	// Comando para copiarmos valores de qualidade do server para o client
+#ifdef CLIENT_DLL
+	if (!hu3_touros_gambiarra_qualidade)
+		hu3_touros_gambiarra_qualidade = gEngfuncs.pfnRegisterVariable ( "hu3_touros_gambiarra_qualidade", "0", 0 );
+#endif
 	// ############ //
 
 	FallInit();
@@ -101,8 +112,6 @@ bool CDesertEagle::AddToPlayer( CBasePlayer* pPlayer )
 
 bool CDesertEagle::Deploy()
 {
-	m_bSpotVisible = true;
-
 	return DefaultDeploy( 
 		"models/v_desert_eagle.mdl", "models/p_desert_eagle.mdl", 
 		DEAGLE_DRAW,
@@ -113,15 +122,6 @@ void CDesertEagle::Holster()
 {
 	m_fInReload = false;
 
-#ifndef CLIENT_DLL
-	if( m_pLaser )
-	{
-		m_pLaser->Killed( CTakeDamageInfo( nullptr, 0, 0 ), GIB_NEVER );
-		m_pLaser = nullptr;
-		m_bSpotVisible = false;
-	}
-#endif
-
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10.0, 15.0 );
@@ -131,26 +131,22 @@ void CDesertEagle::Holster()
 
 void CDesertEagle::WeaponIdle()
 {
-#ifndef CLIENT_DLL
-	UpdateLaser();
-#endif
-
 	ResetEmptySound();
 
 	// ############ hu3lifezado ############ //
-	// Entre 5 e 10 segundos tem no minimo 10% de chance da arma atirar sozinha (leva 12 segundos para comecar a rodar inicialmente)
+	// Entre 4 e 7 segundos tem entre 10% e 30% de chance da arma atirar sozinha (leva 12 segundos para comecar a rodar inicialmente)
 	if (m_nextbadshootchance <= gpGlobals->time && m_waitforthegametobeready <= gpGlobals->time)
 	{
-		m_nextbadshootchance = gpGlobals->time + UTIL_SharedRandomLong(m_pPlayer->random_seed, 5, 10);
+		m_nextbadshootchance = gpGlobals->time + UTIL_SharedRandomLong(m_pPlayer->random_seed, 4, 7);
 
-		if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (90 - 90 * m_qualitypercentageeffect) && ! m_jammedweapon)
+		if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (90 - 20 * m_qualitypercentageeffect) && ! m_jammedweapon)
 		{
 			UTIL_Sparks(m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 22 + gpGlobals->v_right * 10);
 #ifndef CLIENT_DLL
-			UTIL_SayText("Sua arma Touros atirou sozinha ou balas sairam voado!|r", m_pPlayer);
+			UTIL_SayText("Sua arma Touros atirou sozinha ou balas sairam voando!|r", m_pPlayer);
 
-			// 50% de chance de levar dano de 1 a 5 por estilhacos
-			ShrapnelDamage(50, 1, 5);
+			// 30% de chance de levar dano de 1 a 5 por estilhacos
+			ShrapnelDamage(30, 1, 5);
 #endif
 			PrimaryAttack();
 
@@ -165,38 +161,22 @@ void CDesertEagle::WeaponIdle()
 
 		int iAnim;
 
-		if( m_bLaserActive )
+		if( flNextIdle <= 0.3 )
 		{
-			if( flNextIdle > 0.5 )
-			{
-				iAnim = DEAGLE_IDLE5;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.0;
-			}
-			else
-			{
-				iAnim = DEAGLE_IDLE4;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
-			}
+			iAnim = DEAGLE_IDLE1;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
 		}
 		else
 		{
-			if( flNextIdle <= 0.3 )
+			if( flNextIdle > 0.6 )
 			{
-				iAnim = DEAGLE_IDLE1;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
+				iAnim = DEAGLE_IDLE3;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 1.633;
 			}
 			else
 			{
-				if( flNextIdle > 0.6 )
-				{
-					iAnim = DEAGLE_IDLE3;
-					m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 1.633;
-				}
-				else
-				{
-					iAnim = DEAGLE_IDLE2;
-					m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
-				}
+				iAnim = DEAGLE_IDLE2;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
 			}
 		}
 
@@ -205,14 +185,14 @@ void CDesertEagle::WeaponIdle()
 }
 
 // ############ hu3lifezado ############ //
-// No minimo 3% de chance da arma travar e nao atirar mais
+// De 3% a 17% de chance da arma travar e nao atirar mais
 bool CDesertEagle::RandomlyJammed()
 {
 	bool print = false;
 	
 	if (m_jammedweapon)
 		print = true;
-	else if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (97 - 97 * m_qualitypercentageeffect))
+	else if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (97 - 14 * m_qualitypercentageeffect))
 	{
 		m_jammedweapon = true;
 		print = true;
@@ -229,23 +209,18 @@ bool CDesertEagle::RandomlyJammed()
 	return false;
 }
 
-// No minimo 1% de chance da arma quebrar e sair voando
+// De 1% a 9% de chance da arma quebrar e sair voando
 bool CDesertEagle::RandomlyBreak()
 {
-	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (99 - 99 * m_qualitypercentageeffect))
+	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (99 - 8 * m_qualitypercentageeffect))
 	{
 		// Only throw if we were able to detatch from player.
 		if (m_pPlayer->RemovePlayerItem(this))
 		{			
 #ifndef CLIENT_DLL
-			// Dano de 10 a 25 no jogador, efeitos da tela piscar vermelho e tremer, som da arma quebrando
-			float damage = RANDOM_LONG(10, 25);
-			TraceResult tr = UTIL_GetGlobalTrace();
-			g_MultiDamage.Clear();
-			m_pPlayer->TraceAttack(CTakeDamageInfo(m_pPlayer, damage, DMG_BLAST), pev->velocity.Normalize(), &tr);
-			g_MultiDamage.ApplyMultiDamage(this, m_pPlayer);
+			// Dano de estilhaco de 10 a 25 no jogador, efeitos da tela e tremer, som da arma quebrando
+			ShrapnelDamage(100, 10, 25);
 			UTIL_ScreenShake(m_pPlayer->GetAbsOrigin(), 6.0, 4.0, 0.6, 750);
-			UTIL_ScreenFade(m_pPlayer, Vector(255, 0, 0), 0.2, 0.1, 128, FFADE_IN);
 			EMIT_SOUND_DYN(this, CHAN_WEAPON, "weapons/desert_eagle_fuck.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
 #endif
 
@@ -285,62 +260,25 @@ bool CDesertEagle::RandomlyBreak()
 #endif
 			// Zero a qualidade
 			m_quality = 0;
+#ifdef CLIENT_DLL
+			hu3_touros_gambiarra_qualidade->value = 0;
+#endif
 		}
 		return true;
 	}
 	return false;
 }
 
-// Definir a qualidade da arma
-void CDesertEagle::SetQuality()
+// De 1% a 8% de chance da arma perder toda a municao
+bool CDesertEagle::RandomlyLostAllAmmo()
 {
-	if (m_quality == 0)
-	{
-		// Qualidade da arma
-		m_quality = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 1, 9);
-		// A influencia da qualidade nos defeitos (30% a 0% de piora proporcional a qualidade de 1 ate 9)
-		m_qualitypercentageeffect = 0.3 - (m_quality - 1 + (m_quality - 1) * 1 / 8) * 0.3 / 9;
-		// Mensagem sobre a qualidade da arma
-#ifndef CLIENT_DLL
-		char mensagem_i[70] = "Pelo uso voce percebeu a qualidade dessa Touros:";
-		char mensagem_m[15];
-		snprintf(mensagem_m, 9, " %0.2f/10", m_quality);
-		char mensagem_f[5] = "!|g";
-		strcat(mensagem_i, strcat(mensagem_m, mensagem_f));
-		UTIL_SayText(mensagem_i, m_pPlayer);
-#endif
-	}
-}
-
-// Dano por estilhaco
-void CDesertEagle::ShrapnelDamage(int chance, int min_damage, int max_damage)
-{
-#ifndef CLIENT_DLL
-	if (RANDOM_LONG(1, 100) <= chance)
-	{
-		UTIL_SayText("Voce foi ferido por estilhacos de bala da sua arma Touros...|r", m_pPlayer);
-
-		// Dano de 10 a 25 no jogador, efeitos da tela piscar vermelho e tremer, som da arma quebrando
-		float damage = RANDOM_LONG(min_damage, max_damage);
-		TraceResult tr = UTIL_GetGlobalTrace();
-		g_MultiDamage.Clear();
-		m_pPlayer->TraceAttack(CTakeDamageInfo(m_pPlayer, damage, DMG_BLAST), pev->velocity.Normalize(), &tr);
-		g_MultiDamage.ApplyMultiDamage(this, m_pPlayer);
-		UTIL_ScreenFade(m_pPlayer, Vector(255, 0, 0), 0.2, 0.1, 128, FFADE_IN);
-	}
-#endif
-}
-
-// Perder toda a municao
-bool CDesertEagle::RandomlyLostAllAmmo(float chance)
-{
-	if (RANDOM_FLOAT(1, 100) <= chance)
+	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 100) <= 1 + 7 * m_qualitypercentageeffect)
 	{
 		int i;
 #ifndef CLIENT_DLL
 		UTIL_SayText("Infelizmente a sua arma Touros estragou toda a municao dela...|r", m_pPlayer);
 #endif
-		// 100% de chance de tomar estilhacos
+		// Tomar dano de estilhacos
 		ShrapnelDamage(100, 1, 5);
 		// Um bando de faisca
 		for (i = 0; i <= 5; i++)
@@ -352,6 +290,55 @@ bool CDesertEagle::RandomlyLostAllAmmo(float chance)
 		return true;
 	}
 	return false;
+}
+
+// Dano por estilhaco
+void CDesertEagle::ShrapnelDamage(int chance, int min_damage, int max_damage)
+{
+#ifndef CLIENT_DLL
+	if (RANDOM_LONG(1, 100) <= chance)
+	{
+		UTIL_SayText("Voce foi ferido por estilhacos de bala da sua arma Touros...|r", m_pPlayer);
+
+		float damage = RANDOM_LONG(min_damage, max_damage);
+		TraceResult tr = UTIL_GetGlobalTrace();
+		g_MultiDamage.Clear();
+		m_pPlayer->TraceAttack(CTakeDamageInfo(m_pPlayer, damage, DMG_BLAST), pev->velocity.Normalize(), &tr);
+		g_MultiDamage.ApplyMultiDamage(this, m_pPlayer);
+		UTIL_ScreenFade(m_pPlayer, Vector(255, 0, 0), 0.2, 0.1, 128, FFADE_IN);
+	}
+#endif
+}
+
+// Definir a qualidade da arma
+void CDesertEagle::SetQuality()
+{
+	// Verifico se o servidor enviou algum valor para ser sincronizado no cliente
+#ifdef CLIENT_DLL
+	if (hu3_touros_gambiarra_qualidade->value != 0)
+		m_quality = hu3_touros_gambiarra_qualidade->value;
+#endif
+
+	// Se nao houver a qualidade definida, precisamos de uma
+	if (m_quality == 0)
+		m_quality = UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 9);
+
+	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
+	m_qualitypercentageeffect = 1.0 - (m_quality - 1 + (m_quality - 1) * 1 / 8) * 1.0 / 9;
+
+	// Mensagem inicial, sempre no primeiro tiro
+#ifndef CLIENT_DLL
+	if (m_firstmessage)
+	{
+		char mensagem_i[70] = "Pelo uso voce percebeu a qualidade dessa Touros:";
+		char mensagem_m[15];
+		snprintf(mensagem_m, 9, " %d/10", m_quality);
+		char mensagem_f[5] = "|g";
+		strcat(mensagem_i, strcat(mensagem_m, mensagem_f));
+		UTIL_SayText(mensagem_i, m_pPlayer);
+		m_firstmessage = false;
+	}
+#endif
 }
 // ############ //
 
@@ -408,46 +395,35 @@ void CDesertEagle::PrimaryAttack()
 	// ############ hu3lifezado ############ //
 	// Solta de 1 a 7 tiros por ataque primario e com mira pessima (variando com a qualidade da arma).
 
-	// Evitar mexer nessas coisas caso a arma esteja travada
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+	m_pPlayer->GetEffects() |= EF_MUZZLEFLASH;
+
 	int flags;
-	if (!m_jammedweapon)
-	{
-		m_pPlayer->GetEffects() |= EF_MUZZLEFLASH;
-
-		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-
 #if defined( CLIENT_WEAPONS )
-		flags = FEV_NOTHOST;
+	flags = FEV_NOTHOST;
 #else
-		flags = 0;
+	flags = 0;
 #endif
-	}
-
-#ifndef CLIENT_DLL
-		if (m_pLaser && m_bLaserActive)
-		{
-			m_pLaser->GetEffects() |= EF_NODRAW;
-			m_pLaser->SetThink(&CDesertEagleLaser::Revive);
-			// Novo tempo (0.6)
-			m_pLaser->SetNextThink(gpGlobals->time + 1.0);
-		}
-#endif
-
 
 	// Quantidade de balas atiradas de uma vez segundo a qualidade da arma
 	int i, j;
 
-	if (m_qualitypercentageeffect <= 0.1)
+	if (m_qualitypercentageeffect <= 0.25)
+	{
+		j = 1;
+	}
+	else if (m_qualitypercentageeffect > 0.25 && m_qualitypercentageeffect <= 0.50)
 	{
 		j = UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 2);
 	}
-	else if (m_qualitypercentageeffect > 0.1 && m_qualitypercentageeffect <= 0.2)
+	else if (m_qualitypercentageeffect > 0.50 && m_qualitypercentageeffect <= 0.75)
 	{
 		j = UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 4);
 	}
-	else if (m_qualitypercentageeffect > 0.2 && m_qualitypercentageeffect <= 0.3)
+	else if (m_qualitypercentageeffect > 0.75 && m_qualitypercentageeffect <= 1.0)
 	{
-		j = UTIL_SharedRandomLong(m_pPlayer->random_seed, 3, 7);
+		j = UTIL_SharedRandomLong(m_pPlayer->random_seed, 2, 7);
 	}
 
 	// Movi essas linhas para fora do loop
@@ -455,16 +431,14 @@ void CDesertEagle::PrimaryAttack()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
-#ifndef CLIENT_DLL
-	// Entre 3% e 6% de chance de levar dano de 1 a 5 por estilhacos (caso a arma nao esteja travada)
+	// Entre 2% e 10% de chance de levar dano de 1 a 5 por estilhacos (caso a arma nao esteja travada)
 	if (!m_jammedweapon)
-		ShrapnelDamage(3 + 10*m_qualitypercentageeffect, 1, 5);
-#endif
+		ShrapnelDamage(2 + 8 * m_qualitypercentageeffect, 1, 5);
 
 	for (i = 0; i < j; i++)
 	{
-		// Chance de travar a arma ou quebrar a arma (esta de 1 ate 4%)
-		if (RandomlyJammed() || RandomlyLostAllAmmo(1 + 10 * m_qualitypercentageeffect))
+		// Chance de travar a arma ou quebrar a arma
+		if (RandomlyJammed() || RandomlyLostAllAmmo())
 		{
 			SendWeaponAnim(DEAGLE_SHOOT);
 			break;
@@ -472,8 +446,8 @@ void CDesertEagle::PrimaryAttack()
 		else
 			--m_iClip;
 
-		// Novo espalhamento todo zoado (distancia do centro)
-		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.01, 0.4);
+		// Novo espalhamento todo zoado (distancia do centro) (piora de 0% a 30% com a qualidade 9 até a 1)
+		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, 0.01, 1.01 + 0.39 * m_qualitypercentageeffect);
 
 		Vector vecSpread;
 
@@ -481,7 +455,7 @@ void CDesertEagle::PrimaryAttack()
 			1,
 			vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread),
 			8192.0, BULLET_PLAYER_DEAGLE, 0, 0,
-			m_pPlayer, UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 10)); // Mais espalhamento aqui (angulos ao redor do centro)
+			m_pPlayer, UTIL_SharedRandomLong(m_pPlayer->random_seed + i, 1, 10)); // Mais espalhamento aqui (angulos ao redor do centro)
 
 		PLAYBACK_EVENT_FULL(
 			flags, m_pPlayer->edict(), m_usFireEagle, 0,
@@ -498,10 +472,6 @@ void CDesertEagle::PrimaryAttack()
 		}
 	}
 
-#ifndef CLIENT_DLL
-	UpdateLaser();
-#endif
-
 	// Novos tempos
 	//m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + (m_bLaserActive ? 0.5 : 0.22);
 	//m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10.0, 15.0);
@@ -510,26 +480,66 @@ void CDesertEagle::PrimaryAttack()
 	// ############ //
 }
 
+// ############ hu3lifezado ############ //
+// Tiro secundario, adaptado de:
+// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 void CDesertEagle::SecondaryAttack()
 {
-#ifndef CLIENT_DLL
-	m_bLaserActive = !m_bLaserActive;
-
-	if( !m_bLaserActive )
+	// Don't throw underwater, and only throw if we were able to detatch 
+	// from player.
+	if ((m_pPlayer->pev->waterlevel != 3) && (m_pPlayer->RemovePlayerItem(this)))
 	{
-		if( m_pLaser )
-		{
-			m_pLaser->Killed( CTakeDamageInfo( nullptr, 0, 0 ), GIB_NEVER );
+		// Get the origin, direction, and fix the angle of the throw.
+		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
+		Vector vecDir = gpGlobals->v_forward;
+		Vector vecAng = UTIL_VecToAngles(vecDir);
+		vecAng.z = vecDir.z - 90;
 
-			m_pLaser = nullptr;
+#ifndef CLIENT_DLL
+		// Create a flying Touros.
+		CFlyingTourosSecondary *pFTouros = (CFlyingTourosSecondary *)Create("flying_touros_secondary", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
+		
+		// Give the Touros its velocity, angle, and spin. 
+		// Lower the gravity a bit, so it flys. 
+		pFTouros->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
+		pFTouros->pev->angles = vecAng;
+		pFTouros->pev->avelocity.x = -1000;
+		pFTouros->pev->gravity = .5;
+		pFTouros->m_pPlayer = m_pPlayer;
 
-			EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/desert_eagle_sight2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM );
-		}
-	}
+		// Salvo a qualidade da arma
+		if (m_quality == 0) // Caso o jogador jogue a arma fora antes de dar o primeiro tiro
+			m_quality = RANDOM_LONG(1, 9);
+		pFTouros->SetQuality(m_quality);
+
+		// Do player weapon anim and sound effect. 
+		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+		EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
 #endif
 
-	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		// Zero a qualidade
+		m_quality = 0;
+#ifdef CLIENT_DLL
+		hu3_touros_gambiarra_qualidade->value = 0;
+#endif
+
+		// Just for kicks, set this. 
+		// But we destroy this weapon anyway so... thppt. 
+		m_flNextSecondaryAttack = gpGlobals->time + 0.75;
+
+		// Mensagem
+#ifndef CLIENT_DLL
+		UTIL_SayText("Voce jogou sua arma Touros fora!|g", m_pPlayer);
+#endif
+
+		// take item off hud
+		m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
+
+		// Destroy this weapon
+		DestroyItem();
+	}
 }
+// ############ //
 
 void CDesertEagle::Reload()
 {
@@ -545,20 +555,6 @@ void CDesertEagle::Reload()
 		// Tempo reajustado (1.5)
 		const bool bResult = DefaultReload( m_iClip ? DEAGLE_RELOAD : DEAGLE_RELOAD_NOSHOT, 3.7, 1 );
 		// ############ //
-	
-#ifndef CLIENT_DLL
-		if( m_pLaser && m_bLaserActive )
-		{
-			m_pLaser->GetEffects() |= EF_NODRAW;
-			m_pLaser->SetThink( &CDesertEagleLaser::Revive );
-			// ############ hu3lifezado ############ //
-			// Tempos reajustados (1.6) (1.5)
-			m_pLaser->SetNextThink( gpGlobals->time + 3.8 );
-
-			m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 3.7;
-			// ############ //
-		}
-#endif
 
 		if( bResult )
 		{
@@ -567,44 +563,13 @@ void CDesertEagle::Reload()
 	}
 }
 
-void CDesertEagle::UpdateLaser()
-{
-#ifndef CLIENT_DLL
-	if( m_bLaserActive && m_bSpotVisible )
-	{
-		if( !m_pLaser )
-		{
-			m_pLaser = CDesertEagleLaser::CreateSpot();
-
-			EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/desert_eagle_sight.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM );
-		}
-
-		UTIL_MakeVectors( m_pPlayer->GetViewAngle() );
-
-		Vector vecSrc = m_pPlayer->GetGunPosition();
-
-		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
-
-		TraceResult tr;
-
-		UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr );
-
-		m_pLaser->SetAbsOrigin( tr.vecEndPos );
-	}
-#endif
-}
-
 void CDesertEagle::GetWeaponData( weapon_data_t& data )
 {
 	BaseClass::GetWeaponData( data );
-
-	data.iuser1 = m_bLaserActive;
 }
 
 void CDesertEagle::SetWeaponData( const weapon_data_t& data )
 {
 	BaseClass::SetWeaponData( data );
-
-	m_bLaserActive = data.iuser1 != 0;
 }
 #endif //USE_OPFOR

@@ -10,6 +10,8 @@ add_sources(
 	CFlyingCrowbar.cpp
 	CFlyingTouros.h
 	CFlyingTouros.cpp
+	CFlyingTourosSecondary.h
+	CFlyingTourosSecondary.cpp
 	CHu3XSpot.h
 	CHu3XSpot.cpp
 	CShockBeam.h
