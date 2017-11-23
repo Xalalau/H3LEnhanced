@@ -35,9 +35,13 @@
 #include "CDesertEagle.h"
 
 // ############ hu3lifezado ############ //
-// Para repassar a qualidade da arma do servar para o cliente (gambiarrada de noob)
 #ifdef CLIENT_DLL
-cvar_t	*hu3_touros_gambiarra_qualidade;
+// Sincronida da qualidade inicial
+cvar_t	*hu3_touros_qualidade_inicial;
+// Sincronida da municao primaria inicial
+cvar_t	*hu3_touros_municao_inicial;
+// Sincronida da municao primaria continuamente
+cvar_t	*hu3_touros_municao_sync;
 #endif
 // ############ //
 
@@ -87,14 +91,19 @@ void CDesertEagle::Spawn()
 	m_qualitypercentageeffect = 0;
 	// Imprimir mensagem quando o jogador coleta a arma
 	m_firstmessage = true;
-	// Comando para copiarmos valores de qualidade do server para o client
+	// Sincronização de balas inicial (server) s / Controlar retirada de balas no caso de arma jogada
+	m_iClip2 = -1;
 #ifdef CLIENT_DLL
-	if (!hu3_touros_gambiarra_qualidade)
-		hu3_touros_gambiarra_qualidade = gEngfuncs.pfnRegisterVariable ( "hu3_touros_gambiarra_qualidade", "0", 0 );
+	// Server -> client: Comando para copiarmos valores de qualidade inicial 
+	hu3_touros_qualidade_inicial = gEngfuncs.pfnRegisterVariable ( "hu3_touros_qualidade_inicial", "", 0 );
+	// Server -> client: Comando para copiarmos valores de municao inicial 
+	hu3_touros_municao_inicial = gEngfuncs.pfnRegisterVariable ( "hu3_touros_municao_inicial", "-1", 0 );
+	// Manter a sincronia de balas entre server e client mesmo que forcado
+	hu3_touros_municao_sync = gEngfuncs.pfnRegisterVariable ( "hu3_touros_municao_sync", "-1", 0 );
 #endif
 	// ############ //
 
-	FallInit();
+	FallInit();	
 }
 
 bool CDesertEagle::AddToPlayer( CBasePlayer* pPlayer )
@@ -112,6 +121,30 @@ bool CDesertEagle::AddToPlayer( CBasePlayer* pPlayer )
 
 bool CDesertEagle::Deploy()
 {
+	// ############ hu3lifezado ############ //
+	// Sincronizacao do numero de balas inicial
+	// Cliente
+#ifdef CLIENT_DLL
+	if (hu3_touros_municao_inicial->value != -1)
+	{
+		m_iClip = hu3_touros_municao_inicial->value;
+		hu3_touros_municao_inicial->value = -1;
+	}
+#endif
+	// Servidor
+	if (m_iClip2 != -1)
+	{
+		m_iClip = m_iClip2;
+		m_iClip2 = -1;
+	}
+
+	// Manter a sincronia de balas entre server e client mesmo que forcado
+#ifdef CLIENT_DLL
+	if (hu3_touros_municao_sync->value == -1)
+		hu3_touros_municao_sync->value = m_iClip;
+#endif
+	// ############ //
+
 	return DefaultDeploy( 
 		"models/v_desert_eagle.mdl", "models/p_desert_eagle.mdl", 
 		DEAGLE_DRAW,
@@ -139,7 +172,7 @@ void CDesertEagle::WeaponIdle()
 	{
 		m_nextbadshootchance = gpGlobals->time + UTIL_SharedRandomLong(m_pPlayer->random_seed, 4, 7);
 
-		if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (90 - 20 * m_qualitypercentageeffect) && ! m_jammedweapon)
+		if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (90 - 20 * m_qualitypercentageeffect) && ! m_jammedweapon && m_iClip != 0)
 		{
 			UTIL_Sparks(m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 22 + gpGlobals->v_right * 10);
 #ifndef CLIENT_DLL
@@ -214,8 +247,12 @@ bool CDesertEagle::RandomlyBreak()
 {
 	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (99 - 8 * m_qualitypercentageeffect))
 	{
-		// Only throw if we were able to detatch from player.
-		if (m_pPlayer->RemovePlayerItem(this))
+		// Como a arma quebra, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
+		if (m_iClip != 0)
+		{
+			m_iClip = 0;
+		}
+		else if (m_pPlayer->RemovePlayerItem(this)) // Only throw if we were able to detatch from player.
 		{			
 #ifndef CLIENT_DLL
 			// Dano de estilhaco de 10 a 25 no jogador, efeitos da tela e tremer, som da arma quebrando
@@ -261,7 +298,7 @@ bool CDesertEagle::RandomlyBreak()
 			// Zero a qualidade
 			m_quality = 0;
 #ifdef CLIENT_DLL
-			hu3_touros_gambiarra_qualidade->value = 0;
+			hu3_touros_qualidade_inicial->value = 0;
 #endif
 		}
 		return true;
@@ -313,17 +350,17 @@ void CDesertEagle::ShrapnelDamage(int chance, int min_damage, int max_damage)
 // Definir a qualidade da arma
 void CDesertEagle::SetQuality()
 {
-	// Verifico se o servidor enviou algum valor para ser sincronizado no cliente
+	// Verifico se o servidor enviou algum valor de qualidade para ser sincronizado no cliente
 #ifdef CLIENT_DLL
-	if (hu3_touros_gambiarra_qualidade->value != 0)
-		m_quality = hu3_touros_gambiarra_qualidade->value;
+	if (hu3_touros_qualidade_inicial->value != 0)
+		m_quality = hu3_touros_qualidade_inicial->value;
 #endif
 
 	// Se nao houver a qualidade definida, precisamos de uma
 	if (m_quality == 0)
 		m_quality = UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 9);
 
-	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
+	// Cada defeito da arma tem um bonus que e adicionado de 0 até 100% dependendo dessa qualidade 9 ate 1;
 	m_qualitypercentageeffect = 1.0 - (m_quality - 1 + (m_quality - 1) * 1 / 8) * 1.0 / 9;
 
 	// Mensagem inicial, sempre no primeiro tiro
@@ -350,11 +387,27 @@ void CDesertEagle::PrimaryAttack()
 	// UTIL_SharedRandomFloat estao diferentes no client e no server quando eu a chamo no inico
 	// do carregamento da arma. Mesmo adicionando delay isso ainda acontece... Ja aqui nao.
 	// Acredito que isso seja porque PrimaryAttack tem sua execucao mais posterior. Funciona.
+
 	SetQuality();
 	// Chance de quebrar
 	if (!m_jammedweapon)
 		if (RandomlyBreak())
 			return;
+
+	// Nao deixo a arma que
+
+	// BUG BUG!!!!
+	// CORRECAO!!! Eu descobri que quando a municao acaba o servidor tem se alterado
+	// instantaneamente para algo entre 7 e 10 balas!!! Esse numero so eh corrigido
+	// depois que o jogador termina de recarregar. A fim de evitar erros de sincronia, de
+	// animacao e estresse procurando o que esta gerando esse bug no HL1, eu simplesmente 
+	// forco o codigo a nao rodar ate que ele esteja normalizado. Mas isso eg solucao
+	// parcial, pois nao cobre o caso dela vir com 7 balas... Esse problema deve ser
+	// para o Vanheer.
+#ifndef CLIENT_DLL
+	if (m_iClip > 7)
+		return;
+#endif
 	// ############ //
 
 	if (m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD)
@@ -437,17 +490,38 @@ void CDesertEagle::PrimaryAttack()
 
 	for (i = 0; i < j; i++)
 	{
-		// Chance de travar a arma ou quebrar a arma
-		if (RandomlyJammed() || RandomlyLostAllAmmo())
+		// Chance de travar a arma
+		if (RandomlyJammed())
 		{
+			if (m_iClip == 7)
+				--m_iClip;
+
 			SendWeaponAnim(DEAGLE_SHOOT);
 			break;
 		}
-		else
-			--m_iClip;
 
-		// Novo espalhamento todo zoado (distancia do centro) (piora de 0% a 30% com a qualidade 9 até a 1)
-		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, 0.01, 1.01 + 0.39 * m_qualitypercentageeffect);
+		// Chance de quebrar a arma
+		if (RandomlyLostAllAmmo())
+			break;
+
+		--m_iClip;
+
+		// Novo espalhamento todo zoado (distancia do centro)
+		// BUGBUG: o Linux nao tem espalhamento abaixo de 1.0, bug do HL1 ou do Enhanced. Por isso fiz esses contornos estranhos.
+		int low, high;
+		float percentage;
+		percentage = m_qualitypercentageeffect;
+#if defined ( _WIN32 )
+		low = 0.01;
+		high = 0.1 + 0.3 * percentage;
+#elif defined(OSX) // Nao faco ideia de como isso vai reagir, mas ta ai...
+		low = 0.01;
+		high = 0.91 + 0.49 * m_qualitypercentageeffect;
+#elif defined(LINUX)
+		low = 0.01;
+		high = 0.91 + 0.49 * m_qualitypercentageeffect;
+#endif
+		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, low, high);
 
 		Vector vecSpread;
 
@@ -472,6 +546,33 @@ void CDesertEagle::PrimaryAttack()
 		}
 	}
 
+	/*
+	// Para checar a porcaria da sincronia de balas
+	#ifdef CLIENT_DLL
+		ALERT( at_console, "-------- j / m_iClip: %d / % d\n", j, m_iClip);
+	#endif
+	#ifndef CLIENT_DLL
+			char mensagem_i[70] = "[HU3 DEBUG] (servidor) j / m_iClip:";
+			char mensagem_m[15];
+			snprintf(mensagem_m, 9, " %d / %d", j, m_iClip);
+			char mensagem_f[5] = "|b";
+			strcat(mensagem_i, strcat(mensagem_m, mensagem_f));
+			UTIL_SayText(mensagem_i, m_pPlayer);
+	#endif
+	*/
+
+	// Forco a sincronia de balas com isso
+#ifndef CLIENT_DLL
+	char command[35] = "hu3_touros_municao_sync ";
+	char value[2];
+	snprintf(value, 2, "%d", m_iClip);
+	strcat(strcat(command, value), "\n");
+	CLIENT_COMMAND( ENT( m_pPlayer ), command);
+#else
+	if (m_iClip != hu3_touros_municao_sync->value)
+		m_iClip = hu3_touros_municao_sync->value;
+#endif
+
 	// Novos tempos
 	//m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + (m_bLaserActive ? 0.5 : 0.22);
 	//m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10.0, 15.0);
@@ -485,10 +586,18 @@ void CDesertEagle::PrimaryAttack()
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 void CDesertEagle::SecondaryAttack()
 {
-	// Don't throw underwater, and only throw if we were able to detatch 
-	// from player.
-	if ((m_pPlayer->pev->waterlevel != 3) && (m_pPlayer->RemovePlayerItem(this)))
+
+	// Como a arma eh jogada fora, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
+	if (m_iClip != 0)
 	{
+		m_iClip2 = m_iClip;
+		m_iClip = 0;
+	}
+	else if ((m_pPlayer->pev->waterlevel != 3) && (m_pPlayer->RemovePlayerItem(this)))
+	{
+		// Don't throw underwater, and only throw if we were able to detatch 
+		// from player.
+
 		// Get the origin, direction, and fix the angle of the throw.
 		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
 		Vector vecDir = gpGlobals->v_forward;
@@ -507,10 +616,10 @@ void CDesertEagle::SecondaryAttack()
 		pFTouros->pev->gravity = .5;
 		pFTouros->m_pPlayer = m_pPlayer;
 
-		// Salvo a qualidade da arma
+		// Salvo a qualidade da arma e a quantidade de balas inicial
 		if (m_quality == 0) // Caso o jogador jogue a arma fora antes de dar o primeiro tiro
 			m_quality = RANDOM_LONG(1, 9);
-		pFTouros->SetQuality(m_quality);
+		pFTouros->SetQuality(m_quality, m_iClip2);
 
 		// Do player weapon anim and sound effect. 
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -520,7 +629,7 @@ void CDesertEagle::SecondaryAttack()
 		// Zero a qualidade
 		m_quality = 0;
 #ifdef CLIENT_DLL
-		hu3_touros_gambiarra_qualidade->value = 0;
+		hu3_touros_qualidade_inicial->value = 0;
 #endif
 
 		// Just for kicks, set this. 

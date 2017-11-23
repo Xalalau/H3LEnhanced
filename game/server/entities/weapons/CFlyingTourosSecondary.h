@@ -44,11 +44,12 @@ public:
 	void Precache(void);
 	void BubbleThink(void);
 	void SpinTouch(CBaseEntity *pOther);
-	void SetQuality(int quality);
+	void SetQuality(int quality, int m_iClip);
 	CBasePlayer *m_pPlayer;
 
 private:
 	int quality;
+	int iClip;
 	EHANDLE m_hOwner;        // Original owner is stored here so we can
 							 // allow the Touros to hit the user.
 };

@@ -93,12 +93,14 @@ private:
 	bool m_firstmessage;
 	// Comando para copiarmos valores de qualidade do server para o client
 	cvar_t	*hu3_touros_gambiarra_qualidade;
+	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
+	float m_qualitypercentageeffect;
 
 public:
 	// Qualidade da arma (de 1 ate 9, nunca 10)
 	int m_quality;
-	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
-	float m_qualitypercentageeffect;
+	// Recuperar numero inicial de balas / Controlar retirada de balas no caso de arma jogada
+	int m_iClip2;
 	// ############ //
 
 

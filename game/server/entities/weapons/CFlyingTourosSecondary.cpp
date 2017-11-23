@@ -135,8 +135,11 @@ void CFlyingTourosSecondary::SpinTouch(CBaseEntity *pOther)
 	// Ligo o item para acesso externo
 	CDesertEagle *pItem_hu3 = (CDesertEagle *) pItem;
 
-	// Salvo a qualidade da arma
+	// Salvo a qualidade incial da arma
 	pItem_hu3->m_quality = quality;
+
+	// Salvo a quantidade inicial de balas
+	pItem_hu3->m_iClip2 = iClip;
 
 	// Spawn a weapon box
 	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", GetAbsOrigin(), pev->angles, edict());
@@ -174,10 +177,12 @@ void CFlyingTourosSecondary::SpinTouch(CBaseEntity *pOther)
 	pev->nextthink = gpGlobals->time + .1;
 }
 
-void CFlyingTourosSecondary::SetQuality(int m_quality)
+void CFlyingTourosSecondary::SetQuality(int m_quality, int m_iClip)
 {
-	// Altero o valor da qualidade na arma
+	// Pego a qualidade na arma
 	quality = m_quality;
+	// Pego a municao carregada na arma
+	iClip = m_iClip;
 }
 
 void CFlyingTourosSecondary::BubbleThink(void)
