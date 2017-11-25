@@ -68,7 +68,7 @@ void CWeaponCondition::Use(CBaseEntity pActivator, CBaseEntity pCaller, USE_TYPE
 // Verifica todos os jogadores e chama outra entidade de acordo com as condicoes
 void CWeaponCondition::ProcessConditions()
 {
-	int plyHasWeapon = 0, plyHasAmmo = 0, i = 1;
+	int plyHasWeapon = 0, plyHasAmmo = 0;
 	CBaseEntity* hu3Player = nullptr;
 	CBasePlayer* hu3PlayerCBP = nullptr;
 	string_t entity;

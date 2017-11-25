@@ -524,7 +524,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 		CBaseEntity* pLandmark = nullptr;
 
 		// CARREGAR PROPRIEDADES DIVERSAS DO JOGADOR
-		while ((pLandmark = UTIL_FindEntityByTargetname(pLandmark, Hu3LandmarkName)))
+		while ((pLandmark = UTIL_FindEntityByTargetname(pLandmark, Hu3LandmarkName)) != nullptr)
 		{
 			if (pLandmark->ClassnameIs("info_landmark"))
 			{
@@ -579,7 +579,7 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 	char newName[30] = "";
 	bool needsToGenerateNewName = false;
 	const int TOTALNAMES = 125;
-	int i = 1, gambiarra = 0;
+	int i = 1;
 
 	// Pego o nome atual
 	name = (char*) STRING(pPlayer->pev->netname);
@@ -701,67 +701,67 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 
 //=========================================================
 //=========================================================
-void CBaseHalfLifeCoop::LoadPlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData)
+void CBaseHalfLifeCoop::LoadPlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyDataIn)
 {
 	// Restauracao das armas e municoes
 
 	int i = 0;
 
 	// As armas salvas serao verificadas uma a uma
-	while (strcmp((*CoopPlyData).keepweapons[i].name, "-1") != 0)
+	while (strcmp((*CoopPlyDataIn).keepweapons[i].name, "-1") != 0)
 	{
 		// Readiciono a quantidade da municao 1 no jogador
-		if (strcmp((*CoopPlyData).keepweapons[i].type1, "-1") != 0)
+		if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "-1") != 0)
 			// jogador deve estar zerado dessa municao, caso contrario ela ja foi restaurada por outra arma
-			if (pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex((*CoopPlyData).keepweapons[i].type1)] == 0)
+			if (pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex((*CoopPlyDataIn).keepweapons[i].type1)] == 0)
 			{
 				// HACK!!!! AJUSTE DA MUNICAO DURANTE O MOMENTO DO CHANGELEVEL
 				// Estao ocorrendo somas muito loucas na recarga aqui, nao sei de onde elas vem...
 				// Definitavamente eu nao sou o culpado disso, estou resolvendo na mao! Funciona...
-				if ((*CoopPlyData).changinglevel)
+				if ((*CoopPlyDataIn).changinglevel)
 				{
-					if (strcmp((*CoopPlyData).keepweapons[i].type1, "buckshot") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 4;
-					else if (strcmp((*CoopPlyData).keepweapons[i].type1, "rockets") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 1;
-					else if (strcmp((*CoopPlyData).keepweapons[i].type1, "uranium") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 80;
-					else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Hand Grenade") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 5;
-					else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Trip Mine") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 1;
-					else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Satchel Charge") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 1;
-					else if (strcmp((*CoopPlyData).keepweapons[i].type1, "Snarks") == 0)
-						(*CoopPlyData).keepweapons[i].amountammo1 = (*CoopPlyData).keepweapons[i].amountammo1 - 5;
+					if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "buckshot") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 4;
+					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "rockets") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 1;
+					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "uranium") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 80;
+					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Hand Grenade") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 5;
+					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Trip Mine") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 1;
+					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Satchel Charge") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 1;
+					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Snarks") == 0)
+						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 5;
 				}
 				//--
 
-				pPlayer->GiveAmmo((*CoopPlyData).keepweapons[i].amountammo1, (*CoopPlyData).keepweapons[i].type1);
+				pPlayer->GiveAmmo((*CoopPlyDataIn).keepweapons[i].amountammo1, (*CoopPlyDataIn).keepweapons[i].type1);
 			}
 
 		//  Readiciono a quantidade da municao 2 no jogador
-		if (strcmp((*CoopPlyData).keepweapons[i].type2, "-1") != 0)
+		if (strcmp((*CoopPlyDataIn).keepweapons[i].type2, "-1") != 0)
 			// jogador deve estar zerado dessa municao, caso contrario ela ja foi restaurada por outra arma
-			if (pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex((*CoopPlyData).keepweapons[i].type2)] == 0)
-				pPlayer->GiveAmmo((*CoopPlyData).keepweapons[i].amountammo2, (*CoopPlyData).keepweapons[i].type2);
+			if (pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex((*CoopPlyDataIn).keepweapons[i].type2)] == 0)
+				pPlayer->GiveAmmo((*CoopPlyDataIn).keepweapons[i].amountammo2, (*CoopPlyDataIn).keepweapons[i].type2);
 
 		// Restauro a arma
-		CBaseEntity* pItem = pPlayer->GiveNamedItem((*CoopPlyData).keepweapons[i].name);
+		CBaseEntity* pItem = pPlayer->GiveNamedItem((*CoopPlyDataIn).keepweapons[i].name);
 
 		// Readiciono a municao ativa da arma
 		CBasePlayerWeapon *pWeapon = (CBasePlayerWeapon*)pItem;
-		pWeapon->m_iClip = (*CoopPlyData).keepweapons[i].currentammo;
+		pWeapon->m_iClip = (*CoopPlyDataIn).keepweapons[i].currentammo;
 
 		// Print maroto de testes
-		//ALERT(at_console, "%s: %s >> %d ||| %s >> %d\n", (*CoopPlyData).keepweapons[i].name, (*CoopPlyData).keepweapons[i].type1, (*CoopPlyData).keepweapons[i].amountammo1, (*CoopPlyData).keepweapons[i].type2, (*CoopPlyData).keepweapons[i].amountammo2);
+		//ALERT(at_console, "%s: %s >> %d ||| %s >> %d\n", (*CoopPlyDataIn).keepweapons[i].name, (*CoopPlyDataIn).keepweapons[i].type1, (*CoopPlyDataIn).keepweapons[i].amountammo1, (*CoopPlyDataIn).keepweapons[i].type2, (*CoopPlyDataIn).keepweapons[i].amountammo2);
 
 		i++;
 	}
 
 	// Desligo o hack logo acima com essa variavel, ele so vale no changelevel!
-	if ((*CoopPlyData).changinglevel)
-		(*CoopPlyData).changinglevel = false;
+	if ((*CoopPlyDataIn).changinglevel)
+		(*CoopPlyDataIn).changinglevel = false;
 }
 
 //=========================================================
@@ -784,7 +784,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 
 	// Preencho a tabela de infos dos players novamente
 	i = 1; // Tem que ser 1 para funcionar na funcao abaixo!
-	while (hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i)))
+	while ((hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
 	{
 		// Deixo o hu3Player pronto como pPlayer2 em CBasePlayer, uma classe abaixo
 		CBasePlayer *pPlayer2 = NULL;
@@ -843,19 +843,18 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 
 //=========================================================
 //=========================================================
-void CBaseHalfLifeCoop::SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData)
+void CBaseHalfLifeCoop::SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyDataIn)
 {
 	// Salvar armas e municao antes de um changelevel
 	// Funcao auxiliar
 
 	CBasePlayerWeapon *pWeapon;
 	int i, j = 0;
-	bool activeWeaponHold = true, forceBreak = false;
 
 	// Fazer uma lista vazia caso nao exista uma arma carregada
 	if (!pPlayer->m_pActiveItem)
 	{
-		strcpy((*CoopPlyData).keepweapons[0].name, "-1");
+		strcpy((*CoopPlyDataIn).keepweapons[0].name, "-1");
 		return;
 	}
 
@@ -875,10 +874,10 @@ void CBaseHalfLifeCoop::SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRest
 			}
 
 			// Salva as infos da arma
-			SavePlayerItemsAux(pPlayer, CoopPlyData, pWeapon, j);
+			SavePlayerItemsAux(pPlayer, CoopPlyDataIn, pWeapon, j);
 
 			// Print maroto de testes
-			//ALERT(at_console, "%s: %s >> %d ||| %s >> %d\n", (*CoopPlyData).keepweapons[j].name, (*CoopPlyData).keepweapons[j].type1, (*CoopPlyData).keepweapons[j].amountammo1, (*CoopPlyData).keepweapons[j].type2, (*CoopPlyData).keepweapons[j].amountammo2);
+			//ALERT(at_console, "%s: %s >> %d ||| %s >> %d\n", (*CoopPlyDataIn).keepweapons[j].name, (*CoopPlyDataIn).keepweapons[j].type1, (*CoopPlyDataIn).keepweapons[j].amountammo1, (*CoopPlyDataIn).keepweapons[j].type2, (*CoopPlyDataIn).keepweapons[j].amountammo2);
 
 			// J eh importante pois pulamos posicoes. Nao usar i
 			j++;
@@ -889,50 +888,50 @@ void CBaseHalfLifeCoop::SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRest
 	}
 
 	// Adicionamos a arma ativa no ultimo slot da lista (vai fazer ela carregar corretamente apos o changelevel)
-	SavePlayerItemsAux(pPlayer, CoopPlyData, pPlayer->m_pActiveItem, j);
+	SavePlayerItemsAux(pPlayer, CoopPlyDataIn, pPlayer->m_pActiveItem, j);
 
 	// Lista termina no "-1"
-	strcpy((*CoopPlyData).keepweapons[j + 1].name, "-1");
+	strcpy((*CoopPlyDataIn).keepweapons[j + 1].name, "-1");
 }
 
 //=========================================================
 //=========================================================
 // Salva as infos da arma
-void CBaseHalfLifeCoop::SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData, CBasePlayerWeapon *pWeapon, int j)
+void CBaseHalfLifeCoop::SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyDataIn, CBasePlayerWeapon *pWeapon, int j)
 {
 	// Funcao auxiliar da funcao auxiliar
 
 	// Nome da arma
-	strcpy((*CoopPlyData).keepweapons[j].name, pWeapon->pszName());
+	strcpy((*CoopPlyDataIn).keepweapons[j].name, pWeapon->pszName());
 	// Quantidade da municao 1 em uso
-	(*CoopPlyData).keepweapons[j].currentammo = pWeapon->m_iClip;
+	(*CoopPlyDataIn).keepweapons[j].currentammo = pWeapon->m_iClip;
 	// Se tiver municao 1 em cartucho
 	if (pWeapon->pszAmmo1())
 	{
 		// Tipo da municao 1
-		strcpy((*CoopPlyData).keepweapons[j].type1, pWeapon->pszAmmo1());
+		strcpy((*CoopPlyDataIn).keepweapons[j].type1, pWeapon->pszAmmo1());
 		// Quantidade da municao 1 em cartucho
-		(*CoopPlyData).keepweapons[j].amountammo1 = pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo1())];
+		(*CoopPlyDataIn).keepweapons[j].amountammo1 = pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo1())];
 	}
 	else
 	{
 		// Caso contrario marco a quantidade da municao 1 como -1
-		strcpy((*CoopPlyData).keepweapons[j].type1, "-1");
-		(*CoopPlyData).keepweapons[j].amountammo1 = -1;
+		strcpy((*CoopPlyDataIn).keepweapons[j].type1, "-1");
+		(*CoopPlyDataIn).keepweapons[j].amountammo1 = -1;
 	}
 	// Se tiver municao 2 em cartucho
 	if (pWeapon->pszAmmo2())
 	{
 		// Tipo da municao 2
-		strcpy((*CoopPlyData).keepweapons[j].type2, pWeapon->pszAmmo2());
+		strcpy((*CoopPlyDataIn).keepweapons[j].type2, pWeapon->pszAmmo2());
 		// Quantidade da municao 2 em cartucho
-		(*CoopPlyData).keepweapons[j].amountammo2 = pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo2())];
+		(*CoopPlyDataIn).keepweapons[j].amountammo2 = pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex(pWeapon->pszAmmo2())];
 	}
 	else
 	{
 		// Caso contrario marco a quantidade da municao 2 como -1
-		strcpy((*CoopPlyData).keepweapons[j].type2, "-1");
-		(*CoopPlyData).keepweapons[j].amountammo2 = -1;
+		strcpy((*CoopPlyDataIn).keepweapons[j].type2, "-1");
+		(*CoopPlyDataIn).keepweapons[j].amountammo2 = -1;
 	}
 }
 
@@ -973,7 +972,7 @@ void CBaseHalfLifeCoop::PlayerKilled(CBasePlayer* pVictim, const CTakeDamageInfo
 	// libera o respawn de coop do jogador para uma nova utilizacao (respawn nas mesmas condicoes iniciais do changelevel)
 	// Restricao: jogadores novos ainda nao podem respawnar por completo. Podemos bloquear essa parte deles vendo se o campo velocity esta configurado, eles ainda nao o tem
 	const char *currentName = STRING(pVictim->pev->netname);;
-	int i = 1, j = 1;
+	int i = 1;
 
 	while (CoopPlyData[i].pName)
 	{
@@ -991,7 +990,7 @@ void CBaseHalfLifeCoop::PlayerKilled(CBasePlayer* pVictim, const CTakeDamageInfo
 	// --
 
 	auto pKiller = info.GetAttacker();
-	auto pInflictor = info.GetInflictor();
+	//auto pInflictor = info.GetInflictor();
 
 	ASSERT(pKiller);
 	ASSERT(pInflictor);

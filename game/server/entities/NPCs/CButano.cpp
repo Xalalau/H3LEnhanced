@@ -155,7 +155,7 @@ void CButano::Killed(const CTakeDamageInfo& info, GibAction gibAction)
 void CButano::ExplodeButano(int dano, int magn)
 {
 	// Ssaporra cria um raio de dano que explode os gib tudo seloco cachuera
-	RadiusDamage(GetAbsOrigin(), this, this, dano, CLASS_NONE, DMG_BLAST);
+	RadiusDamage(GetAbsOrigin(), this, this, dano, EntityClassifications().GetNoneId(), DMG_BLAST);
 
 	// Cria a explosao, precisa importar o CEnvExplosion
 	UTIL_CreateExplosion(Center(), GetAbsAngles(), this, magn, true);

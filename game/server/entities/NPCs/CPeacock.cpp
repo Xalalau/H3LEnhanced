@@ -99,19 +99,19 @@ const char *CPeacock::pDeathSounds[] =
 
 LINK_ENTITY_TO_CLASS( monster_peacock, CPeacock );
 
-int	CPeacock :: Classify ( void )
+EntityClassification_t CPeacock :: Classify ( void )
 {
 	// Alguns pavoes sao assassinos
 	switch (RANDOM_LONG(1, 6))
 	{
 	case 1:
-		return CLASS_ALIEN_MONSTER;
+		return EntityClassifications().GetClassificationId(classify::ALIEN_MONSTER);
 		break;
 	case 2:
-		return CLASS_ALIEN_PREDATOR;
+		return EntityClassifications().GetClassificationId(classify::ALIEN_PREDATOR);
 		break;
 	default:
-		return CLASS_ALIEN_PASSIVE;
+		return EntityClassifications().GetClassificationId(classify::ALIEN_PASSIVE);
 		break;
 	}
 }
@@ -136,7 +136,7 @@ Vector CPeacock::BodyTarget(const Vector &posSrc) const
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CPeacock :: SetYawSpeed ( void )
+void CPeacock ::UpdateYawSpeed( void )
 {
 	int ys;
 
@@ -270,9 +270,11 @@ void CPeacock :: Precache()
 //=========================================================
 // RunTask 
 //=========================================================
-void CPeacock :: RunTask ( const Task_t* pTask )
+void CPeacock :: RunTask ( const Task_t& pTask )
 {
-	switch ( pTask->iTask )
+	const Task_t *pTask2 = &pTask;
+
+	switch ( pTask2->iTask )
 	{
 	case TASK_RANGE_ATTACK1:
 	case TASK_RANGE_ATTACK2:
@@ -331,11 +333,13 @@ void CPeacock :: PrescheduleThink ( void )
 	}
 }
 
-void CPeacock :: StartTask ( const Task_t* pTask )
+void CPeacock :: StartTask ( const Task_t& pTask )
 {
+	const Task_t* pTask2 = &pTask;
+
 	m_iTaskStatus = TASKSTATUS_RUNNING;
 
-	switch ( pTask->iTask )
+	switch ( pTask2->iTask )
 	{
 	case TASK_RANGE_ATTACK1:
 		{

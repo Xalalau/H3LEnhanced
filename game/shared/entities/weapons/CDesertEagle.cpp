@@ -27,7 +27,6 @@
 #include "shake.h"
 // Imprimir mensagens
 #ifdef CLIENT_DLL
-#include "ui/hud/CHudBase.h"
 #include "ui/hud/CHudTextMessage.h"
 #endif
 // ############ //
@@ -267,12 +266,12 @@ bool CDesertEagle::RandomlyBreak()
 			Vector vecAng = UTIL_VecToAngles(vecDir);
 			vecAng.z = vecDir.z - 90;
 
+#ifndef CLIENT_DLL
 			// Create a flying Touros.
 			CFlyingTouros *pFTouros = (CFlyingTouros *)Create("flying_touros", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
 
 			// Give the Touros its velocity, angle, and spin. 
 			// Lower the gravity a bit, so it flys. 
-#ifndef CLIENT_DLL
 			pFTouros->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
 			pFTouros->pev->angles = vecAng;
 			pFTouros->pev->avelocity.x = -1000;
@@ -340,7 +339,7 @@ void CDesertEagle::ShrapnelDamage(int chance, int min_damage, int max_damage)
 		float damage = RANDOM_LONG(min_damage, max_damage);
 		TraceResult tr = UTIL_GetGlobalTrace();
 		g_MultiDamage.Clear();
-		m_pPlayer->TraceAttack(CTakeDamageInfo(m_pPlayer, damage, DMG_BLAST), pev->velocity.Normalize(), &tr);
+		m_pPlayer->TraceAttack(CTakeDamageInfo(m_pPlayer, damage, DMG_BLAST), GetAbsVelocity().Normalize(), tr);
 		g_MultiDamage.ApplyMultiDamage(this, m_pPlayer);
 		UTIL_ScreenFade(m_pPlayer, Vector(255, 0, 0), 0.2, 0.1, 128, FFADE_IN);
 	}
@@ -460,7 +459,7 @@ void CDesertEagle::PrimaryAttack()
 #endif
 
 	// Quantidade de balas atiradas de uma vez segundo a qualidade da arma
-	int i, j;
+	int i, j = 0;
 
 	if (m_qualitypercentageeffect <= 0.25)
 	{

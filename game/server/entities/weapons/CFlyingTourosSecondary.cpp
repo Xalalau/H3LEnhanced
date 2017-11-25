@@ -103,7 +103,7 @@ void CFlyingTourosSecondary::SpinTouch(CBaseEntity *pOther)
 		// Apply damage to the target. If we have an owner stored, use that one, 
 		// otherwise count it as self-inflicted.
 		g_MultiDamage.Clear();
-		pOther->TraceAttack(CTakeDamageInfo(m_pPlayer, 1, DMG_BLAST), pev->velocity.Normalize(), &tr); // 1 de dano
+		pOther->TraceAttack(CTakeDamageInfo(m_pPlayer, 1, DMG_BLAST), GetAbsVelocity().Normalize(), tr); // 1 de dano
 		if (m_hOwner != NULL)
 			g_MultiDamage.ApplyMultiDamage(this, m_hOwner);
 		else

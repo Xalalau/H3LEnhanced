@@ -226,13 +226,11 @@ bool CHudHealth::Draw(float flTime)
 
 		x += HealthWidth/2;
 
-		int iHeight = GetHud().GetFontHeight();
-		int iWidth = HealthWidth/10;
-
-		const auto& color = GetHud().GetPrimaryColor();
-
 		// ############ hu3lifezado ############ //
 		// Nao preciso mais desenhar o traco que separa o sangue da armadura
+		//int iHeight = GetHud().GetFontHeight();
+		//int iWidth = HealthWidth/10;
+		//const auto& color = GetHud().GetPrimaryColor();		
 		//FillRGBA(x, y, iWidth, iHeight, color.r(), color.g(), color.b(), a);
 		// ############ //
 	}

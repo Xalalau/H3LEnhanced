@@ -80,46 +80,17 @@ void CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbu
 	UTIL_TextMsg( static_cast<ClientPrintDest>( msg_dest ), msg_text, sstr1, sstr2, sstr3, sstr4 );
 }
 
-	switch ( msg_dest )
-	{
-	case HUD_PRINTCENTER:
-		safe_sprintf( psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4 );
-		CenterPrint( ConvertCRtoNL( psz ) );
-		break;
-
-	case HUD_PRINTNOTIFY:
-		psz[0] = 1;  // mark this message to go into the notify buffer
-		safe_sprintf( psz+1, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4 );
-		ConsolePrint( ConvertCRtoNL( psz ) );
-		break;
-
-	case HUD_PRINTTALK:
-		safe_sprintf( psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4 );
-		gHUD.m_SayText.SayTextPrint( ConvertCRtoNL( psz ), 128 );
-		break;
-
-	case HUD_PRINTCONSOLE:
-		safe_sprintf( psz, MSG_BUF_SIZE, msg_text, sstr1, sstr2, sstr3, sstr4 );
-		ConsolePrint( ConvertCRtoNL( psz ) );
-		break;
-	}
-
-	
-
 // ############ hu3lifezado ############ //
 // Nova funcao para facilitar a escrita de mensagens
-void hu3_mensagem( char string[], int opcao)
+void CHudTextMessage::hu3_mensagem( char string[], int opcao)
 {
 	char string_aux[MSG_BUF_SIZE];
 
 	sprintf(string_aux, "%c%s", opcao, string);
 
-	const char *pszName = NULL;
 	int iSize = strlen(string_aux) + 1;
 	void *pbuf = string_aux;
 
 	MsgFunc_TextMsg(NULL, iSize, pbuf);
-
-	return;
 }
 // ############ //

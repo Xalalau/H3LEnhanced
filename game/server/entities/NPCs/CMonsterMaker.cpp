@@ -277,7 +277,7 @@ void CMonsterMaker::DeathNotice(CBaseEntity* pChild)
 		CBaseEntity * pNextTarget = nullptr;
 
 		m_cLiveChildren = -1;
-		while (pNextTarget = UTIL_FindEntityByClassname(pNextTarget, "monster_butano"))
+		while ((pNextTarget = UTIL_FindEntityByClassname(pNextTarget, "monster_butano")) != nullptr)
 			m_cLiveChildren++;
 	}
 	else

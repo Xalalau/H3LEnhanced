@@ -28,7 +28,7 @@ public:
 	void DeclineFollowing(void);
 	void Scream(void);
 	//void StartTask(Task_t *pTask);
-	void StartTask(const Task_t* pTask) override;
+	void StartTask(const Task_t& task) override;
 
 private:
 	float m_painTime;

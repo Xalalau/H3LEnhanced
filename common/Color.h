@@ -133,9 +133,9 @@ struct Color final
 
 // ############ hu3lifezado ############ //
 // Novas cores
-#define RGB_WHITE MAKE_RGB( 255, 255, 255 )
-#define RGB_WHITEISH MAKE_RGB( 220, 220, 220 )
-#define RGB_GRAYISH MAKE_RGB( 169, 169, 169 )
+#define RGB_WHITE MakeRGB( 255, 255, 255 )
+#define RGB_WHITEISH MakeRGB( 220, 220, 220 )
+#define RGB_GRAYISH MakeRGB( 169, 169, 169 )
 // ############ //
 
 #endif //COMMON_COLOR_H

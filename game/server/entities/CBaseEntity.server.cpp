@@ -36,7 +36,7 @@ float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
 	// Mudei o limite de sangue de pev->max_health
 
 // heal
-	SetHealth(GetHealth() + lHealth);
+	SetHealth(GetHealth() + flHealth);
 
 	// Nao pode sangue acima do maximo
 	if (GetHealth() > GetMaxHealth())

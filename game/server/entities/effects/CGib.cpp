@@ -168,7 +168,7 @@ void CGib::WaitTillLand( void )
 
 	// ############ hu3lifezado ############ //
 	// Alterei para iniciar o fade dos gibs na velocidade maxima ao inves de na minima (if ( pev->velocity == g_vecZero ))
-	if (GetAbsVelocity() == GetAbsVelocity()..Normalize() * 1500)
+	if (GetAbsVelocity() == GetAbsVelocity().Normalize() * 1500)
 	// ############ //
 	{
 		SetThink( &CGib::SUB_StartFadeOut );

@@ -861,7 +861,7 @@ bool CHudAmmo::Draw(float flTime)
 	if ( strcmp(pw->GetWeaponInfo()->GetWeaponName(), "weapon_knife") == 0 )
 	{
 		char text[20];
-		int sprite_index;
+		int sprite_index = -1;
 
 		// Insira novos decals no final! Nao mexa na ordem! kkkk
 		if (m_pCvarLColor->value == 1)
@@ -933,7 +933,7 @@ bool CHudAmmo::Draw(float flTime)
 		HSPRITE sprite_itself = gHUD.GetSprite(sprite_index);
 
 		int iIconWidth = gHUD.GetSpriteRect(sprite_index).right - gHUD.GetSpriteRect(sprite_index).left;
-		int y2 = y - gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4 ;
+		int y2 = y - GetHud().GetFontHeight() + GetHud().GetFontHeight() / 4 ;
 		int x2 = ScreenWidth - 4 * AmmoWidth - iIconWidth;
 
 		// Desenhar icone indicativo de cor
@@ -1074,8 +1074,8 @@ int CHudAmmo::DrawWList(float flTime)
 	int numero_de_quadrados = 7;
 	
 	// Opcoes para mover o menu de armas
-	int vai_pra_esquerda = 10;
-	int vai_pra_direita = ScreenWidth - quadrado_das_armas * numero_de_quadrados - sprite_da_arma - 15;
+	//int vai_pra_esquerda = 10;
+	//int vai_pra_direita = ScreenWidth - quadrado_das_armas * numero_de_quadrados - sprite_da_arma - 15;
 	int vai_pro_meio = ScreenWidth / 2 - (quadrado_das_armas * numero_de_quadrados + sprite_da_arma) / 2;
 	
 	int mover = vai_pro_meio;

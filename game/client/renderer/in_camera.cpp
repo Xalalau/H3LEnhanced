@@ -174,11 +174,6 @@ extern trace_t SV_ClipMoveToEntity (edict_t *ent, const Vector& start, const Vec
 // Funcao para trocar os modos de camera 1 a 1
 void CAM_ToggleHu3(void)
 {
-	// ############ hu3lifezado ############ //
-	// Pego o CHudAmmo em uso
-	auto pAmmoMenu = GETHUDCLASS(CHudAmmo);
-	// ############ //
-
 	gEngfuncs.Cvar_SetValue("cam_hu3", cam_hu3->value + 1);
 
 	// Primeira pessoa = 0 / 3 modos de camera na terceira pessoa = 1, 2 e 3

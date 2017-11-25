@@ -55,9 +55,11 @@ void CBitch1::Scream(void)
 	}
 }
 
-void CBitch1::StartTask(const Task_t* pTask)
+void CBitch1::StartTask(const Task_t& pTask)
 {
-	switch (pTask->iTask)
+	const Task_t* pTask2 = &pTask;
+
+	switch (pTask2->iTask)
 	{
 	case TASK_SAY_HEAL:
 		//		if ( FOkToSpeak() )
@@ -74,7 +76,7 @@ void CBitch1::StartTask(const Task_t* pTask)
 		break;
 
 	case TASK_RANDOM_SCREAM:
-		if (RANDOM_FLOAT(0, 1) < pTask->flData)
+		if (RANDOM_FLOAT(0, 1) < pTask2->flData)
 			Scream();
 		TaskComplete();
 		break;
