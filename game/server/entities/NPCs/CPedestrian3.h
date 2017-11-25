@@ -18,7 +18,7 @@
 class CPedestrian3 : public CPedestrian1
 {
 public:
-	DECLARE_CLASS( CPedestrian3, CScientist );
+	DECLARE_CLASS( CPedestrian3, CPedestrian1);
 	DECLARE_DATADESC();
 
 	void Spawn(void);

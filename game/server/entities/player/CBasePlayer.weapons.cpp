@@ -691,21 +691,28 @@ void CBasePlayer::ItemPostFrame()
 	}
 }
 
-void CBasePlayer::GiveNamedItem( const char *pszName )
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Retorno a entidade para poder lidar com ela
+CBaseEntity* CBasePlayer::GiveNamedItem( const char *pszName )
 {
 	CBaseEntity* pEntity = UTIL_CreateNamedEntity( pszName );
 
 	if( !pEntity )
 	{
 		ALERT( at_console, "NULL Ent in GiveNamedItem \"%s\"!\n", pszName );
-		return;
+		return NULL;
 	}
 	pEntity->SetAbsOrigin( GetAbsOrigin() );
 	pEntity->GetSpawnFlags() |= SF_NORESPAWN;
 
 	DispatchSpawn( pEntity->edict() );
 	pEntity->Touch( this );
+
+	return pEntity;
+	
 }
+// ############ //
 
 //
 // Returns the unique ID for the ammo, or -1 if error
@@ -737,20 +744,39 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName )
 	if( i < 0 || i >= CAmmoTypes::MAX_AMMO_TYPES )
 		return -1;
 
-	int iAdd = min( iCount, pType->GetMaxCarry() - m_rgAmmo[ i ] );
-	if( iAdd < 1 )
-		return i;
+	int iAdd = min(iCount, pType->GetMaxCarry() - m_rgAmmo[i]);
 
-	m_rgAmmo[ i ] += iAdd;
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em LoadPlayerItems do CHalfLifeCoop.cpp
+	if (g_pGameRules->IsCoOp())
+	{
+		m_rgAmmo[i] += iCount;
+	}
+	else // Codigo original
+	{
+		if (iAdd < 1)
+			return i;
+
+		m_rgAmmo[i] += iAdd;
+	}
+	// ############ //
 
 
 	if( gmsgAmmoPickup )  // make sure the ammo messages have been linked first
 	{
+		// ############ hu3lifezado ############ //
+		// [MODO COOP]
+		// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em LoadPlayerItems do CHalfLifeCoop.cpp
 		// Send the message that ammo has been picked up
-		MESSAGE_BEGIN( MSG_ONE, gmsgAmmoPickup, NULL, this );
-		WRITE_BYTE( GetAmmoIndex( szName ) );		// ammo ID
-		WRITE_BYTE( iAdd );		// amount
+		MESSAGE_BEGIN(MSG_ONE, gmsgAmmoPickup, NULL, this);
+		WRITE_BYTE(GetAmmoIndex(szName));		// ammo ID
+		if (g_pGameRules->IsCoOp())
+			WRITE_BYTE(iCount);		// amount
+		else
+			WRITE_BYTE(iAdd);		// amount
 		MESSAGE_END();
+		// ############ //
 	}
 
 	return i;

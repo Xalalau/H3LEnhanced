@@ -55,7 +55,7 @@ void CBitch1::Scream(void)
 	}
 }
 
-void CBitch1::StartTask(Task_t *pTask)
+void CBitch1::StartTask(const Task_t* pTask)
 {
 	switch (pTask->iTask)
 	{

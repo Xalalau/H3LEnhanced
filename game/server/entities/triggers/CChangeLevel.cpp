@@ -121,9 +121,13 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 {
 	ASSERT( !FStrEq( m_szMapName, "" ) );
 
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Changelevel do coop eh liberado
 	// Don't work in deathmatch
-	if( g_pGameRules->IsDeathmatch() )
+	if (g_pGameRules->IsDeathmatch() && !g_pGameRules->IsCoOp())
 		return;
+	// ############ //
 
 	// Some people are firing these multiple times in a frame, disable
 	if( gpGlobals->time == pev->dmgtime )
@@ -169,7 +173,15 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	}
 	//	ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
-	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Changelevel do coop eh diferente no final
+	if (g_pGameRules->IsCoOp())
+		g_pGameRules->ChangeLevelCoop(pLandmark, m_szLandmarkName, st_szNextMap);
+	else
+		CHANGE_LEVEL(st_szNextMap, st_szNextSpot);
+	// ############ //
 }
 
 CBaseEntity* CChangeLevel::FindLandmark( const char* const pszLandmarkName )

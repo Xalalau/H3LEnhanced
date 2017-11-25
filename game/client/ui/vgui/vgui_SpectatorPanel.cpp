@@ -42,6 +42,14 @@ void DLLEXPORT HUD_ChatInputPosition( int *x, int *y )
 			}
 		}
 	}
+	// ############ hu3lifezado ############ //
+	// Chat movido para local mais adequado
+	else
+	{
+		*x = 10;
+		*y = ScreenHeight - 125;
+	}
+	// ############ //
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -241,6 +241,13 @@ void CBarnacle :: BarnacleThink ( void )
 
 		pTouchEnt = TongueTouchEnt( &flLength );
 
+		// ############ hu3lifezado ############ //
+		// Se o jogador estiver com godmod, nao pegar ele! Fica muito bugado
+		if (pTouchEnt != NULL)
+			if (pTouchEnt->pev->flags & FL_GODMODE)
+				return;
+		// ############ //
+
 		if ( pTouchEnt != NULL && m_fTongueExtended )
 		{
 			// tongue is fully extended, and is touching someone.

@@ -135,9 +135,9 @@ void CBasePlayer::Spawn()
 	// Era 100
 	pev->health			= 169;
 	// ############ //
-	pev->armorvalue		= 0;
-	pev->takedamage		= DAMAGE_AIM;
-	pev->solid			= SOLID_SLIDEBOX;
+	pev->solid = SOLID_SLIDEBOX;
+	pev->armorvalue = 0;
+	pev->takedamage = DAMAGE_AIM;
 	pev->movetype		= MOVETYPE_WALK;
 	pev->max_health		= pev->health;
 	pev->flags			&= FL_PROXY;	// keep proxy flag sey by engine
@@ -180,9 +180,11 @@ void CBasePlayer::Spawn()
 	m_flFallVelocity = 0;
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
+
 	g_pGameRules->GetPlayerSpawnSpot( this );
 
 	SetModel( "models/player.mdl" );
+
 	g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence = LookupActivity( ACT_IDLE );
 

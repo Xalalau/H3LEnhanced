@@ -39,6 +39,8 @@ add_sources(
 	CBMortar.cpp
 	CBullsquid.h
 	CBullsquid.cpp
+	CButano.h
+	CButano.cpp
 	CController.h
 	CController.cpp
 	CControllerHeadBall.h
@@ -89,6 +91,8 @@ add_sources(
 	CISlave.cpp
 	CLeech.h
 	CLeech.cpp
+	CPlant.h
+	CPlant.cpp
 	CMiniTurret.h
 	CMiniTurret.cpp
 	CMonsterMaker.h
@@ -99,6 +103,8 @@ add_sources(
 	CNihilanthHVR.cpp
 	COsprey.h
 	COsprey.cpp
+	CPeacock.h
+	CPeacock.cpp
 	CPedestrian1.h
 	CPedestrian1.cpp
 	CPedestrian2.h

@@ -27,7 +27,8 @@ public:
 	void TalkInit(void);
 	void DeclineFollowing(void);
 	void Scream(void);
-	void StartTask(Task_t *pTask);
+	//void StartTask(Task_t *pTask);
+	void StartTask(const Task_t* pTask) override;
 
 private:
 	float m_painTime;

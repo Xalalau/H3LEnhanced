@@ -105,6 +105,11 @@ void CHudAmmo::Init()
 	m_pCrosshairMode = CVAR_CREATE( "crosshair_mode", "0", FCVAR_ARCHIVE );
 	m_pCrosshairScale = CVAR_CREATE( "crosshair_scale", "1", FCVAR_ARCHIVE );
 
+	// ############ hu3lifezado ############ //
+	// Cores da Latinha de Pichacao no HUD
+	m_pCvarLColor = gEngfuncs.pfnRegisterVariable("hu3_spray_color", "1", FCVAR_ARCHIVE);
+	// ############ //
+
 	GetFlags() |= HUD_ACTIVE; //!!!
 
 	if( CBasePlayer* pPlayer = g_Prediction.GetLocalPlayer() )
@@ -711,6 +716,7 @@ bool CHudAmmo::Draw(float flTime)
 	if (!m_pWeapon)
 		return false;
 
+	// OBS: aqui esta a renderizacao do crosshair!
 	if( m_pCrosshair->value != 0 && m_hCrosshair != INVALID_HSPRITE )
 	{
 		float flScale;
@@ -748,9 +754,13 @@ bool CHudAmmo::Draw(float flTime)
 
 	CBasePlayerWeapon *pw = m_pWeapon; // shorthand
 
+	// ############ hu3lifezado ############ //
+	// A faca virou a arma de pichacao e ela possue um sprite indicativo no HUD. Precisa passar desse IF.
 	// SPR_Draw Ammo
-	if( !pw->GetWeaponInfo()->GetPrimaryAmmo() && !pw->GetWeaponInfo()->GetSecondaryAmmo() )
-		return false;
+	if ( strcmp(pw->GetWeaponInfo()->GetWeaponName(), "weapon_knife") != 0 )
+		if( !pw->GetWeaponInfo()->GetPrimaryAmmo() && !pw->GetWeaponInfo()->GetSecondaryAmmo() )
+			return false;
+	// ############ //
 
 	int iFlags = DHN_DRAWZERO; // draw 0 values
 
@@ -852,6 +862,106 @@ bool CHudAmmo::Draw(float flTime)
 	}
 
 	// ############ hu3lifezado ############ //
+	// Desenhar o icone e o texto indicativos de cor da Latinha de Pichacao
+	// OBS: as cores sao os sprites piche_*.spr que estao listados no arquivo sprites/hud.txt e sao carregados pela funcao void CHud :: VidInit( void ) no hud.cpp
+	if ( strcmp(pw->GetWeaponInfo()->GetWeaponName(), "weapon_knife") == 0 )
+	{
+		char text[20];
+		int sprite_index;
+
+		// Insira novos decals no final! Nao mexa na ordem! kkkk
+		if (m_pCvarLColor->value == 1)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_preto");
+			strcpy(text, "PRETO");
+		}
+		else if (m_pCvarLColor->value == 2)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_branco");
+			strcpy(text, "BRANCO");
+		}
+		else if (m_pCvarLColor->value == 3)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_vermelho");
+			strcpy(text, "VERMELHO");
+		}
+		else if (m_pCvarLColor->value == 4)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_rosa");
+			strcpy(text, "ROSA");
+		}
+		else if (m_pCvarLColor->value == 5)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_roxo");
+			strcpy(text, "ROXO");
+		}
+		else if (m_pCvarLColor->value == 6)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_azul_forte");
+			strcpy(text, "AZUL 1");
+		}
+		else if (m_pCvarLColor->value == 7)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_azul_fraco");
+			strcpy(text, "AZUL 2");
+		}
+		else if (m_pCvarLColor->value == 8)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_verde");
+			strcpy(text, "VERDE");
+		}
+		else if (m_pCvarLColor->value == 9)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_amarelo");
+			strcpy(text, "AMARELO");
+		}
+		else if (m_pCvarLColor->value == 10)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_laranja");
+			strcpy(text, "LARANJA");
+		}
+		else if (m_pCvarLColor->value == 11)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_fundo_branco");
+			strcpy(text, "FUNDO 1");
+		}
+		else if (m_pCvarLColor->value == 12)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_fundo_preto");
+			strcpy(text, "FUNDO 2");
+		}
+		else if (m_pCvarLColor->value == 13)
+		{
+			sprite_index = gHUD.GetSpriteIndex("p_carlos_adao");
+			strcpy(text, "ADAO, C.");
+		}
+
+		HSPRITE sprite_itself = gHUD.GetSprite(sprite_index);
+
+		int iIconWidth = gHUD.GetSpriteRect(sprite_index).right - gHUD.GetSpriteRect(sprite_index).left;
+		int y2 = y - gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4 ;
+		int x2 = ScreenWidth - 4 * AmmoWidth - iIconWidth;
+
+		// Desenhar icone indicativo de cor
+		SPR_Set(sprite_itself, r, g, b);
+		int iOffset = (gHUD.GetSpriteRect(sprite_index).bottom - gHUD.GetSpriteRect(sprite_index).top) / 8;
+		if (m_pCvarLColor->value == 1 || m_pCvarLColor->value == 12) // Cort preta so sai com indexalpha (aditivo), entao desenhamos com "SPR_DrawHoles"
+			SPR_DrawHoles(0, x2, y2 - iOffset, &gHUD.GetSpriteRect(sprite_index));
+		else
+			SPR_DrawAdditive(0, x2, y2 - iOffset, &gHUD.GetSpriteRect(sprite_index));
+
+		// Desenhar texto
+		gHUD.DrawHudString(x2, y2 + gHUD.GetSpriteRect(sprite_index).right, iFlags | DHN_3DIGITS, text, r, g, b);
+
+		// Desenhar crosshair pirata gambiarrado (Isso aih! Aqui mesmo! Tudo errado! Caguei!) na primeira pessoa
+		if (gEngfuncs.pfnGetCvarFloat("cam_hu3") == 0)
+		{
+			HSPRITE gamb_crosshair = gHUD.GetSprite(gHUD.GetSpriteIndex("p_crosshair"));
+			SPR_Set(gamb_crosshair, r, g, b);
+			SPR_DrawAdditive(0, (ScreenWidth / 2) - 10, (ScreenHeight / 2) - 10, &gHUD.GetSpriteRect(gHUD.GetSpriteIndex("p_crosshair")));
+		}
+	}
+
 	// Icone de recarga na terceira pessoa
 	if (pPlayer->cam_hu3_reload_icon == true)
 	{
@@ -961,7 +1071,11 @@ int CHudAmmo::DrawWList(float flTime)
 
 	// ############ hu3lifezado ############ //
 	// Variaveis para fazer calculos
-	int sprite_da_arma = pPlayer->GetFirstPos(iActiveSlot)->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.right - pPlayer->GetFirstPos(iActiveSlot)->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.left;
+	int sprite_da_arma;
+	if (m_pActiveSel == (CBasePlayerWeapon *)1)
+		sprite_da_arma = 0;
+	else
+		sprite_da_arma = m_pActiveSel->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.right - m_pActiveSel->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.left;
 	int quadrado_das_armas = m_iBucketWidth;
 	int numero_de_quadrados = 7;
 	

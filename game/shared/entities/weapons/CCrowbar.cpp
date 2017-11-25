@@ -124,11 +124,11 @@ void CCrowbar::SecondaryAttack()
 		pFCBar->pev->avelocity.x = -1000;
 		pFCBar->pev->gravity = .5;
 		pFCBar->m_pPlayer = m_pPlayer;
-#endif
 
 		// Do player weapon anim and sound effect. 
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 		EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
+#endif
 
 		// Just for kicks, set this. 
 		// But we destroy this weapon anyway so... thppt. 

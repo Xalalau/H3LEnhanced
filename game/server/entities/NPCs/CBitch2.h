@@ -18,7 +18,7 @@
 class CBitch2 : public CBitch1
 {
 public:
-	DECLARE_CLASS(CBitch2, CScientist);
+	DECLARE_CLASS(CBitch2, CBitch1);
 	DECLARE_DATADESC();
 
 	void Spawn(void);

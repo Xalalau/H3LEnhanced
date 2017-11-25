@@ -40,20 +40,20 @@ void CPedestrian1::DeclineFollowing(void)
 		return;
 	Talk(10);
 	m_hTalkTarget = m_hEnemy;
-	PlaySentence("FV_POK", 2, VOL_NORM, ATTN_NORM);
+	PlaySentence("FVP_POK", 2, VOL_NORM, ATTN_NORM);
 }
 
-void CPedestrian1::Scream(void)
+void CPedestrian1 :: Scream(void)
 {
 	if (FOkToSpeak())
 	{
 		Talk(10);
 		m_hTalkTarget = m_hEnemy;
-		PlaySentence("FV_SCREAM", RANDOM_FLOAT(3, 6), VOL_NORM, ATTN_NORM);
+		PlaySentence("FVP_SCREAM", 3, VOL_NORM, ATTN_NORM);
 	}
 }
 
-void CPedestrian1::StartTask(Task_t *pTask)
+void CPedestrian1::StartTask(const Task_t* pTask)
 {
 	switch (pTask->iTask)
 	{
@@ -61,7 +61,7 @@ void CPedestrian1::StartTask(Task_t *pTask)
 		//		if ( FOkToSpeak() )
 		Talk(2);
 		m_hTalkTarget = m_hTargetEnt;
-		PlaySentence("FV_HEAL", 2, VOL_NORM, ATTN_IDLE);
+		PlaySentence("FVP_HEAL", 2, VOL_NORM, ATTN_IDLE);
 
 		TaskComplete();
 		break;
@@ -83,9 +83,9 @@ void CPedestrian1::StartTask(Task_t *pTask)
 			Talk(2);
 			m_hTalkTarget = m_hEnemy;
 			if (m_hEnemy->IsPlayer())
-				PlaySentence("FV_PLFEAR", 5, VOL_NORM, ATTN_NORM);
+				PlaySentence("FVP_PLFEAR", 5, VOL_NORM, ATTN_NORM);
 			else
-				PlaySentence("FV_FEAR", 5, VOL_NORM, ATTN_NORM);
+				PlaySentence("FVP_FEAR", 5, VOL_NORM, ATTN_NORM);
 		}
 		TaskComplete();
 		break;
@@ -158,6 +158,12 @@ void CPedestrian1::Precache(void)
 	PRECACHE_SOUND("pedestres/dor2.wav");
 	PRECACHE_SOUND("pedestres/dor3.wav");
 	PRECACHE_SOUND("pedestres/dor4.wav");
+	PRECACHE_SOUND("pedestres/batidapolicia.wav");
+	PRECACHE_SOUND("pedestres/foiatingido.wav");
+	PRECACHE_SOUND("pedestres/jamateimto.wav");
+	PRECACHE_SOUND("pedestres/socorro.wav");
+	PRECACHE_SOUND("pedestres/trocatiro.wav");
+	PRECACHE_SOUND("pedestres/vaiproutrolado.wav");
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -180,27 +186,27 @@ void CPedestrian1::TalkInit()
 
 	// scientists speach group names (group names are in sentences.txt)
 
-	m_szGrp[TLK_ANSWER] = "FV_ANSWER";
-	m_szGrp[TLK_QUESTION] = "FV_QUESTION";
-	m_szGrp[TLK_IDLE] = "FV_IDLE";
-	m_szGrp[TLK_STARE] = "FV_STARE";
-	m_szGrp[TLK_USE] = "FV_OK";
-	m_szGrp[TLK_UNUSE] = "FV_WAIT";
-	m_szGrp[TLK_STOP] = "FV_STOP";
-	m_szGrp[TLK_NOSHOOT] = "FV_SCARED";
-	m_szGrp[TLK_HELLO] = "FV_HELLO";
+	m_szGrp[TLK_ANSWER] = "FVP_ANSWER";
+	m_szGrp[TLK_QUESTION] = "FVP_QUESTION";
+	m_szGrp[TLK_IDLE] = "FVP_IDLE";
+	m_szGrp[TLK_STARE] = "FVP_STARE";
+	m_szGrp[TLK_USE] = "FVP_OK";
+	m_szGrp[TLK_UNUSE] = "FVP_WAIT";
+	m_szGrp[TLK_STOP] = "FVP_STOP";
+	m_szGrp[TLK_NOSHOOT] = "FVP_SCARED";
+	m_szGrp[TLK_HELLO] = "FVP_HELLO";
 
-	m_szGrp[TLK_PLHURT1] = "!FV_CUREA";
-	m_szGrp[TLK_PLHURT2] = "!FV_CUREB";
-	m_szGrp[TLK_PLHURT3] = "!FV_CUREC";
+	m_szGrp[TLK_PLHURT1] = "!FVP_CUREA";
+	m_szGrp[TLK_PLHURT2] = "!FVP_CUREB";
+	m_szGrp[TLK_PLHURT3] = "!FVP_CUREC";
 
-	m_szGrp[TLK_PHELLO] = "FV_PHELLO";
-	m_szGrp[TLK_PIDLE] = "FV_PIDLE";
-	m_szGrp[TLK_PQUESTION] = "FV_PQUEST";
-	m_szGrp[TLK_SMELL] = "FV_SMELL";
+	m_szGrp[TLK_PHELLO] = "FVP_PHELLO";
+	m_szGrp[TLK_PIDLE] = "FVP_PIDLE";
+	m_szGrp[TLK_PQUESTION] = "FVP_PQUEST";
+	m_szGrp[TLK_SMELL] = "FVP_SMELL";
 
-	m_szGrp[TLK_WOUND] = "FV_WOUND";
-	m_szGrp[TLK_MORTAL] = "FV_MORTAL";
+	m_szGrp[TLK_WOUND] = "FVP_WOUND";
+	m_szGrp[TLK_MORTAL] = "FVP_MORTAL";
 }
 
 //=========================================================

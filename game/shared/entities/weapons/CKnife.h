@@ -30,14 +30,18 @@ enum KnifeAnim
 	KNIFE_IDLE2,
 	KNIFE_IDLE3,
 	KNIFE_CHARGE,
-	KNIFE_STAB
+	KNIFE_STAB,
+	KNIFE_PICHAVASIM,
+    KNIFE_SELECTION
 };
 
 class CKnife : public CBasePlayerWeapon
 {
 public:
 	DECLARE_CLASS( CKnife, CBasePlayerWeapon );
-	DECLARE_DATADESC();
+	// ############ hu3lifezado ############ //
+	// DECLARE_DATADESC(); removido
+	// ############ //
 
 	CKnife();
 
@@ -51,17 +55,37 @@ public:
 
 	void PrimaryAttack() override;
 
-	bool Swing( const bool bFirst );
+	// ############ hu3lifezado ############ //
+	// Funcoes para mexer com pichacao
+	void WeaponIdle() override;
 
-	void SwingAgain();
+	void SecondaryAttack() override;
 
-	void Smack();
+	void DamageAnimationAndSound();
+
+	bool TraceSomeShit();
+
+	void PlaceColor();
+    
+   	static const char *pSelectionSounds[];
+	// ############ //
 
 private:
 	unsigned short m_usKnife;
 
 	int m_iSwing;
 	TraceResult m_trHit;
+
+	// ############ hu3lifezado ############ //
+	// Tempo ate processar novamente dano, animacoes e sons
+	float m_nextthink;
+	// Tempo ate proxima mudanca de cor ser liberada
+	float m_nextcolorchange;
+	// Tempo que quando ultrapassado forca a rechecagem do primeiro acerto
+	float m_nextfirsthit;
+	// Tempo para o proximo som de spray aplicado em parede
+	float m_nextsprayonwallsound;
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CKNIFE_H

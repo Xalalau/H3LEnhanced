@@ -3,6 +3,11 @@
 #include "cbase.h"
 #include "CBasePlayer.h"
 #include "Weapons.h"
+// ############ hu3lifezado ############ //
+// Usado para copiarmos valores de qualidade da Tauros do server para o client
+#include "entities/weapons/CDesertEagle.h"
+// ############ //
+
 
 #include "CWeaponBox.h"
 
@@ -121,6 +126,38 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 							it = it->m_pNext;
 						}
 					}
+				}
+
+				// ARMA TOUROS
+				CDesertEagle * pItem_hu3 = (CDesertEagle *) pItem;
+				if (pItem_hu3->m_iId == WEAPON_DESERT_EAGLE && pItem_hu3->m_quality != 0)
+				{
+					int j;
+					// Nao dar a arma para o jogador se ele ja tiver ela
+					for (j = 0; j < MAX_WEAPON_SLOTS; j++)
+					{
+						CBasePlayerWeapon *it = pPlayer->m_rgpPlayerItems[j];
+
+						while (it != NULL)
+						{
+							if (it->m_iId == WEAPON_DESERT_EAGLE)
+								return;
+
+							it = it->m_pNext;
+						}
+					}
+					// Copiar valores inicias de qualidade e balas da Touros (server -> client)
+					// Qualidade
+					char command[35] = "hu3_touros_qualidade_inicial ";
+					char value[2];
+					snprintf(value, 2, "%d", pItem_hu3->m_quality);
+					strcat(strcat(command, value), "\n");
+					CLIENT_COMMAND( ENT( pPlayer ), command);
+					// Municao primaria
+					strcpy(command, "hu3_touros_municao_inicial ");
+					snprintf(value, 2, "%d", pItem_hu3->m_iClip2);
+					strcat(strcat(command, value), "\n");
+					CLIENT_COMMAND( ENT( pPlayer ), command);
 				}
 				// ############ //
 
@@ -330,6 +367,13 @@ bool CWeaponBox::PackWeapon( CBasePlayerWeapon *pWeapon )
 	if (pWeapon->m_iId == WEAPON_CROWBAR)
 	{
 		SET_MODEL(ENT(pev), "models/w_crowbar.mdl");
+	}
+
+	// Modelo para a Touros quebrada:
+	if (pWeapon->m_iId == WEAPON_DESERT_EAGLE)
+	{
+		SET_MODEL(ENT(pev), "models/w_desert_eagle.mdl");
+		pev->body = 1;
 	}
 	// ############ //
 

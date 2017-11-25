@@ -56,6 +56,8 @@ add_sources(
 	CNullEntity.cpp
 	CPlayerHudColors.h
 	CPlayerHudColors.cpp
+	CPointCounter.h
+	CPointCounter.cpp
 	CPointCMD.h
 	CPointCMD.cpp
 	CPointEntity.h

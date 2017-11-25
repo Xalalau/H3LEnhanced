@@ -110,6 +110,11 @@ private:
 	cvar_t* m_pCrosshairMode;
 	cvar_t* m_pCrosshairScale;
 
+	// ############ hu3lifezado ############ //
+	// Cores da Latinha de Pichacao no HUD
+	cvar_t* m_pCvarLColor;
+	// ############ //
+
 	//The server sent a message before the client was ready, so update as soon as possible - Solokiller
 	bool m_bNeedsLocalUpdate = false;
 	bool m_bOnTarget = false;
