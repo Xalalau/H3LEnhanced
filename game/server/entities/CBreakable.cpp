@@ -133,7 +133,7 @@ BEGIN_DATADESC( CBreakable )
 	DEFINE_TOUCHFUNC( BreakTouch ),
 	DEFINE_THINKFUNC( Die ),
 
-	// Explosion magnitude is stored in pev->impulse
+	// Explosion magnitude is stored in GetImpulse()
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( func_breakable, CBreakable );
@@ -142,15 +142,17 @@ void CBreakable::Spawn( void )
 {
     Precache( );    
 
-	if ( FBitSet( pev->spawnflags, SF_BREAK_TRIGGER_ONLY ) )
-		pev->takedamage	= DAMAGE_NO;
+	if ( GetSpawnFlags().Any( SF_BREAK_TRIGGER_ONLY ) )
+		SetTakeDamageMode( DAMAGE_NO );
 	else
-		pev->takedamage	= DAMAGE_YES;
+		SetTakeDamageMode( DAMAGE_YES );
   
-	pev->solid		= SOLID_BSP;
-    pev->movetype	= MOVETYPE_PUSH;
-    m_angle			= pev->angles.y;
-	pev->angles.y	= 0;
+	SetSolidType( SOLID_BSP );
+	SetMoveType( MOVETYPE_PUSH );
+    m_angle			= GetAbsAngles().y;
+	Vector vecAngles = GetAbsAngles();
+	vecAngles.y	= 0;
+	SetAbsAngles( vecAngles );
 
 	// HACK:  matGlass can receive decals, we need the client to know about this
 	//  so use class to store the material flag
@@ -160,14 +162,14 @@ void CBreakable::Spawn( void )
 		pev->playerclass = 1;
 	}
 
-	SetModel( STRING(pev->model) );//set size and link into world.
+	SetModel( GetModelName() );//set size and link into world.
 
 	SetTouch( &CBreakable::BreakTouch );
-	if ( FBitSet( pev->spawnflags, SF_BREAK_TRIGGER_ONLY ) )		// Only break on trigger
+	if ( GetSpawnFlags().Any( SF_BREAK_TRIGGER_ONLY ) )		// Only break on trigger
 		SetTouch( NULL );
 
 	// Flag unbreakable glass as "worldbrush" so it will block ALL tracelines
-	if ( !IsBreakable() && pev->rendermode != kRenderNormal )
+	if ( !IsBreakable() && GetRenderMode() != kRenderNormal )
 		GetFlags() |= FL_WORLDBRUSH;
 }
 
@@ -435,11 +437,11 @@ void CBreakable::BreakTouch( CBaseEntity *pOther )
         return;
 	}
 
-	if ( FBitSet ( pev->spawnflags, SF_BREAK_TOUCH ) )
+	if ( GetSpawnFlags().Any( SF_BREAK_TOUCH ) )
 	{// can be broken when run into 
 		flDamage = pevToucher->velocity.Length() * 0.01;
 
-		if (flDamage >= pev->health)
+		if (flDamage >= GetHealth() )
 		{
 			SetTouch( NULL );
 			TakeDamage( pOther, pOther, flDamage, DMG_CRUSH);
@@ -449,7 +451,7 @@ void CBreakable::BreakTouch( CBaseEntity *pOther )
 		}
 	}
 
-	if ( FBitSet ( pev->spawnflags, SF_BREAK_PRESSURE ) && pevToucher->absmin.z >= pev->maxs.z - 2 )
+	if ( GetSpawnFlags().Any( SF_BREAK_PRESSURE ) && pevToucher->absmin.z >= GetRelMax().z - 2 )
 	{// can be broken when stood upon
 		
 		// play creaking sound here.
@@ -463,7 +465,7 @@ void CBreakable::BreakTouch( CBaseEntity *pOther )
 			m_flDelay = 0.1;
 		}
 
-		pev->nextthink = pev->ltime + m_flDelay;
+		SetNextThink( GetLastThink() + m_flDelay );
 
 	}
 
@@ -478,15 +480,17 @@ void CBreakable::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 {
 	if ( IsBreakable() )
 	{
-		pev->angles.y = m_angle;
-		UTIL_MakeVectors(pev->angles);
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.y = m_angle;
+		SetAbsAngles( vecAngles );
+		UTIL_MakeVectors( GetAbsAngles() );
 		g_vecAttackDir = gpGlobals->v_forward;
 
 		Die();
 	}
 }
 
-void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 	// random spark if this is a 'computer' object
 	if (RANDOM_LONG(0,1) )
@@ -495,7 +499,7 @@ void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceR
 		{
 		case matComputer:
 			{
-				UTIL_Sparks( ptr->vecEndPos );
+				UTIL_Sparks( tr.vecEndPos );
 
 				float flVolume = RANDOM_FLOAT ( 0.7 , 1.0 );//random volume range
 				switch ( RANDOM_LONG(0,1) )
@@ -508,7 +512,7 @@ void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceR
 			
 		case matUnbreakableGlass:
 			{
-				UTIL_Ricochet( ptr->vecEndPos, RANDOM_FLOAT(0.5,1.5) );
+				UTIL_Ricochet( tr.vecEndPos, RANDOM_FLOAT(0.5,1.5) );
 				break;
 			}
 
@@ -516,7 +520,7 @@ void CBreakable::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceR
 		}
 	}
 
-	CBaseDelay::TraceAttack( info, vecDir, ptr );
+	CBaseDelay::TraceAttack( info, vecDir, tr );
 }
 
 //=========================================================
@@ -534,17 +538,17 @@ void CBreakable::OnTakeDamage( const CTakeDamageInfo& info )
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
 	if ( newInfo.GetAttacker() == newInfo.GetInflictor() )
 	{
-		vecTemp = newInfo.GetInflictor()->GetAbsOrigin() - ( pev->absmin + ( pev->size * 0.5 ) );
+		vecTemp = newInfo.GetInflictor()->GetAbsOrigin() - ( GetAbsMin() + ( GetBounds() * 0.5 ) );
 		
 		// if a client hit the breakable with a crowbar, and breakable is crowbar-sensitive, break it now.
 		if ( newInfo.GetAttacker()->GetFlags().Any( FL_CLIENT ) &&
-				 FBitSet ( pev->spawnflags, SF_BREAK_CROWBAR ) && ( newInfo.GetDamageTypes() & DMG_CLUB))
-			newInfo.GetMutableDamage() = pev->health;
+			 GetSpawnFlags().Any( SF_BREAK_CROWBAR ) && ( newInfo.GetDamageTypes() & DMG_CLUB))
+			newInfo.GetMutableDamage() = GetHealth();
 	}
 	else
 	// an actual missile was involved.
 	{
-		vecTemp = newInfo.GetInflictor()->GetAbsOrigin() - ( pev->absmin + ( pev->size * 0.5 ) );
+		vecTemp = newInfo.GetInflictor()->GetAbsOrigin() - ( GetAbsMin() + ( GetBounds() * 0.5 ) );
 	}
 	
 	if (!IsBreakable())
@@ -562,8 +566,8 @@ void CBreakable::OnTakeDamage( const CTakeDamageInfo& info )
 	g_vecAttackDir = vecTemp.Normalize();
 		
 // do the damage
-	pev->health -= newInfo.GetDamage();
-	if (pev->health <= 0)
+	SetHealth( GetHealth() - newInfo.GetDamage() );
+	if ( GetHealth() <= 0)
 	{
 		Killed( newInfo, GIB_NORMAL );
 		Die();
@@ -582,7 +586,6 @@ void CBreakable::Die( void )
 {
 	Vector vecSpot;// shard origin
 	Vector vecVelocity;// shard velocity
-	CBaseEntity *pEntity = NULL;
 	char cFlag = 0;
 	int pitch;
 	float fvol;
@@ -592,10 +595,10 @@ void CBreakable::Die( void )
 	if (pitch > 97 && pitch < 103)
 		pitch = 100;
 
-	// The more negative pev->health, the louder
+	// The more negative GetHealth(), the louder
 	// the sound should be.
 
-	fvol = RANDOM_FLOAT(0.85, 1.0) + ( fabs(pev->health) / 100.0);
+	fvol = RANDOM_FLOAT(0.85, 1.0) + ( fabs( GetHealth() ) / 100.0);
 
 	if (fvol > 1.0)
 		fvol = 1.0;
@@ -684,7 +687,7 @@ void CBreakable::Die( void )
 		vecVelocity.z = 0;
 	}
 
-	vecSpot = GetAbsOrigin() + (pev->mins + pev->maxs) * 0.5;
+	vecSpot = GetAbsOrigin() + ( GetRelMin() + GetRelMax() ) * 0.5;
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
 		WRITE_BYTE( TE_BREAKMODEL);
 
@@ -694,9 +697,7 @@ void CBreakable::Die( void )
 		WRITE_COORD( vecSpot.z );
 
 		// size
-		WRITE_COORD( pev->size.x);
-		WRITE_COORD( pev->size.y);
-		WRITE_COORD( pev->size.z);
+		WRITE_COORD_VECTOR( GetBounds() );
 
 		// velocity
 		WRITE_COORD( vecVelocity.x ); 
@@ -719,17 +720,17 @@ void CBreakable::Die( void )
 		WRITE_BYTE( cFlag );
 	MESSAGE_END();
 
-	float size = pev->size.x;
-	if ( size < pev->size.y )
-		size = pev->size.y;
-	if ( size < pev->size.z )
-		size = pev->size.z;
+	float size = GetBounds().x;
+	if ( size < GetBounds().y )
+		size = GetBounds().y;
+	if ( size < GetBounds().z )
+		size = GetBounds().z;
 
 	// !!! HACK  This should work!
 	// Build a box above the entity that looks like an 8 pixel high sheet
-	Vector mins = pev->absmin;
-	Vector maxs = pev->absmax;
-	mins.z = pev->absmax.z;
+	Vector mins = GetAbsMin();
+	Vector maxs = GetAbsMax();
+	mins.z = GetAbsMax().z;
 	maxs.z += 8;
 
 	// BUGBUG -- can only find 256 entities on a breakable -- should be enough
@@ -740,21 +741,21 @@ void CBreakable::Die( void )
 		for ( int i = 0; i < count; i++ )
 		{
 			pList[i]->GetFlags().ClearFlags( FL_ONGROUND );
-			pList[i]->pev->groundentity = NULL;
+			pList[i]->SetGroundEntity( nullptr );
 		}
 	}
 
 	// Don't fire something that could fire myself
-	pev->targetname = 0;
+	ClearTargetname();
 
-	pev->solid = SOLID_NOT;
+	SetSolidType( SOLID_NOT );
 	// Fire targets on break
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 
 	SetThink( &CBreakable::SUB_Remove );
-	pev->nextthink = pev->ltime + 0.1;
+	SetNextThink( GetLastThink() + 0.1 );
 	if ( m_iszSpawnObject )
-		CBaseEntity::Create( (char *)STRING(m_iszSpawnObject), VecBModelOrigin( this ), pev->angles, edict() );
+		CBaseEntity::Create( (char *)STRING(m_iszSpawnObject), VecBModelOrigin( this ), GetAbsAngles(), edict() );
 
 
 	if ( Explodable() )

@@ -31,9 +31,11 @@ void CSentry::Spawn()
 {
 	Precache();
 	SetModel( "models/sentry.mdl" );
-	pev->health = gSkillData.GetSentryHealth();
+	SetHealth( gSkillData.GetSentryHealth() );
 	m_HackedGunPos = Vector( 0, 0, 48 );
-	pev->view_ofs.z = 48;
+	Vector vecView = GetViewOffset();
+	vecView.z = 48;
+	SetViewOffset( vecView );
 	m_flMaxWait = 1E6;
 	m_flMaxSpin = 1E6;
 
@@ -45,7 +47,7 @@ void CSentry::Spawn()
 
 	SetTouch( &CSentry::SentryTouch );
 	SetThink( &CSentry::Initialize );
-	pev->nextthink = gpGlobals->time + 0.3;
+	SetNextThink( gpGlobals->time + 0.3 );
 }
 
 void CSentry::Precache()
@@ -64,40 +66,40 @@ void CSentry::Shoot( Vector &vecSrc, Vector &vecDirToEnemy )
 	case 1: EMIT_SOUND( this, CHAN_WEAPON, "weapons/hks2.wav", 1, ATTN_NORM ); break;
 	case 2: EMIT_SOUND( this, CHAN_WEAPON, "weapons/hks3.wav", 1, ATTN_NORM ); break;
 	}
-	pev->effects = pev->effects | EF_MUZZLEFLASH;
+	GetEffects() |= EF_MUZZLEFLASH;
 }
 
 void CSentry::OnTakeDamage( const CTakeDamageInfo& info )
 {
-	if( !pev->takedamage )
+	if( GetTakeDamageMode() == DAMAGE_NO )
 		return;
 
 	if( !m_bOn )
 	{
 		SetThink( &CSentry::Deploy );
 		SetUse( NULL );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 
-	pev->health -= info.GetDamage();
-	if( pev->health <= 0 )
+	SetHealth( GetHealth() - info.GetDamage() );
+	if( GetHealth() <= 0 )
 	{
-		pev->health = 0;
-		pev->takedamage = DAMAGE_NO;
-		pev->dmgtime = gpGlobals->time;
+		SetHealth( 0 );
+		SetTakeDamageMode( DAMAGE_NO );
+		SetDamageTime( gpGlobals->time );
 
-		ClearBits( pev->flags, FL_MONSTER ); // why are they set in the first place???
+		GetFlags().ClearFlags( FL_MONSTER ); // why are they set in the first place???
 
 		SetUse( NULL );
 		SetThink( &CSentry::SentryDeath );
 		SUB_UseTargets( this, USE_ON, 0 ); // wake up others
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 }
 
 void CSentry::SentryTouch( CBaseEntity *pOther )
 {
-	if( pOther && ( pOther->IsPlayer() || ( pOther->pev->flags & FL_MONSTER ) ) )
+	if( pOther && ( pOther->IsPlayer() || pOther->GetFlags().Any( FL_MONSTER ) ) )
 	{
 		TakeDamage( pOther, pOther, 0, 0 );
 	}
@@ -105,14 +107,12 @@ void CSentry::SentryTouch( CBaseEntity *pOther )
 
 void CSentry::SentryDeath( void )
 {
-	bool iActive = false;
-
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
-	if( pev->deadflag != DEAD_DEAD )
+	if( GetDeadFlag() != DEAD_DEAD )
 	{
-		pev->deadflag = DEAD_DEAD;
+		SetDeadFlag( DEAD_DEAD );
 
 		float flRndSound = RANDOM_FLOAT( 0, 1 );
 
@@ -130,8 +130,10 @@ void CSentry::SentryDeath( void )
 
 		SetTurretAnim( TURRET_ANIM_DIE );
 
-		pev->solid = SOLID_NOT;
-		pev->angles.y = UTIL_AngleMod( pev->angles.y + RANDOM_LONG( 0, 2 ) * 120 );
+		SetSolidType( SOLID_NOT );
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.y = UTIL_AngleMod( vecAngles.y + RANDOM_LONG( 0, 2 ) * 120 );
+		SetAbsAngles( vecAngles );
 
 		EyeOn();
 	}
@@ -141,7 +143,7 @@ void CSentry::SentryDeath( void )
 	Vector vecSrc, vecAng;
 	GetAttachment( 1, vecSrc, vecAng );
 
-	if( pev->dmgtime + RANDOM_FLOAT( 0, 2 ) > gpGlobals->time )
+	if( GetDamageTime() + RANDOM_FLOAT( 0, 2 ) > gpGlobals->time )
 	{
 		// lots of smoke
 		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
@@ -155,14 +157,14 @@ void CSentry::SentryDeath( void )
 		MESSAGE_END();
 	}
 
-	if( pev->dmgtime + RANDOM_FLOAT( 0, 8 ) > gpGlobals->time )
+	if( GetDamageTime() + RANDOM_FLOAT( 0, 8 ) > gpGlobals->time )
 	{
 		UTIL_Sparks( vecSrc );
 	}
 
-	if( m_fSequenceFinished && pev->dmgtime + 5 < gpGlobals->time )
+	if( m_fSequenceFinished && GetDamageTime() + 5 < gpGlobals->time )
 	{
-		pev->framerate = 0;
+		SetFrameRate( 0 );
 		SetThink( NULL );
 	}
 }

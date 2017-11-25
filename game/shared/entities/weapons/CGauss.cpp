@@ -197,7 +197,7 @@ void CGauss::Holster()
 #endif
 	// ############ //
 
-	PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict(), m_usGaussFire, 0.01, m_pPlayer->GetAbsOrigin(), m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
+	PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict(), m_usGaussFire, 0.01, m_pPlayer->GetAbsOrigin(), m_pPlayer->GetAbsAngles(), 0.0, 0.0, 0, 0, 0, 1 );
 	
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	
@@ -449,7 +449,7 @@ void CGauss::StartFire()
 {
 	float flDamage;
 	
-	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+	UTIL_MakeVectors( m_pPlayer->GetViewAngle() + m_pPlayer->GetPunchAngle() );
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition( ); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
 	
@@ -481,18 +481,20 @@ void CGauss::StartFire()
 		//ALERT ( at_console, "Time:%f Damage:%f\n", gpGlobals->time - m_pPlayer->m_flStartCharge, flDamage );
 
 #ifndef CLIENT_DLL
-		float flZVel = m_pPlayer->pev->velocity.z;
+		float flZVel = m_pPlayer->GetAbsVelocity().z;
 
 		if ( !m_fPrimaryFire )
 		{
-			m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - gpGlobals->v_forward * flDamage * 5;
+			m_pPlayer->SetAbsVelocity( m_pPlayer->GetAbsVelocity() - gpGlobals->v_forward * flDamage * 5 );
 		}
 
 		if ( !g_pGameRules->IsMultiplayer() )
 
 		{
 			// in deathmatch, gauss can pop you up into the air. Not in single play.
-			m_pPlayer->pev->velocity.z = flZVel;
+			Vector vecVelocity = m_pPlayer->GetAbsVelocity();
+			vecVelocity.z = flZVel;
+			m_pPlayer->SetAbsVelocity( vecVelocity );
 		}
 #endif
 		// player "shoot" animation
@@ -517,34 +519,19 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 {
 	m_pPlayer->m_iWeaponVolume = GAUSS_PRIMARY_FIRE_VOLUME;
 
-	Vector vecSrc = vecOrigSrc;
-	Vector vecDest = vecSrc + vecDir * 8192;
-	edict_t		*pentIgnore;
-	TraceResult tr, beam_tr;
-	float flMaxFrac = 1.0;
-	int	nTotal = 0;
-	int fHasPunched = 0;
-	int fFirstBeam = 1;
-	// ############ hu3lifezado ############ //
-	// limite de rebatidas aumentado de 10 para 100
-	int	nMaxHits = 100;
-	// ############ //
-
-	pentIgnore = ENT( m_pPlayer->pev );
-
 #ifdef CLIENT_DLL
 	if ( !m_fPrimaryFire )
 		g_brunninggausspred = true;
 #endif
 	
 	// The main firing event is sent unreliably so it won't be delayed.
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussFire, 0.0, m_pPlayer->GetAbsOrigin(), m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussFire, 0.0, m_pPlayer->GetAbsOrigin(), m_pPlayer->GetAbsAngles(), flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0 );
 
 	// This reliable event is used to stop the spinning sound
 	// It's delayed by a fraction of second to make sure it is delayed by 1 frame on the client
 	// It's sent reliably anyway, which could lead to other delays
 
-	PLAYBACK_EVENT_FULL( FEV_NOTHOST | FEV_RELIABLE, m_pPlayer->edict(), m_usGaussFire, 0.01, m_pPlayer->GetAbsOrigin(), m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1 );
+	PLAYBACK_EVENT_FULL( FEV_NOTHOST | FEV_RELIABLE, m_pPlayer->edict(), m_usGaussFire, 0.01, m_pPlayer->GetAbsOrigin(), m_pPlayer->GetAbsAngles(), 0.0, 0.0, 0, 0, 0, 1 );
 
 	
 	/*ALERT( at_console, "%f %f %f\n%f %f %f\n", 
@@ -555,6 +542,23 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 //	ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
 
 #ifndef CLIENT_DLL
+	Vector vecSrc = vecOrigSrc;
+	Vector vecDest = vecSrc + vecDir * 8192;
+
+	TraceResult tr, beam_tr;
+
+	edict_t* pentIgnore = ENT( m_pPlayer->pev );
+
+	float flMaxFrac = 1.0;
+
+	int	nTotal = 0;
+	bool fHasPunched = false;
+	bool fFirstBeam = true;
+	// ############ hu3lifezado ############ //
+	// limite de rebatidas aumentado de 10 para 100
+	int	nMaxHits = 100;
+	// ############ //
+
 	while (flDamage > 10 && nMaxHits > 0)
 	{
 		nMaxHits--;
@@ -572,18 +576,18 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 		if ( fFirstBeam )
 		{
-			m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
-			fFirstBeam = 0;
+			m_pPlayer->GetEffects() |= EF_MUZZLEFLASH;
+			fFirstBeam = false;
 	
 			nTotal += 26;
 		}
 		
-		if (pEntity->pev->takedamage)
+		if (pEntity->GetTakeDamageMode() != DAMAGE_NO )
 		{
 			g_MultiDamage.Clear();
 			// ############ hu3lifezado ############ //
 			// Somei 30 ao flDamage
-			pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage + 30, DMG_BULLET ), vecDir, &tr );
+			pEntity->TraceAttack(CTakeDamageInfo(m_pPlayer, flDamage, DMG_BULLET), vecDir, tr);
 			// Explodo o bastardo que acertamos!
 			MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pEntity->pev->origin );
 				WRITE_BYTE( TE_EXPLOSION);
@@ -601,11 +605,9 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 		if ( pEntity->ReflectGauss() )
 		{
-			float n;
-
 			pentIgnore = NULL;
 
-			n = -DotProduct(tr.vecPlaneNormal, vecDir);
+			float n = -DotProduct(tr.vecPlaneNormal, vecDir);
 
 			if (n < 0.5) // 60 degrees
 			{
@@ -635,7 +637,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				// limit it to one hole punch
 				if (fHasPunched)
 					break;
-				fHasPunched = 1;
+				fHasPunched = true;
 
 				// try punching through wall if secondary attack (primary is incapable of breaking through)
 				if ( !m_fPrimaryFire )
@@ -646,7 +648,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 						// trace backwards to find exit point
 						UTIL_TraceLine( beam_tr.vecEndPos, tr.vecEndPos, dont_ignore_monsters, pentIgnore, &beam_tr);
 
-						float n = (beam_tr.vecEndPos - tr.vecEndPos).Length( );
+						n = ( beam_tr.vecEndPos - tr.vecEndPos ).Length();
 
 						if (n < flDamage)
 						{

@@ -18,6 +18,12 @@
 
 #include <ctype.h>
 
+//GCC complains about deleting vgui objects due to them having no virtual destructor - Solokiller
+#ifdef POSIX
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
+#endif
+
 #define MAX_SCORES					10
 #define MAX_SCOREBOARD_TEAMS		5
 
@@ -306,5 +312,9 @@ public:
 
 	friend class CLabelHeader;
 };
+
+#ifdef POSIX
+#pragma GCC diagnostic pop
+#endif
 
 #endif

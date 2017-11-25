@@ -127,6 +127,11 @@ extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, const Vector &vec
 CBaseEntity* UTIL_FindEntityByTarget( CBaseEntity* pStartEntity, const char* const pszTarget );
 
 /**
+*	@brief Gets an entity by index
+*/
+CBaseEntity* UTIL_EntityByIndex( const int iIndex );
+
+/**
 *	Gets a CBasePlayer pointer to a player by index.
 *	Now returns CBasePlayer - Solokiller
 *	@param playerIndex Player's entity index.

@@ -29,7 +29,7 @@ void CFuncTankLaser::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "laserentity" ) )
 	{
-		pev->message = ALLOC_STRING( pkvd->szValue );
+		SetMessage( ALLOC_STRING( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else
@@ -44,21 +44,21 @@ void CFuncTankLaser::Fire( const Vector &barrelEnd, const Vector &forward, CBase
 	if( m_fireLast != 0 && GetLaser() )
 	{
 		// TankTrace needs gpGlobals->v_up, etc.
-		UTIL_MakeAimVectors( pev->angles );
+		UTIL_MakeAimVectors( GetAbsAngles() );
 
 		int bulletCount = ( gpGlobals->time - m_fireLast ) * m_fireRate;
 		if( bulletCount )
 		{
 			for( i = 0; i < bulletCount; i++ )
 			{
-				m_pLaser->pev->origin = barrelEnd;
+				m_pLaser->SetAbsOrigin( barrelEnd );
 				TankTrace( barrelEnd, forward, gTankSpread[ m_spread ], tr );
 
 				m_laserTime = gpGlobals->time;
 				m_pLaser->TurnOn();
-				m_pLaser->pev->dmgtime = gpGlobals->time - 1.0;
+				m_pLaser->SetDamageTime( gpGlobals->time - 1.0 );
 				m_pLaser->FireAtPoint( tr );
-				m_pLaser->pev->nextthink = 0;
+				m_pLaser->SetNextThink( 0 );
 			}
 			CFuncTank::Fire( barrelEnd, forward, pAttacker );
 		}
@@ -84,7 +84,7 @@ CLaser *CFuncTankLaser::GetLaser( void )
 
 	CBaseEntity* pLaser = nullptr;
 
-	while( (pLaser = UTIL_FindEntityByTargetname( pLaser, STRING( pev->message ) )) )
+	while( ( pLaser = UTIL_FindEntityByTargetname( pLaser, GetMessage() ) ) != nullptr )
 	{
 		// Found the landmark
 		if( pLaser->ClassnameIs( "env_laser" ) )

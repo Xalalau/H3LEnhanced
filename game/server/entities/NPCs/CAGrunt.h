@@ -61,28 +61,42 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
 	int  ISoundMask( void ) override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	void SetObjectCollisionBox( void ) override
 	{
-		pev->absmin = GetAbsOrigin() + Vector( -32, -32, 0 );
-		pev->absmax = GetAbsOrigin() + Vector( 32, 32, 85 );
+		SetAbsMin( GetAbsOrigin() + Vector( -32, -32, 0 ) );
+		SetAbsMax( GetAbsOrigin() + Vector( 32, 32, 85 ) );
 	}
 
 	Schedule_t* GetSchedule( void ) override;
 	Schedule_t* GetScheduleOfType( int Type ) override;
+
+	/**
+	*	@brief this is overridden for alien grunts because they can use their smart weapons against unseen enemies
+	*	Base class doesn't attack anyone it can't see
+	*/
 	bool FCanCheckAttacks() const override;
+
+	/**
+	*	@brief alien grunts zap the crap out of any enemy that gets too close
+	*/
 	bool CheckMeleeAttack1( float flDot, float flDist ) override;
+
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
-	void StartTask( const Task_t* pTask ) override;
+	void StartTask( const Task_t& task ) override;
 	void AlertSound( void ) override;
 	void DeathSound( void ) override;
 	void PainSound( void ) override;
 	void AttackSound( void );
 	void PrescheduleThink( void ) override;
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
+
+	/**
+	*	@brief Overridden because Human Grunts are Alien Grunt's nemesis
+	*/
 	Relationship IRelationship( CBaseEntity *pTarget ) override;
 	void StopTalking( void );
 	bool ShouldSpeak();

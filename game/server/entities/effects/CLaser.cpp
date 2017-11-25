@@ -18,16 +18,16 @@ LINK_ENTITY_TO_CLASS( env_laser, CLaser );
 
 void CLaser::Spawn( void )
 {
-	if( FStringNull( pev->model ) )
+	if( !HasModel() )
 	{
 		SetThink( &CLaser::SUB_Remove );
 		return;
 	}
-	pev->solid = SOLID_NOT;							// Remove model & collisions
+	SetSolidType( SOLID_NOT );							// Remove model & collisions
 	Precache();
 
 	SetThink( &CLaser::StrikeThink );
-	pev->flags |= FL_CUSTOMENTITY;
+	GetFlags() |= FL_CUSTOMENTITY;
 
 	PointsInit( GetAbsOrigin(), GetAbsOrigin() );
 
@@ -37,9 +37,9 @@ void CLaser::Spawn( void )
 		m_pSprite = NULL;
 
 	if( m_pSprite )
-		m_pSprite->SetTransparency( kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx );
+		m_pSprite->SetTransparency( kRenderGlow, GetRenderColor().x, GetRenderColor().y, GetRenderColor().z, GetRenderAmount(), GetRenderFX() );
 
-	if( HasTargetname() && !( pev->spawnflags & SF_BEAM_STARTON ) )
+	if( HasTargetname() && !GetSpawnFlags().Any( SF_BEAM_STARTON ) )
 		TurnOff();
 	else
 		TurnOn();
@@ -47,7 +47,7 @@ void CLaser::Spawn( void )
 
 void CLaser::Precache( void )
 {
-	pev->modelindex = PRECACHE_MODEL( ( char * ) STRING( pev->model ) );
+	SetModelIndex( PRECACHE_MODEL( GetModelName() ) );
 	if( m_iszSpriteName )
 		PRECACHE_MODEL( ( char * ) STRING( m_iszSpriteName ) );
 }
@@ -56,7 +56,7 @@ void CLaser::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "LaserTarget" ) )
 	{
-		pev->message = ALLOC_STRING( pkvd->szValue );
+		SetMessage( ALLOC_STRING( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else if( FStrEq( pkvd->szKeyName, "width" ) )
@@ -76,7 +76,7 @@ void CLaser::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "texture" ) )
 	{
-		pev->model = ALLOC_STRING( pkvd->szValue );
+		SetModelName( ALLOC_STRING( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else if( FStrEq( pkvd->szKeyName, "EndSprite" ) )
@@ -86,12 +86,12 @@ void CLaser::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "framestart" ) )
 	{
-		pev->frame = atoi( pkvd->szValue );
+		SetFrame( atoi( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else if( FStrEq( pkvd->szKeyName, "damage" ) )
 	{
-		pev->dmg = atof( pkvd->szValue );
+		SetDamage( atof( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else
@@ -100,24 +100,24 @@ void CLaser::KeyValue( KeyValueData *pkvd )
 
 void CLaser::TurnOn( void )
 {
-	pev->effects &= ~EF_NODRAW;
+	GetEffects().ClearFlags( EF_NODRAW );
 	if( m_pSprite )
 		m_pSprite->TurnOn();
-	pev->dmgtime = gpGlobals->time;
-	pev->nextthink = gpGlobals->time;
+	SetDamageTime( gpGlobals->time );
+	SetNextThink( gpGlobals->time );
 }
 
 void CLaser::TurnOff( void )
 {
-	pev->effects |= EF_NODRAW;
-	pev->nextthink = 0;
+	GetEffects() |= EF_NODRAW;
+	SetNextThink( 0 );
 	if( m_pSprite )
 		m_pSprite->TurnOff();
 }
 
 bool CLaser::IsOn() const
 {
-	if( pev->effects & EF_NODRAW )
+	if( GetEffects().Any( EF_NODRAW ) )
 		return false;
 	return true;
 }
@@ -134,7 +134,7 @@ void CLaser::FireAtPoint( TraceResult &tr )
 
 void CLaser::StrikeThink( void )
 {
-	CBaseEntity *pEnd = UTIL_RandomTargetname( STRING( pev->message ) );
+	CBaseEntity *pEnd = UTIL_RandomTargetname( GetMessage() );
 
 	if( pEnd )
 		m_firePosition = pEnd->GetAbsOrigin();
@@ -143,7 +143,7 @@ void CLaser::StrikeThink( void )
 
 	UTIL_TraceLine( GetAbsOrigin(), m_firePosition, dont_ignore_monsters, NULL, &tr );
 	FireAtPoint( tr );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 void CLaser::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

@@ -33,9 +33,9 @@ void CSqueak::Spawn( )
 
 	FallInit();//get ready to fall down.
 		
-	pev->sequence = 1;
-	pev->animtime = gpGlobals->time;
-	pev->framerate = 1.0;
+	SetSequence( 1 );
+	SetAnimTime( gpGlobals->time );
+	SetFrameRate( 1.0 );
 }
 
 
@@ -75,9 +75,9 @@ void CSqueak::Holster()
 	
 	if ( !m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] )
 	{
-		m_pPlayer->pev->weapons &= ~(1<<m_iId);
+		m_pPlayer->GetWeapons().ClearFlags( 1 << m_iId );
 		SetThink( &CSqueak::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 		return;
 	}
 	
@@ -90,14 +90,14 @@ void CSqueak::PrimaryAttack()
 {
 	if ( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] )
 	{
-		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+		UTIL_MakeVectors( m_pPlayer->GetViewAngle() );
 		TraceResult tr;
 		Vector trace_origin;
 
 		// HACK HACK:  Ugly hacks to handle change in origin based on new physics code for players
 		// Move origin up if crouched and start trace a bit outside of body ( 20 units instead of 16 )
 		trace_origin = m_pPlayer->GetAbsOrigin();
-		if ( m_pPlayer->pev->flags & FL_DUCKING )
+		if ( m_pPlayer->GetFlags().Any( FL_DUCKING ) )
 		{
 			trace_origin = trace_origin - ( VEC_HULL_MIN - VEC_DUCK_HULL_MIN );
 		}
@@ -120,8 +120,8 @@ void CSqueak::PrimaryAttack()
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 #ifndef CLIENT_DLL
-			CBaseEntity *pSqueak = CBaseEntity::Create( "monster_snark", tr.vecEndPos, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
-			pSqueak->pev->velocity = gpGlobals->v_forward * 200 + m_pPlayer->pev->velocity;
+			CBaseEntity *pSqueak = CBaseEntity::Create( "monster_snark", tr.vecEndPos, m_pPlayer->GetViewAngle(), m_pPlayer->edict() );
+			pSqueak->SetAbsVelocity( gpGlobals->v_forward * 200 + m_pPlayer->GetAbsVelocity() );
 #endif
 
 			// play hunt sound

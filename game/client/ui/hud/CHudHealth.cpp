@@ -233,7 +233,7 @@ bool CHudHealth::Draw(float flTime)
 
 		// ############ hu3lifezado ############ //
 		// Nao preciso mais desenhar o traco que separa o sangue da armadura
-		//FillRGBA(x, y, iWidth, iHeight, color.r, color.g, color.b, a);
+		//FillRGBA(x, y, iWidth, iHeight, color.r(), color.g(), color.b(), a);
 		// ############ //
 	}
 
@@ -407,7 +407,7 @@ bool CHudHealth::DrawDamage(float flTime)
 	// check for bits that should be expired
 	for ( i = 0; i < NUM_DMG_TYPES; i++ )
 	{
-		DAMAGE_IMAGE *pdmg = &m_dmg[i];
+		pdmg = &m_dmg[i];
 
 		if ( m_bitsDamage & giDmgFlags[i] )
 		{

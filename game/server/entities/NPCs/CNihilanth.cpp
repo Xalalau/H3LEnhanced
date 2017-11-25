@@ -116,28 +116,28 @@ void CNihilanth :: Spawn( void )
 {
 	Precache( );
 	// motor
-	pev->movetype = MOVETYPE_FLY;
-	pev->solid = SOLID_BBOX;
+	SetMoveType( MOVETYPE_FLY );
+	SetSolidType( SOLID_BBOX );
 
 	SetModel( "models/nihilanth.mdl");
 	// SetSize( Vector( -300, -300, 0), Vector(300, 300, 512) );
 	SetSize( Vector( -32, -32, 0), Vector(32, 32, 64) );
 	SetAbsOrigin( GetAbsOrigin() );
 
-	pev->flags			|= FL_MONSTER;
-	pev->takedamage		= DAMAGE_AIM;
-	pev->health			= gSkillData.GetNihilanthHealth();
-	pev->view_ofs		= Vector( 0, 0, 300 );
+	GetFlags() |= FL_MONSTER;
+	SetTakeDamageMode( DAMAGE_AIM );
+	SetHealth( gSkillData.GetNihilanthHealth() );
+	SetViewOffset( Vector( 0, 0, 300 ) );
 
 	m_flFieldOfView = -1; // 360 degrees
 
-	pev->sequence = 0;
+	SetSequence( 0 );
 	ResetSequenceInfo( );
 
 	InitBoneControllers();
 
 	SetThink( &CNihilanth::StartupThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	m_vecDesired = Vector( 1, 0, 0 );
 	m_posDesired = Vector( GetAbsOrigin().x, GetAbsOrigin().y, 512 );
@@ -157,7 +157,7 @@ void CNihilanth :: Spawn( void )
 	m_iTeleport = 10;
 	m_iLevel = 10;
 	m_irritation = 2;
-	pev->health = 100;
+	SetHealth( 100 );
 	*/
 }
 
@@ -207,7 +207,7 @@ void CNihilanth :: PainSound( void )
 	
 	m_flNextPainSound = gpGlobals->time + RANDOM_FLOAT( 2, 5 );
 
-	if (pev->health > gSkillData.GetNihilanthHealth() / 2)
+	if ( GetHealth() > gSkillData.GetNihilanthHealth() / 2)
 	{
 		EMIT_SOUND( this, CHAN_VOICE, RANDOM_SOUND_ARRAY( pLaughSounds ), 1.0, 0.2 );
 	}
@@ -226,14 +226,14 @@ void CNihilanth :: DeathSound( void )
 void CNihilanth::NullThink( void )
 {
 	StudioFrameAdvance( );
-	pev->nextthink = gpGlobals->time + 0.5;
+	SetNextThink( gpGlobals->time + 0.5 );
 }
 
 
 void CNihilanth::StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SetThink( &CNihilanth::HuntThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	SetUse( &CNihilanth::CommandUse );
 }
 
@@ -266,7 +266,7 @@ void CNihilanth::StartupThink( void )
 
 	SetThink( &CNihilanth::HuntThink);
 	SetUse( &CNihilanth::CommandUse );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 
@@ -277,46 +277,51 @@ void CNihilanth::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 
 void CNihilanth :: DyingThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	DispatchAnimEvents( );
 	StudioFrameAdvance( );
 
-	if (pev->deadflag == DEAD_NO)
+	if ( GetDeadFlag() == DEAD_NO)
 	{
 		DeathSound( );
-		pev->deadflag = DEAD_DYING;
+		SetDeadFlag( DEAD_DYING );
 
 		m_posDesired.z = m_flMaxZ;
 	}
 
-	if (pev->deadflag == DEAD_DYING)
+	if ( GetDeadFlag() == DEAD_DYING)
 	{
 		Flight( );
 
 		if (fabs( GetAbsOrigin().z - m_flMaxZ ) < 16)
 		{
-			pev->velocity = Vector( 0, 0, 0 );
+			SetAbsVelocity( Vector( 0, 0, 0 ) );
 			FireTargets( m_szDeadUse, this, this, USE_ON, 1.0 );
-			pev->deadflag = DEAD_DEAD;
+			SetDeadFlag( DEAD_DEAD );
 		}
 	}
 
 	if (m_fSequenceFinished)
 	{
-		pev->avelocity.y += RANDOM_FLOAT( -100, 100 );
-		if (pev->avelocity.y < -100)
-			pev->avelocity.y = -100;
-		if (pev->avelocity.y > 100)
-			pev->avelocity.y = 100;
+		Vector vecAVelocity = GetAngularVelocity();
 
-		pev->sequence = LookupSequence( "die1" );
+		vecAVelocity.y += RANDOM_FLOAT( -100, 100 );
+
+		if ( vecAVelocity.y < -100 )
+			vecAVelocity.y = -100;
+		if ( vecAVelocity.y > 100 )
+			vecAVelocity.y = 100;
+
+		SetAngularVelocity( vecAVelocity );
+
+		SetSequence( LookupSequence( "die1" ) );
 	}
 
 	if (m_pBall)
 	{
-		if (m_pBall->pev->renderamt > 0)
+		if (m_pBall->GetRenderAmount() > 0)
 		{
-			m_pBall->pev->renderamt = max( 0.0f, m_pBall->pev->renderamt - 2);
+			m_pBall->SetRenderAmount( max( 0.0f, m_pBall->GetRenderAmount() - 2) );
 		}
 		else
 		{
@@ -327,7 +332,7 @@ void CNihilanth :: DyingThink( void )
 
 	Vector vecDir, vecSrc, vecAngles;
 
-	UTIL_MakeAimVectors( pev->angles );
+	UTIL_MakeAimVectors( GetAbsAngles() );
 	int iAttachment = RANDOM_LONG( 1, 4 );
 
 	do {
@@ -384,8 +389,8 @@ void CNihilanth :: DyingThink( void )
 	MESSAGE_END();
 
 	GetAttachment( 0, vecSrc, vecAngles ); 
-	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-	pEntity->pev->velocity = Vector ( RANDOM_FLOAT( -0.7, 0.7 ), RANDOM_FLOAT( -0.7, 0.7 ), 1.0 ) * 600.0;
+	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+	pEntity->SetAbsVelocity( Vector ( RANDOM_FLOAT( -0.7, 0.7 ), RANDOM_FLOAT( -0.7, 0.7 ), 1.0 ) * 600.0 );
 	pEntity->GreenBallInit( );
 
 	return;
@@ -396,10 +401,10 @@ void CNihilanth :: DyingThink( void )
 void CNihilanth::CrashTouch( CBaseEntity *pOther )
 {
 	// only crash if we hit something solid
-	if ( pOther->pev->solid == SOLID_BSP) 
+	if ( pOther->GetSolidType() == SOLID_BSP) 
 	{
 		SetTouch( NULL );
-		pev->nextthink = gpGlobals->time;
+		SetNextThink( gpGlobals->time );
 	}
 }
 
@@ -416,27 +421,27 @@ void CNihilanth :: FloatSequence( void )
 {
 	if (m_irritation >= 2)
 	{
-		pev->sequence = LookupSequence( "float_open" );
+		SetSequence( LookupSequence( "float_open" ) );
 	}
 	else if (m_avelocity.y > 30)
 	{
-		pev->sequence = LookupSequence( "walk_r" );
+		SetSequence( LookupSequence( "walk_r" ) );
 	}
 	else if (m_avelocity.y < -30)
 	{
-		pev->sequence = LookupSequence( "walk_l" );
+		SetSequence( LookupSequence( "walk_l" ) );
 	}
 	else if (m_velocity.z > 30)
 	{
-		pev->sequence = LookupSequence( "walk_u" );
+		SetSequence( LookupSequence( "walk_u" ) );
 	} 
 	else if (m_velocity.z < -30)
 	{
-		pev->sequence = LookupSequence( "walk_d" );
+		SetSequence( LookupSequence( "walk_d" ) );
 	}
 	else
 	{
-		pev->sequence = LookupSequence( "float" );
+		SetSequence( LookupSequence( "float" ) );
 	}
 }
 
@@ -455,21 +460,21 @@ void CNihilanth :: ShootBalls( void )
 				CNihilanthHVR *pEntity;
 
 				GetAttachment( 2, vecHand, vecAngle );
-				vecSrc = vecHand + pev->velocity * (m_flShootTime - gpGlobals->time);
+				vecSrc = vecHand + GetAbsVelocity() * (m_flShootTime - gpGlobals->time);
 				// vecDir = (m_posTarget - vecSrc).Normalize( );
 				vecDir = (m_posTarget - GetAbsOrigin()).Normalize( );
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
-				pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-				pEntity->pev->velocity = vecDir * 200.0; 
+				pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+				pEntity->SetAbsVelocity( vecDir * 200.0 ); 
 				pEntity->ZapInit( m_hEnemy );
 
 				GetAttachment( 3, vecHand, vecAngle );
-				vecSrc = vecHand + pev->velocity * (m_flShootTime - gpGlobals->time);
+				vecSrc = vecHand + GetAbsVelocity() * (m_flShootTime - gpGlobals->time);
 				// vecDir = (m_posTarget - vecSrc).Normalize( );
 				vecDir = (m_posTarget - GetAbsOrigin()).Normalize( );
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
-				pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-				pEntity->pev->velocity = vecDir * 200.0; 
+				pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+				pEntity->SetAbsVelocity( vecDir * 200.0 ); 
 				pEntity->ZapInit( m_hEnemy );
 			}
 			m_flShootTime += 0.2;
@@ -486,7 +491,7 @@ void CNihilanth :: MakeFriend( Vector vecStart )
 	{
 		if (m_hFriend[i] != NULL && !m_hFriend[i]->IsAlive())
 		{
-			if (pev->rendermode == kRenderNormal) // don't do it if they are already fading
+			if (GetRenderMode() == kRenderNormal) // don't do it if they are already fading
 				m_hFriend[i]->MyMonsterPointer()->FadeMonster( );
 			m_hFriend[i] = NULL;
 		}
@@ -502,7 +507,7 @@ void CNihilanth :: MakeFriend( Vector vecStart )
 					TraceResult tr;
 					UTIL_TraceHull( node.m_vecOrigin + Vector( 0, 0, 32 ), node.m_vecOrigin + Vector( 0, 0, 32 ), dont_ignore_monsters, Hull::LARGE, NULL, &tr );
 					if (tr.fStartSolid == 0)
-						m_hFriend[i] = Create("monster_alien_controller", node.m_vecOrigin, pev->angles );
+						m_hFriend[i] = Create("monster_alien_controller", node.m_vecOrigin, GetAbsAngles() );
 				}
 			}
 			else
@@ -514,7 +519,7 @@ void CNihilanth :: MakeFriend( Vector vecStart )
 					TraceResult tr;
 					UTIL_TraceHull( node.m_vecOrigin + Vector( 0, 0, 36 ), node.m_vecOrigin + Vector( 0, 0, 36 ), dont_ignore_monsters, Hull::HUMAN, NULL, &tr );
 					if (tr.fStartSolid == 0)
-						m_hFriend[i] = Create("monster_alien_slave", node.m_vecOrigin, pev->angles );
+						m_hFriend[i] = Create("monster_alien_slave", node.m_vecOrigin, GetAbsAngles() );
 				}
 			}
 			if (m_hFriend[i] != NULL)
@@ -530,7 +535,7 @@ void CNihilanth :: MakeFriend( Vector vecStart )
 
 void CNihilanth :: NextActivity( )
 {
-	UTIL_MakeAimVectors( pev->angles );
+	UTIL_MakeAimVectors( GetAbsAngles() );
 
 	if (m_irritation >= 2)
 	{
@@ -540,9 +545,9 @@ void CNihilanth :: NextActivity( )
 			if (m_pBall)
 			{
 				m_pBall->SetTransparency( kRenderTransAdd, 255, 255, 255, 255, kRenderFxNoDissipation );
-				m_pBall->SetAttachment( edict(), 1 );
+				m_pBall->SetAttachment( this, 1 );
 				m_pBall->SetScale( 4.0 );
-				m_pBall->pev->framerate = 10.0;
+				m_pBall->SetFrameRate( 10.0 );
 				m_pBall->TurnOn( );
 			}
 		}
@@ -565,7 +570,7 @@ void CNihilanth :: NextActivity( )
 		}
 	}
 
-	if ((pev->health < gSkillData.GetNihilanthHealth() / 2 || m_iActiveSpheres < N_SPHERES / 2) && m_hRecharger == NULL && m_iLevel <= 9)
+	if (( GetHealth() < gSkillData.GetNihilanthHealth() / 2 || m_iActiveSpheres < N_SPHERES / 2) && m_hRecharger == NULL && m_iLevel <= 9)
 	{
 		char szName[64];
 
@@ -613,7 +618,7 @@ void CNihilanth :: NextActivity( )
 		{
 			int iseq = LookupSequence( "recharge" );
 
-			if (iseq != pev->sequence)
+			if (iseq != GetSequence() )
 			{
 				char szText[64];
 
@@ -622,7 +627,7 @@ void CNihilanth :: NextActivity( )
 
 				ALERT( at_console, "fireing %s\n", szText );
 			}
-			pev->sequence = LookupSequence( "recharge" );
+			SetSequence( LookupSequence( "recharge" ) );
 		}
 		else
 		{
@@ -651,15 +656,15 @@ void CNihilanth :: NextActivity( )
 	{
 		if (m_flLastSeen + 5 > gpGlobals->time && flDist < 256 && flDot > 0)
 		{
-			if (m_irritation >= 2 && pev->health < gSkillData.GetNihilanthHealth() / 2.0)
+			if (m_irritation >= 2 && GetHealth() < gSkillData.GetNihilanthHealth() / 2.0)
 			{
-				pev->sequence = LookupSequence( "attack1_open" );
+				SetSequence( LookupSequence( "attack1_open" ) );
 			}
 			else 
 			{
 				if (RANDOM_LONG(0, 1 ) == 0)
 				{
-					pev->sequence = LookupSequence( "attack1" ); // zap
+					SetSequence( LookupSequence( "attack1" ) ); // zap
 				}
 				else
 				{
@@ -673,12 +678,12 @@ void CNihilanth :: NextActivity( )
 
 					if (pTrigger != NULL || pTouch != NULL)
 					{
-						pev->sequence = LookupSequence( "attack2" ); // teleport
+						SetSequence( LookupSequence( "attack2" ) ); // teleport
 					}
 					else
 					{
 						m_iTeleport++;
-						pev->sequence = LookupSequence( "attack1" ); // zap
+						SetSequence( LookupSequence( "attack1" ) ); // zap
 					}
 				}
 			}
@@ -691,36 +696,36 @@ void CNihilanth :: NextActivity( )
 
 void CNihilanth :: HuntThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	DispatchAnimEvents( );
 	StudioFrameAdvance( );
 
 	ShootBalls( );
 
 	// if dead, force cancelation of current animation
-	if (pev->health <= 0)
+	if ( GetHealth() <= 0)
 	{
 		SetThink( &CNihilanth::DyingThink );
 		m_fSequenceFinished = true;
 		return;
 	}
 
-	// ALERT( at_console, "health %.0f\n", pev->health );
+	// ALERT( at_console, "health %.0f\n", GetHealth() );
 
 	// if damaged, try to abosorb some spheres
-	if (pev->health < gSkillData.GetNihilanthHealth() && AbsorbSphere( ))
+	if ( GetHealth() < gSkillData.GetNihilanthHealth() && AbsorbSphere( ))
 	{
-		pev->health += gSkillData.GetNihilanthHealth() / N_SPHERES;
+		SetHealth( GetHealth() + ( gSkillData.GetNihilanthHealth() / N_SPHERES ) );
 	}
 
 	// get new sequence
 	if (m_fSequenceFinished)
 	{
 		// if (!m_fSequenceLoops)
-		pev->frame = 0;
+		SetFrame( 0 );
 		NextActivity( );
 		ResetSequenceInfo( );
-		pev->framerate = 2.0 - 1.0 * (pev->health / gSkillData.GetNihilanthHealth() );
+		SetFrameRate( 2.0 - 1.0 * ( GetHealth() / gSkillData.GetNihilanthHealth() ) );
 	}
 
 	// look for current enemy	
@@ -758,7 +763,7 @@ void CNihilanth :: HuntThink( void )
 void CNihilanth :: Flight( void )
 {
 	// estimate where I'll be facing in one seconds
-	UTIL_MakeAimVectors( pev->angles + m_avelocity );
+	UTIL_MakeAimVectors( GetAbsAngles() + m_avelocity );
 	// Vector vecEst1 = GetAbsOrigin() + m_velocity + gpGlobals->v_up * m_flForce - Vector( 0, 0, 384 );
 	// float flSide = DotProduct( m_posDesired - vecEst1, gpGlobals->v_right );
 	
@@ -784,7 +789,7 @@ void CNihilanth :: Flight( void )
 	Vector vecEst = GetAbsOrigin() + m_velocity * 2.0 + gpGlobals->v_up * m_flForce * 20;
 
 	// add immediate force
-	UTIL_MakeAimVectors( pev->angles );
+	UTIL_MakeAimVectors( GetAbsAngles() );
 	m_velocity.x += gpGlobals->v_up.x * m_flForce;
 	m_velocity.y += gpGlobals->v_up.y * m_flForce;
 	m_velocity.z += gpGlobals->v_up.z * m_flForce;
@@ -794,8 +799,6 @@ void CNihilanth :: Flight( void )
 	float flDir = DotProduct( Vector( gpGlobals->v_forward.x, gpGlobals->v_forward.y, 0 ), Vector( m_velocity.x, m_velocity.y, 0 ) );
 	if (flDir < 0)
 		flSpeed = -flSpeed;
-
-	float flDist = DotProduct( m_posDesired - vecEst, gpGlobals->v_forward );
 
 	// sideways drag
 	m_velocity.x = m_velocity.x * (1.0 - fabs( gpGlobals->v_right.x ) * 0.05);
@@ -816,7 +819,7 @@ void CNihilanth :: Flight( void )
 	}
 
 	SetAbsOrigin( GetAbsOrigin() + m_velocity * 0.1 );
-	pev->angles = pev->angles + m_avelocity * 0.1;
+	SetAbsAngles( GetAbsAngles() + m_avelocity * 0.1 );
 
 	// ALERT( at_console, "%5.0f %5.0f : %4.0f : %3.0f : %2.0f\n", m_posDesired.z, GetAbsOrigin().z, m_velocity.z, m_avelocity.y, m_flForce ); 
 }
@@ -860,8 +863,8 @@ bool CNihilanth::EmitSphere()
 		return false;
 
 	Vector vecSrc = m_hRecharger->GetAbsOrigin();
-	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-	pEntity->pev->velocity = GetAbsOrigin() - vecSrc;
+	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+	pEntity->SetAbsVelocity( GetAbsOrigin() - vecSrc );
 	pEntity->CircleInit( this );
 
 	m_hSphere[empty] = pEntity;
@@ -871,7 +874,7 @@ bool CNihilanth::EmitSphere()
 
 void CNihilanth :: 	TargetSphere( USE_TYPE useType, float value )
 {
-	CBaseMonster *pSphere;
+	CBaseMonster *pSphere = nullptr;
 	int i;
 	for (i = 0; i < N_SPHERES; i++)
 	{
@@ -891,7 +894,7 @@ void CNihilanth :: 	TargetSphere( USE_TYPE useType, float value )
 	GetAttachment( 2, vecSrc, vecAngles ); 
 	pSphere->SetAbsOrigin( vecSrc );
 	pSphere->Use( this, this, useType, value );
-	pSphere->pev->velocity = m_vecDesired * RANDOM_FLOAT( 50, 100 ) + Vector( RANDOM_FLOAT( -50, 50 ), RANDOM_FLOAT( -50, 50 ), RANDOM_FLOAT( -50, 50 ) );
+	pSphere->SetAbsVelocity( m_vecDesired * RANDOM_FLOAT( 50, 100 ) + Vector( RANDOM_FLOAT( -50, 50 ), RANDOM_FLOAT( -50, 50 ), RANDOM_FLOAT( -50, 50 ) ) );
 }
 
 
@@ -960,8 +963,8 @@ void CNihilanth :: HandleAnimEvent( AnimEvent_t& event )
 
 				Vector vecSrc, vecAngles;
 				GetAttachment( 2, vecSrc, vecAngles ); 
-				CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-				pEntity->pev->velocity = GetAbsOrigin() - vecSrc;
+				CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+				pEntity->SetAbsVelocity( GetAbsOrigin() - vecSrc );
 				pEntity->TeleportInit( this, m_hEnemy, pTrigger, pTouch );
 			}
 			else
@@ -1026,8 +1029,8 @@ void CNihilanth :: HandleAnimEvent( AnimEvent_t& event )
 		{
 			Vector vecSrc, vecAngles;
 			GetAttachment( 2, vecSrc, vecAngles ); 
-			CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-			pEntity->pev->velocity = GetAbsOrigin() - vecSrc;
+			CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+			pEntity->SetAbsVelocity( GetAbsOrigin() - vecSrc );
 			pEntity->ZapInit( m_hEnemy );
 		}
 		break;
@@ -1035,8 +1038,8 @@ void CNihilanth :: HandleAnimEvent( AnimEvent_t& event )
 		/*
 		Vector vecSrc, vecAngles;
 		GetAttachment( 0, vecSrc, vecAngles ); 
-		CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
-		pEntity->pev->velocity = Vector ( RANDOM_FLOAT( -0.7, 0.7 ), RANDOM_FLOAT( -0.7, 0.7 ), 1.0 ) * 600.0;
+		CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, GetAbsAngles(), edict() );
+		pEntity->SetAbsVelocity( Vector ( RANDOM_FLOAT( -0.7, 0.7 ), RANDOM_FLOAT( -0.7, 0.7 ), 1.0 ) * 600.0 );
 		pEntity->GreenBallInit( );
 		*/
 		break;
@@ -1087,36 +1090,36 @@ void CNihilanth::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 
 void CNihilanth::OnTakeDamage( const CTakeDamageInfo& info )
 {
-	if ( info.GetInflictor()->pev->owner == edict() )
+	if ( info.GetInflictor()->GetOwner() == this )
 		return;
 
-	if (info.GetDamage() >= pev->health)
+	if (info.GetDamage() >= GetHealth() )
 	{
-		pev->health = 1;
+		SetHealth( 1 );
 		if (m_irritation != 3)
 			return;
 	}
 	
 	PainSound( );
 
-	pev->health -= info.GetDamage();
+	SetHealth( GetHealth() - info.GetDamage() );
 }
 
 
 
-void CNihilanth::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CNihilanth::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 	if (m_irritation == 3)
 		m_irritation = 2;
 
-	if (m_irritation == 2 && ptr->iHitgroup == 2 && info.GetDamage() > 2)
+	if (m_irritation == 2 && tr.iHitgroup == 2 && info.GetDamage() > 2)
 		m_irritation = 3;
 
 	if (m_irritation != 3)
 	{
-		Vector vecBlood = (ptr->vecEndPos - GetAbsOrigin()).Normalize( );
+		Vector vecBlood = ( tr.vecEndPos - GetAbsOrigin()).Normalize( );
 
-		UTIL_BloodStream( ptr->vecEndPos, vecBlood, BloodColor(), info.GetDamage() + (100 - 100 * (pev->health / gSkillData.GetNihilanthHealth() )));
+		UTIL_BloodStream( tr.vecEndPos, vecBlood, BloodColor(), info.GetDamage() + (100 - 100 * ( GetHealth() / gSkillData.GetNihilanthHealth() )));
 	}
 
 	// SpawnBlood(ptr->vecEndPos, BloodColor(), flDamage * 5.0);// a little surface blood.

@@ -63,11 +63,11 @@ void CBaseMonster :: SetState ( MONSTERSTATE State )
 void CBaseMonster :: RunAI ( void )
 {
 	// to test model's eye height
-	//UTIL_ParticleEffect ( GetAbsOrigin() + pev->view_ofs, g_vecZero, 255, 10 );
+	//UTIL_ParticleEffect ( GetAbsOrigin() + GetViewOffset(), g_vecZero, 255, 10 );
 
 	// IDLE sound permitted in ALERT state is because monsters were silent in ALERT state. Only play IDLE sound in IDLE state
 	// once we have sounds for that state.
-	if ( ( m_MonsterState == MONSTERSTATE_IDLE || m_MonsterState == MONSTERSTATE_ALERT ) && RANDOM_LONG(0,99) == 0 && !(pev->flags & SF_MONSTER_GAG) )
+	if ( ( m_MonsterState == MONSTERSTATE_IDLE || m_MonsterState == MONSTERSTATE_ALERT ) && RANDOM_LONG(0,99) == 0 && !GetFlags().Any( SF_MONSTER_GAG ) )
 	{
 		IdleSound();
 	}
@@ -203,7 +203,7 @@ MONSTERSTATE CBaseMonster :: GetIdealState ( void )
 			if ( m_hEnemy == NULL )
 			{
 				m_IdealMonsterState = MONSTERSTATE_ALERT;
-				// pev->effects = EF_BRIGHTFIELD;
+				// GetEffects() = EF_BRIGHTFIELD;
 				ALERT ( at_aiconsole, "***Combat state with no enemy!\n" );
 			}
 			break;

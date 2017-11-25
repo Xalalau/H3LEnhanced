@@ -56,10 +56,10 @@ void CMultiSource::Spawn()
 {
 	// set up think for later registration
 
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-	pev->nextthink = gpGlobals->time + 0.1;
-	pev->spawnflags |= SF_MULTI_INIT;	// Until it's initialized
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	SetNextThink( gpGlobals->time + 0.1 );
+	GetSpawnFlags() |= SF_MULTI_INIT;	// Until it's initialized
 	SetThink( &CMultiSource::Register );
 }
 
@@ -94,10 +94,10 @@ void CMultiSource::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	if( IsTriggered( pActivator ) )
 	{
 		ALERT( at_aiconsole, "Multisource %s enabled (%d inputs)\n", GetTargetname(), m_iTotal );
-		USE_TYPE useType = USE_TOGGLE;
+		USE_TYPE targetUseType = USE_TOGGLE;
 		if( m_globalstate )
-			useType = USE_ON;
-		SUB_UseTargets( NULL, useType, 0 );
+			targetUseType = USE_ON;
+		SUB_UseTargets( NULL, targetUseType, 0 );
 	}
 }
 
@@ -108,8 +108,8 @@ bool CMultiSource::IsTriggered( const CBaseEntity* const ) const
 	int i = 0;
 
 	// Still initializing?
-	if( pev->spawnflags & SF_MULTI_INIT )
-		return 0;
+	if( GetSpawnFlags().Any( SF_MULTI_INIT ) )
+		return false;
 
 	while( i < m_iTotal )
 	{
@@ -138,18 +138,18 @@ void CMultiSource::Register( void )
 
 	CBaseEntity* pTarget = nullptr;
 
-	while( ( pTarget = UTIL_FindEntityByTarget( pTarget, GetTargetname() ) ) && ( m_iTotal < MS_MAX_TARGETS ) )
+	while( ( pTarget = UTIL_FindEntityByTarget( pTarget, GetTargetname() ) ) != nullptr && ( m_iTotal < MS_MAX_TARGETS ) )
 	{
 		m_rgEntities[ m_iTotal++ ] = pTarget;
 	}
 
 	pTarget = nullptr;
 
-	while( ( pTarget = UTIL_FindEntityByClassname( pTarget, "multi_manager" ) ) && ( m_iTotal < MS_MAX_TARGETS ) )
+	while( ( pTarget = UTIL_FindEntityByClassname( pTarget, "multi_manager" ) ) != nullptr && ( m_iTotal < MS_MAX_TARGETS ) )
 	{
 		if( pTarget->HasTarget( GetTargetname() ) )
 			m_rgEntities[ m_iTotal++ ] = pTarget;
 	}
 
-	pev->spawnflags &= ~SF_MULTI_INIT;
+	GetSpawnFlags().ClearFlags( SF_MULTI_INIT );
 }

@@ -35,15 +35,18 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	int  ISoundMask( void ) override;
 	void BarneyFirePistol( void );
+	/**
+	*	@brief barney says "Freeze!"
+	*/
 	void AlertSound( void ) override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 
-	void RunTask( const Task_t* pTask ) override;
-	void StartTask( const Task_t* pTask ) override;
+	void RunTask( const Task_t& task ) override;
+	void StartTask( const Task_t& task ) override;
 	virtual int	ObjectCaps() const override { return CTalkMonster::ObjectCaps() | FCAP_IMPULSE_USE; }
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
@@ -60,7 +63,7 @@ public:
 
 	void TalkInit( void );
 
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 
 	bool	m_fGunDrawn;

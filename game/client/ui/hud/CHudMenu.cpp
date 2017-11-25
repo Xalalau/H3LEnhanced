@@ -147,8 +147,7 @@ bool CHudMenu::Draw( float flTime )
 
 	// count the number of newlines
 	int nlc = 0;
-	int i;
-	for ( i = 0; i < MAX_MENU_STRING && m_szMenuString[i] != '\0'; i++ )
+	for ( size_t i = 0; i < MAX_MENU_STRING && m_szMenuString[i] != '\0'; i++ )
 	{
 		if ( m_szMenuString[i] == '\n' )
 			nlc++;

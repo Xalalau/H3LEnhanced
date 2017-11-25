@@ -40,10 +40,6 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( monster_houndeye, CHoundeye );
 
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
 EntityClassification_t CHoundeye::GetClassification()
 {
 	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
@@ -103,12 +99,6 @@ bool CHoundeye::FCanActiveIdle() const
 	return true;
 }
 
-
-//=========================================================
-// CheckRangeAttack1 - overridden for houndeyes so that they
-// try to get within half of their max attack radius before
-// attacking, so as to increase their chances of doing damage.
-//=========================================================
 bool CHoundeye :: CheckRangeAttack1 ( float flDot, float flDist )
 {
 	if ( flDist <= ( HOUNDEYE_MAX_ATTACK_RADIUS * 0.5 ) && flDot >= 0.3 )
@@ -118,11 +108,7 @@ bool CHoundeye :: CheckRangeAttack1 ( float flDot, float flDist )
 	return false;
 }
 
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
-void CHoundeye :: SetYawSpeed ( void )
+void CHoundeye ::UpdateYawSpeed()
 {
 	int ys;
 
@@ -150,7 +136,7 @@ void CHoundeye :: SetYawSpeed ( void )
 	default: break;
 	}
 
-	pev->yaw_speed = ys;
+	SetYawSpeed( ys );
 }
 
 //=========================================================
@@ -176,10 +162,10 @@ void CHoundeye :: SetActivity ( Activity NewActivity )
 		// Set to the desired anim, or default anim if the desired is not present
 		if ( iSequence > ACTIVITY_NOT_AVAILABLE )
 		{
-			pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
-			pev->frame			= 0;		// FIX: frame counter shouldn't be reset when its the same activity as before
+			SetSequence( iSequence );	// Set to the reset anim (if it's there)
+			SetFrame( 0 );		// FIX: frame counter shouldn't be reset when its the same activity as before TODO - Solokiller
 			ResetSequenceInfo();
-			SetYawSpeed();
+			UpdateYawSpeed();
 		}
 	}
 	else
@@ -188,10 +174,6 @@ void CHoundeye :: SetActivity ( Activity NewActivity )
 	}
 }
 
-//=========================================================
-// HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
-//=========================================================
 void CHoundeye :: HandleAnimEvent( AnimEvent_t& event )
 {
 	switch ( event.event )
@@ -209,10 +191,12 @@ void CHoundeye :: HandleAnimEvent( AnimEvent_t& event )
 			{
 				float flGravity = g_psv_gravity->value;
 
-				pev->flags &= ~FL_ONGROUND;
+				GetFlags().ClearFlags( FL_ONGROUND );
 
-				pev->velocity = gpGlobals->v_forward * -200;
-				pev->velocity.z += (0.6 * flGravity) * 0.5;
+				Vector vecVelocity = GetAbsVelocity();
+				vecVelocity = gpGlobals->v_forward * -200;
+				vecVelocity.z += (0.6 * flGravity) * 0.5;
+				SetAbsVelocity( vecVelocity );
 
 				break;
 			}
@@ -233,7 +217,7 @@ void CHoundeye :: HandleAnimEvent( AnimEvent_t& event )
 		case HOUND_AE_CLOSE_EYE:
 			if ( !m_fDontBlink )
 			{
-				pev->skin = HOUNDEYE_EYE_FRAMES - 1;
+				SetSkin( HOUNDEYE_EYE_FRAMES - 1 );
 			}
 			break;
 
@@ -243,9 +227,6 @@ void CHoundeye :: HandleAnimEvent( AnimEvent_t& event )
 	}
 }
 
-//=========================================================
-// Spawn
-//=========================================================
 void CHoundeye :: Spawn()
 {
 	Precache( );
@@ -253,12 +234,12 @@ void CHoundeye :: Spawn()
 	SetModel( "models/houndeye.mdl");
 	SetSize( Vector ( -16, -16, 0 ), Vector ( 16, 16, 36 ) );
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_STEP );
 	m_bloodColor		= BLOOD_COLOR_YELLOW;
-	pev->effects		= 0;
-	pev->health			= gSkillData.GetHoundeyeHealth();
-	pev->yaw_speed		= 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
+	GetEffects().ClearAll();
+	SetHealth( gSkillData.GetHoundeyeHealth() );
+	SetYawSpeed( 5 );//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_fAsleep			= false; // everyone spawns awake
@@ -268,9 +249,6 @@ void CHoundeye :: Spawn()
 	MonsterInit();
 }
 
-//=========================================================
-// Precache - precaches all resources this monster needs
-//=========================================================
 void CHoundeye :: Precache()
 {
 	PRECACHE_MODEL("models/houndeye.mdl");
@@ -360,9 +338,6 @@ void CHoundeye :: WarnSound ( void )
 	}
 }
 
-//=========================================================
-// AlertSound 
-//=========================================================
 void CHoundeye :: AlertSound ( void )
 {
 
@@ -385,9 +360,6 @@ void CHoundeye :: AlertSound ( void )
 	}
 }
 
-//=========================================================
-// DeathSound 
-//=========================================================
 void CHoundeye :: DeathSound ( void )
 {
 	switch ( RANDOM_LONG(0,2) )
@@ -404,9 +376,6 @@ void CHoundeye :: DeathSound ( void )
 	}
 }
 
-//=========================================================
-// PainSound 
-//=========================================================
 void CHoundeye :: PainSound ( void )
 {
 	switch ( RANDOM_LONG(0,2) )
@@ -544,7 +513,7 @@ void CHoundeye :: SonicAttack ( void )
 	// iterate on all entities in the vicinity.
 	while ((pEntity = UTIL_FindEntityInSphere( pEntity, GetAbsOrigin(), HOUNDEYE_MAX_ATTACK_RADIUS )) != NULL)
 	{
-		if ( pEntity->pev->takedamage != DAMAGE_NO )
+		if ( pEntity->GetTakeDamageMode() != DAMAGE_NO )
 		{
 			if ( !pEntity->ClassnameIs( "monster_houndeye" ) )
 			{// houndeyes don't hurt other houndeyes with their attack
@@ -594,15 +563,12 @@ void CHoundeye :: SonicAttack ( void )
 		}
 	}
 }
-		
-//=========================================================
-// start task
-//=========================================================
-void CHoundeye :: StartTask ( const Task_t* pTask )
+
+void CHoundeye :: StartTask ( const Task_t& task )
 {
 	m_iTaskStatus = TASKSTATUS_RUNNING;
 
-	switch ( pTask->iTask )
+	switch ( task.iTask )
 	{
 	case TASK_HOUND_FALL_ASLEEP:
 		{
@@ -624,7 +590,7 @@ void CHoundeye :: StartTask ( const Task_t* pTask )
 		}
 	case TASK_HOUND_CLOSE_EYE:
 		{
-			pev->skin = 0;
+			SetSkin( 0 );
 			m_fDontBlink = true; // tell blink code to leave the eye alone.
 			break;
 		}
@@ -691,23 +657,20 @@ void CHoundeye :: StartTask ( const Task_t* pTask )
 		}
 	default: 
 		{
-			CSquadMonster :: StartTask(pTask);
+			CSquadMonster :: StartTask( task );
 			break;
 		}
 	}
 }
 
-//=========================================================
-// RunTask 
-//=========================================================
-void CHoundeye :: RunTask ( const Task_t* pTask )
+void CHoundeye :: RunTask ( const Task_t& task )
 {
-	switch ( pTask->iTask )
+	switch ( task.iTask )
 	{
 	case TASK_HOUND_THREAT_DISPLAY:
 		{
 			MakeIdealYaw ( m_vecEnemyLKP );
-			ChangeYaw ( pev->yaw_speed );
+			ChangeYaw( GetYawSpeed() );
 
 			if ( m_fSequenceFinished )
 			{
@@ -718,9 +681,9 @@ void CHoundeye :: RunTask ( const Task_t* pTask )
 		}
 	case TASK_HOUND_CLOSE_EYE:
 		{
-			if ( pev->skin < HOUNDEYE_EYE_FRAMES - 1 )
+			if ( GetSkin() < HOUNDEYE_EYE_FRAMES - 1 )
 			{
-				pev->skin++;
+				SetSkin( GetSkin() + 1 );
 			}
 			break;
 		}
@@ -734,13 +697,13 @@ void CHoundeye :: RunTask ( const Task_t* pTask )
 		}
 	case TASK_SPECIAL_ATTACK1:
 		{
-			pev->skin = RANDOM_LONG(0, HOUNDEYE_EYE_FRAMES - 1);
+			SetSkin( RANDOM_LONG(0, HOUNDEYE_EYE_FRAMES - 1) );
 
 			MakeIdealYaw ( m_vecEnemyLKP );
-			ChangeYaw ( pev->yaw_speed );
+			ChangeYaw ( GetYawSpeed() );
 			
 			float life;
-			life = ((255 - pev->frame) / (pev->framerate * m_flFrameRate));
+			life = (( 255 - GetFrame() ) / ( GetFrameRate() * m_flFrameRate));
 			if (life < 0.1) life = 0.1;
 
 			MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, GetAbsOrigin() );
@@ -749,7 +712,7 @@ void CHoundeye :: RunTask ( const Task_t* pTask )
 				WRITE_COORD( GetAbsOrigin().y);
 				WRITE_COORD( GetAbsOrigin().z + 16);
 				WRITE_BYTE( 50 * life + 100);  // radius
-				WRITE_BYTE( pev->frame / 25.0 ); // count
+				WRITE_BYTE( GetFrame() / 25.0 ); // count
 				WRITE_BYTE( life * 10 ); // life
 			MESSAGE_END();
 			
@@ -763,15 +726,12 @@ void CHoundeye :: RunTask ( const Task_t* pTask )
 		}
 	default:
 		{
-			CSquadMonster :: RunTask(pTask);
+			CSquadMonster :: RunTask( task );
 			break;
 		}
 	}
 }
 
-//=========================================================
-// PrescheduleThink
-//=========================================================
 void CHoundeye::PrescheduleThink ( void )
 {
 	// if the hound is mad and is running, make hunt noises.
@@ -783,13 +743,13 @@ void CHoundeye::PrescheduleThink ( void )
 	// at random, initiate a blink if not already blinking or sleeping
 	if ( !m_fDontBlink )
 	{
-		if ( ( pev->skin == 0 ) && RANDOM_LONG(0,0x7F) == 0 )
+		if ( ( GetSkin() == 0 ) && RANDOM_LONG(0,0x7F) == 0 )
 		{// start blinking!
-			pev->skin = HOUNDEYE_EYE_FRAMES - 1;
+			SetSkin( HOUNDEYE_EYE_FRAMES - 1 );
 		}
-		else if ( pev->skin != 0 )
+		else if ( GetSkin() != 0 )
 		{// already blinking
-			pev->skin--;
+			SetSkin( GetSkin() - 1 );
 		}
 	}
 
@@ -1178,9 +1138,6 @@ Schedule_t* CHoundeye :: GetScheduleOfType ( int Type )
 	}
 }
 
-//=========================================================
-// GetSchedule 
-//=========================================================
 Schedule_t *CHoundeye :: GetSchedule( void )
 {
 	switch	( m_MonsterState )
@@ -1199,7 +1156,7 @@ Schedule_t *CHoundeye :: GetSchedule( void )
 				if ( RANDOM_FLOAT( 0 , 1 ) <= 0.4 )
 				{
 					TraceResult tr;
-					UTIL_MakeVectors( pev->angles );
+					UTIL_MakeVectors( GetAbsAngles() );
 					UTIL_TraceHull( GetAbsOrigin(), GetAbsOrigin() + gpGlobals->v_forward * -128, dont_ignore_monsters, Hull::HEAD, ENT( pev ), &tr );
 
 					if ( tr.flFraction == 1.0 )

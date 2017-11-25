@@ -97,7 +97,7 @@ void CPipewrench::PrimaryAttack()
 	{
 #ifndef CLIENT_DLL
 		SetThink( &CPipewrench::SwingAgain );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 #endif
 	}
 }
@@ -132,7 +132,7 @@ bool CPipewrench::Swing( const bool bFirst )
 
 	TraceResult tr;
 
-	UTIL_MakeVectors (m_pPlayer->pev->v_angle);
+	UTIL_MakeVectors( m_pPlayer->GetViewAngle() );
 	Vector vecSrc	= m_pPlayer->GetGunPosition( );
 	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 32;
 
@@ -214,12 +214,12 @@ bool CPipewrench::Swing( const bool bFirst )
 			if ( (m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
 			{
 				// first swing does full damage
-				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, gSkillData.GetPlrDmgPipewrench(), DMG_CLUB ), gpGlobals->v_forward, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, gSkillData.GetPlrDmgPipewrench(), DMG_CLUB ), gpGlobals->v_forward, tr );
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, gSkillData.GetPlrDmgPipewrench() / 2, DMG_CLUB ), gpGlobals->v_forward, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, gSkillData.GetPlrDmgPipewrench() / 2, DMG_CLUB ), gpGlobals->v_forward, tr );
 			}	
 			g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
 		}
@@ -285,7 +285,7 @@ bool CPipewrench::Swing( const bool bFirst )
 		m_pPlayer->m_iWeaponVolume = flVol * MELEE_WALLHIT_VOLUME;
 
 		SetThink( &CPipewrench::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;
+		SetNextThink( UTIL_WeaponTimeBase() + 0.2 );
 #endif
 		// ############ hu3lifezado ############ //
 		// Ataques mais rapidos (0.5)
@@ -301,7 +301,7 @@ void CPipewrench::BigSwing()
 {
 	TraceResult tr;
 
-	UTIL_MakeVectors (m_pPlayer->pev->v_angle);
+	UTIL_MakeVectors( m_pPlayer->GetViewAngle() );
 	Vector vecSrc	= m_pPlayer->GetGunPosition( );
 	// ############ hu3lifezado ############ //
 	// Aumentei o alcance (32)
@@ -361,12 +361,12 @@ void CPipewrench::BigSwing()
 			if ( (m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
 			{
 				// first swing does full damage
-				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage, DMG_CLUB ), gpGlobals->v_forward, &tr ); 
+				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage, DMG_CLUB ), gpGlobals->v_forward, tr ); 
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage / 2, DMG_CLUB ), gpGlobals->v_forward, &tr ); 
+				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage / 2, DMG_CLUB ), gpGlobals->v_forward, tr ); 
 			}	
 			g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
 		}
@@ -453,7 +453,7 @@ void CPipewrench::BigSwing()
 		// swing. If you want that decal, just uncomment the
 		// 2 lines below.
 		/*SetThink( &CPipewrench::Smack );
-		pev->nextthink = UTIL_WeaponTimeBase() + 0.2;*/
+		SetNextThink( UTIL_WeaponTimeBase() + 0.2 );*/
 #endif
 		// ############ hu3lifezado ############ //
 		// Ataques mais rapidos (1.0)

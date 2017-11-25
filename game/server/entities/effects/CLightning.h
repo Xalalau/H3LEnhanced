@@ -36,7 +36,7 @@ public:
 
 	inline bool ServerSide() const
 	{
-		if( m_life == 0 && !( pev->spawnflags & SF_BEAM_RING ) )
+		if( m_life == 0 && !GetSpawnFlags().Any( SF_BEAM_RING ) )
 			return true;
 		return false;
 	}

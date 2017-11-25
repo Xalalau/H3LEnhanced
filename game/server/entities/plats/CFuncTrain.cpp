@@ -19,25 +19,25 @@ LINK_ENTITY_TO_CLASS( func_train, CFuncTrain );
 void CFuncTrain::Spawn( void )
 {
 	Precache();
-	if( pev->speed == 0 )
-		pev->speed = 100;
+	if( GetSpeed() == 0 )
+		SetSpeed( 100 );
 
 	if( !HasTarget() )
 		ALERT( at_console, "FuncTrain with no target" );
 
-	if( pev->dmg == 0 )
-		pev->dmg = 2;
+	if( GetDamage() == 0 )
+		SetDamage( 2 );
 
-	pev->movetype = MOVETYPE_PUSH;
+	SetMoveType( MOVETYPE_PUSH );
 
 	//Remove tracktrain include when changed
-	if( FBitSet( pev->spawnflags, SF_TRAIN_PASSABLE ) )
-		pev->solid = SOLID_NOT;
+	if( GetSpawnFlags().Any( SF_TRAIN_PASSABLE ) )
+		SetSolidType( SOLID_NOT );
 	else
-		pev->solid = SOLID_BSP;
+		SetSolidType( SOLID_BSP );
 
-	SetModel( STRING( pev->model ) );
-	SetSize( pev->mins, pev->maxs );
+	SetModel( GetModelName() );
+	SetSize( GetRelMin(), GetRelMax() );
 	SetAbsOrigin( GetAbsOrigin() );
 
 	m_activated = false;
@@ -91,41 +91,39 @@ void CFuncTrain::Activate( void )
 			pTarg = CWorld::GetInstance();
 		}
 
-		pev->target = MAKE_STRING( pTarg->GetTarget() );
+		SetTarget( pTarg->GetTarget() );
 		//TODO change to EHANDLE - Solokiller
 		m_pevCurrentTarget = pTarg->pev;// keep track of this since path corners change our target for us.
 
-		SetAbsOrigin( pTarg->GetAbsOrigin() - ( pev->mins + pev->maxs ) * 0.5 );
+		SetAbsOrigin( pTarg->GetAbsOrigin() - ( GetRelMin() + GetRelMax() ) * 0.5 );
 
 		if( !HasTargetname() )
 		{	// not triggered, so start immediately
-			pev->nextthink = pev->ltime + 0.1;
+			SetNextThink( GetLastThink() + 0.1 );
 			SetThink( &CFuncTrain::Next );
 		}
 		else
-			pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
+			GetSpawnFlags() |= SF_TRAIN_WAIT_RETRIGGER;
 	}
 }
 
 void CFuncTrain::OverrideReset( void )
 {
-	CBaseEntity	*pTarg;
-
 	// Are we moving?
-	if( pev->velocity != g_vecZero && pev->nextthink != 0 )
+	if( GetAbsVelocity() != g_vecZero && GetNextThink() != 0 )
 	{
-		pev->target = pev->message;
+		SetTarget( GetMessage() );
 		// now find our next target
-		pTarg = GetNextTarget();
+		CBaseEntity* pTarg = GetNextTarget();
 		if( !pTarg )
 		{
-			pev->nextthink = 0;
-			pev->velocity = g_vecZero;
+			SetNextThink( 0 );
+			SetAbsVelocity( g_vecZero );
 		}
 		else	// Keep moving for 0.1 secs, then find path_corner again and restart
 		{
 			SetThink( &CFuncTrain::Next );
-			pev->nextthink = pev->ltime + 0.1;
+			SetNextThink( GetLastThink() + 0.1 );
 		}
 	}
 }
@@ -137,25 +135,25 @@ void CFuncTrain::Blocked( CBaseEntity *pOther )
 
 	m_flActivateFinished = gpGlobals->time + 0.5;
 
-	pOther->TakeDamage( this, this, pev->dmg, DMG_CRUSH );
+	pOther->TakeDamage( this, this, GetDamage(), DMG_CRUSH );
 }
 
 void CFuncTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if( pev->spawnflags & SF_TRAIN_WAIT_RETRIGGER )
+	if( GetSpawnFlags().Any( SF_TRAIN_WAIT_RETRIGGER ) )
 	{
 		// Move toward my target
-		pev->spawnflags &= ~SF_TRAIN_WAIT_RETRIGGER;
+		GetSpawnFlags().ClearFlags( SF_TRAIN_WAIT_RETRIGGER );
 		Next();
 	}
 	else
 	{
-		pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
+		GetSpawnFlags() |= SF_TRAIN_WAIT_RETRIGGER;
 		// Pop back to last target if it's available
 		if( pev->enemy )
-			pev->target = pev->enemy->v.targetname;
-		pev->nextthink = 0;
-		pev->velocity = g_vecZero;
+			SetTarget( pev->enemy->v.targetname );
+		SetNextThink( 0 );
+		SetAbsVelocity( g_vecZero );
 		if( pev->noiseStopMoving )
 			EMIT_SOUND( this, CHAN_VOICE, ( char* ) STRING( pev->noiseStopMoving ), m_volume, ATTN_NORM );
 	}
@@ -183,15 +181,15 @@ void CFuncTrain::Wait( void )
 	}
 
 	// need pointer to LAST target.
-	if( FBitSet( m_pevCurrentTarget->spawnflags, SF_TRAIN_WAIT_RETRIGGER ) || ( pev->spawnflags & SF_TRAIN_WAIT_RETRIGGER ) )
+	if( FBitSet( m_pevCurrentTarget->spawnflags, SF_TRAIN_WAIT_RETRIGGER ) || GetSpawnFlags().Any( SF_TRAIN_WAIT_RETRIGGER ) )
 	{
-		pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
+		GetSpawnFlags() |= SF_TRAIN_WAIT_RETRIGGER;
 		// clear the sound channel.
 		if( pev->noiseMovement )
 			STOP_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noiseMovement ) );
 		if( pev->noiseStopMoving )
 			EMIT_SOUND( this, CHAN_VOICE, ( char* ) STRING( pev->noiseStopMoving ), m_volume, ATTN_NORM );
-		pev->nextthink = 0;
+		SetNextThink( 0 );
 		return;
 	}
 
@@ -199,7 +197,7 @@ void CFuncTrain::Wait( void )
 
 	if( m_flWait != 0 )
 	{// -1 wait will wait forever!		
-		pev->nextthink = pev->ltime + m_flWait;
+		SetNextThink( GetLastThink() + m_flWait );
 		if( pev->noiseMovement )
 			STOP_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noiseMovement ) );
 		if( pev->noiseStopMoving )
@@ -236,15 +234,15 @@ void CFuncTrain::Next( void )
 	}
 
 	// Save last target in case we need to find it again
-	pev->message = pev->target;
+	SetMessage( GetTarget() );
 
-	pev->target = pTarg->pev->target;
+	SetTarget( pTarg->GetTarget() );
 	m_flWait = pTarg->GetDelay();
 
 	if( m_pevCurrentTarget && m_pevCurrentTarget->speed != 0 )
 	{// don't copy speed from target if it is 0 (uninitialized)
-		pev->speed = m_pevCurrentTarget->speed;
-		ALERT( at_aiconsole, "Train %s speed to %4.2f\n", GetTargetname(), pev->speed );
+		SetSpeed( m_pevCurrentTarget->speed );
+		ALERT( at_aiconsole, "Train %s speed to %4.2f\n", GetTargetname(), GetSpeed() );
 	}
 	m_pevCurrentTarget = pTarg->pev;// keep track of this since path corners change our target for us.
 
@@ -253,8 +251,8 @@ void CFuncTrain::Next( void )
 	if( FBitSet( m_pevCurrentTarget->spawnflags, SF_CORNER_TELEPORT ) )
 	{
 		// Path corner has indicated a teleport to the next corner.
-		SetBits( pev->effects, EF_NOINTERP );
-		SetAbsOrigin( pTarg->GetAbsOrigin() - ( pev->mins + pev->maxs )* 0.5 );
+		GetEffects() |= EF_NOINTERP;
+		SetAbsOrigin( pTarg->GetAbsOrigin() - ( GetRelMin() + GetRelMax() )* 0.5 );
 		Wait(); // Get on with doing the next path corner.
 	}
 	else
@@ -269,8 +267,8 @@ void CFuncTrain::Next( void )
 			STOP_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noiseMovement ) );
 			EMIT_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noiseMovement ), m_volume, ATTN_NORM );
 		}
-		ClearBits( pev->effects, EF_NOINTERP );
+		GetEffects().ClearFlags( EF_NOINTERP );
 		SetMoveDone( &CFuncTrain::Wait );
-		LinearMove( pTarg->GetAbsOrigin() - ( pev->mins + pev->maxs )* 0.5, pev->speed );
+		LinearMove( pTarg->GetAbsOrigin() - ( GetRelMin() + GetRelMax() )* 0.5, GetSpeed() );
 	}
 }

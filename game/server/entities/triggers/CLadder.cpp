@@ -15,19 +15,19 @@ void CLadder::Spawn( void )
 {
 	Precache();
 
-	SetModel( STRING( pev->model ) );    // set size and link into world
-	pev->movetype = MOVETYPE_PUSH;
+	SetModel( GetModelName() );    // set size and link into world
+	SetMoveType( MOVETYPE_PUSH );
 }
 
 void CLadder::Precache( void )
 {
 	// Do all of this in here because we need to 'convert' old saved games
-	pev->solid = SOLID_NOT;
-	pev->skin = CONTENTS_LADDER;
+	SetSolidType( SOLID_NOT );
+	SetSkin( CONTENTS_LADDER );
 	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 	{
-		pev->rendermode = kRenderTransTexture;
-		pev->renderamt = 0;
+		SetRenderMode( kRenderTransTexture );
+		SetRenderAmount( 0 );
 	}
-	pev->effects &= ~EF_NODRAW;
+	GetEffects().ClearFlags( EF_NODRAW );
 }

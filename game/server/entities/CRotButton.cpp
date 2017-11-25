@@ -37,39 +37,39 @@ void CRotButton::Spawn( void )
 	CBaseToggle::AxisDir( this );
 
 	// check for clockwise rotation
-	if( FBitSet( pev->spawnflags, SF_DOOR_ROTATE_BACKWARDS ) )
-		pev->movedir = pev->movedir * -1;
+	if( GetSpawnFlags().Any( SF_DOOR_ROTATE_BACKWARDS ) )
+		SetMoveDir( GetMoveDir() * -1 );
 
-	pev->movetype = MOVETYPE_PUSH;
+	SetMoveType( MOVETYPE_PUSH );
 
-	if( pev->spawnflags & SF_ROTBUTTON_NOTSOLID )
-		pev->solid = SOLID_NOT;
+	if( GetSpawnFlags().Any( SF_ROTBUTTON_NOTSOLID ) )
+		SetSolidType( SOLID_NOT );
 	else
-		pev->solid = SOLID_BSP;
+		SetSolidType( SOLID_BSP );
 
-	SetModel( STRING( pev->model ) );
+	SetModel( GetModelName() );
 
-	if( pev->speed == 0 )
-		pev->speed = 40;
+	if( GetSpeed() == 0 )
+		SetSpeed( 40 );
 
 	if( m_flWait == 0 )
 		m_flWait = 1;
 
-	if( pev->health > 0 )
+	if( GetHealth() > 0 )
 	{
-		pev->takedamage = DAMAGE_YES;
+		SetTakeDamageMode( DAMAGE_YES );
 	}
 
 	m_toggle_state = TS_AT_BOTTOM;
-	m_vecAngle1 = pev->angles;
-	m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
+	m_vecAngle1 = GetAbsAngles();
+	m_vecAngle2 = GetAbsAngles() + GetMoveDir() * m_flMoveDistance;
 	ASSERTSZ( m_vecAngle1 != m_vecAngle2, "rotating button start/end positions are equal" );
 
 	m_fStayPushed = m_flWait == -1;
 	m_fRotating = true;
 
 	// if the button is flagged for USE button activation only, take away it's touch function and add a use function
-	if( !FBitSet( pev->spawnflags, SF_BUTTON_TOUCH_ONLY ) )
+	if( !GetSpawnFlags().Any( SF_BUTTON_TOUCH_ONLY ) )
 	{
 		SetTouch( NULL );
 		SetUse( &CRotButton::ButtonUse );

@@ -113,7 +113,6 @@ void CASBaseClassCreator::GenerateCommonBaseClassContents( CASClassWriter& write
 void CCustomEntityHandler::KeyValue( KeyValueData* pkvd )
 {
 	edict_t* pEdict = edict();
-	entvars_t* pEntvars = pev;
 
 	//Detach this entity instance from the edict.
 	pEdict->pvPrivateData = nullptr;

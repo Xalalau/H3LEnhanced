@@ -32,7 +32,7 @@ public:
 	virtual int	ObjectCaps() const override
 	{
 		int flags = CBaseToggle::ObjectCaps() & ( ~FCAP_ACROSS_TRANSITION );
-		if( pev->spawnflags & SF_MOMENTARY_DOOR )
+		if( GetSpawnFlags().Any( SF_MOMENTARY_DOOR ) )
 			return flags;
 		return flags | FCAP_CONTINUOUS_USE;
 	}

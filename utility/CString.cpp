@@ -894,7 +894,7 @@ CString::size_type CString::FindFirstNotOf( const char* pszString, size_t uiStar
 CString::size_type CString::FindFirstNotOf( const CString& str, size_t uiStartIndex, const String::CompareType compare ) const
 {
 	if( str.IsEmpty() || IsEmpty() )
-		return -1;
+		return INVALID_INDEX;
 
 	const size_t uiMyLength = Length();
 
@@ -920,7 +920,7 @@ CString::size_type CString::FindLastNotOf( const char* pszString, size_t uiStart
 CString::size_type CString::FindLastNotOf( const CString& str, size_t uiStartIndex, const String::CompareType compare ) const
 {
 	if( str.IsEmpty() || IsEmpty() )
-		return -1;
+		return INVALID_INDEX;
 
 	const size_t uiMyLength = Length();
 
@@ -929,7 +929,7 @@ CString::size_type CString::FindLastNotOf( const CString& str, size_t uiStartInd
 	else if( uiStartIndex >= uiMyLength )
 		return INVALID_INDEX;
 
-	while (uiStartIndex != INVALID_INDEX && str.FindLastOf( *( m_pszString + uiStartIndex ) ) != INVALID_INDEX )
+	while (uiStartIndex != INVALID_INDEX && str.FindLastOf( *( m_pszString + uiStartIndex ), compare ) != INVALID_INDEX )
 		--uiStartIndex;
 
 	return uiStartIndex;
@@ -954,7 +954,7 @@ void CString::VFormat( const char* pszFormat, va_list list )
 
 	szBuffer[ sizeof( szBuffer ) - 1 ] = '\0';
 
-	if( iLength < 0 || iLength >= sizeof( szBuffer ) )
+	if( iLength < 0 || static_cast<size_t>( iLength ) >= sizeof( szBuffer ) )
 	{
 		//Error does not use this method, so there is no risk of recursive calls
 		assert( !"Error formatting string" );
@@ -969,14 +969,14 @@ void CString::VFormat( const char* pszFormat, va_list list )
 
 CString& CString::ToLowercase()
 {
-	std::transform( Begin(), End(), Begin(), ::tolower );
+	std::transform( Begin(), End(), Begin(), []( char c ) { return static_cast<char>( ::tolower( c ) ); } );
 
 	return *this;
 }
 
 CString& CString::ToUppercase()
 {
-	std::transform( Begin(), End(), Begin(), ::toupper );
+	std::transform( Begin(), End(), Begin(), []( char c ) { return static_cast<char>( ::toupper( c ) ); } );
 
 	return *this;
 }

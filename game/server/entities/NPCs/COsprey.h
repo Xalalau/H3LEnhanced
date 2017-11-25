@@ -56,7 +56,7 @@ public:
 	void CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 	//void OnTakeDamage( const CTakeDamageInfo& info ) override;
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 	void ShowDamage( void );
 
 	Vector m_vel1;

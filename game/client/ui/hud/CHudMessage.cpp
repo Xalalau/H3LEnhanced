@@ -259,7 +259,7 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 			width = 0;
 		}
 		else
-			width += Hud().ScreenInfo().charWidths[*pText];
+			width += Hud().ScreenInfo().charWidths[ static_cast<size_t>( *pText ) ];
 		pText++;
 		length++;
 	}

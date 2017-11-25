@@ -36,7 +36,7 @@ void CBaseEntity::UpdateOnRemove( void )
 {
 	int	i;
 
-	if ( FBitSet( pev->flags, FL_GRAPHED ) )
+	if ( GetFlags().Any( FL_GRAPHED ) )
 	{
 	// this entity was a LinkEnt in the world node graph, so we must remove it from
 	// the graph since we are removing it from the world.
@@ -50,7 +50,7 @@ void CBaseEntity::UpdateOnRemove( void )
 		}
 	}
 	if ( HasGlobalName() )
-		gGlobalState.EntitySetState( pev->globalname, GLOBAL_DEAD );
+		gGlobalState.EntitySetState( MAKE_STRING( GetGlobalName() ), GLOBAL_DEAD );
 
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
 	//Killtarget didn't do this before, so the counter broke. - Solokiller
@@ -64,10 +64,10 @@ void CBaseEntity::UpdateOnRemove( void )
 void CBaseEntity :: SUB_Remove( void )
 {
 	UpdateOnRemove();
-	if (pev->health > 0)
+	if ( GetHealth() > 0)
 	{
 		// this situation can screw up monsters who can't tell their entity pointers are invalid.
-		pev->health = 0;
+		SetHealth( 0 );
 		ALERT( at_aiconsole, "SUB_Remove called on entity with health > 0\n");
 	}
 
@@ -95,9 +95,9 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 
 	CBaseEntity* pTarget = nullptr;
 
-	while( (pTarget = UTIL_FindEntityByTargetname( pTarget, targetName )) )
+	while( ( pTarget = UTIL_FindEntityByTargetname( pTarget, targetName ) ) != nullptr )
 	{
-		if( !(pTarget->pev->flags & FL_KILLME) ) // Don't use dying ents
+		if( !pTarget->GetFlags().Any( FL_KILLME ) ) // Don't use dying ents
 		{
 			ALERT( at_aiconsole, "Found: %s, firing (%s)\n", pTarget->GetClassname(), targetName );
 			pTarget->Use( pActivator, pCaller, useType, value );
@@ -111,21 +111,21 @@ just constant angles.
 */
 void SetMovedir( CBaseEntity* pEntity )
 {
-	if ( pEntity->pev->angles == Vector(0, -1, 0))
+	if ( pEntity->GetAbsAngles() == Vector(0, -1, 0))
 	{
-		pEntity->pev->movedir = Vector(0, 0, 1);
+		pEntity->SetMoveDir( Vector(0, 0, 1) );
 	}
-	else if ( pEntity->pev->angles == Vector(0, -2, 0))
+	else if ( pEntity->GetAbsAngles() == Vector(0, -2, 0))
 	{
-		pEntity->pev->movedir = Vector(0, 0, -1);
+		pEntity->SetMoveDir( Vector(0, 0, -1) );
 	}
 	else
 	{
-		UTIL_MakeVectors( pEntity->pev->angles );
-		pEntity->pev->movedir = gpGlobals->v_forward;
+		UTIL_MakeVectors( pEntity->GetAbsAngles() );
+		pEntity->SetMoveDir( gpGlobals->v_forward );
 	}
 	
-	pEntity->pev->angles = g_vecZero;
+	pEntity->SetAbsAngles( g_vecZero );
 }
 
 /*

@@ -110,8 +110,8 @@ void CBaseMonster :: BarnacleVictimReleased ( void )
 {
 	m_IdealMonsterState = MONSTERSTATE_IDLE;
 
-	pev->velocity = g_vecZero;
-	pev->movetype = MOVETYPE_STEP;
+	SetAbsVelocity( g_vecZero );
+	SetMoveType( MOVETYPE_STEP );
 }
 
 //=========================================================
@@ -241,7 +241,7 @@ void CBaseMonster :: Look ( int iDistance )
 	CBaseEntity	*pSightEnt = NULL;// the current visible entity that we're dealing with
 
 	// See no evil if prisoner is set
-	if ( !FBitSet( pev->spawnflags, SF_MONSTER_PRISONER ) )
+	if ( !GetSpawnFlags().Any( SF_MONSTER_PRISONER ) )
 	{
 		CBaseEntity *pList[100];
 
@@ -253,17 +253,17 @@ void CBaseMonster :: Look ( int iDistance )
 		{
 			pSightEnt = pList[i];
 			// !!!temporarily only considering other monsters and clients, don't see prisoners
-			if ( pSightEnt != this												&& 
-				 !FBitSet( pSightEnt->pev->spawnflags, SF_MONSTER_PRISONER )	&& 
-				 pSightEnt->pev->health > 0 )
+			if ( pSightEnt != this										&& 
+				 !pSightEnt->GetSpawnFlags().Any( SF_MONSTER_PRISONER )	&&
+				 pSightEnt->GetHealth() > 0 )
 			{
 				// the looker will want to consider this entity
 				// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
-				if ( IRelationship( pSightEnt ) != R_NO && FInViewCone( pSightEnt ) && !FBitSet( pSightEnt->pev->flags, FL_NOTARGET ) && FVisible( pSightEnt ) )
+				if ( IRelationship( pSightEnt ) != R_NO && FInViewCone( pSightEnt ) && !pSightEnt->GetFlags().Any( FL_NOTARGET ) && FVisible( pSightEnt ) )
 				{
 					if ( pSightEnt->IsPlayer() )
 					{
-						if ( pev->spawnflags & SF_MONSTER_WAIT_TILL_SEEN )
+						if ( GetSpawnFlags().Any( SF_MONSTER_WAIT_TILL_SEEN ) )
 						{
 							CBaseMonster* pClient = pSightEnt->MyMonsterPointer();
 
@@ -276,7 +276,7 @@ void CBaseMonster :: Look ( int iDistance )
 							else
 							{
 								// player sees us, become normal now.
-								pev->spawnflags &= ~SF_MONSTER_WAIT_TILL_SEEN;
+								GetSpawnFlags().ClearFlags( SF_MONSTER_WAIT_TILL_SEEN );
 							}
 						}
 
@@ -323,11 +323,6 @@ void CBaseMonster :: Look ( int iDistance )
 	SetConditions( iSighted );
 }
 
-//=========================================================
-// ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. In the base class implementation,
-// monsters care about all sounds, but no scents.
-//=========================================================
 int CBaseMonster :: ISoundMask ( void )
 {
 	return	bits_SOUND_WORLD	|
@@ -452,7 +447,7 @@ CSound* CBaseMonster :: PBestScent ( void )
 //=========================================================
 void CBaseMonster :: MonsterThink ( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking.
+	SetNextThink( gpGlobals->time + 0.1 );// keep monster thinking.
 
 
 	RunAI();
@@ -481,7 +476,7 @@ void CBaseMonster :: MonsterThink ( void )
 		}
 		if ( iSequence != ACTIVITY_NOT_AVAILABLE )
 		{
-			pev->sequence = iSequence;	// Set to new anim (if it's there)
+			SetSequence( iSequence );	// Set to new anim (if it's there)
 			ResetSequenceInfo( );
 		}
 	}
@@ -861,18 +856,15 @@ void CBaseMonster::RouteSimplify( const CBaseEntity* const pTargetEnt )
 
 bool CBaseMonster::BarnacleVictimGrabbed( CBaseEntity* pBarnacle )
 {
-	if ( FBitSet ( pev->flags, FL_ONGROUND ) )
+	if ( GetFlags().Any( FL_ONGROUND ) )
 	{
-		pev->flags -= FL_ONGROUND;
+		GetFlags().ClearFlags( FL_ONGROUND );
 	}
 
 	m_IdealMonsterState = MONSTERSTATE_PRONE;
 	return true;
 }
 
-//=========================================================
-// CheckRangeAttack1
-//=========================================================
 bool CBaseMonster :: CheckRangeAttack1 ( float flDot, float flDist )
 {
 	if ( flDist > 64 && flDist <= 784 && flDot >= 0.5 )
@@ -882,9 +874,6 @@ bool CBaseMonster :: CheckRangeAttack1 ( float flDot, float flDist )
 	return false;
 }
 
-//=========================================================
-// CheckRangeAttack2
-//=========================================================
 bool CBaseMonster :: CheckRangeAttack2 ( float flDot, float flDist )
 {
 	if ( flDist > 64 && flDist <= 512 && flDot >= 0.5 )
@@ -894,22 +883,16 @@ bool CBaseMonster :: CheckRangeAttack2 ( float flDot, float flDist )
 	return false;
 }
 
-//=========================================================
-// CheckMeleeAttack1
-//=========================================================
 bool CBaseMonster :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
 	// Decent fix to keep folks from kicking/punching hornets and snarks is to check the onground flag(sjb)
-	if ( flDist <= 64 && flDot >= 0.7 && m_hEnemy != NULL && FBitSet ( m_hEnemy->pev->flags, FL_ONGROUND ) )
+	if ( flDist <= 64 && flDot >= 0.7 && m_hEnemy != NULL && m_hEnemy->GetFlags().Any( FL_ONGROUND ) )
 	{
 		return true;
 	}
 	return false;
 }
 
-//=========================================================
-// CheckMeleeAttack2
-//=========================================================
 bool CBaseMonster :: CheckMeleeAttack2 ( float flDot, float flDist )
 {
 	if ( flDist <= 64 && flDot >= 0.7 )
@@ -928,7 +911,7 @@ void CBaseMonster :: CheckAttacks ( CBaseEntity *pTarget, float flDist )
 	Vector2D	vec2LOS;
 	float		flDot;
 
-	UTIL_MakeVectors ( pev->angles );
+	UTIL_MakeVectors ( GetAbsAngles() );
 
 	vec2LOS = ( pTarget->GetAbsOrigin() - GetAbsOrigin() ).Make2D();
 	vec2LOS = vec2LOS.Normalize();
@@ -1008,7 +991,7 @@ bool CBaseMonster::CheckEnemy( CBaseEntity* pEnemy )
 	Vector vecEnemyPos = pEnemy->GetAbsOrigin();
 	// distance to enemy's origin
 	flDistToEnemy = ( vecEnemyPos - GetAbsOrigin() ).Length();
-	vecEnemyPos.z += pEnemy->pev->size.z * 0.5;
+	vecEnemyPos.z += pEnemy->GetBounds().z * 0.5;
 	// distance to enemy's head
 	float flDistToEnemy2 = (vecEnemyPos - GetAbsOrigin()).Length();
 	if (flDistToEnemy2 < flDistToEnemy)
@@ -1016,8 +999,8 @@ bool CBaseMonster::CheckEnemy( CBaseEntity* pEnemy )
 	else
 	{
 		// distance to enemy's feet
-		vecEnemyPos.z -= pEnemy->pev->size.z;
-		float flDistToEnemy2 = (vecEnemyPos - GetAbsOrigin()).Length();
+		vecEnemyPos.z -= pEnemy->GetBounds().z;
+		flDistToEnemy2 = (vecEnemyPos - GetAbsOrigin()).Length();
 		if (flDistToEnemy2 < flDistToEnemy)
 			flDistToEnemy = flDistToEnemy2;
 	}
@@ -1041,10 +1024,10 @@ bool CBaseMonster::CheckEnemy( CBaseEntity* pEnemy )
 				ClearConditions( bits_COND_ENEMY_FACING_ME );
 		}
 
-		if (pEnemy->pev->velocity != Vector( 0, 0, 0))
+		if (pEnemy->GetAbsVelocity() != Vector( 0, 0, 0))
 		{
 			// trail the enemy a bit
-			m_vecEnemyLKP = m_vecEnemyLKP - pEnemy->pev->velocity * RANDOM_FLOAT( -0.05, 0 );
+			m_vecEnemyLKP = m_vecEnemyLKP - pEnemy->GetAbsVelocity() * RANDOM_FLOAT( -0.05, 0 );
 		}
 		else
 		{
@@ -1156,22 +1139,22 @@ void CBaseMonster :: SetActivity ( Activity NewActivity )
 	// Set to the desired anim, or default anim if the desired is not present
 	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
 	{
-		if ( pev->sequence != iSequence || !m_fSequenceLoops )
+		if ( GetSequence() != iSequence || !m_fSequenceLoops )
 		{
 			// don't reset frame between walk and run
 			if ( !(m_Activity == ACT_WALK || m_Activity == ACT_RUN) || !(NewActivity == ACT_WALK || NewActivity == ACT_RUN))
-				pev->frame = 0;
+				SetFrame( 0 );
 		}
 
-		pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
+		SetSequence( iSequence );	// Set to the reset anim (if it's there)
 		ResetSequenceInfo( );
-		SetYawSpeed();
+		UpdateYawSpeed();
 	}
 	else
 	{
 		// Not available try to get default anim
 		ALERT ( at_aiconsole, "%s has no sequence for act:%d\n", GetClassname(), NewActivity );
-		pev->sequence		= 0;	// Set to the reset anim (if it's there)
+		SetSequence( 0 );	// Set to the reset anim (if it's there)
 	}
 
 	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
@@ -1194,20 +1177,20 @@ void CBaseMonster::SetSequenceByName( const char* const pszSequence )
 	// Set to the desired anim, or default anim if the desired is not present
 	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
 	{
-		if ( pev->sequence != iSequence || !m_fSequenceLoops )
+		if ( GetSequence() != iSequence || !m_fSequenceLoops )
 		{
-			pev->frame = 0;
+			SetFrame( 0 );
 		}
 
-		pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
+		SetSequence( iSequence );	// Set to the reset anim (if it's there)
 		ResetSequenceInfo( );
-		SetYawSpeed();
+		UpdateYawSpeed();
 	}
 	else
 	{
 		// Not available try to get default anim
 		ALERT ( at_aiconsole, "%s has no sequence named:%f\n", GetClassname(), pszSequence );
-		pev->sequence		= 0;	// Set to the reset anim (if it's there)
+		SetSequence( 0 );	// Set to the reset anim (if it's there)
 	}
 }
 
@@ -1243,7 +1226,7 @@ int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, 
 	// move the monster to the start of the local move that's to be checked.
 	SetAbsOrigin( vecStart );// !!!BUGBUG - won't this fire triggers? - nope, SetOrigin doesn't fire
 
-	if ( !(pev->flags & (FL_FLY|FL_SWIM)) )
+	if ( !GetFlags().Any( FL_FLY | FL_SWIM ) )
 	{
 		UTIL_DropToFloor( this );//make sure monster is on the floor!
 	}
@@ -1300,10 +1283,10 @@ int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, 
 		}
 	}
 
-	if ( iReturn == LOCALMOVE_VALID && 	!(pev->flags & (FL_FLY|FL_SWIM) ) && (!pTarget || (pTarget->pev->flags & FL_ONGROUND)) )
+	if ( iReturn == LOCALMOVE_VALID && 	!GetFlags().Any( FL_FLY | FL_SWIM ) && (!pTarget || pTarget->GetFlags().Any( FL_ONGROUND ) ) )
 	{
 		// The monster can move to a spot UNDER the target, but not to it. Don't try to triangulate, go directly to the node graph.
-		// UNDONE: Magic # 64 -- this used to be pev->size.z but that won't work for small creatures like the headcrab
+		// UNDONE: Magic # 64 -- this used to be GetBounds().z but that won't work for small creatures like the headcrab
 		if ( fabs(vecEnd.z - GetAbsOrigin().z) > 64 )
 		{
 			iReturn = LOCALMOVE_INVALID_DONT_TRIANGULATE;
@@ -1337,16 +1320,16 @@ float CBaseMonster::OpenDoorAndWait( CBaseEntity* pDoor )
 	{
 		//ALERT(at_aiconsole, "unlocked! ");
 		pDoor->Use(this, this, USE_ON, 0.0);
-		//ALERT(at_aiconsole, "pevDoor->nextthink = %d ms\n", (int)(1000*pevDoor->nextthink));
-		//ALERT(at_aiconsole, "pevDoor->ltime = %d ms\n", (int)(1000*pevDoor->ltime));
-		//ALERT(at_aiconsole, "pev-> nextthink = %d ms\n", (int)(1000*pev->nextthink));
-		//ALERT(at_aiconsole, "pev->ltime = %d ms\n", (int)(1000*pev->ltime));
-		flTravelTime = pDoor->pev->nextthink - pDoor->pev->ltime;
+		//ALERT( at_aiconsole, "pDoor->GetNextThink() = %d ms\n", ( int ) ( 1000 * pDoor->GetNextThink() ) );
+		//ALERT( at_aiconsole, "pDoor->GetLastThink() = %d ms\n", ( int ) ( 1000 * pDoor->GetLastThink() ) );
+		//ALERT( at_aiconsole, "this-> GetNextThink() = %d ms\n", ( int ) ( 1000 * GetNextThink() ) );
+		//ALERT( at_aiconsole, "this-> GetLastThink() = %d ms\n", ( int ) ( 1000 * GetLastThink() ) );
+		flTravelTime = pDoor->GetNextThink() - pDoor->GetLastThink();
 		//ALERT(at_aiconsole, "Waiting %d ms\n", (int)(1000*flTravelTime));
 		if( pDoor->HasTargetname() )
 		{
 			CBaseEntity* pTarget = nullptr;
-			while( (pTarget = UTIL_FindEntityByTargetname( pTarget, pDoor->GetTargetname() )) )
+			while( ( pTarget = UTIL_FindEntityByTargetname( pTarget, pDoor->GetTargetname() ) ) != nullptr )
 			{
 				if( pTarget != pDoor )
 				{
@@ -1559,12 +1542,12 @@ bool CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, 
 
 	// If the hull width is less than 24, use 24 because CheckLocalMove uses a min of
 	// 24.
-	sizeX = pev->size.x;
+	sizeX = GetBounds().x;
 	if (sizeX < 24.0)
 		sizeX = 24.0;
 	else if (sizeX > 48.0)
 		sizeX = 48.0;
-	sizeZ = pev->size.z;
+	sizeZ = GetBounds().z;
 	//if (sizeZ < 24.0)
 	//	sizeZ = 24.0;
 
@@ -1575,13 +1558,13 @@ bool CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, 
 
 	// start checking right about where the object is, picking two equidistant starting points, one on
 	// the left, one on the right. As we progress through the loop, we'll push these away from the obstacle, 
-	// hoping to find a way around on either side. pev->size.x is added to the ApexDist in order to help select
+	// hoping to find a way around on either side. GetBounds().x is added to the ApexDist in order to help select
 	// an apex point that insures that the monster is sufficiently past the obstacle before trying to turn back
 	// onto its original course.
 
 	vecLeft = GetAbsOrigin() + ( vecForward * ( flDist + sizeX ) ) - vecDir * ( sizeX * 3 );
 	vecRight = GetAbsOrigin() + ( vecForward * ( flDist + sizeX ) ) + vecDir * ( sizeX * 3 );
-	if (pev->movetype == MOVETYPE_FLY)
+	if ( GetMoveType() == MOVETYPE_FLY)
 	{
 		vecTop = GetAbsOrigin() + (vecForward * flDist) + (vecDirUp * sizeZ * 3);
 		vecBottom = GetAbsOrigin() + (vecForward * flDist) - (vecDirUp *  sizeZ * 3);
@@ -1590,7 +1573,7 @@ bool CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, 
 	vecFarSide = m_Route[ m_iRouteIndex ].vecLocation;
 	
 	vecDir = vecDir * sizeX * 2;
-	if (pev->movetype == MOVETYPE_FLY)
+	if ( GetMoveType() == MOVETYPE_FLY)
 		vecDirUp = vecDirUp * sizeZ * 2;
 
 	for ( i = 0 ; i < 8; i++ )
@@ -1619,7 +1602,7 @@ bool CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, 
 #endif
 
 #if 0
-		if (pev->movetype == MOVETYPE_FLY)
+		if ( GetMoveType() == MOVETYPE_FLY)
 		{
 			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 				WRITE_BYTE( TE_SHOWLINE );
@@ -1668,7 +1651,7 @@ bool CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, 
 			}
 		}
 
-		if (pev->movetype == MOVETYPE_FLY)
+		if ( GetMoveType() == MOVETYPE_FLY)
 		{
 			if ( CheckLocalMove( GetAbsOrigin(), vecTop, pTargetEnt, NULL ) == LOCALMOVE_VALID)
 			{
@@ -1702,7 +1685,7 @@ bool CBaseMonster::FTriangulate( const Vector &vecStart , const Vector &vecEnd, 
 
 		vecRight = vecRight + vecDir;
 		vecLeft = vecLeft - vecDir;
-		if (pev->movetype == MOVETYPE_FLY)
+		if ( GetMoveType() == MOVETYPE_FLY)
 		{
 			vecTop = vecTop + vecDirUp;
 			vecBottom = vecBottom - vecDirUp;
@@ -1767,7 +1750,7 @@ void CBaseMonster :: Move ( float flInterval )
 	flWaypointDist = ( m_Route[ m_iRouteIndex ].vecLocation - GetAbsOrigin() ).Length2D();
 	
 	MakeIdealYaw ( m_Route[ m_iRouteIndex ].vecLocation );
-	ChangeYaw ( pev->yaw_speed );
+	ChangeYaw ( GetYawSpeed() );
 
 	// if the waypoint is closer than CheckDist, CheckDist is the dist to waypoint
 	if ( flWaypointDist < DIST_TO_CHECK )
@@ -1906,7 +1889,7 @@ void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, f
 	if ( m_IdealActivity != m_movementActivity )
 		m_IdealActivity = m_movementActivity;
 
-	float flTotal = m_flGroundSpeed * pev->framerate * flInterval;
+	float flTotal = m_flGroundSpeed * GetFrameRate() * flInterval;
 	float flStep;
 	while (flTotal > 0.001)
 	{
@@ -1915,7 +1898,7 @@ void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, f
 		UTIL_MoveToOrigin( this, m_Route[ m_iRouteIndex ].vecLocation, flStep, MOVE_NORMAL );
 		flTotal -= flStep;
 	}
-	// ALERT( at_console, "dist %f\n", m_flGroundSpeed * pev->framerate * flInterval );
+	// ALERT( at_console, "dist %f\n", m_flGroundSpeed * GetFrameRate() * flInterval );
 }
 
 
@@ -1931,24 +1914,24 @@ void CBaseMonster :: MonsterInit ( void )
 {
 	if (!g_pGameRules->FAllowMonsters())
 	{
-		pev->flags |= FL_KILLME;		// Post this because some monster code modifies class data after calling this function
+		GetFlags() |= FL_KILLME;		// Post this because some monster code modifies class data after calling this function
 //		UTIL_RemoveNow( this );
 		return;
 	}
 
 	// Set fields common to all monsters
-	pev->effects		= 0;
-	pev->takedamage		= DAMAGE_AIM;
-	pev->ideal_yaw		= pev->angles.y;
-	pev->max_health		= pev->health;
-	pev->deadflag		= DEAD_NO;
+	GetEffects().ClearAll();
+	SetTakeDamageMode( DAMAGE_AIM );
+	SetIdealYaw( GetAbsAngles().y );
+	SetMaxHealth( GetHealth() );
+	SetDeadFlag( DEAD_NO );
 	m_IdealMonsterState	= MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
 
 	m_IdealActivity = ACT_IDLE;
 
-	SetBits (pev->flags, FL_MONSTER);
-	if ( pev->spawnflags & SF_MONSTER_HITMONSTERCLIP )
-		pev->flags |= FL_MONSTERCLIP;
+	GetFlags() |= FL_MONSTER;
+	if ( GetSpawnFlags().Any( SF_MONSTER_HITMONSTERCLIP ) )
+		GetFlags() |= FL_MONSTERCLIP;
 	
 	ClearSchedule();
 	RouteClear();
@@ -1967,7 +1950,7 @@ void CBaseMonster :: MonsterInit ( void )
 	SetEyePosition();
 
 	SetThink( &CBaseMonster::MonsterInitThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	SetUse ( &CBaseMonster::MonsterUse );
 }
 
@@ -2005,20 +1988,22 @@ void CBaseMonster :: StartMonster ( void )
 	}
 
 	// Raise monster off the floor one unit, then drop to floor
-	if ( pev->movetype != MOVETYPE_FLY && !FBitSet( pev->spawnflags, SF_MONSTER_FALL_TO_GROUND ) )
+	if ( GetMoveType() != MOVETYPE_FLY && !GetSpawnFlags().Any( SF_MONSTER_FALL_TO_GROUND ) )
 	{
-		pev->origin.z += 1;
+		Vector vecOrigin = GetAbsOrigin();
+		vecOrigin.z += 1;
+		SetAbsOrigin( vecOrigin );
 		UTIL_DropToFloor( this );
 		// Try to move the monster to make sure it's not stuck in a brush.
 		if (!UTIL_WalkMove( this, 0, 0, WALKMOVE_NORMAL ) )
 		{
 			ALERT(at_error, "Monster %s stuck in wall--level design error", GetClassname() );
-			pev->effects = EF_BRIGHTFIELD;
+			GetEffects() = EF_BRIGHTFIELD;
 		}
 	}
 	else 
 	{
-		pev->flags &= ~FL_ONGROUND;
+		GetFlags().ClearFlags( FL_ONGROUND );
 	}
 	
 	if ( HasTarget() )// this monster has a target
@@ -2049,7 +2034,7 @@ void CBaseMonster :: StartMonster ( void )
 			// JAYJAY
 			m_movementGoal = MOVEGOAL_PATHCORNER;
 			
-			if ( pev->movetype == MOVETYPE_FLY )
+			if ( GetMoveType() == MOVETYPE_FLY )
 				m_movementActivity = ACT_FLY;
 			else
 				m_movementActivity = ACT_WALK;
@@ -2069,7 +2054,7 @@ void CBaseMonster :: StartMonster ( void )
 	// Delay drop to floor to make sure each door in the level has had its chance to spawn
 	// Spread think times so that they don't all happen at the same time (Carmack)
 	SetThink ( &CBaseMonster::CallMonsterThink );
-	pev->nextthink += RANDOM_FLOAT(0.1, 0.4); // spread think times.
+	SetNextThink( GetNextThink() + RANDOM_FLOAT(0.1, 0.4) ); // spread think times.
 	
 	if ( HasTargetname() )// wait until triggered
 	{
@@ -2114,10 +2099,6 @@ bool CBaseMonster::TaskIsRunning() const
 	return false;
 }
 
-//=========================================================
-// IRelationship - returns an integer that describes the 
-// relationship between two types of monster.
-//=========================================================
 Relationship CBaseMonster::IRelationship( CBaseEntity *pTarget )
 {
 	ASSERT( pTarget );
@@ -2301,7 +2282,7 @@ bool CBaseMonster::BuildNearestRoute( Vector vecThreat, Vector vecViewOffset, fl
 			if ( flDist > flMinDist && flDist < flMaxDist)
 			{
 				// can I see where I want to be from there?
-				UTIL_TraceLine( node.m_vecOrigin + pev->view_ofs, vecLookersOffset, ignore_monsters, edict(), &tr );
+				UTIL_TraceLine( node.m_vecOrigin + GetViewOffset(), vecLookersOffset, ignore_monsters, edict(), &tr );
 
 				if (tr.flFraction == 1.0)
 				{
@@ -2395,18 +2376,18 @@ void CBaseMonster :: MakeIdealYaw( Vector vecTarget )
 		vecProjection.x = -vecTarget.y;
 		vecProjection.y = vecTarget.x;
 
-		pev->ideal_yaw = UTIL_VecToYaw( vecProjection - GetAbsOrigin() );
+		SetIdealYaw( UTIL_VecToYaw( vecProjection - GetAbsOrigin() ) );
 	}
 	else if ( m_movementActivity == ACT_STRAFE_RIGHT )
 	{
 		vecProjection.x = vecTarget.y;
 		vecProjection.y = vecTarget.x;
 
-		pev->ideal_yaw = UTIL_VecToYaw( vecProjection - GetAbsOrigin() );
+		SetIdealYaw( UTIL_VecToYaw( vecProjection - GetAbsOrigin() ) );
 	}
 	else
 	{
-		pev->ideal_yaw = UTIL_VecToYaw ( vecTarget - GetAbsOrigin() );
+		SetIdealYaw( UTIL_VecToYaw ( vecTarget - GetAbsOrigin() ) );
 	}
 }
 
@@ -2420,15 +2401,15 @@ float CBaseMonster::FlYawDiff() const
 {
 	float	flCurrentYaw;
 
-	flCurrentYaw = UTIL_AngleMod( pev->angles.y );
+	flCurrentYaw = UTIL_AngleMod( GetAbsAngles().y );
 
-	if ( flCurrentYaw == pev->ideal_yaw )
+	if ( flCurrentYaw == GetIdealYaw() )
 	{
 		return 0;
 	}
 
 
-	return UTIL_AngleDiff( pev->ideal_yaw, flCurrentYaw );
+	return UTIL_AngleDiff( GetIdealYaw(), flCurrentYaw );
 }
 
 
@@ -2439,8 +2420,8 @@ float CBaseMonster::ChangeYaw ( int yawSpeed )
 {
 	float		ideal, current, move, speed;
 
-	current = UTIL_AngleMod( pev->angles.y );
-	ideal = pev->ideal_yaw;
+	current = UTIL_AngleMod( GetAbsAngles().y );
+	ideal = GetIdealYaw();
 	if (current != ideal)
 	{
 		speed = (float)yawSpeed * gpGlobals->frametime * 10;
@@ -2468,12 +2449,14 @@ float CBaseMonster::ChangeYaw ( int yawSpeed )
 				move = -speed;
 		}
 		
-		pev->angles.y = UTIL_AngleMod (current + move);
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.y = UTIL_AngleMod (current + move);
+		SetAbsAngles( vecAngles );
 
 		// turn head in desired direction only if they have a turnable head
 		if (m_afCapability & bits_CAP_TURN_HEAD)
 		{
-			float yaw = pev->ideal_yaw - pev->angles.y;
+			float yaw = GetIdealYaw() - GetAbsAngles().y;
 			if (yaw > 180) yaw -= 360;
 			if (yaw < -180) yaw += 360;
 			// yaw *= 0.8;
@@ -2493,7 +2476,7 @@ float CBaseMonster::ChangeYaw ( int yawSpeed )
 float	CBaseMonster::VecToYaw ( Vector vecDir )
 {
 	if (vecDir.x == 0 && vecDir.y == 0 && vecDir.z == 0)
-		return pev->angles.y;
+		return GetAbsAngles().y;
 
 	return UTIL_VecToYaw( vecDir );
 }
@@ -2513,9 +2496,9 @@ void CBaseMonster :: SetEyePosition ( void )
 
 	GetEyePosition( pmodel, vecEyePosition );
 
-	pev->view_ofs = vecEyePosition;
+	SetViewOffset( vecEyePosition );
 
-	if ( pev->view_ofs == g_vecZero )
+	if ( GetViewOffset() == g_vecZero )
 	{
 		ALERT ( at_aiconsole, "%s has no view_ofs!\n", GetClassname() );
 	}
@@ -2528,12 +2511,12 @@ void CBaseMonster :: HandleAnimEvent( AnimEvent_t& event )
 	case SCRIPT_EVENT_DEAD:
 		if ( m_MonsterState == MONSTERSTATE_SCRIPT )
 		{
-			pev->deadflag = DEAD_DYING;
+			SetDeadFlag( DEAD_DYING );
 			// Kill me now! (and fade out when CineCleanup() is called)
 #if _DEBUG
 			ALERT( at_aiconsole, "Death event: %s\n", GetClassname() );
 #endif
-			pev->health = 0;
+			SetHealth( 0 );
 		}
 #if _DEBUG
 		else
@@ -2543,9 +2526,9 @@ void CBaseMonster :: HandleAnimEvent( AnimEvent_t& event )
 	case SCRIPT_EVENT_NOT_DEAD:
 		if ( m_MonsterState == MONSTERSTATE_SCRIPT )
 		{
-			pev->deadflag = DEAD_NO;
+			SetDeadFlag( DEAD_NO );
 			// This is for life/death sequences where the player can determine whether a character is dead or alive after the script 
-			pev->health = pev->max_health;
+			SetHealth( GetMaxHealth() );
 		}
 		break;
 
@@ -2586,7 +2569,7 @@ void CBaseMonster :: HandleAnimEvent( AnimEvent_t& event )
 #endif
 
 	case MONSTER_EVENT_BODYDROP_HEAVY:
-		if ( pev->flags & FL_ONGROUND )
+		if ( GetFlags().Any( FL_ONGROUND ) )
 		{
 			if ( RANDOM_LONG( 0, 1 ) == 0 )
 			{
@@ -2600,7 +2583,7 @@ void CBaseMonster :: HandleAnimEvent( AnimEvent_t& event )
 		break;
 
 	case MONSTER_EVENT_BODYDROP_LIGHT:
-		if ( pev->flags & FL_ONGROUND )
+		if ( GetFlags().Any( FL_ONGROUND ) )
 		{
 			if ( RANDOM_LONG( 0, 1 ) == 0 )
 			{
@@ -2632,11 +2615,11 @@ void CBaseMonster :: HandleAnimEvent( AnimEvent_t& event )
 
 Vector CBaseMonster::GetGunPosition()
 {
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 
 	// Vector vecSrc = GetAbsOrigin() + gpGlobals->v_forward * 10;
 	//vecSrc.z = pevShooter->absmin.z + pevShooter->size.z * 0.7;
-	//vecSrc.z = GetAbsOrigin().z + (pev->view_ofs.z - 4);
+	//vecSrc.z = GetAbsOrigin().z + (GetViewOffset().z - 4);
 	Vector vecSrc = GetAbsOrigin()
 		+ gpGlobals->v_forward * m_HackedGunPos.y
 		+ gpGlobals->v_right * m_HackedGunPos.x
@@ -2772,7 +2755,7 @@ int CBaseMonster :: FindHintNode ( void )
 			{
 				if ( !node.m_sHintActivity || LookupActivity ( node.m_sHintActivity ) != ACTIVITY_NOT_AVAILABLE )
 				{
-					UTIL_TraceLine ( GetAbsOrigin() + pev->view_ofs, node.m_vecOrigin + pev->view_ofs, ignore_monsters, ENT(pev), &tr );
+					UTIL_TraceLine ( GetAbsOrigin() + GetViewOffset(), node.m_vecOrigin + GetViewOffset(), ignore_monsters, ENT(pev), &tr );
 
 					if ( tr.flFraction == 1.0 )
 					{
@@ -2858,10 +2841,10 @@ void CBaseMonster::ReportAIState( void )
 	}
 
 	ALERT( level, "\n" );
-	ALERT( level, "Yaw speed:%3.1f,Health: %3.1f\n", pev->yaw_speed, pev->health );
-	if ( pev->spawnflags & SF_MONSTER_PRISONER )
+	ALERT( level, "Yaw speed:%3.1f,Health: %3.1f\n", GetYawSpeed(), GetHealth() );
+	if ( GetSpawnFlags().Any( SF_MONSTER_PRISONER ) )
 		ALERT( level, " PRISONER! " );
-	if ( pev->spawnflags & SF_MONSTER_PREDISASTER )
+	if ( GetSpawnFlags().Any( SF_MONSTER_PREDISASTER ) )
 		ALERT( level, " Pre-Disaster! " );
 	ALERT( level, "\n" );
 }
@@ -2938,13 +2921,13 @@ bool CBaseMonster::FCheckAITrigger()
 		}
 		break;
 	case AITRIGGER_DEATH:
-		if ( pev->deadflag != DEAD_NO )
+		if ( GetDeadFlag() != DEAD_NO )
 		{
 			fFireTarget = true;
 		}
 		break;
 	case AITRIGGER_HALFHEALTH:
-		if ( IsAlive() && pev->health <= ( pev->max_health / 2 ) )
+		if ( IsAlive() && GetHealth() <= ( GetMaxHealth() / 2 ) )
 		{
 			fFireTarget = true;
 		}
@@ -3043,7 +3026,7 @@ bool CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 	Vector	vecStepRight;
 	int		i;
 
-	UTIL_MakeVectors ( pev->angles );
+	UTIL_MakeVectors ( GetAbsAngles() );
 	vecStepRight = gpGlobals->v_right * COVER_DELTA;
 	vecStepRight.z = 0; 
 	
@@ -3055,7 +3038,7 @@ bool CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 		vecRightTest = vecRightTest + vecStepRight;
 
 		// it's faster to check the SightEnt's visibility to the potential spot than to check the local move, so we do that first.
-		UTIL_TraceLine( vecThreat + vecViewOffset, vecLeftTest + pev->view_ofs, ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
+		UTIL_TraceLine( vecThreat + vecViewOffset, vecLeftTest + GetViewOffset(), ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
 		
 		if (tr.flFraction != 1.0)
 		{
@@ -3069,7 +3052,7 @@ bool CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 		}
 		
 		// it's faster to check the SightEnt's visibility to the potential spot than to check the local move, so we do that first.
-		UTIL_TraceLine(vecThreat + vecViewOffset, vecRightTest + pev->view_ofs, ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
+		UTIL_TraceLine(vecThreat + vecViewOffset, vecRightTest + GetViewOffset(), ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
 		
 		if ( tr.flFraction != 1.0 )
 		{
@@ -3159,7 +3142,7 @@ void CBaseMonster::SentenceStop( void )
 
 void CBaseMonster::CorpseFallThink( void )
 {
-	if ( pev->flags & FL_ONGROUND )
+	if ( GetFlags().Any( FL_ONGROUND ) )
 	{
 		SetThink ( NULL );
 
@@ -3167,7 +3150,7 @@ void CBaseMonster::CorpseFallThink( void )
 		SetAbsOrigin( GetAbsOrigin() );// link into world.
 	}
 	else
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 }
 
 // Call after animation/pose is set up
@@ -3175,16 +3158,16 @@ void CBaseMonster :: MonsterInitDead( void )
 {
 	InitBoneControllers();
 
-	pev->solid			= SOLID_BBOX;
-	pev->movetype		= MOVETYPE_TOSS;// so he'll fall to ground
+	SetSolidType( SOLID_BBOX );
+	SetMoveType( MOVETYPE_TOSS );// so he'll fall to ground
 
-	pev->frame = 0;
+	SetFrame( 0 );
 	ResetSequenceInfo( );
-	pev->framerate = 0;
+	SetFrameRate( 0 );
 	
 	// Copy health
-	pev->max_health		= pev->health;
-	pev->deadflag		= DEAD_DEAD;
+	SetMaxHealth( GetHealth() );
+	SetDeadFlag( DEAD_DEAD );
 	
 	SetSize( g_vecZero, g_vecZero );
 	SetAbsOrigin( GetAbsOrigin() );
@@ -3192,7 +3175,7 @@ void CBaseMonster :: MonsterInitDead( void )
 	// Setup health counters, etc.
 	BecomeDead();
 	SetThink( &CBaseMonster::CorpseFallThink );
-	pev->nextthink = gpGlobals->time + 0.5;
+	SetNextThink( gpGlobals->time + 0.5 );
 }
 
 //=========================================================
@@ -3208,8 +3191,8 @@ bool CBaseMonster::BBoxFlat() const
 	float		flLength;
 	float		flLength2;
 
-	flXSize = pev->size.x / 2;
-	flYSize = pev->size.y / 2;
+	flXSize = GetBounds().x / 2;
+	flYSize = GetBounds().y / 2;
 
 	vecPoint.x = GetAbsOrigin().x + flXSize;
 	vecPoint.y = GetAbsOrigin().y + flYSize;
@@ -3279,12 +3262,12 @@ bool CBaseMonster::GetEnemy()
 					m_vecEnemyLKP = m_hEnemy->GetAbsOrigin();
 				}
 				// if the new enemy has an owner, take that one as well
-				if (pNewEnemy->pev->owner != NULL)
+				if ( pNewEnemy->GetOwner() )
 				{
 					if( CBaseEntity* pOwnerEnt = pNewEnemy->GetOwner() )
 					{
 						CBaseEntity* pOwner = pOwnerEnt->MyMonsterPointer();
-						if ( pOwner && (pOwner->pev->flags & FL_MONSTER) && IRelationship( pOwner ) != R_NO )
+						if ( pOwner && pOwner->GetFlags().Any( FL_MONSTER ) && IRelationship( pOwner ) != R_NO )
 							PushEnemy( pOwner, m_vecEnemyLKP );
 					}
 				}
@@ -3330,8 +3313,8 @@ CBaseEntity* CBaseMonster::DropItem( const char* const pszItemName, const Vector
 	if ( pItem )
 	{
 		// do we want this behavior to be default?! (sjb)
-		pItem->pev->velocity = pev->velocity;
-		pItem->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 0, 100 ), 0 );
+		pItem->SetAbsVelocity( GetAbsVelocity() );
+		pItem->SetAngularVelocity( Vector ( 0, RANDOM_FLOAT( 0, 100 ), 0 ) );
 
 		//Dropped items should never respawn (unless this rule changes in the future). - Solokiller
 		pItem->GetSpawnFlags() |= SF_NORESPAWN;

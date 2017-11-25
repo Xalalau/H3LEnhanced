@@ -27,7 +27,7 @@ public:
 	{
 		_scrollBar=scrollBar;
 	}
-	virtual void intChanged(int value,Panel* panel)
+	virtual void intChanged(int /*value*/,Panel* /*panel*/)
 	{
 		_scrollBar->fireIntChangeSignal();
 	}
@@ -47,7 +47,7 @@ public:
 		_buttonIndex=buttonIndex;
 	}
 public:
-	virtual void actionPerformed(Panel* panel)
+	virtual void actionPerformed(Panel* /*panel*/)
 	{
 		_scrollBar->doButtonPressed(_buttonIndex);
 	}
@@ -65,7 +65,9 @@ private:
 	LineBorder m_Border;
 
 public:
-	ScrollBarButton(const char *filename, int x, int y, int wide, int tall) : m_Border(Color(60, 60, 60, 0)), Button("", x, y, wide, tall)
+	ScrollBarButton(const char *filename, int x, int y, int wide, int tall)
+		: Button("", x, y, wide, tall)
+		, m_Border( Color( 60, 60, 60, 0 ) )
 	{
 		Image *image = vgui_LoadTGA(filename);
 		if (image)

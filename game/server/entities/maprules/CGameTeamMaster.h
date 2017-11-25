@@ -40,8 +40,8 @@ public:
 
 	bool		IsTriggered( const CBaseEntity* const pActivator ) const override;
 	const char	*TeamID() const override;
-	inline bool RemoveOnFire() const { return ( pev->spawnflags & SF_TEAMMASTER_FIREONCE ) != 0; }
-	inline bool AnyTeam() const { return ( pev->spawnflags & SF_TEAMMASTER_ANYTEAM ) != 0; }
+	inline bool RemoveOnFire() const { return GetSpawnFlags().Any( SF_TEAMMASTER_FIREONCE ); }
+	inline bool AnyTeam() const { return GetSpawnFlags().Any( SF_TEAMMASTER_ANYTEAM ); }
 
 private:
 	bool		TeamMatch( const CBaseEntity* const pActivator ) const;

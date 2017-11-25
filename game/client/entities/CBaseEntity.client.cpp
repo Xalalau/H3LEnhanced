@@ -25,11 +25,11 @@ CBaseEntity* CBaseEntity::Create( const char* const pszName, const Vector& vecOr
 	return nullptr;
 }
 
-void CBaseEntity::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBaseEntity::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 }
 
-void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 }
 
@@ -46,7 +46,7 @@ If weapons code "kills" an entity, just set its effects to EF_NODRAW
 */
 void CBaseEntity::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 {
-	pev->effects |= EF_NODRAW;
+	GetEffects() |= EF_NODRAW;
 }
 
 float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
@@ -105,7 +105,7 @@ Vector CBaseEntity::FireBulletsPlayer( const unsigned int cShots,
 									   float flDistance, int iBulletType,
 									   int iTracerFreq, int iDamage, CBaseEntity* pAttacker, int shared_rand )
 {
-	float x, y;
+	float x = 0, y = 0;
 
 	for( unsigned int iShot = 1; iShot <= cShots; iShot++ )
 	{

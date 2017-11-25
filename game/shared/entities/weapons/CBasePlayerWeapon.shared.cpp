@@ -31,8 +31,8 @@
 
 void CBasePlayerWeapon::SetObjectCollisionBox()
 {
-	pev->absmin = GetAbsOrigin() + Vector( -24, -24, 0 );
-	pev->absmax = GetAbsOrigin() + Vector( 24, 24, 16 );
+	SetAbsMin( GetAbsOrigin() + Vector( -24, -24, 0 ) );
+	SetAbsMax( GetAbsOrigin() + Vector( 24, 24, 16 ) );
 }
 
 void CBasePlayerWeapon::Precache()
@@ -208,13 +208,13 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 	}
 
 #ifdef SERVER_DLL
-	if( !( m_pPlayer->pev->button & IN_ATTACK ) )
+	if( !m_pPlayer->GetButtons().Any( IN_ATTACK ) )
 	{
 		m_flLastFireTime = 0.0f;
 	}
 #endif
 
-	if( ( m_pPlayer->pev->button & IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, IsPredicted() ) )
+	if( m_pPlayer->GetButtons().Any( IN_ATTACK2 ) && CanAttack( m_flNextSecondaryAttack, gpGlobals->time, IsPredicted() ) )
 	{
 		if( pszAmmo2() && !m_pPlayer->m_rgAmmo[ SecondaryAmmoIndex() ] )
 		{
@@ -222,9 +222,9 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		}
 
 		SecondaryAttack();
-		m_pPlayer->pev->button &= ~IN_ATTACK2;
+		m_pPlayer->GetButtons().ClearFlags( IN_ATTACK2 );
 	}
-	else if( ( m_pPlayer->pev->button & IN_ATTACK ) && CanAttack( m_flNextPrimaryAttack, gpGlobals->time, IsPredicted() ) )
+	else if( m_pPlayer->GetButtons().Any( IN_ATTACK ) && CanAttack( m_flNextPrimaryAttack, gpGlobals->time, IsPredicted() ) )
 	{
 		if( ( m_iClip == 0 && pszAmmo1() ) || ( iMaxClip() == -1 && !m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] ) )
 		{
@@ -233,12 +233,12 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 		PrimaryAttack();
 	}
-	else if( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload )
+	else if( m_pPlayer->GetButtons().Any( IN_RELOAD ) && iMaxClip() != WEAPON_NOCLIP && !m_fInReload )
 	{
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
 		Reload();
 	}
-	else if( !( m_pPlayer->pev->button & ( IN_ATTACK | IN_ATTACK2 ) ) )
+	else if( !m_pPlayer->GetButtons().Any( IN_ATTACK | IN_ATTACK2 ) )
 	{
 		// no fire buttons down
 

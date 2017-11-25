@@ -30,13 +30,13 @@ CWeaponCycler::CWeaponCycler()
 
 void CWeaponCycler::Spawn()
 {
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_NONE;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_NONE );
 
-	PRECACHE_MODEL( ( char * ) STRING( pev->model ) );
-	SetModel( STRING( pev->model ) );
-	m_iszModel = pev->model;
-	m_iModel = pev->modelindex;
+	PRECACHE_MODEL( GetModelName() );
+	SetModel( GetModelName() );
+	m_iszModel = MAKE_STRING( GetModelName() );
+	m_iModel = GetModelIndex();
 
 	SetAbsOrigin( GetAbsOrigin() );
 	SetSize( Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
@@ -46,7 +46,7 @@ void CWeaponCycler::Spawn()
 void CWeaponCycler::PrimaryAttack()
 {
 
-	SendWeaponAnim( pev->sequence );
+	SendWeaponAnim( GetSequence() );
 
 	m_flNextPrimaryAttack = gpGlobals->time + 0.3;
 }
@@ -55,26 +55,26 @@ void CWeaponCycler::SecondaryAttack( void )
 {
 	float flFrameRate, flGroundSpeed;
 
-	pev->sequence = ( pev->sequence + 1 ) % 8;
+	SetSequence( ( GetSequence() + 1 ) % 8 );
 
-	pev->modelindex = m_iModel;
+	SetModelIndex( m_iModel );
 	void *pmodel = GET_MODEL_PTR( ENT( pev ) );
 	GetSequenceInfo( pmodel, pev, flFrameRate, flGroundSpeed );
-	pev->modelindex = 0;
+	SetModelIndex( 0 );
 
 	if( flFrameRate == 0.0 )
 	{
-		pev->sequence = 0;
+		SetSequence( 0 );
 	}
 
-	SendWeaponAnim( pev->sequence );
+	SendWeaponAnim( GetSequence() );
 
 	m_flNextSecondaryAttack = gpGlobals->time + 0.3;
 }
 
 bool CWeaponCycler::Deploy()
 {
-	m_pPlayer->pev->viewmodel = m_iszModel;
+	m_pPlayer->SetViewModelName( m_iszModel );
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 	SendWeaponAnim( 0 );
 	m_iClip = 0;

@@ -6,9 +6,9 @@
 
 // Required DLL entry point
 BOOL WINAPI DllMain(
-	HINSTANCE hinstDLL,
+	HINSTANCE /*hinstDLL*/,
 	DWORD fdwReason,
-	LPVOID lpvReserved )
+	LPVOID /*lpvReserved*/ )
 {
 	if( fdwReason == DLL_PROCESS_ATTACH )
 	{

@@ -55,14 +55,14 @@ void CFuncPlat::Setup( void )
 	if( m_flTWidth == 0 )
 		m_flTWidth = 10;
 
-	pev->angles = g_vecZero;
+	SetAbsAngles( g_vecZero );
 
-	pev->solid = SOLID_BSP;
-	pev->movetype = MOVETYPE_PUSH;
+	SetSolidType( SOLID_BSP );
+	SetMoveType( MOVETYPE_PUSH );
 
 	SetAbsOrigin( GetAbsOrigin() );		// set size and link into world
-	SetSize( pev->mins, pev->maxs );
-	SetModel( STRING( pev->model ) );
+	SetSize( GetRelMin(), GetRelMax() );
+	SetModel( GetModelName() );
 
 	// vecPosition1 is the top position, vecPosition2 is the bottom
 	m_vecPosition1 = GetAbsOrigin();
@@ -70,9 +70,9 @@ void CFuncPlat::Setup( void )
 	if( m_flHeight != 0 )
 		m_vecPosition2.z = GetAbsOrigin().z - m_flHeight;
 	else
-		m_vecPosition2.z = GetAbsOrigin().z - pev->size.z + 8;
-	if( pev->speed == 0 )
-		pev->speed = 150;
+		m_vecPosition2.z = GetAbsOrigin().z - GetBounds().z + 8;
+	if( GetSpeed() == 0 )
+		SetSpeed( 150 );
 
 	if( m_volume == 0 )
 		m_volume = 0.85;
@@ -134,7 +134,7 @@ void CFuncPlat::GoUp( void )
 	ASSERT( m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN );
 	m_toggle_state = TS_GOING_UP;
 	SetMoveDone( &CFuncPlat::CallHitTop );
-	LinearMove( m_vecPosition1, pev->speed );
+	LinearMove( m_vecPosition1, GetSpeed() );
 }
 
 //
@@ -148,7 +148,7 @@ void CFuncPlat::GoDown( void )
 	ASSERT( m_toggle_state == TS_AT_TOP || m_toggle_state == TS_GOING_UP );
 	m_toggle_state = TS_GOING_DOWN;
 	SetMoveDone( &CFuncPlat::CallHitBottom );
-	LinearMove( m_vecPosition2, pev->speed );
+	LinearMove( m_vecPosition2, GetSpeed() );
 }
 
 //
@@ -169,7 +169,7 @@ void CFuncPlat::HitTop( void )
 	{
 		// After a delay, the platform will automatically start going down again.
 		SetThink( &CFuncPlat::CallGoDown );
-		pev->nextthink = pev->ltime + 3;
+		SetNextThink( GetLastThink() + 3 );
 	}
 }
 

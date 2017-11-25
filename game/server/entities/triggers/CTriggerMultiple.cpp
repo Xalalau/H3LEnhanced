@@ -13,18 +13,18 @@ void CTriggerMultiple::Spawn( void )
 
 	InitTrigger();
 
-	ASSERTSZ( pev->health == 0, "trigger_multiple with health" );
+	ASSERTSZ( GetHealth() == 0, "trigger_multiple with health" );
 	//	SetAbsOrigin( GetAbsOrigin());
-	//	SetModel( STRING(pev->model) );
-	//	if (pev->health > 0)
+	//	SetModel( GetModelName() );
+	//	if (GetHealth() > 0)
 	//		{
-	//		if (FBitSet(pev->spawnflags, SPAWNFLAG_NOTOUCH))
+	//		if ( GetSpawnFlags().Any( SPAWNFLAG_NOTOUCH ) )
 	//			ALERT(at_error, "trigger_multiple spawn: health and notouch don't make sense");
-	//		pev->max_health = pev->health;
+	//		SetMaxHealth( GetHealth() );
 	//UNDONE: where to get pfnDie from?
 	//		pev->pfnDie = multi_killed;
-	//		pev->takedamage = DAMAGE_YES;
-	//		pev->solid = SOLID_BBOX;
+	//		SetTakeDamageMode( DAMAGE_YES );
+	//		SetSolidType( SOLID_BBOX );
 	//		SetAbsOrigin( GetAbsOrigin());  // make sure it links into the world
 	//		}
 	//	else

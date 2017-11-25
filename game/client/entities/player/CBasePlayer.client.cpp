@@ -52,7 +52,7 @@ Vector CBasePlayer::GetGunPosition( void )
 	return g_vecZero;
 }
 
-void CBasePlayer::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBasePlayer::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 }
 
@@ -107,7 +107,7 @@ bool CBasePlayer::SwitchWeapon( CBasePlayerWeapon *pWeapon )
 	return false;
 }
 
-const WeaponHUDSprite* CBasePlayer::GetAmmoPicFromWeapon( int iAmmoId )
+const WeaponHUDSprite* CBasePlayer::GetAmmoPicFromWeapon( AmmoID_t iAmmoId )
 {
 	for( int i = 0; i < MAX_WEAPONS; i++ )
 	{

@@ -34,7 +34,7 @@ public:
 	void Precache() override;
 
 	// This is done to fix spawn flag collisions between this class and a derived class
-	virtual bool IsTogglePlat() const { return ( pev->spawnflags & SF_PLAT_TOGGLE ) != 0; }
+	virtual bool IsTogglePlat() const { return GetSpawnFlags().Any( SF_PLAT_TOGGLE ); }
 
 	byte	m_bMoveSnd;			// sound a plat makes while moving
 	byte	m_bStopSnd;			// sound a plat makes when it stops

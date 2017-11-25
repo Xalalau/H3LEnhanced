@@ -80,7 +80,7 @@ protected:
 	class ListBoxSignal : public IntChangeSignal
 	{
 	public:
-		void intChanged(int value,Panel* panel)
+		void intChanged(int value,Panel* /*panel*/)
 		{
 			m_pListBox->setPixelScroll(-value);
 		}

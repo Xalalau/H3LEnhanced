@@ -591,10 +591,10 @@ void ListPanel::AddColumnHeader(int index, const char *columnName, const char *c
 	column.m_pHeader = pButton;
 	column.m_iMinWidth = minWidth;
 	column.m_iMaxWidth = maxWidth;
-	column.m_bResizesWithWindow = columnFlags & COLUMN_RESIZEWITHWINDOW;
+	column.m_bResizesWithWindow = ( columnFlags & COLUMN_RESIZEWITHWINDOW ) != 0;
 	column.m_bTypeIsText = !(columnFlags & COLUMN_IMAGE);
 	column.m_bHidden = false;
-	column.m_bUnhidable = (columnFlags & COLUMN_UNHIDABLE);
+	column.m_bUnhidable = (columnFlags & COLUMN_UNHIDABLE) != 0;
 	column.m_nContentAlignment = Label::a_west;
 
 	Dragger *dragger = new Dragger(index);
@@ -1834,19 +1834,19 @@ void ListPanel::PerformLayout()
 				if (!header->IsVisible())
 					continue;
 
-				int wide = header->GetWide();
+				int headerWide = header->GetWide();
 
 				if ( itemID == m_iEditModeItemID &&
 					 j == m_iEditModeColumn )
 				{
 
 					m_hEditModePanel->SetPos( x + m_iTableStartX + 2, (drawcount * m_iRowHeight) + m_iTableStartY);
-					m_hEditModePanel->SetSize( wide, m_iRowHeight - 1 );
+					m_hEditModePanel->SetSize( headerWide, m_iRowHeight - 1 );
 
 					bDone = true;
 				}
 
-				x += wide;
+				x += headerWide;
 			}
 
 			drawcount++;
@@ -1921,7 +1921,7 @@ void ListPanel::Paint()
 			if (!header->IsVisible())
 				continue;
 
-			int wide = header->GetWide();
+			int headerWide = header->GetWide();
 
 			if (render)
 			{
@@ -1938,7 +1938,7 @@ void ListPanel::Paint()
 
 				render->SetPos( xpos, (drawcount * m_iRowHeight) + m_iTableStartY);
 
-				int right = min( xpos + wide, maxw );
+				int right = min( xpos + headerWide, maxw );
 				int usew = right - xpos;
 				render->SetSize( usew, m_iRowHeight - 1 );
 
@@ -1971,7 +1971,7 @@ void ListPanel::Paint()
 			}
 			*/
 
-			x += wide;
+			x += headerWide;
 		}
 
 		drawcount++;
@@ -2317,13 +2317,13 @@ void ListPanel::OnKeyCodeTyped(KeyCode code)
 	// move the newly selected item to within the visible range
 	if ( nRowsPerPage < nTotalRows )
 	{
-		int nStartItem = m_vbar->GetValue();
-		if ( nSelectedRow < nStartItem )
+		int nVBarStartItem = m_vbar->GetValue();
+		if ( nSelectedRow < nVBarStartItem )
 		{
 			// move the list back to match
 			m_vbar->SetValue( nSelectedRow );
 		}
-		else if ( nSelectedRow >= nStartItem + nRowsPerPage )
+		else if ( nSelectedRow >= nVBarStartItem + nRowsPerPage )
 		{
 			// move list forward to match
 			m_vbar->SetValue( nSelectedRow - nRowsPerPage + 1);

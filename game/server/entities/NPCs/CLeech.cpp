@@ -91,10 +91,10 @@ void CLeech::Spawn( void )
 //	SetSize( g_vecZero, g_vecZero );
 	SetSize( Vector(-1,-1,0), Vector(1,1,2));
 	// Don't push the minz down too much or the water check will fail because this entity is really point-sized
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_FLY;
-	SetBits(pev->flags, FL_SWIM);
-	pev->health			= gSkillData.GetLeechHealth();
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_FLY );
+	GetFlags() |= FL_SWIM;
+	SetHealth( gSkillData.GetLeechHealth() );
 
 	m_flFieldOfView		= -0.5;	// 180 degree FOV
 	m_flDistLook		= 750;
@@ -102,7 +102,7 @@ void CLeech::Spawn( void )
 	SetThink( &CLeech::SwimThink );
 	SetUse( NULL );
 	SetTouch( NULL );
-	pev->view_ofs = g_vecZero;
+	SetViewOffset( g_vecZero );
 
 	m_flTurning = 0;
 	m_fPathBlocked = false;
@@ -199,12 +199,12 @@ void CLeech::Precache( void )
 
 void CLeech::OnTakeDamage( const CTakeDamageInfo& info )
 {
-	pev->velocity = g_vecZero;
+	SetAbsVelocity( g_vecZero );
 
 	// Nudge the leech away from the damage
 	if ( auto pInflictor = info.GetInflictor() )
 	{
-		pev->velocity = (GetAbsOrigin() - pInflictor->GetAbsOrigin()).Normalize() * 25;
+		SetAbsVelocity( (GetAbsOrigin() - pInflictor->GetAbsOrigin()).Normalize() * 25 );
 	}
 
 	CBaseMonster::OnTakeDamage( info );
@@ -223,7 +223,7 @@ void CLeech::HandleAnimEvent( AnimEvent_t& event )
 		{
 			Vector dir, face;
 
-			UTIL_MakeVectorsPrivate( pev->angles, &face, nullptr, nullptr );
+			UTIL_MakeVectorsPrivate( GetAbsAngles(), &face, nullptr, nullptr );
 			face.z = 0;
 			dir = (pEnemy->GetAbsOrigin() - GetAbsOrigin());
 			dir.z = 0;
@@ -249,7 +249,7 @@ void CLeech::HandleAnimEvent( AnimEvent_t& event )
 
 void CLeech::MakeVectors( void )
 {
-	Vector tmp = pev->angles;
+	Vector tmp = GetAbsAngles();
 	tmp.x = -tmp.x;
 	UTIL_MakeVectors ( tmp );
 }
@@ -263,7 +263,7 @@ float CLeech::ObstacleDistance( CBaseEntity *pTarget )
 	Vector			vecTest;
 
 	// use VELOCITY, not angles, not all boids point the direction they are flying
-	//Vector vecDir = UTIL_VecToAngles( pev->velocity );
+	//Vector vecDir = UTIL_VecToAngles( GetAbsVelocity() );
 	MakeVectors();
 
 	// check for obstacle ahead
@@ -272,7 +272,7 @@ float CLeech::ObstacleDistance( CBaseEntity *pTarget )
 
 	if ( tr.fStartSolid )
 	{
-		pev->speed = -LEECH_SWIM_SPEED * 0.5;
+		SetSpeed( -LEECH_SWIM_SPEED * 0.5 );
 //		ALERT( at_console, "Stuck from (%f %f %f) to (%f %f %f)\n", GetOldOrigin().x, GetOldOrigin().y, GetOldOrigin().z, GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z );
 //		SetAbsOrigin( GetOldOrigin() );
 	}
@@ -319,34 +319,36 @@ void CLeech::DeadThink( void )
 			StopAnimation();
 			return;
 		}
-		else if ( pev->flags & FL_ONGROUND )
+		else if( GetFlags().Any( FL_ONGROUND ) )
 		{
-			pev->solid = SOLID_NOT;
+			SetSolidType( SOLID_NOT );
 			SetActivity(ACT_DIEFORWARD);
 		}
 	}
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	// Apply damage velocity, but keep out of the walls
-	if ( pev->velocity.x != 0 || pev->velocity.y != 0 )
+	if ( GetAbsVelocity().x != 0 || GetAbsVelocity().y != 0 )
 	{
 		TraceResult tr;
 
 		// Look 0.5 seconds ahead
-		UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + pev->velocity * 0.5, missile, edict(), &tr);
+		UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + GetAbsVelocity() * 0.5, missile, edict(), &tr);
 		if (tr.flFraction != 1.0)
 		{
-			pev->velocity.x = 0;
-			pev->velocity.y = 0;
+			Vector vecVelocity = GetAbsVelocity();
+			vecVelocity.x = 0;
+			vecVelocity.y = 0;
+			SetAbsVelocity( vecVelocity );
 		}
 	}
 }
 
 void CLeech::UpdateMotion( void )
 {
-	float flapspeed = (pev->speed - m_flAccelerate) / LEECH_ACCELERATE;
-	m_flAccelerate = m_flAccelerate * 0.8 + pev->speed * 0.2;
+	float flapspeed = ( GetSpeed() - m_flAccelerate) / LEECH_ACCELERATE;
+	m_flAccelerate = m_flAccelerate * 0.8 + GetSpeed() * 0.2;
 
 	if (flapspeed < 0) 
 		flapspeed = -flapspeed;
@@ -356,16 +358,18 @@ void CLeech::UpdateMotion( void )
 	if (flapspeed > 1.9) 
 		flapspeed = 1.9;
 
-	pev->framerate = flapspeed;
+	SetFrameRate( flapspeed );
+
+	Vector vecAVelocity = GetAngularVelocity();	
 
 	if ( !m_fPathBlocked )
-		pev->avelocity.y = pev->ideal_yaw;
+		vecAVelocity.y = GetIdealYaw();
 	else
-		pev->avelocity.y = pev->ideal_yaw * m_obstacle;
+		vecAVelocity.y = GetIdealYaw() * m_obstacle;
 
-	if ( pev->avelocity.y > 150 )
+	if ( vecAVelocity.y > 150 )
 		m_IdealActivity = ACT_TURN_LEFT;
-	else if ( pev->avelocity.y < -150 )
+	else if ( vecAVelocity.y < -150 )
 		m_IdealActivity = ACT_TURN_RIGHT;
 	else
 		m_IdealActivity = ACT_SWIM;
@@ -381,10 +385,16 @@ void CLeech::UpdateMotion( void )
 	else
 		targetPitch = 0;
 
-	pev->angles.x = UTIL_Approach( targetPitch, pev->angles.x, 60 * LEECH_FRAMETIME );
+	{
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.x = UTIL_Approach( targetPitch, vecAngles.x, 60 * LEECH_FRAMETIME );
+		SetAbsAngles( vecAngles );
+	}
 
 	// bank
-	pev->avelocity.z = - (pev->angles.z + (pev->avelocity.y * 0.25));
+	vecAVelocity.z = - ( GetAbsAngles().z + ( vecAVelocity.y * 0.25));
+
+	SetAngularVelocity( vecAVelocity );
 
 	if ( m_MonsterState == MONSTERSTATE_COMBAT && HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
 		m_IdealActivity = ACT_MELEE_ATTACK1;
@@ -392,21 +402,23 @@ void CLeech::UpdateMotion( void )
 	// Out of water check
 	if ( !GetWaterLevel() )
 	{
-		pev->movetype = MOVETYPE_TOSS;
+		SetMoveType( MOVETYPE_TOSS );
 		m_IdealActivity = ACT_TWITCH;
-		pev->velocity = g_vecZero;
+		SetAbsVelocity( g_vecZero );
 
 		// Animation will intersect the floor if either of these is non-zero
-		pev->angles.z = 0;
-		pev->angles.x = 0;
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.z = 0;
+		vecAngles.x = 0;
+		SetAbsAngles( vecAngles );
 
-		if ( pev->framerate < 1.0 )
-			pev->framerate = 1.0;
+		if ( GetFrameRate() < 1.0 )
+			SetFrameRate( 1.0 );
 	}
-	else if ( pev->movetype == MOVETYPE_TOSS )
+	else if ( GetMoveType() == MOVETYPE_TOSS )
 	{
-		pev->movetype = MOVETYPE_FLY;
-		pev->flags &= ~FL_ONGROUND;
+		SetMoveType( MOVETYPE_FLY );
+		GetFlags().ClearFlags( FL_ONGROUND );
 		RecalculateWaterlevel();
 		m_waterTime = gpGlobals->time + 2;	// Recalc again soon, water may be rising
 	}
@@ -424,7 +436,7 @@ void CLeech::UpdateMotion( void )
 	if ( !m_pt )
 		m_pt = CBeam::BeamCreate( "sprites/laserbeam.spr", 5 );
 	m_pb->PointsInit( GetAbsOrigin(), GetAbsOrigin() + gpGlobals->v_forward * LEECH_CHECK_DIST );
-	m_pt->PointsInit( GetAbsOrigin(), GetAbsOrigin() - gpGlobals->v_right * (pev->avelocity.y*0.25) );
+	m_pt->PointsInit( GetAbsOrigin(), GetAbsOrigin() - gpGlobals->v_right * (GetAngularVelocity().y*0.25) );
 	if ( m_fPathBlocked )
 	{
 		float color = m_obstacle * 30;
@@ -451,12 +463,12 @@ void CLeech::SwimThink( void )
 
 	if ( !UTIL_FindClientInPVS( this ) )
 	{
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(1,1.5);
-		pev->velocity = g_vecZero;
+		SetNextThink( gpGlobals->time + RANDOM_FLOAT(1,1.5) );
+		SetAbsVelocity( g_vecZero );
 		return;
 	}
 	else
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 
 	targetSpeed = LEECH_SWIM_SPEED;
 
@@ -476,20 +488,20 @@ void CLeech::SwimThink( void )
 		else
 		{
 			// Chase the enemy's eyes
-			m_height = pTarget->GetAbsOrigin().z + pTarget->pev->view_ofs.z - 5;
+			m_height = pTarget->GetAbsOrigin().z + pTarget->GetViewOffset().z - 5;
 			// Clip to viable water area
 			if ( m_height < m_bottom )
 				m_height = m_bottom;
 			else if ( m_height > m_top )
 				m_height = m_top;
 			Vector location = pTarget->GetAbsOrigin() - GetAbsOrigin();
-			location.z += (pTarget->pev->view_ofs.z);
+			location.z += (pTarget->GetViewOffset().z);
 			if ( location.Length() < 40 )
 				SetConditions( bits_COND_CAN_MELEE_ATTACK1 );
 			// Turn towards target ent
 			targetYaw = UTIL_VecToYaw( location );
 
-			targetYaw = UTIL_AngleDiff( targetYaw, UTIL_AngleMod( pev->angles.y ) );
+			targetYaw = UTIL_AngleDiff( targetYaw, UTIL_AngleMod( GetAbsAngles().y ) );
 
 			if ( targetYaw < (-LEECH_TURN_RATE*0.75) )
 				targetYaw = (-LEECH_TURN_RATE*0.75);
@@ -536,8 +548,8 @@ void CLeech::SwimThink( void )
 		}
 
 		m_fPathBlocked = false;
-		pev->speed = UTIL_Approach( targetSpeed, pev->speed, LEECH_SWIM_ACCEL * LEECH_FRAMETIME );
-		pev->velocity = gpGlobals->v_forward * pev->speed;
+		SetSpeed( UTIL_Approach( targetSpeed, GetSpeed(), LEECH_SWIM_ACCEL * LEECH_FRAMETIME ) );
+		SetAbsVelocity( gpGlobals->v_forward * GetSpeed() );
 
 	}
 	else
@@ -565,10 +577,10 @@ void CLeech::SwimThink( void )
 			else
 				m_flTurning = LEECH_TURN_RATE;
 		}
-		pev->speed = UTIL_Approach( -(LEECH_SWIM_SPEED*0.5), pev->speed, LEECH_SWIM_DECEL * LEECH_FRAMETIME * m_obstacle );
-		pev->velocity = gpGlobals->v_forward * pev->speed;
+		SetSpeed( UTIL_Approach( -(LEECH_SWIM_SPEED*0.5), GetSpeed(), LEECH_SWIM_DECEL * LEECH_FRAMETIME * m_obstacle ) );
+		SetAbsVelocity( gpGlobals->v_forward * GetSpeed() );
 	}
-	pev->ideal_yaw = m_flTurning + targetYaw;
+	SetIdealYaw( m_flTurning + targetYaw );
 	UpdateMotion();
 }
 
@@ -579,28 +591,36 @@ void CLeech::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 
 	//ALERT(at_aiconsole, "Leech: killed\n");
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
-	CBaseEntity *pOwner = CBaseEntity::Instance(pev->owner);
+	CBaseEntity *pOwner = GetOwner();
 	if (pOwner)
 		pOwner->DeathNotice( this );
 
 	// When we hit the ground, play the "death_end" activity
 	if ( GetWaterLevel() )
 	{
-		pev->angles.z = 0;
-		pev->angles.x = 0;
-		pev->origin.z += 1;
-		pev->avelocity = g_vecZero;
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.z = 0;
+		vecAngles.x = 0;
+		SetAbsAngles( vecAngles );
+		Vector vecOrigin = GetAbsOrigin();
+		vecOrigin.z += 1;
+		SetAbsOrigin( vecOrigin );
+		SetAngularVelocity( g_vecZero );
 		if ( RANDOM_LONG( 0, 99 ) < 70 )
-			pev->avelocity.y = RANDOM_LONG( -720, 720 );
+		{
+			Vector vecAVelocity = GetAngularVelocity();
+			vecAVelocity.y = RANDOM_LONG( -720, 720 );
+			SetAngularVelocity( vecAVelocity );
+		}
 
-		pev->gravity = 0.02;
-		ClearBits(pev->flags, FL_ONGROUND);
+		SetGravity( 0.02 );
+		GetFlags().ClearFlags( FL_ONGROUND );
 		SetActivity( ACT_DIESIMPLE );
 	}
 	else
 		SetActivity( ACT_DIEFORWARD );
 	
-	pev->movetype = MOVETYPE_TOSS;
-	pev->takedamage = DAMAGE_NO;
+	SetMoveType( MOVETYPE_TOSS );
+	SetTakeDamageMode( DAMAGE_NO );
 	SetThink( &CLeech::DeadThink );
 }

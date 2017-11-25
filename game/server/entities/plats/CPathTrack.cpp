@@ -20,7 +20,7 @@ LINK_ENTITY_TO_CLASS( path_track, CPathTrack );
 
 void CPathTrack::Spawn( void )
 {
-	pev->solid = SOLID_TRIGGER;
+	SetSolidType( SOLID_TRIGGER );
 	SetSize( Vector( -8, -8, -8 ), Vector( 8, 8, 8 ) );
 
 	m_pnext = NULL;
@@ -28,7 +28,7 @@ void CPathTrack::Spawn( void )
 	// DEBUGGING CODE
 #if PATH_SPARKLE_DEBUG
 	SetThink( Sparkle );
-	pev->nextthink = gpGlobals->time + 0.5;
+	SetNextThink( gpGlobals->time + 0.5 );
 #endif
 }
 
@@ -102,25 +102,25 @@ void CPathTrack::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 	// Use toggles between two paths
 	if( m_paltpath )
 	{
-		on = !FBitSet( pev->spawnflags, SF_PATH_ALTERNATE );
+		on = !GetSpawnFlags().Any( SF_PATH_ALTERNATE );
 		if( ShouldToggle( useType, on ) )
 		{
 			if( on )
-				SetBits( pev->spawnflags, SF_PATH_ALTERNATE );
+				GetSpawnFlags().AddFlags( SF_PATH_ALTERNATE );
 			else
-				ClearBits( pev->spawnflags, SF_PATH_ALTERNATE );
+				GetSpawnFlags().ClearFlags( SF_PATH_ALTERNATE );
 		}
 	}
 	else	// Use toggles between enabled/disabled
 	{
-		on = !FBitSet( pev->spawnflags, SF_PATH_DISABLED );
+		on = !GetSpawnFlags().Any( SF_PATH_DISABLED );
 
 		if( ShouldToggle( useType, on ) )
 		{
 			if( on )
-				SetBits( pev->spawnflags, SF_PATH_DISABLED );
+				GetSpawnFlags().AddFlags( SF_PATH_DISABLED );
 			else
-				ClearBits( pev->spawnflags, SF_PATH_DISABLED );
+				GetSpawnFlags().ClearFlags( SF_PATH_DISABLED );
 		}
 	}
 }
@@ -130,7 +130,7 @@ CPathTrack	*CPathTrack::ValidPath( CPathTrack *ppath, const bool bTestFlag )
 	if( !ppath )
 		return NULL;
 
-	if( bTestFlag && FBitSet( ppath->pev->spawnflags, SF_PATH_DISABLED ) )
+	if( bTestFlag && ppath->GetSpawnFlags().Any( SF_PATH_DISABLED ) )
 		return NULL;
 
 	return ppath;
@@ -276,7 +276,7 @@ CPathTrack *CPathTrack::Nearest( Vector origin )
 
 CPathTrack *CPathTrack::GetNext( void )
 {
-	if( m_paltpath && FBitSet( pev->spawnflags, SF_PATH_ALTERNATE ) && !FBitSet( pev->spawnflags, SF_PATH_ALTREVERSE ) )
+	if( m_paltpath && GetSpawnFlags().Any( SF_PATH_ALTERNATE ) && !GetSpawnFlags().Any( SF_PATH_ALTREVERSE ) )
 		return m_paltpath;
 
 	return m_pnext;
@@ -284,7 +284,7 @@ CPathTrack *CPathTrack::GetNext( void )
 
 CPathTrack *CPathTrack::GetPrevious( void )
 {
-	if( m_paltpath && FBitSet( pev->spawnflags, SF_PATH_ALTERNATE ) && FBitSet( pev->spawnflags, SF_PATH_ALTREVERSE ) )
+	if( m_paltpath && GetSpawnFlags().Any( SF_PATH_ALTERNATE ) && GetSpawnFlags().Any( SF_PATH_ALTREVERSE ) )
 		return m_paltpath;
 
 	return m_pprevious;
@@ -295,8 +295,8 @@ CPathTrack *CPathTrack::GetPrevious( void )
 void CPathTrack::Sparkle( void )
 {
 
-	pev->nextthink = gpGlobals->time + 0.2;
-	if( FBitSet( pev->spawnflags, SF_PATH_DISABLED ) )
+	SetNextThink( gpGlobals->time + 0.2 );
+	if( GetSpawnFlags().Any( SF_PATH_DISABLED ) )
 		UTIL_ParticleEffect( GetAbsOrigin(), Vector( 0, 0, 100 ), 210, 10 );
 	else
 		UTIL_ParticleEffect( GetAbsOrigin(), Vector( 0, 0, 100 ), 84, 10 );

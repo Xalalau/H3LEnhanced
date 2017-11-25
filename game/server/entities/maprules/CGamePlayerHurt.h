@@ -28,7 +28,7 @@ public:
 	DECLARE_CLASS( CGamePlayerHurt, CRulePointEntity );
 
 	void		Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
-	inline bool RemoveOnFire() const { return ( pev->spawnflags & SF_PKILL_FIREONCE ) != 0; }
+	inline bool RemoveOnFire() const { return GetSpawnFlags().Any( SF_PKILL_FIREONCE ); }
 
 private:
 };

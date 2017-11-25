@@ -31,21 +31,21 @@ public:
 
 	void		Spawn() override;
 	void		Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
-	inline bool RemoveOnFire() const { return ( pev->spawnflags & SF_GAMECOUNT_FIREONCE ) != 0; }
-	inline bool ResetOnFire() const { return ( pev->spawnflags & SF_GAMECOUNT_RESET ) != 0; }
+	inline bool RemoveOnFire() const { return GetSpawnFlags().Any( SF_GAMECOUNT_FIREONCE ); }
+	inline bool ResetOnFire() const { return GetSpawnFlags().Any( SF_GAMECOUNT_RESET ); }
 
-	inline void CountUp() { pev->frags++; }
-	inline void CountDown() { pev->frags--; }
-	inline void ResetCount() { pev->frags = pev->dmg; }
-	inline int  CountValue() const { return pev->frags; }
-	inline int	LimitValue() const { return pev->health; }
+	inline void CountUp() { SetFrags( GetFrags() + 1 ); }
+	inline void CountDown() { SetFrags( GetFrags() - 1 ); }
+	inline void ResetCount() { SetFrags( GetDamage() ); }
+	inline int  CountValue() const { return GetFrags(); }
+	inline int	LimitValue() const { return GetHealth(); }
 
 	inline bool HitLimit() const { return CountValue() == LimitValue(); }
 
 private:
 
-	inline void SetCountValue( int value ) { pev->frags = value; }
-	inline void SetInitialValue( int value ) { pev->dmg = value; }
+	inline void SetCountValue( int value ) { SetFrags( value ); }
+	inline void SetInitialValue( int value ) { SetDamage( value ); }
 };
 
 #endif //GAME_SERVER_ENTITIES_MAPRULES_CGAMECOUNTER_H

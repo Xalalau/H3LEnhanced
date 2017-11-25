@@ -157,7 +157,7 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 		TraceResult	tr;
 
 		// find the button or trigger
-		while( (pSearch = UTIL_FindEntityByTarget( pSearch, pLinkEnt->GetTargetname() )) )
+		while( ( pSearch = UTIL_FindEntityByTarget( pSearch, pLinkEnt->GetTargetname() ) ) != nullptr )
 		{		
 			if ( pSearch->ClassnameIs( "func_button" ) || pSearch->ClassnameIs( "func_rot_button" ) )
 			{// only buttons are handled right now. 
@@ -426,14 +426,14 @@ int	CGraph :: FindNearestLink ( const Vector &vecTestPoint, int *piNearestLink, 
 
 int	CGraph::HullIndex( const CBaseEntity *pEntity )
 {
-	if ( pEntity->pev->movetype == MOVETYPE_FLY)
+	if ( pEntity->GetMoveType() == MOVETYPE_FLY)
 		return NODE_FLY_HULL;
 
-	if ( pEntity->pev->mins == Vector( -12, -12, 0 ) )
+	if ( pEntity->GetRelMin() == Vector( -12, -12, 0 ) )
 		return NODE_SMALL_HULL;
-	else if ( pEntity->pev->mins == VEC_HUMAN_HULL_MIN )
+	else if ( pEntity->GetRelMin() == VEC_HUMAN_HULL_MIN )
 		return NODE_HUMAN_HULL;
-	else if ( pEntity->pev->mins == Vector ( -32, -32, 0 ) )
+	else if ( pEntity->GetRelMin() == Vector ( -32, -32, 0 ) )
 		return NODE_LARGE_HULL;
 
 //	ALERT ( at_aiconsole, "Unknown Hull Mins!\n" );
@@ -443,7 +443,7 @@ int	CGraph::HullIndex( const CBaseEntity *pEntity )
 
 int	CGraph::NodeType( const CBaseEntity *pEntity )
 {
-	if ( pEntity->pev->movetype == MOVETYPE_FLY)
+	if ( pEntity->GetMoveType() == MOVETYPE_FLY)
 	{
 		if (pEntity->GetWaterLevel() != WATERLEVEL_DRY )
 		{
@@ -629,8 +629,12 @@ int CGraph :: FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, 
 	{
 		CQueuePriority	queue;
 
+		//TODO: could use 1 << iHull here - Solokiller
 		switch( iHull )
 		{
+		default:
+			ASSERT( !"Unknown hull number encountered in graph path calculation" );
+
 		case NODE_SMALL_HULL:
 			iHullMask = bits_LINK_SMALL_HULL;
 			break;
@@ -853,7 +857,6 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  const CBaseEntity* con
 
 int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 {
-	int	i;
 	TraceResult tr;
 
 	if ( !m_fGraphPresent || !m_fGraphPointersSet )
@@ -918,7 +921,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 
     int j;
 
-    for (i = halfX; i >= m_minX; i--)
+    for (int i = halfX; i >= m_minX; i--)
     {
         for (j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++)
         {
@@ -935,7 +938,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = max(m_minY,halfY+1); i <= m_maxY; i++)
+    for (int i = max(m_minY,halfY+1); i <= m_maxY; i++)
     {
         for (j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++)
         {
@@ -951,7 +954,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = min(m_maxZ,halfZ); i >= m_minZ; i--)
+    for (int i = min(m_maxZ,halfZ); i >= m_minZ; i--)
     {
         for (j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++)
         {
@@ -967,7 +970,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = max(m_minX,halfX+1); i <= m_maxX; i++)
+    for (int i = max(m_minX,halfX+1); i <= m_maxX; i++)
     {
         for (j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++)
         {
@@ -984,7 +987,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = min(m_maxY,halfY); i >= m_minY; i--)
+    for (int i = min(m_maxY,halfY); i >= m_minY; i--)
     {
         for (j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++)
         {
@@ -1000,7 +1003,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = max(m_minZ,halfZ+1); i <= m_maxZ; i++)
+    for (int i = max(m_minZ,halfZ+1); i <= m_maxZ; i++)
     {
         for (j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++)
         {
@@ -1022,7 +1025,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 	int iNearestCheck = -1;
 	m_flShortest = 8192;// find nodes within this radius
 
-	for ( i = 0 ; i < m_cNodes ; i++ )
+	for ( int i = 0 ; i < m_cNodes ; i++ )
 	{
 		float flDist = ( vecOrigin - m_pNodes[ i ].m_vecOriginPeek ).Length();
 
@@ -2070,6 +2073,7 @@ void CGraph::BuildRegionTables(void)
 			int jCode;
 			switch (i)
 			{
+			default:
 			case 0:
 				jCode = (jCodeX << 16) + (jCodeY << 8) + jCodeZ;
 				break;
@@ -2090,6 +2094,7 @@ void CGraph::BuildRegionTables(void)
 				int kCode;
 				switch (i)
 				{
+				default:
 				case 0:
 					kCode = (kCodeX << 16) + (kCodeY << 8) + kCodeZ;
 					break;
@@ -2173,6 +2178,7 @@ void CGraph :: ComputeStaticRoutingTables( void )
 				int iCapMask;
 				switch (iCap)
 				{
+				default:
 				case 0:
 					iCapMask = 0;
 					break;
@@ -2469,6 +2475,7 @@ void CGraph :: TestRoutingTables( void )
 				int iCapMask;
 				switch (iCap)
 				{
+				default:
 				case 0:
 					iCapMask = 0;
 					break;

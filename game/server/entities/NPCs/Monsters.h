@@ -159,7 +159,7 @@ enum MoveToOrigin
 	MOVE_STRAFE		= 1
 };
 
-// spawn flags 256 and above are already taken by the engine
+// spawn flags 256 and above are already taken by the engine TODO: try to change that - Solokiller
 /**
 *	Moves the given entity towards the destination, covering the given amount of distance.
 *	@param pEntity Entity to move.

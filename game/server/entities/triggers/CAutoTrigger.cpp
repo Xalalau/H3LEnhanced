@@ -46,7 +46,7 @@ void CAutoTrigger::Spawn( void )
 
 void CAutoTrigger::Precache( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 void CAutoTrigger::Think( void )
@@ -54,7 +54,7 @@ void CAutoTrigger::Think( void )
 	if( !m_globalstate || gGlobalState.EntityGetState( m_globalstate ) == GLOBAL_ON )
 	{
 		SUB_UseTargets( this, triggerType, 0 );
-		if( pev->spawnflags & SF_AUTO_FIREONCE )
+		if( GetSpawnFlags().Any( SF_AUTO_FIREONCE ) )
 			UTIL_Remove( this );
 	}
 }

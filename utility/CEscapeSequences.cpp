@@ -18,7 +18,7 @@ CEscapeSequences::CEscapeSequences( const char cDelimiterChar, const size_t uiCo
 	{
 		m_IndexToSeq[ uiIndex ] = pData[ uiIndex ].cEscapeSequence;
 
-		ConversionInfo_t& info = m_Infos[ m_IndexToSeq[ uiIndex ] ];
+		ConversionInfo_t& info = m_Infos[ static_cast<size_t>( m_IndexToSeq[ uiIndex ] ) ];
 
 		assert( info.pszString == nullptr );
 
@@ -43,7 +43,7 @@ char CEscapeSequences::GetEscapeSequence( const char* const pszString ) const
 
 	for( size_t uiIndex = 0; uiIndex < m_uiCount; ++uiIndex )
 	{
-		const ConversionInfo_t& info = m_Infos[ m_IndexToSeq[ uiIndex ] ];
+		const ConversionInfo_t& info = m_Infos[ static_cast<size_t>( m_IndexToSeq[ uiIndex ] ) ];
 
 		if( info.pszString && strncmp( info.pszString, pszString, info.uiLength ) == 0 )
 			return m_IndexToSeq[ uiIndex ];

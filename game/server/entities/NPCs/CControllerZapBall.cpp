@@ -31,16 +31,14 @@ void CControllerZapBall::Spawn( void )
 {
 	Precache();
 	// motor
-	pev->movetype = MOVETYPE_FLY;
-	pev->solid = SOLID_BBOX;
+	SetMoveType( MOVETYPE_FLY );
+	SetSolidType( SOLID_BBOX );
 
 	SetModel( "sprites/xspark4.spr" );
-	pev->rendermode = kRenderTransAdd;
-	pev->rendercolor.x = 255;
-	pev->rendercolor.y = 255;
-	pev->rendercolor.z = 255;
-	pev->renderamt = 255;
-	pev->scale = 0.5;
+	SetRenderMode( kRenderTransAdd );
+	SetRenderColor( Vector( 255, 255, 255 ) );
+	SetRenderAmount( 255 );
+	SetScale( 0.5 );
 
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 	SetAbsOrigin( GetAbsOrigin() );
@@ -48,9 +46,9 @@ void CControllerZapBall::Spawn( void )
 	SetThink( &CControllerZapBall::AnimateThink );
 	SetTouch( &CControllerZapBall::ExplodeTouch );
 
-	m_hOwner = Instance( pev->owner );
-	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
-	pev->nextthink = gpGlobals->time + 0.1;
+	m_hOwner = GetOwner();
+	SetDamageTime( gpGlobals->time ); // keep track of when ball spawned
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 void CControllerZapBall::Precache( void )
@@ -62,11 +60,12 @@ void CControllerZapBall::Precache( void )
 
 void CControllerZapBall::AnimateThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
-	pev->frame = ( ( int ) pev->frame + 1 ) % 11;
+	//TODO: hardcoded sprite frame count? - Solokiller
+	SetFrame( ( ( int ) GetFrame() + 1 ) % 11 );
 
-	if( gpGlobals->time - pev->dmgtime > 5 || pev->velocity.Length() < 10 )
+	if( gpGlobals->time - GetDamageTime() > 5 || GetAbsVelocity().Length() < 10 )
 	{
 		SetTouch( NULL );
 		UTIL_Remove( this );
@@ -75,7 +74,7 @@ void CControllerZapBall::AnimateThink( void )
 
 void CControllerZapBall::ExplodeTouch( CBaseEntity *pOther )
 {
-	if( pOther->pev->takedamage )
+	if( pOther->GetTakeDamageMode() != DAMAGE_NO )
 	{
 		TraceResult tr = UTIL_GetGlobalTrace();
 
@@ -90,7 +89,7 @@ void CControllerZapBall::ExplodeTouch( CBaseEntity *pOther )
 		}
 
 		g_MultiDamage.Clear();
-		pOther->TraceAttack( CTakeDamageInfo( pOwner, gSkillData.GetControllerDmgBall(), DMG_ENERGYBEAM ), pev->velocity.Normalize(), &tr );
+		pOther->TraceAttack( CTakeDamageInfo( pOwner, gSkillData.GetControllerDmgBall(), DMG_ENERGYBEAM ), GetAbsVelocity().Normalize(), tr );
 		g_MultiDamage.ApplyMultiDamage( pOwner, pOwner );
 
 		UTIL_EmitAmbientSound( this, tr.vecEndPos, "weapons/electro4.wav", 0.3, ATTN_NORM, 0, RANDOM_LONG( 90, 99 ) );

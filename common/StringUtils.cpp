@@ -71,7 +71,9 @@ bool UTIL_TokenMatches( const char* pszString, const char* pszToken )
 			if( ( pszPos - pszPrevPos ) > 0 )
 			{
 				//This uses reverse search since * covers any number of characters, so matching the last instance is most valid.
-				if( !( pszString = UTIL_strnrstr( pszString, pszPrevPos, pszPos - pszPrevPos ) ) )
+				pszString = UTIL_strnrstr( pszString, pszPrevPos, pszPos - pszPrevPos );
+
+				if( !pszString )
 					return false;
 
 				pszString += ( pszPos - pszPrevPos );

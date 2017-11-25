@@ -11,6 +11,12 @@
 
 #include "CImageLabel.h"
 
+//GCC complains about deleting vgui objects due to them having no virtual destructor - Solokiller
+#ifdef POSIX
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
+#endif
+
 using namespace vgui;
 
 CImageLabel::CImageLabel( const char* pImageName, int x, int y ) : Label( "", x, y )
@@ -87,3 +93,7 @@ void CImageLabel::LoadImage( const char * pImageName )
 	setSize( XRES( w ), YRES( t ) );
 	setImage( m_pTGA );
 }
+
+#ifdef POSIX
+#pragma GCC diagnostic pop
+#endif

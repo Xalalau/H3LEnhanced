@@ -10,7 +10,7 @@ LINK_ENTITY_TO_CLASS( env_shooter, CEnvShooter );
 
 void CEnvShooter::Precache( void )
 {
-	m_iGibModelIndex = PRECACHE_MODEL( ( char * ) STRING( pev->model ) );
+	m_iGibModelIndex = PRECACHE_MODEL( GetModelName() );
 	CBreakable::MaterialSoundPrecache( ( Materials ) m_iGibMaterial );
 }
 
@@ -18,7 +18,7 @@ void CEnvShooter::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "shootmodel" ) )
 	{
-		pev->model = ALLOC_STRING( pkvd->szValue );
+		SetModelName( ALLOC_STRING( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else if( FStrEq( pkvd->szKeyName, "shootsounds" ) )
@@ -57,23 +57,23 @@ void CEnvShooter::KeyValue( KeyValueData *pkvd )
 
 CGib *CEnvShooter::CreateGib( void )
 {
-	auto pGib = CGib::GibCreate( STRING( pev->model ) );
+	auto pGib = CGib::GibCreate( GetModelName() );
 
 	int bodyPart = 0;
 
-	if( pev->body > 1 )
-		bodyPart = RANDOM_LONG( 0, pev->body - 1 );
+	if( GetBody() > 1 )
+		bodyPart = RANDOM_LONG( 0, GetBody() - 1 );
 
-	pGib->pev->body = bodyPart;
+	pGib->SetBody( bodyPart );
 	pGib->m_bloodColor = DONT_BLEED;
 	pGib->m_material = m_iGibMaterial;
 
-	pGib->pev->rendermode = pev->rendermode;
-	pGib->pev->renderamt = pev->renderamt;
-	pGib->pev->rendercolor = pev->rendercolor;
-	pGib->pev->renderfx = pev->renderfx;
-	pGib->pev->scale = pev->scale;
-	pGib->pev->skin = pev->skin;
+	pGib->SetRenderMode( GetRenderMode() );
+	pGib->SetRenderAmount( GetRenderAmount() );
+	pGib->SetRenderColor( GetRenderColor() );
+	pGib->SetRenderFX( GetRenderFX() );
+	pGib->SetScale( GetScale() );
+	pGib->SetSkin( GetSkin() );
 
 	return pGib;
 }

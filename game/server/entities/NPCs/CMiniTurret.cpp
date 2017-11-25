@@ -26,10 +26,12 @@ void CMiniTurret::Spawn()
 {
 	Precache();
 	SetModel( "models/miniturret.mdl" );
-	pev->health = gSkillData.GetMiniTurretHealth();
+	SetHealth( gSkillData.GetMiniTurretHealth() );
 	m_HackedGunPos = Vector( 0, 0, 12.75 );
 	m_flMaxSpin = 0;
-	pev->view_ofs.z = 12.75;
+	Vector vecView = GetViewOffset();
+	vecView.z = 12.75;
+	SetViewOffset( vecView );
 
 	CBaseTurret::Spawn();
 	m_iRetractHeight = 16;
@@ -38,7 +40,7 @@ void CMiniTurret::Spawn()
 	SetSize( Vector( -16, -16, -m_iRetractHeight ), Vector( 16, 16, m_iRetractHeight ) );
 
 	SetThink( &CMiniTurret::Initialize );
-	pev->nextthink = gpGlobals->time + 0.3;
+	SetNextThink( gpGlobals->time + 0.3 );
 }
 
 void CMiniTurret::Precache()
@@ -60,5 +62,5 @@ void CMiniTurret::Shoot( Vector &vecSrc, Vector &vecDirToEnemy )
 	case 1: EMIT_SOUND( this, CHAN_WEAPON, "weapons/hks2.wav", 1, ATTN_NORM ); break;
 	case 2: EMIT_SOUND( this, CHAN_WEAPON, "weapons/hks3.wav", 1, ATTN_NORM ); break;
 	}
-	pev->effects = pev->effects | EF_MUZZLEFLASH;
+	GetEffects() |= EF_MUZZLEFLASH;
 }

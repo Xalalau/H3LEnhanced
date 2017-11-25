@@ -120,7 +120,7 @@ bool CHudSayText::Draw( float flTime )
 	//Must fit either an entire saytext line or an entire player name. - Solokiller
 	char szBuffer[ MAX_CHARS_PER_LINE > MAX_PLAYER_NAME_LENGTH ? MAX_CHARS_PER_LINE : MAX_PLAYER_NAME_LENGTH ];
 
-	for ( int i = 0; i < MAX_LINES; i++ )
+	for ( size_t i = 0; i < MAX_LINES; i++ )
 	{
 		if ( *m_szLineBuffer[i] )
 		{
@@ -269,7 +269,7 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, size_t uiBufSize, int clie
 		return;
 	}
 
-	int i;
+	size_t i;
 	// find an empty string slot
 	for ( i = 0; i < MAX_LINES; i++ )
 	{
@@ -330,7 +330,7 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, size_t uiBufSize, int clie
 	// ############ //
 }
 
-void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
+void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( size_t line )
 {
 	int line_width = 0;
 	GetConsoleStringSize( m_szLineBuffer[line], &line_width, &m_iLineHeight );
@@ -376,7 +376,7 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 				x = last_break;
 
 				// find an empty string slot
-				int j;
+				size_t j;
 				do 
 				{
 					for ( j = 0; j < MAX_LINES; j++ )
@@ -397,8 +397,8 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 				// copy remaining string into next buffer,  making sure it starts with a space character
 				if ( (char)*last_break == (char)' ' )
 				{
-					int linelen = strlen(m_szLineBuffer[j]);
-					int remaininglen = strlen(last_break);
+					const size_t linelen = strlen(m_szLineBuffer[j]);
+					const size_t remaininglen = strlen(last_break);
 
 					if ( (linelen - remaininglen) <= MAX_CHARS_PER_LINE )
 						strcat( m_szLineBuffer[j], last_break );

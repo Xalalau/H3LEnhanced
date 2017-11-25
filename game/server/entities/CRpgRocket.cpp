@@ -24,12 +24,12 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	auto pRocket = static_cast<CRpgRocket*>( UTIL_CreateNamedEntity( "rpg_rocket" ) );
 
 	pRocket->SetAbsOrigin( vecOrigin );
-	pRocket->pev->angles = vecAngles;
+	pRocket->SetAbsAngles( vecAngles );
 	pRocket->Spawn();
 	pRocket->SetTouch( &CRpgRocket::RocketTouch );
 	pRocket->m_hLauncher = pLauncher;// remember what RPG fired me. 
 	pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
-	pRocket->pev->owner = pOwner->edict();
+	pRocket->SetOwner( pOwner );
 
 	return pRocket;
 }
@@ -40,8 +40,8 @@ void CRpgRocket::Spawn( void )
 {
 	Precache();
 	// motor
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->solid = SOLID_BBOX;
+	SetMoveType( MOVETYPE_BOUNCE );
+	SetSolidType( SOLID_BBOX );
 
 	SetModel( "models/rpgrocket.mdl" );
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
@@ -50,16 +50,18 @@ void CRpgRocket::Spawn( void )
 	SetThink( &CRpgRocket::IgniteThink );
 	SetTouch( &CRpgRocket::ExplodeTouch );
 
-	pev->angles.x -= 30;
-	UTIL_MakeVectors( pev->angles );
-	pev->angles.x = -( pev->angles.x + 30 );
+	Vector vecAngles = GetAbsAngles();
+	vecAngles.x -= 30;
+	UTIL_MakeVectors( vecAngles );
+	vecAngles.x = -( vecAngles.x + 30 );
+	SetAbsAngles( vecAngles );
 
-	pev->velocity = gpGlobals->v_forward * 250;
-	pev->gravity = 0.5;
+	SetAbsVelocity( gpGlobals->v_forward * 250 );
+	SetGravity( 0.5 );
 
-	pev->nextthink = gpGlobals->time + 0.4;
+	SetNextThink( gpGlobals->time + 0.4 );
 
-	pev->dmg = gSkillData.GetPlrDmgRPG();
+	SetDamage( gSkillData.GetPlrDmgRPG() );
 }
 
 //=========================================================
@@ -88,10 +90,10 @@ void CRpgRocket::Precache( void )
 
 void CRpgRocket::IgniteThink( void )
 {
-	// pev->movetype = MOVETYPE_TOSS;
+	// SetMoveType( MOVETYPE_TOSS );
 
-	pev->movetype = MOVETYPE_FLY;
-	pev->effects |= EF_LIGHT;
+	SetMoveType( MOVETYPE_FLY );
+	GetEffects() |= EF_LIGHT;
 
 	// make rocket sound
 	EMIT_SOUND( this, CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5 );
@@ -115,7 +117,7 @@ void CRpgRocket::IgniteThink( void )
 
 	// set to follow laser spot
 	SetThink( &CRpgRocket::FollowThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 
@@ -127,7 +129,7 @@ void CRpgRocket::FollowThink( void )
 	float flDist, flMax, flDot;
 	TraceResult tr;
 
-	UTIL_MakeAimVectors( pev->angles );
+	UTIL_MakeAimVectors( GetAbsAngles() );
 
 	vecTarget = gpGlobals->v_forward;
 	flMax = 4096;
@@ -152,44 +154,44 @@ void CRpgRocket::FollowThink( void )
 		}
 	}
 
-	pev->angles = UTIL_VecToAngles( vecTarget );
+	SetAbsAngles( UTIL_VecToAngles( vecTarget ) );
 
 	// this acceleration and turning math is totally wrong, but it seems to respond well so don't change it.
-	float flSpeed = pev->velocity.Length();
+	float flSpeed = GetAbsVelocity().Length();
 	if( gpGlobals->time - m_flIgniteTime < 1.0 )
 	{
-		pev->velocity = pev->velocity * 0.2 + vecTarget * ( flSpeed * 0.8 + 400 );
+		SetAbsVelocity( GetAbsVelocity() * 0.2 + vecTarget * ( flSpeed * 0.8 + 400 ) );
 		if( GetWaterLevel() == WATERLEVEL_HEAD )
 		{
 			// go slow underwater
-			if( pev->velocity.Length() > 300 )
+			if( GetAbsVelocity().Length() > 300 )
 			{
-				pev->velocity = pev->velocity.Normalize() * 300;
+				SetAbsVelocity( GetAbsVelocity().Normalize() * 300 );
 			}
-			UTIL_BubbleTrail( GetAbsOrigin() - pev->velocity * 0.1, GetAbsOrigin(), 4 );
+			UTIL_BubbleTrail( GetAbsOrigin() - GetAbsVelocity() * 0.1, GetAbsOrigin(), 4 );
 		}
 		else
 		{
-			if( pev->velocity.Length() > 2000 )
+			if( GetAbsVelocity().Length() > 2000 )
 			{
-				pev->velocity = pev->velocity.Normalize() * 2000;
+				SetAbsVelocity( GetAbsVelocity().Normalize() * 2000 );
 			}
 		}
 	}
 	else
 	{
-		if( pev->effects & EF_LIGHT )
+		if( GetEffects().Any( EF_LIGHT ) )
 		{
-			pev->effects = 0;
+			GetEffects().ClearAll();
 			STOP_SOUND( this, CHAN_VOICE, "weapons/rocket1.wav" );
 		}
-		pev->velocity = pev->velocity * 0.2 + vecTarget * flSpeed * 0.798;
-		if( GetWaterLevel() == WATERLEVEL_DRY && pev->velocity.Length() < 1500 )
+		SetAbsVelocity( GetAbsVelocity() * 0.2 + vecTarget * flSpeed * 0.798 );
+		if( GetWaterLevel() == WATERLEVEL_DRY && GetAbsVelocity().Length() < 1500 )
 		{
 			Detonate();
 		}
 	}
 	// ALERT( at_console, "%.0f\n", flSpeed );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }

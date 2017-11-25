@@ -162,7 +162,7 @@ void CRope::Spawn()
 
 	if( m_uiSegments > 2 )
 	{
-		CRopeSample** ppCurrentSys = m_CurrentSys;
+		//CRopeSample** ppCurrentSys = m_CurrentSys;
 
 		for( size_t uiSeg = 1; uiSeg < m_uiSegments - 1; ++uiSeg )
 		{
@@ -721,7 +721,7 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 			}
 			else
 			{
-				CBaseEntity* pEnt = GET_PRIVATE( tr.pHit );
+				//CBaseEntity* pEnt = GET_PRIVATE( tr.pHit );
 				const Vector vecNormal = tr.vecPlaneNormal.Normalize();
 
 				Vector vecOrigin = tr.vecEndPos + vecNormal * 10.0;
@@ -769,8 +769,6 @@ void CRope::TraceModels( CRopeSegment** ppPrimarySegs, CRopeSegment** ppHiddenSe
 		}
 
 		auto pSegment = ppPrimarySegs[ m_uiNumSamples - 2 ];
-
-		Vector vecAngles;
 
 		GetAlignmentAngles( pSegment->GetAbsOrigin(), m_vecLastEndPos, vecAngles );
 

@@ -31,6 +31,12 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
+//GCC complains about deleting KeyValues due to it having no virtual destructor - Solokiller
+#ifdef POSIX
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
+#endif
+
 static const char * s_LastFileLoadingFrom = "unknown"; // just needed for error messages
 
 #define KEYVALUES_TOKEN_SIZE	1024
@@ -356,7 +362,6 @@ int KeyValues::GetNameSymbol() const
 //-----------------------------------------------------------------------------
 // Purpose: Read a single token from buffer (0 terminated)
 //-----------------------------------------------------------------------------
-#pragma warning (disable:4706)
 const char *KeyValues::ReadToken( CUtlBuffer &buf, bool &wasQuoted )
 {
 	wasQuoted = false;
@@ -430,7 +435,6 @@ const char *KeyValues::ReadToken( CUtlBuffer &buf, bool &wasQuoted )
 	s_pTokenBuf[ nCount ] = 0;
 	return s_pTokenBuf;
 }
-#pragma warning (default:4706)
 
 //-----------------------------------------------------------------------------
 // Purpose: Load keyValues from disk
@@ -1090,12 +1094,12 @@ const char *KeyValues::GetString( const char *keyName, const char *defaultValue 
 		case TYPE_WSTRING:
 		{
 			// convert the string to char *, set it for future use, and return it
-			static char buf[512];
-			int result = Q_UnicodeToUTF8( dat->m_pwszValue, buf, sizeof( buf ) );
+			static char szBuf[512];
+			int result = Q_UnicodeToUTF8( dat->m_pwszValue, szBuf, sizeof( szBuf ) );
 
 			if( result > 0 )
 			{
-				SetString( keyName, buf );
+				SetString( keyName, szBuf );
 			}
 			else
 			{
@@ -2085,7 +2089,7 @@ void KeyValues::FreeAllocatedValue()
 {
 	if( m_iAllocationSize )
 	{
-		if( m_iAllocationSize <= sizeof( KeyValues ) )
+		if( m_iAllocationSize <= static_cast<int>( sizeof( KeyValues ) ) )
 		{
 			keyvalues()->FreeKeyValuesMemory( m_pValue );
 		}
@@ -2104,7 +2108,7 @@ void KeyValues::AllocateValueBlock( int size )
 {
 	Assert( m_iAllocationSize == 0 );
 
-	if( size <= sizeof( KeyValues ) )
+	if( size <= static_cast<int>( sizeof( KeyValues ) ) )
 	{
 		m_pValue = keyvalues()->AllocKeyValuesMemory( size );
 	}
@@ -2149,3 +2153,7 @@ void KeyValues::operator delete( void *pMem, int nBlockUse, const char *pFileNam
 }
 
 #include "tier0/memdbgon.h"
+
+#ifdef POSIX
+#pragma GCC diagnostic pop
+#endif

@@ -56,7 +56,7 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	int  ISoundMask( void ) override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
@@ -65,9 +65,23 @@ public:
 	void DeathSound( void ) override;
 	void AlertSound( void ) override;
 	void AttackSound( void );
-	void StartTask( const Task_t* pTask ) override;
-	void RunTask( const Task_t* pTask ) override;
+
+	/**
+	*	@brief OVERRIDDEN for bullsquid because it needs to know explicitly when the last attempt to chase the enemy failed, since that impacts its attack choices.
+	*/
+	void StartTask( const Task_t& task ) override;
+	void RunTask( const Task_t& task ) override;
+
+	/**
+	*	@brief bullsquid is a big guy, so has a longer melee range than most monsters. This is the tailwhip attack
+	*/
 	bool CheckMeleeAttack1( float flDot, float flDist ) override;
+
+	/**
+	*	@brief bullsquid is a big guy, so has a longer melee range than most monsters.
+	*	This is the bite attack.
+	*	This attack will not be performed if the tailwhip attack is valid
+	*/
 	bool CheckMeleeAttack2( float flDot, float flDist ) override;
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
 	void RunAI( void ) override;
@@ -75,6 +89,10 @@ public:
 	Schedule_t *GetSchedule( void ) override;
 	Schedule_t *GetScheduleOfType( int Type ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
+
+	/**
+	*	@brief Overridden for bullsquid so that it can be made to ignore its love of headcrabs for a while
+	*/
 	Relationship IRelationship( CBaseEntity *pTarget ) override;
 	int IgnoreConditions( void ) override;
 	MONSTERSTATE GetIdealState( void ) override;

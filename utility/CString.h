@@ -75,7 +75,7 @@ private:
 	//m_iCapacity stores a flag that tells us whether the string is static or not
 	//Static strings need to allocate memory if modified
 	static const size_type STATIC_BIT = 31;
-	static const size_type STATIC_MASK = 1 << 31;
+	static const size_type STATIC_MASK = static_cast<size_type>( 1 << 31 );
 	static const size_type ALLOC_MASK = STATIC_MASK - 1;
 
 public:

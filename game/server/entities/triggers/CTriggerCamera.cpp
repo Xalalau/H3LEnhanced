@@ -30,12 +30,12 @@ LINK_ENTITY_TO_CLASS( trigger_camera, CTriggerCamera );
 
 void CTriggerCamera::Spawn( void )
 {
-	pev->movetype = MOVETYPE_NOCLIP;
-	pev->solid = SOLID_NOT;							// Remove model & collisions
-	pev->renderamt = 0;								// The engine won't draw this model if this is set to 0 and blending is on
-	pev->rendermode = kRenderTransTexture;
+	SetMoveType( MOVETYPE_NOCLIP );
+	SetSolidType( SOLID_NOT );							// Remove model & collisions
+	SetRenderAmount( 0 );								// The engine won't draw this model if this is set to 0 and blending is on
+	SetRenderMode( kRenderTransTexture );
 
-	m_initialSpeed = pev->speed;
+	m_initialSpeed = GetSpeed();
 	if( m_acceleration == 0 )
 		m_acceleration = 500;
 	if( m_deceleration == 0 )
@@ -90,10 +90,10 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	CBasePlayer* pPlayer = static_cast<CBasePlayer*>( pActivator );
 
 	m_flReturnTime = gpGlobals->time + m_flWait;
-	pev->speed = m_initialSpeed;
+	SetSpeed( m_initialSpeed );
 	m_targetSpeed = m_initialSpeed;
 
-	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TARGET ) )
+	if( GetSpawnFlags().Any( SF_CAMERA_PLAYER_TARGET ) )
 	{
 		m_hTarget = m_hPlayer;
 	}
@@ -109,7 +109,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 
 
-	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
+	if( GetSpawnFlags().Any( SF_CAMERA_PLAYER_TAKECONTROL ) )
 	{
 		pPlayer->EnableControl( false );
 	}
@@ -127,35 +127,37 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	m_flStopTime = gpGlobals->time;
 	if( m_pentPath )
 	{
-		if( m_pentPath->pev->speed != 0 )
-			m_targetSpeed = m_pentPath->pev->speed;
+		if( m_pentPath->GetSpeed() != 0 )
+			m_targetSpeed = m_pentPath->GetSpeed();
 
 		m_flStopTime += m_pentPath->GetDelay();
 	}
 
 	// copy over player information
-	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_POSITION ) )
+	if( GetSpawnFlags().Any( SF_CAMERA_PLAYER_POSITION ) )
 	{
-		SetAbsOrigin( pPlayer->GetAbsOrigin() + pPlayer->pev->view_ofs );
-		pev->angles.x = -pPlayer->pev->angles.x;
-		pev->angles.y = pPlayer->pev->angles.y;
-		pev->angles.z = 0;
-		pev->velocity = pPlayer->pev->velocity;
+		SetAbsOrigin( pPlayer->GetAbsOrigin() + pPlayer->GetViewOffset() );
+		SetAbsAngles( Vector(
+			-pPlayer->GetAbsAngles().x,
+			pPlayer->GetAbsAngles().y,
+			0
+		) );
+		SetAbsVelocity( pPlayer->GetAbsVelocity() );
 	}
 	else
 	{
-		pev->velocity = Vector( 0, 0, 0 );
+		SetAbsVelocity( Vector( 0, 0, 0 ) );
 	}
 
 	SET_VIEW( pPlayer->edict(), edict() );
 
 	pPlayer->m_hCamera = this;
 
-	SetModel( STRING( pPlayer->pev->model ) );
+	SetModel( pPlayer->GetModelName() );
 
 	// follow the player down
 	SetThink( &CTriggerCamera::FollowTarget );
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 
 	m_moveDistance = 0;
 	Move();
@@ -177,7 +179,7 @@ void CTriggerCamera::FollowTarget()
 			pPlayer->m_hCamera = nullptr;
 		}
 		SUB_UseTargets( this, USE_TOGGLE, 0 );
-		pev->avelocity = Vector( 0, 0, 0 );
+		SetAngularVelocity( g_vecZero );
 		m_state = false;
 		return;
 	}
@@ -185,14 +187,18 @@ void CTriggerCamera::FollowTarget()
 	Vector vecGoal = UTIL_VecToAngles( m_hTarget->GetAbsOrigin() - GetAbsOrigin() );
 	vecGoal.x = -vecGoal.x;
 
-	if( pev->angles.y > 360 )
-		pev->angles.y -= 360;
+	Vector vecAngles = GetAbsAngles();
 
-	if( pev->angles.y < 0 )
-		pev->angles.y += 360;
+	if( vecAngles.y > 360 )
+		vecAngles.y -= 360;
 
-	float dx = vecGoal.x - pev->angles.x;
-	float dy = vecGoal.y - pev->angles.y;
+	if( vecAngles.y < 0 )
+		vecAngles.y += 360;
+
+	SetAbsAngles( vecAngles );
+
+	float dx = vecGoal.x - GetAbsAngles().x;
+	float dy = vecGoal.y - GetAbsAngles().y;
 
 	if( dx < -180 )
 		dx += 360;
@@ -204,18 +210,19 @@ void CTriggerCamera::FollowTarget()
 	if( dy > 180 )
 		dy = dy - 360;
 
-	pev->avelocity.x = dx * 40 * gpGlobals->frametime;
-	pev->avelocity.y = dy * 40 * gpGlobals->frametime;
+	Vector vecAVelocity = GetAngularVelocity();
+	vecAVelocity.x = dx * 40 * gpGlobals->frametime;
+	vecAVelocity.y = dy * 40 * gpGlobals->frametime;
+	SetAngularVelocity( vecAVelocity );
 
-
-	if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
+	if( !GetSpawnFlags().Any( SF_CAMERA_PLAYER_TAKECONTROL ) )
 	{
-		pev->velocity = pev->velocity * 0.8;
-		if( pev->velocity.Length() < 10.0 )
-			pev->velocity = g_vecZero;
+		SetAbsVelocity( GetAbsVelocity() * 0.8 );
+		if( GetAbsVelocity().Length() < 10.0 )
+			SetAbsVelocity( g_vecZero );
 	}
 
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 
 	Move();
 }
@@ -227,17 +234,17 @@ void CTriggerCamera::Move()
 		return;
 
 	// Subtract movement from the previous frame
-	m_moveDistance -= pev->speed * gpGlobals->frametime;
+	m_moveDistance -= GetSpeed() * gpGlobals->frametime;
 
 	// Have we moved enough to reach the target?
 	if( m_moveDistance <= 0 )
 	{
 		// Fire the passtarget if there is one
-		if( m_pentPath->pev->message )
+		if( m_pentPath->HasMessage() )
 		{
-			FireTargets( STRING( m_pentPath->pev->message ), this, this, USE_TOGGLE, 0 );
-			if( FBitSet( m_pentPath->pev->spawnflags, SF_CORNER_FIREONCE ) )
-				m_pentPath->pev->message = 0;
+			FireTargets( m_pentPath->GetMessage(), this, this, USE_TOGGLE, 0 );
+			if( m_pentPath->GetSpawnFlags().Any( SF_CORNER_FIREONCE ) )
+				m_pentPath->ClearMessage();
 		}
 		// Time to go to the next target
 		m_pentPath = m_pentPath->GetNextTarget();
@@ -245,25 +252,25 @@ void CTriggerCamera::Move()
 		// Set up next corner
 		if( !m_pentPath )
 		{
-			pev->velocity = g_vecZero;
+			SetAbsVelocity( g_vecZero );
 		}
 		else
 		{
-			if( m_pentPath->pev->speed != 0 )
-				m_targetSpeed = m_pentPath->pev->speed;
+			if( m_pentPath->GetSpeed() != 0 )
+				m_targetSpeed = m_pentPath->GetSpeed();
 
 			Vector delta = m_pentPath->GetAbsOrigin() - GetAbsOrigin();
 			m_moveDistance = delta.Length();
-			pev->movedir = delta.Normalize();
+			SetMoveDir( delta.Normalize() );
 			m_flStopTime = gpGlobals->time + m_pentPath->GetDelay();
 		}
 	}
 
 	if( m_flStopTime > gpGlobals->time )
-		pev->speed = UTIL_Approach( 0, pev->speed, m_deceleration * gpGlobals->frametime );
+		SetSpeed( UTIL_Approach( 0, GetSpeed(), m_deceleration * gpGlobals->frametime ) );
 	else
-		pev->speed = UTIL_Approach( m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime );
+		SetSpeed( UTIL_Approach( m_targetSpeed, GetSpeed(), m_acceleration * gpGlobals->frametime ) );
 
 	float fraction = 2 * gpGlobals->frametime;
-	pev->velocity = ( ( pev->movedir * pev->speed ) * fraction ) + ( pev->velocity * ( 1 - fraction ) );
+	SetAbsVelocity( ( ( GetMoveDir() * GetSpeed() ) * fraction ) + ( GetAbsVelocity() * ( 1 - fraction ) ) );
 }

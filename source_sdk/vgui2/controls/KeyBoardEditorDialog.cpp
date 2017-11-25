@@ -17,17 +17,6 @@
 
 using namespace vgui2;
 
-static char *CopyString( const char *in )
-{
-	if ( !in )
-		return NULL;
-
-	int len = strlen( in );
-	char *n = new char[ len + 1 ];
-	Q_strncpy( n, in, len  + 1 );
-	return n;
-}
-
 CKeyBoardEditorPage::SaveMapping_t::SaveMapping_t() : map( 0 )
 {
 }
@@ -695,8 +684,8 @@ void CKeyBoardEditorPage::OnClearBinding( int item )
 
 CKeyBoardEditorSheet::CKeyBoardEditorSheet( Panel *parent, Panel *panelToEdit, KeyBindingContextHandle_t handle )
 	: BaseClass( parent, "KeyBoardEditorSheet" ),
-	m_bSaveToExternalFile( false ),
 	m_Handle( handle ),
+	m_bSaveToExternalFile( false ),
 	m_SaveFileName( UTL_INVAL_SYMBOL ),
 	m_SaveFilePathID( UTL_INVAL_SYMBOL )
 {

@@ -149,35 +149,28 @@ BEGIN_SCHEDULES( CBarney )
 	slIdleBaStand,
 END_SCHEDULES()
 
-void CBarney :: StartTask( const Task_t* pTask )
+void CBarney :: StartTask( const Task_t& task )
 {
-	CTalkMonster::StartTask( pTask );	
+	CTalkMonster::StartTask( task );	
 }
 
-void CBarney :: RunTask( const Task_t* pTask )
+void CBarney :: RunTask( const Task_t& task )
 {
-	switch ( pTask->iTask )
+	switch ( task.iTask )
 	{
 	case TASK_RANGE_ATTACK1:
 		if (m_hEnemy != NULL && (m_hEnemy->IsPlayer()))
 		{
-			pev->framerate = 1.5;
+			SetFrameRate( 1.5 );
 		}
-		CTalkMonster::RunTask( pTask );
+		CTalkMonster::RunTask( task );
 		break;
 	default:
-		CTalkMonster::RunTask( pTask );
+		CTalkMonster::RunTask( task );
 		break;
 	}
 }
 
-
-
-
-//=========================================================
-// ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. 
-//=========================================================
 int CBarney :: ISoundMask ( void) 
 {
 	return	bits_SOUND_WORLD	|
@@ -189,18 +182,11 @@ int CBarney :: ISoundMask ( void)
 			bits_SOUND_PLAYER;
 }
 
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
 EntityClassification_t CBarney::GetClassification()
 {
 	return EntityClassifications().GetClassificationId( classify::PLAYER_ALLY );
 }
 
-//=========================================================
-// ALertSound - barney says "Freeze!"
-//=========================================================
 void CBarney :: AlertSound( void )
 {
 	if ( m_hEnemy != NULL )
@@ -212,11 +198,8 @@ void CBarney :: AlertSound( void )
 	}
 
 }
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
-void CBarney :: SetYawSpeed ( void )
+
+void CBarney::UpdateYawSpeed()
 {
 	int ys;
 
@@ -238,13 +221,9 @@ void CBarney :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys;
+	SetYawSpeed( ys );
 }
 
-
-//=========================================================
-// CheckRangeAttack1
-//=========================================================
 bool CBarney::CheckRangeAttack1( float flDot, float flDist )
 {
 	if ( flDist <= 1024 && flDot >= 0.5 )
@@ -278,13 +257,13 @@ void CBarney :: BarneyFirePistol ( void )
 {
 	Vector vecShootOrigin;
 
-	UTIL_MakeVectors(pev->angles);
+	UTIL_MakeVectors( GetAbsAngles() );
 	vecShootOrigin = GetAbsOrigin() + Vector( 0, 0, 55 );
 	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
-	pev->effects = EF_MUZZLEFLASH;
+	GetEffects() = EF_MUZZLEFLASH;
 
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM );
 	
@@ -302,13 +281,7 @@ void CBarney :: BarneyFirePistol ( void )
 	// UNDONE: Reload?
 	m_cAmmoLoaded--;// take away a bullet!
 }
-		
-//=========================================================
-// HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
-//
-// Returns number of events handled, 0 if none.
-//=========================================================
+
 void CBarney :: HandleAnimEvent( AnimEvent_t& event )
 {
 	switch( event.event )
@@ -319,13 +292,13 @@ void CBarney :: HandleAnimEvent( AnimEvent_t& event )
 
 	case BARNEY_AE_DRAW:
 		// barney's bodygroup switches here so he can pull gun from holster
-		pev->body = BARNEY_BODY_GUNDRAWN;
+		SetBody( BARNEY_BODY_GUNDRAWN );
 		m_fGunDrawn = true;
 		break;
 
 	case BARNEY_AE_HOLSTER:
 		// change bodygroup to replace gun in holster
-		pev->body = BARNEY_BODY_GUNHOLSTERED;
+		SetBody( BARNEY_BODY_GUNHOLSTERED );
 		m_fGunDrawn = false;
 		break;
 
@@ -334,9 +307,6 @@ void CBarney :: HandleAnimEvent( AnimEvent_t& event )
 	}
 }
 
-//=========================================================
-// Spawn
-//=========================================================
 void CBarney :: Spawn()
 {
 	Precache( );
@@ -344,15 +314,15 @@ void CBarney :: Spawn()
 	SetModel( "models/barney.mdl");
 	SetSize( VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_STEP );
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health			= gSkillData.GetBarneyHealth();
-	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	SetHealth( gSkillData.GetBarneyHealth() );
+	SetViewOffset( Vector ( 0, 0, 50 ) );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 
-	pev->body			= 0; // gun in holster
+	SetBody( 0 ); // gun in holster
 	m_fGunDrawn			= false;
 
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
@@ -361,9 +331,6 @@ void CBarney :: Spawn()
 	SetUse( &CBarney::FollowerUse );
 }
 
-//=========================================================
-// Precache - precaches all resources this monster needs
-//=========================================================
 void CBarney :: Precache()
 {
 	PRECACHE_MODEL("models/barney.mdl");
@@ -428,7 +395,7 @@ static bool IsFacing( CBaseEntity* pEntity, const Vector &reference )
 	vecDir.z = 0;
 	vecDir = vecDir.Normalize();
 	Vector forward, angle;
-	angle = pEntity->pev->v_angle;
+	angle = pEntity->GetViewAngle();
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate( angle, &forward, nullptr, nullptr );
 	// He's facing me, he meant it
@@ -444,10 +411,10 @@ void CBarney::OnTakeDamage( const CTakeDamageInfo& info )
 {
 	// make sure friends talk about it if player hurts talkmonsters...
 	CTalkMonster::OnTakeDamage( info );
-	if ( !IsAlive() || pev->deadflag == DEAD_DYING )
+	if ( !IsAlive() || GetDeadFlag() == DEAD_DYING )
 		return;
 
-	if ( m_MonsterState != MONSTERSTATE_PRONE && (info.GetAttacker()->pev->flags & FL_CLIENT) )
+	if ( m_MonsterState != MONSTERSTATE_PRONE && (info.GetAttacker()->GetFlags().Any( FL_CLIENT ) ) )
 	{
 		m_flPlayerDamage += info.GetDamage();
 
@@ -471,17 +438,13 @@ void CBarney::OnTakeDamage( const CTakeDamageInfo& info )
 				Remember( bits_MEMORY_SUSPICIOUS );
 			}
 		}
-		else if ( !(m_hEnemy->IsPlayer()) && pev->deadflag == DEAD_NO )
+		else if ( !(m_hEnemy->IsPlayer()) && GetDeadFlag() == DEAD_NO )
 		{
 			PlaySentence( "BA_SHOT", 4, VOL_NORM, ATTN_NORM );
 		}
 	}
 }
 
-	
-//=========================================================
-// PainSound
-//=========================================================
 void CBarney :: PainSound ( void )
 {
 	if (gpGlobals->time < m_painTime)
@@ -497,9 +460,6 @@ void CBarney :: PainSound ( void )
 	}
 }
 
-//=========================================================
-// DeathSound 
-//=========================================================
 void CBarney :: DeathSound ( void )
 {
 	switch (RANDOM_LONG(0,2))
@@ -511,11 +471,11 @@ void CBarney :: DeathSound ( void )
 }
 
 
-void CBarney::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBarney::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 	CTakeDamageInfo newInfo = info;
 
-	switch( ptr->iHitgroup)
+	switch( tr.iHitgroup)
 	{
 	case HITGROUP_CHEST:
 	case HITGROUP_STOMACH:
@@ -530,31 +490,31 @@ void CBarney::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResu
 			newInfo.GetMutableDamage() -= 20;
 			if (newInfo.GetDamage() <= 0)
 			{
-				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
+				UTIL_Ricochet( tr.vecEndPos, 1.0 );
 				newInfo.GetMutableDamage() = 0.01;
 			}
 		}
 		// always a head shot
-		ptr->iHitgroup = HITGROUP_HEAD;
+		tr.iHitgroup = HITGROUP_HEAD;
 		break;
 	}
 
-	CTalkMonster::TraceAttack( newInfo, vecDir, ptr );
+	CTalkMonster::TraceAttack( newInfo, vecDir, tr );
 }
 
 
 void CBarney::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 {
-	if ( pev->body < BARNEY_BODY_GUNGONE )
+	if ( GetBody() < BARNEY_BODY_GUNGONE )
 	{// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;
 
-		pev->body = BARNEY_BODY_GUNGONE;
+		SetBody( BARNEY_BODY_GUNGONE );
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 		
-		CBaseEntity *pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
+		/*CBaseEntity *pGun = */DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
 	}
 
 	SetUse( NULL );	
@@ -610,12 +570,6 @@ Schedule_t* CBarney :: GetScheduleOfType ( int Type )
 	return CTalkMonster::GetScheduleOfType( Type );
 }
 
-//=========================================================
-// GetSchedule - Decides which type of schedule best suits
-// the monster's current state and conditions. Then calls
-// monster's member function to get a pointer to a schedule
-// of the proper type.
-//=========================================================
 Schedule_t *CBarney :: GetSchedule ( void )
 {
 	if ( HasConditions( bits_COND_HEAR_SOUND ) )

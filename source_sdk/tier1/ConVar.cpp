@@ -438,16 +438,16 @@ void ConCommandBase::RevertFlaggedCvars( int flag )
 		if ( var->IsCommand() )
 			continue;
 
-		ConVar *cvar = ( ConVar * )var;
+		ConVar *conVar = ( ConVar * )var;
 
-		if ( !cvar->IsBitSet( flag ) )
+		if ( !conVar->IsBitSet( flag ) )
 			continue;
 
 		// It's == to the default value, don't count
-		if ( !Q_strcasecmp( cvar->GetDefault(), cvar->GetString() ) )
+		if ( !Q_strcasecmp( conVar->GetDefault(), conVar->GetString() ) )
 			continue;
 
-		cvar->Revert();
+		conVar->Revert();
 
 		// DevMsg( "%s = \"%s\" (reverted)\n", cvar->GetName(), cvar->GetString() );
 	}

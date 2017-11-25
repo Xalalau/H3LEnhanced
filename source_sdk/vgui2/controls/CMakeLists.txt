@@ -92,7 +92,7 @@ target_compile_definitions( vgui2_controls PRIVATE
 )
 
 set_target_properties( vgui2_controls 
-	PROPERTIES COMPILE_FLAGS "${LINUX_32BIT_FLAG}" 
+	PROPERTIES COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}" 
 	LINK_FLAGS "${LINUX_32BIT_FLAG}" )
 	
 	#No lib prefix

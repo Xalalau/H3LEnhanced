@@ -8,9 +8,9 @@ LINK_ENTITY_TO_CLASS( trigger_transition, CTriggerVolume );
 
 void CTriggerVolume::Spawn( void )
 {
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-	SetModel( STRING( pev->model ) );    // set size and link into world
-	pev->model = iStringNull;
-	pev->modelindex = 0;
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	SetModel( GetModelName() );    // set size and link into world
+	SetModelName( iStringNull );
+	SetModelIndex( 0 );
 }

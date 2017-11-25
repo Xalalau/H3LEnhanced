@@ -37,7 +37,7 @@ void CHandGrenade::Spawn( )
 	SetModel( "models/w_grenade.mdl");
 
 #ifndef CLIENT_DLL
-	pev->dmg = gSkillData.GetPlrDmgHandGrenade();
+	SetDamage( gSkillData.GetPlrDmgHandGrenade() );
 #endif
 
 	FallInit();// get ready to fall down.
@@ -80,9 +80,10 @@ void CHandGrenade::Holster()
 	else
 	{
 		// no more grenades!
-		m_pPlayer->pev->weapons &= ~(1<<m_iId);
+		//TODO: should do this through a CBasePlayer method - Solokiller
+		m_pPlayer->GetWeapons().ClearFlags( 1 << m_iId );
 		SetThink( &CHandGrenade::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 
 	EMIT_SOUND( m_pPlayer, CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
@@ -116,7 +117,7 @@ void CHandGrenade::WeaponIdle( void )
 
 	if ( m_flStartThrow )
 	{
-		Vector angThrow = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+		Vector angThrow = m_pPlayer->GetViewAngle() + m_pPlayer->GetPunchAngle();
 
 		if ( angThrow.x < 0 )
 			angThrow.x = -10 + angThrow.x * ( ( 90 - 10 ) / 90.0 );
@@ -129,9 +130,9 @@ void CHandGrenade::WeaponIdle( void )
 
 		UTIL_MakeVectors( angThrow );
 
-		Vector vecSrc = m_pPlayer->GetAbsOrigin() + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16;
+		Vector vecSrc = m_pPlayer->GetAbsOrigin() + m_pPlayer->GetViewOffset() + gpGlobals->v_forward * 16;
 
-		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;
+		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->GetAbsVelocity();
 
 		// alway explode 3 seconds after the pin was pulled
 		float time = m_flStartThrow - gpGlobals->time + 3.0;

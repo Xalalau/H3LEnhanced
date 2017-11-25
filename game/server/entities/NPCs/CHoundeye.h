@@ -69,19 +69,24 @@ public:
 	void Precache( void ) override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	void WarmUpSound( void );
 	void AlertSound( void ) override;
 	void DeathSound( void ) override;
 	void WarnSound( void );
 	void PainSound( void ) override;
 	void IdleSound( void ) override;
-	void StartTask( const Task_t* pTask ) override;
-	void RunTask( const Task_t* pTask ) override;
+	void StartTask( const Task_t& task ) override;
+	void RunTask( const Task_t& task ) override;
 	void SonicAttack( void );
 	void PrescheduleThink( void ) override;
 	void SetActivity( Activity NewActivity ) override;
 	void WriteBeamColor( void );
+
+	/**
+	*	@brief overridden for houndeyes so that they try to get within half of their max attack radius before attacking,
+	*	so as to increase their chances of doing damage.
+	*/
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
 	bool FValidateHintType( short sHint ) const override;
 	bool FCanActiveIdle() const override;

@@ -27,10 +27,10 @@ void CGamePlayerHurt::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 
 	if( pActivator->IsPlayer() )
 	{
-		if( pev->dmg < 0 )
-			pActivator->GiveHealth( -pev->dmg, DMG_GENERIC );
+		if( GetDamage() < 0 )
+			pActivator->GiveHealth( -GetDamage(), DMG_GENERIC );
 		else
-			pActivator->TakeDamage( this, this, pev->dmg, DMG_GENERIC );
+			pActivator->TakeDamage( this, this, GetDamage(), DMG_GENERIC );
 	}
 
 	SUB_UseTargets( pActivator, useType, value );

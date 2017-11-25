@@ -13,6 +13,12 @@
 #include "vgui_checkbutton2.h"
 #include "vgui_loadtga.h"
 
+//GCC complains about deleting vgui objects due to them having no virtual destructor - Solokiller
+#ifdef POSIX
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
+#endif
+
 
 #define EXTRA_X	5
 
@@ -22,11 +28,11 @@ using namespace vgui;
 
 
 CCheckButton2::CCheckButton2() :
+	m_pHandler( NULL ),
 	m_Label(""),
+	m_CheckboxPanel( NULL ),
 	m_pChecked(NULL),
-	m_pUnchecked(NULL),
-	m_pHandler(NULL),
-	m_CheckboxPanel(NULL)
+	m_pUnchecked(NULL)
 {
 	m_bOwnImages = false;
 	m_bChecked = false;
@@ -144,7 +150,7 @@ void CCheckButton2::SetChecked(bool bChecked)
 }
 
 
-void CCheckButton2::internalMousePressed(MouseCode code)
+void CCheckButton2::internalMousePressed(MouseCode /*code*/)
 {
 	m_bChecked = !m_bChecked;
 
@@ -189,12 +195,11 @@ void CCheckButton2::SetupControls()
 }
 
 
-void CCheckButton2::mousePressed(MouseCode code, Panel *panel)
+void CCheckButton2::mousePressed(MouseCode code, Panel* /*panel*/)
 {
 	internalMousePressed(code);
 }
 
-
-
-
-
+#ifdef POSIX
+#pragma GCC diagnostic pop
+#endif

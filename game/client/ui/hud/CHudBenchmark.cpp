@@ -144,6 +144,9 @@ void CHudBenchmark::MsgFunc_Bench(const char *pszName, int iSize, void *pbuf)
 	CBufferReader reader;
 	int section = reader.ReadByte();
 
+	//Fixes unreferenced local var warning - Solokiller
+	section = section;
+
 	m_fReceiveTime = Hud().GetTime();
 	m_StoredLatency = ( m_fReceiveTime - m_fSendTime );
 

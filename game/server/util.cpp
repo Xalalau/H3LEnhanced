@@ -31,24 +31,24 @@
 #include "Weapons.h"
 #include "gamerules/GameRules.h"
 
-void UTIL_ParametricRocket( entvars_t *pev, Vector vecOrigin, Vector vecAngles, edict_t *owner )
+void UTIL_ParametricRocket( CBaseEntity* pEntity, Vector vecOrigin, Vector vecAngles, CBaseEntity* pOwner )
 {	
-	pev->startpos = vecOrigin;
+	pEntity->pev->startpos = vecOrigin;
 	// Trace out line to end pos
 	TraceResult tr;
 	UTIL_MakeVectors( vecAngles );
-	UTIL_TraceLine( pev->startpos, pev->startpos + gpGlobals->v_forward * 8192, ignore_monsters, owner, &tr);
-	pev->endpos = tr.vecEndPos;
+	UTIL_TraceLine( pEntity->pev->startpos, pEntity->pev->startpos + gpGlobals->v_forward * 8192, ignore_monsters, pOwner ? pOwner->edict() : nullptr, &tr);
+	pEntity->pev->endpos = tr.vecEndPos;
 
 	// Now compute how long it will take based on current velocity
-	Vector vecTravel = pev->endpos - pev->startpos;
+	Vector vecTravel = pEntity->pev->endpos - pEntity->pev->startpos;
 	float travelTime = 0.0;
-	if ( pev->velocity.Length() > 0 )
+	if ( pEntity->GetAbsVelocity().Length() > 0 )
 	{
-		travelTime = vecTravel.Length() / pev->velocity.Length();
+		travelTime = vecTravel.Length() / pEntity->GetAbsVelocity().Length();
 	}
-	pev->starttime = gpGlobals->time;
-	pev->impacttime = gpGlobals->time + travelTime;
+	pEntity->pev->starttime = gpGlobals->time;
+	pEntity->pev->impacttime = gpGlobals->time + travelTime;
 }
 
 int g_groupmask = 0;
@@ -298,6 +298,13 @@ CBaseEntity* UTIL_FindEntityByTarget( CBaseEntity* pStartEntity, const char* con
 	return UTIL_FindEntityByString( pStartEntity, "target", pszTarget );
 }
 
+CBaseEntity* UTIL_EntityByIndex( const int iIndex )
+{
+	if( auto pEntity = g_engfuncs.pfnPEntityOfEntIndex( iIndex ) )
+		return GET_PRIVATE( pEntity );
+
+	return nullptr;
+}
 
 // returns a CBasePlayer pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns nullptr
@@ -1033,8 +1040,8 @@ void UTIL_ServerPrintf( const char* const pszFormat, ... )
 extern "C" {
 unsigned _rotr ( unsigned val, int shift)
 {
-        register unsigned lobit;        /* non-zero means lo bit set */
-        register unsigned num = val;    /* number to rotate */
+        /*register*/ unsigned lobit;        /* non-zero means lo bit set */
+        /*register*/ unsigned num = val;    /* number to rotate */
 
         shift &= 0x1f;                  /* modulo 32 -- this will also make
                                            negative shifts work */
@@ -1310,7 +1317,7 @@ bool UTIL_IsBrushEntity( const CBaseEntity* const pEnt )
 	//The index of the model must match the number in the model name string + 1.
 	//This is oddly numbered because the world has index 1, but the numbers start at 1 for submodels.
 	//This means that the first brush entity has index 2, and name "*1".
-	return pEnt->GetModelIndex() == index + 1;
+	return pEnt->GetModelIndex() == static_cast<int>( index + 1 );
 }
 
 bool UTIL_IsPointEntity( const CBaseEntity* const pEnt )
@@ -1318,7 +1325,7 @@ bool UTIL_IsPointEntity( const CBaseEntity* const pEnt )
 	if( !pEnt )
 		return false;
 
-	if( !pEnt->pev->modelindex )
+	if( !pEnt->GetModelIndex() )
 		return true;
 
 	//Keep the special cases for these just in case of weird edge cases. - Solokiller

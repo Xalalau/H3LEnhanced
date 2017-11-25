@@ -16,9 +16,9 @@
 #define GAME_SERVER_ENTITIES_PLATS_CGUNTARGET_H
 
 /**
-*	pev->speed is the travel speed
-*	pev->health is current health
-*	pev->max_health is the amount to reset to each time it starts
+*	GetSpeed() is the travel speed
+*	GetHealth() is current health
+*	GetMaxHealth() is the amount to reset to each time it starts
 */
 class CGunTarget : public CBaseMonster
 {

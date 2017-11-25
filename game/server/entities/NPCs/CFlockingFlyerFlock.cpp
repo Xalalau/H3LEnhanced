@@ -71,14 +71,14 @@ void CFlockingFlyerFlock::SpawnFlock( void )
 		vecSpot = GetAbsOrigin() + vecSpot;
 
 		pBoid->SetAbsOrigin( vecSpot );
-		pBoid->pev->movetype = MOVETYPE_FLY;
+		pBoid->SetMoveType( MOVETYPE_FLY );
 		pBoid->SpawnCommonCode();
-		pBoid->pev->flags &= ~FL_ONGROUND;
-		pBoid->pev->velocity = g_vecZero;
-		pBoid->pev->angles = pev->angles;
+		pBoid->GetFlags().ClearFlags( FL_ONGROUND );
+		pBoid->SetAbsVelocity( g_vecZero );
+		pBoid->SetAbsAngles( GetAbsAngles() );
 
-		pBoid->pev->frame = 0;
-		pBoid->pev->nextthink = gpGlobals->time + 0.2;
+		pBoid->SetFrame( 0 );
+		pBoid->SetNextThink( gpGlobals->time + 0.2 );
 		pBoid->SetThink( &CFlockingFlyer::IdleThink );
 
 		if( pBoid != pLeader )

@@ -163,7 +163,28 @@ public:
 	float	m_flNextObserverInput;
 	int		m_iObserverWeapon;	// weapon of current tracked target
 	int		m_iObserverLastMode;// last used observer mode
+
 	bool	IsObserver() const { return pev->iuser1 != 0; }
+
+	int GetObserverMode() const { return pev->iuser1; }
+
+private:
+	void InternalSetObserverMode( const int iMode )
+	{
+		pev->iuser1 = iMode;
+	}
+
+public:
+
+	int GetObserverTargetIndex()
+	{
+		return pev->iuser2;
+	}
+
+	void SetObserverTargetIndex( const int iIndex )
+	{
+		pev->iuser2 = iIndex;
+	}
 
 	void StartDeathCam();
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
@@ -290,14 +311,14 @@ public:
 	
 	Vector GetGunPosition() override;
 
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 
-	Vector BodyTarget( const Vector &posSrc ) const override { return Center() + pev->view_ofs * RANDOM_FLOAT( 0.5, 1.1 ); }
-	bool IsAlive() const override { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
+	Vector BodyTarget( const Vector &posSrc ) const override { return Center() + GetViewOffset() * RANDOM_FLOAT( 0.5, 1.1 ); }
+	bool IsAlive() const override { return ( GetDeadFlag() == DEAD_NO) && GetHealth() > 0; }
 	bool ShouldFadeOnDeath() const override { return false; }
 
 	/**
@@ -419,7 +440,7 @@ public:
 	/**
 	*	Helper function to return an Ammo pointer from id.
 	*/
-	static const WeaponHUDSprite* GetAmmoPicFromWeapon( int iAmmoId );
+	static const WeaponHUDSprite* GetAmmoPicFromWeapon( AmmoID_t iAmmoId );
 #endif
 
 	void SelectPrevItem( int iItem );

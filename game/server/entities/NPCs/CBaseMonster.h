@@ -250,7 +250,7 @@ public:
 	virtual void RunAI ( void );// core ai function!	
 	void Listen ( void );
 
-	virtual bool	IsAlive() const override { return (pev->deadflag != DEAD_DEAD); }
+	virtual bool	IsAlive() const override { return ( GetDeadFlag() != DEAD_DEAD); }
 
 // Basic Monster AI functions
 	virtual float ChangeYaw ( int speed );
@@ -262,6 +262,10 @@ public:
 // stuff written for new state machine
 		virtual void MonsterThink( void );
 		void CallMonsterThink( void ) { this->MonsterThink(); }
+
+		/**
+		*	@brief Returns an integer that describes the relationship between two types of monster
+		*/
 		virtual Relationship IRelationship( CBaseEntity *pTarget );
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
@@ -273,6 +277,10 @@ public:
 		virtual CBaseEntity* BestVisibleEnemy ( void );// finds best visible enemy for attack
 		virtual bool FInViewCone( const CBaseEntity *pEntity ) const;// see if pEntity is in monster's view cone
 		virtual bool FInViewCone( const Vector& vecOrigin ) const;// see if given location is in monster's view cone
+
+		/**
+		*	@brief catches the monster-specific messages that occur when tagged animation frames are played
+		*/
 		virtual void HandleAnimEvent( AnimEvent_t& event ) override;
 
 		virtual int CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, const CBaseEntity* const pTarget, float *pflDist );// check validity of a straight move through space
@@ -284,12 +292,27 @@ public:
 		virtual void Stop( void ) { m_IdealActivity = GetStoppedActivity(); }
 
 		// This will stop animation until you call ResetSequenceInfo() at some point in the future
-		inline void StopAnimation( void ) { pev->framerate = 0; }
+		inline void StopAnimation( void ) { SetFrameRate( 0 ); }
 
-		// these functions will survey conditions and set appropriate conditions bits for attack types.
+		/**
+		*	@brief these functions will survey conditions and set appropriate conditions bits for attack types
+		*	@param flDot The cos of the angle of the cone within which the attack can occur
+		*/
 		virtual bool CheckRangeAttack1( float flDot, float flDist );
+
+		/**
+		*	@see CheckRangeAttack1
+		*/
 		virtual bool CheckRangeAttack2( float flDot, float flDist );
+
+		/**
+		*	@see CheckRangeAttack1
+		*/
 		virtual bool CheckMeleeAttack1( float flDot, float flDist );
+
+		/**
+		*	@see CheckRangeAttack1
+		*/
 		virtual bool CheckMeleeAttack2( float flDot, float flDist );
 
 		bool FHaveSchedule() const;
@@ -314,10 +337,20 @@ public:
 		const Schedule_t* ScheduleFromName( const char* const pszName ) const;
 		
 		void MaintainSchedule ( void );
-		virtual void StartTask( const Task_t* pTask );
-		virtual void RunTask( const Task_t* pTask );
+
+		/**
+		*	@brief selects the correct activity and performs any necessary calculations to start the next task on the schedule
+		*/
+		virtual void StartTask( const Task_t& task );
+		virtual void RunTask( const Task_t& task );
 		virtual Schedule_t *GetScheduleOfType( int Type );
+
+		/**
+		*	@brief Decides which type of schedule best suits the monster's current state and conditions
+		*	Then calls monster's member function to get a pointer to a schedule of the proper type
+		*/
 		virtual Schedule_t *GetSchedule( void );
+
 		virtual void ScheduleChange( void ) {}
 		// virtual bool CanPlaySequence() const { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
 		virtual bool CanPlaySequence( const bool fDisregardState, int interruptLevel ) const;
@@ -356,7 +389,12 @@ public:
 		void AdvanceRoute ( float distance );
 		virtual bool FTriangulate( const Vector &vecStart , const Vector &vecEnd, float flDist, const CBaseEntity* const pTargetEnt, Vector *pApex );
 		void MakeIdealYaw( Vector vecTarget );
-		virtual void SetYawSpeed ( void ) { return; };// allows different yaw_speeds for each activity
+
+		/**
+		*	@brief Allows each sequence to have a different turn rate associated with it
+		*/
+		virtual void UpdateYawSpeed() {}
+
 		bool BuildRoute( const Vector &vecGoal, int iMoveFlag, const CBaseEntity* const pTarget );
 		virtual bool BuildNearestRoute( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
 		int RouteClassify( int iMoveFlag );
@@ -390,6 +428,10 @@ public:
 		// Returns the time when the door will be open
 		float	OpenDoorAndWait( CBaseEntity* pDoor );
 
+		/**
+		*	@brief returns a bit mask indicating which types of sounds this monster regards.
+		*	In the base class implementation, monsters care about all sounds, but no scents.
+		*/
 		virtual int ISoundMask( void );
 		virtual CSound* PBestSound ( void );
 		virtual CSound* PBestScent ( void );
@@ -417,12 +459,14 @@ public:
 
 		bool BBoxFlat() const;
 
-		// PrescheduleThink 
-		virtual void PrescheduleThink( void ) { return; };
+		/**
+		*	@brief this function runs after conditions are collected and before scheduling code is run
+		*/
+		virtual void PrescheduleThink() {}
 
 		bool GetEnemy();
 		void MakeDamageBloodDecal ( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir );
-		void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+		void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 
 	// combat functions
 	virtual Activity GetDeathActivity ( void );

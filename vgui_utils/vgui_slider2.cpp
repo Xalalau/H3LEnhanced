@@ -318,7 +318,7 @@ void Slider2::getRange(int& min,int& max)
 	max=_range[1];
 }
 
-void Slider2::privateCursorMoved(int x,int y,Panel* panel)
+void Slider2::privateCursorMoved(int x,int y,Panel* /*panel*/)
 {
 	if(!_dragging)
 	{
@@ -371,7 +371,7 @@ void Slider2::privateCursorMoved(int x,int y,Panel* panel)
 	fireIntChangeSignal();
 }
 
-void Slider2::privateMousePressed(MouseCode code,Panel* panel)
+void Slider2::privateMousePressed(MouseCode /*code*/,Panel* /*panel*/)
 {
 	int x,y;
 	getApp()->getCursorPos(x,y);
@@ -404,7 +404,7 @@ void Slider2::privateMousePressed(MouseCode code,Panel* panel)
 
 }
 
-void Slider2::privateMouseReleased(MouseCode code,Panel* panel)
+void Slider2::privateMouseReleased(MouseCode /*code*/,Panel* /*panel*/)
 {
 	_dragging=false;
 	getApp()->setMouseCapture(null);

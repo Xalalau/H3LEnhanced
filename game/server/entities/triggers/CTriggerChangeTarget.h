@@ -29,7 +29,7 @@ public:
 	int ObjectCaps() const override { return CBaseDelay::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 private:
-	int		m_iszNewTarget;
+	string_t m_iszNewTarget;
 };
 
 #endif //GAME_SERVER_ENTITIES_TRIGGERS_CTRIGGERCHANGETARGET_H

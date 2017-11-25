@@ -115,7 +115,7 @@ void CSpore::Spawn()
 
 	m_pSprite->SetScale( 0.8 );
 
-	m_pSprite->SetAttachment( edict(), 0 );
+	m_pSprite->SetAttachment( this, 0 );
 
 	m_fRegisteredSound = false;
 

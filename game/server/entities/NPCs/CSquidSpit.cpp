@@ -31,22 +31,22 @@ LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit );
 
 void CSquidSpit::Spawn( void )
 {
-	pev->movetype = MOVETYPE_FLY;
+	SetMoveType( MOVETYPE_FLY );
 
-	pev->solid = SOLID_BBOX;
-	pev->rendermode = kRenderTransAlpha;
-	pev->renderamt = 255;
+	SetSolidType( SOLID_BBOX );
+	SetRenderMode( kRenderTransAlpha );
+	SetRenderAmount( 255 );
 
 	SetModel( "sprites/bigspit.spr" );
-	pev->frame = 0;
+	SetFrame(0);
 	// ############ hu3lifezado ############ //
 	// Escala do vomito esta bem maior agora! (0.5)
-	pev->scale = 2.5;
+	SetScale(2.5);
 	// ############ //
 
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
-	m_maxFrame = ( float ) MODEL_FRAMES( pev->modelindex ) - 1;
+	m_maxFrame = ( float ) MODEL_FRAMES( GetModelIndex() ) - 1;
 }
 
 void CSquidSpit::Shoot( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity )
@@ -57,12 +57,12 @@ void CSquidSpit::Shoot( CBaseEntity* pOwner, Vector vecStart, Vector vecVelocity
 	pSpit->SetAbsOrigin( vecStart );
 	// ############ hu3lifezado ############ //
 	// Multipliquei a velocidade do projetil por 3. (1)
-	pSpit->pev->velocity = vecVelocity * 3;
+	pSpit->SetAbsVelocity(vecVelocity * 3);
 	// ############ //
 	pSpit->SetOwner( pOwner );
 
 	pSpit->SetThink( &CSquidSpit::Animate );
-	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->SetNextThink( gpGlobals->time + 0.1 );
 }
 
 void CSquidSpit::Touch( CBaseEntity *pOther )
@@ -85,11 +85,11 @@ void CSquidSpit::Touch( CBaseEntity *pOther )
 		break;
 	}
 
-	if( !pOther->pev->takedamage )
+	if( pOther->GetTakeDamageMode() == DAMAGE_NO )
 	{
 
 		// make a splat on the wall
-		UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + pev->velocity * 10, dont_ignore_monsters, ENT( pev ), &tr );
+		UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() + GetAbsVelocity() * 10, dont_ignore_monsters, ENT( pev ), &tr );
 		UTIL_DecalTrace( &tr, DECAL_SPIT1 + RANDOM_LONG( 0, 1 ) );
 
 		// make some flecks
@@ -116,18 +116,20 @@ void CSquidSpit::Touch( CBaseEntity *pOther )
 	}
 
 	SetThink( &CSquidSpit::SUB_Remove );
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 }
 
 void CSquidSpit::Animate( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
-	if( pev->frame++ )
+	const bool bWasAnimated = GetFrame() != 0;
+	SetFrame( GetFrame() + 1 );
+	if( bWasAnimated )
 	{
-		if( pev->frame > m_maxFrame )
+		if( GetFrame() > m_maxFrame )
 		{
-			pev->frame = 0;
+			SetFrame( 0 );
 		}
 	}
 }

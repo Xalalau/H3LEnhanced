@@ -380,9 +380,9 @@ Activity CScientist::GetStoppedActivity( void )
 }
 
 
-void CScientist :: StartTask( const Task_t* pTask )
+void CScientist :: StartTask( const Task_t& task )
 {
-	switch( pTask->iTask )
+	switch( task.iTask )
 	{
 	case TASK_SAY_HEAL:
 //		if ( FOkToSpeak() )
@@ -399,7 +399,7 @@ void CScientist :: StartTask( const Task_t* pTask )
 		break;
 
 	case TASK_RANDOM_SCREAM:
-		if ( RANDOM_FLOAT( 0, 1 ) < pTask->flData )
+		if ( RANDOM_FLOAT( 0, 1 ) < task.flData )
 			Scream();
 		TaskComplete();
 		break;
@@ -441,14 +441,14 @@ void CScientist :: StartTask( const Task_t* pTask )
 		break;
 
 	default:
-		CTalkMonster::StartTask( pTask );
+		CTalkMonster::StartTask( task );
 		break;
 	}
 }
 
-void CScientist :: RunTask( const Task_t* pTask )
+void CScientist :: RunTask( const Task_t& task )
 {
-	switch ( pTask->iTask )
+	switch ( task.iTask )
 	{
 	case TASK_RUN_PATH_SCARED:
 		if ( MovementIsComplete() )
@@ -472,7 +472,7 @@ void CScientist :: RunTask( const Task_t* pTask )
 
 				distance = ( m_vecMoveGoal - GetAbsOrigin() ).Length2D();
 				// Re-evaluate when you think your finished, or the target has moved too far
-				if ( (distance < pTask->flData) || (m_vecMoveGoal - m_hTargetEnt->GetAbsOrigin()).Length() > pTask->flData * 0.5 )
+				if ( (distance < task.flData) || (m_vecMoveGoal - m_hTargetEnt->GetAbsOrigin()).Length() > task.flData * 0.5 )
 				{
 					m_vecMoveGoal = m_hTargetEnt->GetAbsOrigin();
 					distance = ( m_vecMoveGoal - GetAbsOrigin() ).Length2D();
@@ -481,7 +481,7 @@ void CScientist :: RunTask( const Task_t* pTask )
 
 				// Set the appropriate activity based on an overlapping range
 				// overlap the range to prevent oscillation
-				if ( distance < pTask->flData )
+				if ( distance < task.flData )
 				{
 					TaskComplete();
 					RouteClear();		// Stop moving
@@ -503,31 +503,22 @@ void CScientist :: RunTask( const Task_t* pTask )
 		{
 			if ( TargetDistance() > 90 )
 				TaskComplete();
-			pev->ideal_yaw = UTIL_VecToYaw( m_hTargetEnt->GetAbsOrigin() - GetAbsOrigin() );
-			ChangeYaw( pev->yaw_speed );
+			SetIdealYaw( UTIL_VecToYaw( m_hTargetEnt->GetAbsOrigin() - GetAbsOrigin() ) );
+			ChangeYaw( GetYawSpeed() );
 		}
 		break;
 	default:
-		CTalkMonster::RunTask( pTask );
+		CTalkMonster::RunTask( task );
 		break;
 	}
 }
 
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
 EntityClassification_t CScientist::GetClassification()
 {
 	return EntityClassifications().GetClassificationId( classify::HUMAN_PASSIVE );
 }
 
-
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
-void CScientist :: SetYawSpeed ( void )
+void CScientist::UpdateYawSpeed()
 {
 	int ys;
 
@@ -552,13 +543,9 @@ void CScientist :: SetYawSpeed ( void )
 	default: break;
 	}
 
-	pev->yaw_speed = ys;
+	SetYawSpeed( ys );
 }
 
-//=========================================================
-// HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
-//=========================================================
 void CScientist :: HandleAnimEvent( AnimEvent_t& event )
 {
 	switch( event.event )
@@ -566,16 +553,17 @@ void CScientist :: HandleAnimEvent( AnimEvent_t& event )
 	case SCIENTIST_AE_HEAL:		// Heal my target (if within range)
 		Heal();
 		break;
+		//TODO: these are obsoleted by SetBodygroup - Solokiller
 	case SCIENTIST_AE_NEEDLEON:
 		{
-		int oldBody = pev->body;
-		pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 1;
+		int oldBody = GetBody();
+		SetBody( (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 1 );
 		}
 		break;
 	case SCIENTIST_AE_NEEDLEOFF:
 		{
-		int oldBody = pev->body;
-		pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 0;
+		int oldBody = GetBody();
+		SetBody( (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 0 );
 		}
 		break;
 
@@ -584,9 +572,6 @@ void CScientist :: HandleAnimEvent( AnimEvent_t& event )
 	}
 }
 
-//=========================================================
-// Spawn
-//=========================================================
 void CScientist :: Spawn( void )
 {
 	Precache( );
@@ -594,11 +579,11 @@ void CScientist :: Spawn( void )
 	SetModel( "models/scientist.mdl");
 	SetSize( VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_STEP );
 	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->health			= gSkillData.GetScientistHealth();
-	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
+	SetHealth( gSkillData.GetScientistHealth() );
+	SetViewOffset( Vector ( 0, 0, 50 ) );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 
@@ -607,24 +592,21 @@ void CScientist :: Spawn( void )
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
 
 	// White hands
-	pev->skin = 0;
+	SetSkin( 0 );
 
-	if ( pev->body == -1 )
+	if ( GetBody() == -1 )
 	{// -1 chooses a random head
-		pev->body = RANDOM_LONG(0, NUM_SCIENTIST_HEADS-1);// pick a head, any head
+		SetBody( RANDOM_LONG(0, NUM_SCIENTIST_HEADS-1) );// pick a head, any head
 	}
 
 	// Luther is black, make his hands black
-	if ( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+	if ( GetBody() == HEAD_LUTHER )
+		SetSkin( 1 );
 	
 	MonsterInit();
 	SetUse( &CScientist::FollowerUse );
 }
 
-//=========================================================
-// Precache - precaches all resources this monster needs
-//=========================================================
 void CScientist :: Precache( void )
 {
 	PRECACHE_MODEL("models/scientist.mdl");
@@ -678,7 +660,7 @@ void CScientist :: TalkInit()
 	m_szGrp[TLK_MORTAL] =	"SC_MORTAL";
 
 	// get voice for head
-	switch (pev->body % 3)
+	switch ( GetBody() % 3 )
 	{
 	default:
 	case HEAD_GLASSES:	m_voicePitch = 105; break;	//glasses
@@ -690,7 +672,7 @@ void CScientist :: TalkInit()
 
 void CScientist::OnTakeDamage( const CTakeDamageInfo& info )
 {
-	if ( info.GetInflictor() && info.GetInflictor()->pev->flags & FL_CLIENT )
+	if ( info.GetInflictor() && info.GetInflictor()->GetFlags().Any( FL_CLIENT ) )
 	{
 		Remember( bits_MEMORY_PROVOKED );
 		StopFollowing( true );
@@ -700,12 +682,6 @@ void CScientist::OnTakeDamage( const CTakeDamageInfo& info )
 	CTalkMonster::OnTakeDamage( info );
 }
 
-
-//=========================================================
-// ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. In the base class implementation,
-// monsters care about all sounds, but no scents.
-//=========================================================
 int CScientist :: ISoundMask ( void )
 {
 	return	bits_SOUND_WORLD	|
@@ -713,10 +689,7 @@ int CScientist :: ISoundMask ( void )
 			bits_SOUND_DANGER	|
 			bits_SOUND_PLAYER;
 }
-	
-//=========================================================
-// PainSound
-//=========================================================
+
 void CScientist :: PainSound ( void )
 {
 	if (gpGlobals->time < m_painTime )
@@ -734,9 +707,6 @@ void CScientist :: PainSound ( void )
 	}
 }
 
-//=========================================================
-// DeathSound 
-//=========================================================
 void CScientist :: DeathSound ( void )
 {
 	PainSound();
@@ -1002,7 +972,7 @@ MONSTERSTATE CScientist :: GetIdealState ( void )
 
 bool CScientist::CanHeal() const
 { 
-	if ( (m_healTime > gpGlobals->time) || (m_hTargetEnt == NULL) || (m_hTargetEnt->pev->health > (m_hTargetEnt->pev->max_health * 0.5)) )
+	if ( (m_healTime > gpGlobals->time) || (m_hTargetEnt == NULL) || (m_hTargetEnt->GetHealth() > (m_hTargetEnt->GetMaxHealth() * 0.5)) )
 		return false;
 
 	return true;

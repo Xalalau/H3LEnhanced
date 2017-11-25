@@ -37,7 +37,7 @@ public:
 	//
 
 	// Look up animation data for sequence
-	virtual mstudioanim_t *StudioGetAnim ( model_t *m_pSubModel, mstudioseqdesc_t *pseqdesc );
+	virtual mstudioanim_t *StudioGetAnim ( model_t *pSubModel, mstudioseqdesc_t *pseqdesc );
 
 	// Interpolate model position and angles and set up matrices
 	virtual void StudioSetUpTransform (int trivial_accept);

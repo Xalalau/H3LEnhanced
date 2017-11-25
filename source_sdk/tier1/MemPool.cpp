@@ -41,7 +41,7 @@ CMemoryPool::CMemoryPool(int blockSize, int numElements, int growMode, const cha
 	}
 #endif
 
-	m_BlockSize = blockSize < sizeof(void*) ? sizeof(void*) : blockSize;
+	m_BlockSize = static_cast<size_t>( blockSize ) < sizeof(void*) ? sizeof(void*) : blockSize;
 	m_BlocksPerBlob = numElements;
 	m_PeakAlloc = 0;
 	m_GrowMode = growMode;

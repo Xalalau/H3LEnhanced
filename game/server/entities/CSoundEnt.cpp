@@ -75,15 +75,12 @@ bool CSound::FIsScent() const
 	return false;
 }
 
-//=========================================================
-// Spawn 
-//=========================================================
 void CSoundEnt::Spawn()
 {
-	pev->solid = SOLID_NOT;
+	SetSolidType( SOLID_NOT );
 	Initialize();
 
-	pev->nextthink = gpGlobals->time + 1; 
+	SetNextThink( gpGlobals->time + 1 );
 }
 
 //=========================================================
@@ -96,7 +93,7 @@ void CSoundEnt::Think()
 	int iSound;
 	int iPreviousSound;
 
-	pev->nextthink = gpGlobals->time + 0.3;// how often to check the sound list.
+	SetNextThink( gpGlobals->time + 0.3 );// how often to check the sound list.
 
 	iPreviousSound = SOUNDLIST_EMPTY;
 	iSound = m_iActiveSound; 
@@ -129,11 +126,9 @@ void CSoundEnt::Think()
 	}
 }
 
-//=========================================================
-// Precache - dummy function
-//=========================================================
 void CSoundEnt::Precache()
 {
+	//dummy function
 }
 
 //=========================================================

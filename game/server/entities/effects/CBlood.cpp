@@ -8,21 +8,21 @@ LINK_ENTITY_TO_CLASS( env_blood, CBlood );
 
 void CBlood::Spawn( void )
 {
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-	pev->effects = 0;
-	pev->frame = 0;
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	GetEffects().ClearAll();
+	SetFrame( 0 );
 	SetMovedir( this );
 }
 
 void CBlood::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if( pev->spawnflags & SF_BLOOD_STREAM )
+	if( GetSpawnFlags().Any( SF_BLOOD_STREAM ) )
 		UTIL_BloodStream( BloodPosition( pActivator ), Direction(), ( Color() == BLOOD_COLOR_RED ) ? 70 : Color(), BloodAmount() );
 	else
 		UTIL_BloodDrips( BloodPosition( pActivator ), Direction(), Color(), BloodAmount() );
 
-	if( pev->spawnflags & SF_BLOOD_DECAL )
+	if( GetSpawnFlags().Any( SF_BLOOD_DECAL ) )
 	{
 		Vector forward = Direction();
 		Vector start = BloodPosition( pActivator );
@@ -62,16 +62,16 @@ void CBlood::KeyValue( KeyValueData *pkvd )
 
 Vector CBlood::Direction( void )
 {
-	if( pev->spawnflags & SF_BLOOD_RANDOM )
+	if( GetSpawnFlags().Any( SF_BLOOD_RANDOM ) )
 		return UTIL_RandomBloodVector();
 
-	return pev->movedir;
+	return GetMoveDir();
 }
 
 
 Vector CBlood::BloodPosition( CBaseEntity *pActivator )
 {
-	if( pev->spawnflags & SF_BLOOD_PLAYER )
+	if( GetSpawnFlags().Any( SF_BLOOD_PLAYER ) )
 	{
 		edict_t *pPlayer;
 

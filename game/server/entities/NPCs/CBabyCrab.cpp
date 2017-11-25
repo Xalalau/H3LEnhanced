@@ -25,11 +25,11 @@ void CBabyCrab::Spawn( void )
 {
 	CHeadCrab::Spawn();
 	SetModel( "models/baby_headcrab.mdl" );
-	pev->rendermode = kRenderTransTexture;
-	pev->renderamt = 192;
+	SetRenderMode( kRenderTransTexture );
+	SetRenderAmount( 192 );
 	SetSize( Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
-	pev->health = gSkillData.GetHeadcrabHealth() * 0.25;	// less health than full grown
+	SetHealth( gSkillData.GetHeadcrabHealth() * 0.25 );	// less health than full grown
 }
 
 void CBabyCrab::Precache( void )
@@ -38,16 +38,18 @@ void CBabyCrab::Precache( void )
 	CHeadCrab::Precache();
 }
 
-void CBabyCrab::SetYawSpeed( void )
+void CBabyCrab::UpdateYawSpeed()
 {
-	pev->yaw_speed = 120;
+	SetYawSpeed( 120 );
 }
 
 bool CBabyCrab::CheckRangeAttack1( float flDot, float flDist )
 {
-	if( pev->flags & FL_ONGROUND )
+	if( GetFlags().Any( FL_ONGROUND ) )
 	{
-		if( pev->groundentity && ( pev->groundentity->v.flags & ( FL_CLIENT | FL_MONSTER ) ) )
+		auto pGroundEntity = GetGroundEntity();
+
+		if( pGroundEntity && pGroundEntity->GetFlags().Any( FL_CLIENT | FL_MONSTER ) )
 			return true;
 
 		// A little less accurate, but jump from closer

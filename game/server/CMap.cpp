@@ -168,17 +168,17 @@ void CMap::SendHudColors( CBasePlayer* pPlayer, const bool bForce )
 void CMap::SendHudColors( CBasePlayer* pPlayer, const CHudColors& colors )
 {
 	MESSAGE_BEGIN( MSG_ONE, gmsgHudColors, nullptr, pPlayer );
-		WRITE_BYTE( colors.m_PrimaryColor.r );
-		WRITE_BYTE( colors.m_PrimaryColor.g );
-		WRITE_BYTE( colors.m_PrimaryColor.b );
+		WRITE_BYTE( colors.m_PrimaryColor.r() );
+		WRITE_BYTE( colors.m_PrimaryColor.g() );
+		WRITE_BYTE( colors.m_PrimaryColor.b() );
 
-		WRITE_BYTE( colors.m_EmptyItemColor.r );
-		WRITE_BYTE( colors.m_EmptyItemColor.g );
-		WRITE_BYTE( colors.m_EmptyItemColor.b );
+		WRITE_BYTE( colors.m_EmptyItemColor.r() );
+		WRITE_BYTE( colors.m_EmptyItemColor.g() );
+		WRITE_BYTE( colors.m_EmptyItemColor.b() );
 
-		WRITE_BYTE( colors.m_AmmoBarColor.r );
-		WRITE_BYTE( colors.m_AmmoBarColor.g );
-		WRITE_BYTE( colors.m_AmmoBarColor.b );
+		WRITE_BYTE( colors.m_AmmoBarColor.r() );
+		WRITE_BYTE( colors.m_AmmoBarColor.g() );
+		WRITE_BYTE( colors.m_AmmoBarColor.b() );
 	MESSAGE_END();
 }
 
@@ -195,7 +195,7 @@ void CMap::LoadGlobalModelReplacement( const char* const pszFileName )
 {
 	ASSERT( pszFileName );
 
-	if( (m_pGlobalModelReplacement = m_ModelReplacement.AcquireMap( pszFileName)) )
+	if( ( m_pGlobalModelReplacement = m_ModelReplacement.AcquireMap( pszFileName ) ) != nullptr )
 	{
 		Alert( at_console, "Global Model Replacement file \"%s\" loaded\n", pszFileName );
 	}
@@ -217,7 +217,7 @@ void CMap::InitializeEntityClassifications()
 	const auto playerAllyId = EntityClassifications().AddClassification( classify::PLAYER_ALLY );
 	const auto plrBioWpnId = EntityClassifications().AddClassification( classify::PLAYER_BIOWEAPON );
 	const auto alienBioWpnId = EntityClassifications().AddClassification( classify::ALIEN_BIOWEAPON );
-	const auto ignoreId = EntityClassifications().AddClassification( classify::IGNORE, R_NO, R_NO );
+	/*const auto ignoreId = */EntityClassifications().AddClassification( classify::IGNORE, R_NO, R_NO );
 
 	EntityClassifications().AddRelationship( machineId, playerId, R_DL, true );
 	EntityClassifications().AddRelationship( machineId, humanPassiveId, R_DL );

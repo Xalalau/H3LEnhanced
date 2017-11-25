@@ -226,8 +226,6 @@ void CBarnacleGrapple::PrimaryAttack()
 
 	UTIL_MakeVectors( m_pPlayer->GetViewAngle() + m_pPlayer->GetPunchAngle() );
 
-	Vector vecSrc = m_pPlayer->GetGunPosition();
-
 	if( m_pTip )
 	{
 		if( m_pTip->IsStuck() )
@@ -242,9 +240,9 @@ void CBarnacleGrapple::PrimaryAttack()
 
 			if( m_pTip->GetGrappleType() > CBarnacleGrappleTip::TargetClass::SMALL )
 			{
-				SetMoveType( MOVETYPE_FLY );
-				//TODO: what does this do? - Solokiller
-				GetFlags() |= FL_IMMUNE_LAVA;
+				m_pPlayer->SetMoveType( MOVETYPE_FLY );
+				//Tells the physics code that the player is not on a ladder - Solokiller
+				m_pPlayer->GetFlags() |= FL_IMMUNE_LAVA;
 			}
 
 			if( m_bMomentaryStuck )
@@ -458,7 +456,7 @@ void CBarnacleGrapple::PrimaryAttack()
 
 							pHit->TraceAttack( 
 								CTakeDamageInfo( this, m_pPlayer, flDamage, DMG_ALWAYSGIB | DMG_CLUB ), 
-								gpGlobals->v_forward, &tr );
+								gpGlobals->v_forward, tr );
 
 							g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
 #endif
@@ -611,7 +609,7 @@ void CBarnacleGrapple::CreateEffect()
 
 		m_pBeam->EntsInit( m_pTip->entindex(), m_pPlayer->entindex() );
 
-		m_pBeam->SetFlags( BEAM_FSOLID );
+		m_pBeam->SetBeamFlags( BEAM_FSOLID );
 
 		m_pBeam->SetBrightness( 100.0 );
 

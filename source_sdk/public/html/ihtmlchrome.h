@@ -11,7 +11,7 @@
 #endif
 
 #include "htmlmessages.h"
-#include "tier1/utlbuffer.h"
+#include "tier1/UtlBuffer.h"
 
 // prototypes for all the protobuf messages, so we don't need to include all of protobuf
 class CMsgBrowserReady;

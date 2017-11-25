@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======//
+//====== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. =======//
 //
 // Purpose: 
 //
@@ -15,6 +15,9 @@
 #pragma once
 #endif
 
+#if __linux__ && __GNUC__ >= 7 // Shepard - Fix missing "swap"
+#include <algorithm>
+#endif
 
 #include <string.h>
 #include "tier0/platform.h"
@@ -508,8 +511,13 @@ template< typename T, class A >
 void CUtlVector<T, A>::Swap( CUtlVector< T, A > &vec )
 {
 	m_Memory.Swap( vec.m_Memory );
+#if __linux__ && __GNUC__ >= 7 // Shepard - Fix missing "swap"
+	std::swap( m_Size, vec.m_Size );
+	std::swap( m_pElements, vec.m_pElements );
+#else
 	swap( m_Size, vec.m_Size );
 	swap( m_pElements, vec.m_pElements );
+#endif
 }
 
 template< typename T, class A >

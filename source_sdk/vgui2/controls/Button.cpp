@@ -464,9 +464,9 @@ IBorder *Button::GetBorder(bool depressed, bool armed, bool selected, bool keyfo
 //-----------------------------------------------------------------------------
 void Button::SetAsCurrentDefaultButton(int state)
 {
-	if ( _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) != (bool)state )
+	if ( _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) != ( state != 0 ) )
 	{
-		_buttonFlags.SetFlag( DEFAULT_BUTTON, state );
+		_buttonFlags.SetFlag( DEFAULT_BUTTON, state != 0 );
 		if (state)
 		{
 			// post a message up notifying our nav group that we're now the default button
@@ -490,9 +490,9 @@ void Button::SetAsCurrentDefaultButton(int state)
 //-----------------------------------------------------------------------------
 void Button::SetAsDefaultButton(int state)
 {
-	if ( _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) != (bool)state )
+	if ( _buttonFlags.IsFlagSet( DEFAULT_BUTTON ) != ( state != 0 ) )
 	{
-		_buttonFlags.SetFlag( DEFAULT_BUTTON, state );
+		_buttonFlags.SetFlag( DEFAULT_BUTTON, state != 0 );
 		if (state)
 		{
 			// post a message up notifying our nav group that we're now the default button
@@ -741,7 +741,7 @@ const char *Button::GetDescription( void )
 //-----------------------------------------------------------------------------
 void Button::OnSetState(int state)
 {
-	SetSelected((bool)state);
+	SetSelected( state != 0 );
 	Repaint();
 }
 

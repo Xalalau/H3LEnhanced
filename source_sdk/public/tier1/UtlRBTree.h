@@ -252,11 +252,12 @@ protected:
 
 template <class T, class I, typename L>
 inline CUtlRBTree<T, I, L>::CUtlRBTree( int growSize, int initSize, const LessFunc_t &lessfunc ) : 
-m_Elements( growSize, initSize ), 
 m_LessFunc( lessfunc ),
+m_Elements( growSize, initSize ), 
 m_Root( InvalidIndex() ), 
-m_NumElements( 0 ), m_TotalElements( 0 ),  
-m_FirstFree( InvalidIndex() )
+m_NumElements( 0 ),  
+m_FirstFree( InvalidIndex() ),
+m_TotalElements( 0 )
 {
 	ResetDbgInfo();
 }

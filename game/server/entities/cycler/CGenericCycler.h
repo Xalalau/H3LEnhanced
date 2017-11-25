@@ -23,7 +23,7 @@
 class CGenericCycler : public CCycler
 {
 public:
-	void Spawn( void ) override { GenericCyclerSpawn( ( char * ) STRING( pev->model ), Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) ); }
+	void Spawn( void ) override { GenericCyclerSpawn( GetModelName(), Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) ); }
 };
 
 #endif //GAME_SERVER_ENTITIES_CYCLER_CGENERICCYCLER_H

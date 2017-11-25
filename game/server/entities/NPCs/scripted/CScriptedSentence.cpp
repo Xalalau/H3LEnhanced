@@ -22,17 +22,17 @@ LINK_ENTITY_TO_CLASS( scripted_sentence, CScriptedSentence );
 
 void CScriptedSentence::Spawn( void )
 {
-	pev->solid = SOLID_NOT;
+	SetSolidType( SOLID_NOT );
 
 	m_active = true;
 	// if no targetname, start now
 	if( !HasTargetname() )
 	{
 		SetThink( &CScriptedSentence::FindThink );
-		pev->nextthink = gpGlobals->time + 1.0;
+		SetNextThink( gpGlobals->time + 1.0 );
 	}
 
-	switch( static_cast<SoundRadius>( pev->impulse ) )
+	switch( static_cast<SoundRadius>( GetImpulse() ) )
 	{
 	case SoundRadius::MEDIUM:			// Medium radius
 		m_flAttenuation = ATTN_STATIC;
@@ -51,7 +51,7 @@ void CScriptedSentence::Spawn( void )
 		m_flAttenuation = ATTN_IDLE;
 		break;
 	}
-	pev->impulse = 0;
+	SetImpulse( 0 );
 
 	// No volume, use normal
 	if( m_flVolume <= 0 )
@@ -87,7 +87,7 @@ void CScriptedSentence::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "attenuation" ) )
 	{
-		pev->impulse = atoi( pkvd->szValue );
+		SetImpulse( atoi( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else if( FStrEq( pkvd->szKeyName, "volume" ) )
@@ -110,7 +110,7 @@ void CScriptedSentence::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		return;
 	//	ALERT( at_console, "Firing sentence: %s\n", STRING(m_iszSentence) );
 	SetThink( &CScriptedSentence::FindThink );
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 }
 
 void CScriptedSentence::FindThink( void )
@@ -119,17 +119,17 @@ void CScriptedSentence::FindThink( void )
 	if( pMonster )
 	{
 		StartSentence( pMonster );
-		if( pev->spawnflags & SF_SENTENCE_ONCE )
+		if( GetSpawnFlags().Any( SF_SENTENCE_ONCE ) )
 			UTIL_Remove( this );
 		SetThink( &CScriptedSentence::DelayThink );
-		pev->nextthink = gpGlobals->time + m_flDuration + m_flRepeat;
+		SetNextThink( gpGlobals->time + m_flDuration + m_flRepeat );
 		m_active = false;
 		//		ALERT( at_console, "%s: found monster %s\n", STRING(m_iszSentence), STRING(m_iszEntity) );
 	}
 	else
 	{
 		//		ALERT( at_console, "%s: can't find monster %s\n", STRING(m_iszSentence), STRING(m_iszEntity) );
-		pev->nextthink = gpGlobals->time + m_flRepeat + 0.5;
+		SetNextThink( gpGlobals->time + m_flRepeat + 0.5 );
 	}
 }
 
@@ -137,7 +137,7 @@ void CScriptedSentence::DelayThink( void )
 {
 	m_active = true;
 	if( !HasTargetname() )
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	SetThink( &CScriptedSentence::FindThink );
 }
 
@@ -147,9 +147,9 @@ CBaseMonster *CScriptedSentence::FindEntity( void )
 
 	CBaseMonster* pMonster = nullptr;
 
-	while( (pTargetEnt = UTIL_FindEntityByTargetname( pTargetEnt, STRING( m_iszEntity ) )) )
+	while( ( pTargetEnt = UTIL_FindEntityByTargetname( pTargetEnt, STRING( m_iszEntity ) ) ) != nullptr )
 	{
-		if( (pMonster = pTargetEnt->MyMonsterPointer()) )
+		if( ( pMonster = pTargetEnt->MyMonsterPointer() ) != nullptr )
 		{
 			if( AcceptableSpeaker( pMonster ) )
 				return pMonster;
@@ -160,7 +160,7 @@ CBaseMonster *CScriptedSentence::FindEntity( void )
 
 	pTargetEnt = nullptr;
 
-	while( (pTargetEnt = UTIL_FindEntityInSphere( pTargetEnt, GetAbsOrigin(), m_flRadius )) )
+	while( ( pTargetEnt = UTIL_FindEntityInSphere( pTargetEnt, GetAbsOrigin(), m_flRadius ) ) != nullptr )
 	{
 		if( pTargetEnt->ClassnameIs( m_iszEntity ) )
 		{
@@ -181,16 +181,12 @@ bool CScriptedSentence::AcceptableSpeaker( const CBaseMonster *pMonster ) const
 {
 	if( pMonster )
 	{
-		if( pev->spawnflags & SF_SENTENCE_FOLLOWERS )
+		if( GetSpawnFlags().Any( SF_SENTENCE_FOLLOWERS ) )
 		{
 			if( pMonster->m_hTargetEnt == NULL || !pMonster->m_hTargetEnt->IsPlayer() )
 				return false;
 		}
-		bool override;
-		if( pev->spawnflags & SF_SENTENCE_INTERRUPT )
-			override = true;
-		else
-			override = false;
+		const bool override = GetSpawnFlags().Any( SF_SENTENCE_INTERRUPT );
 		if( pMonster->CanPlaySentence( override ) )
 			return true;
 	}
@@ -205,9 +201,7 @@ bool CScriptedSentence::StartSentence( CBaseMonster *pTarget )
 		return false;
 	}
 
-	bool bConcurrent = false;
-	if( !( pev->spawnflags & SF_SENTENCE_CONCURRENT ) )
-		bConcurrent = true;
+	bool bConcurrent = !GetSpawnFlags().Any( SF_SENTENCE_CONCURRENT );
 
 	CBaseEntity *pListener = NULL;
 	if( !FStringNull( m_iszListener ) )

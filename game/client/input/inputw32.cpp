@@ -61,10 +61,11 @@ extern cvar_t *cl_forwardspeed;
 extern cvar_t *cl_pitchspeed;
 extern cvar_t *cl_movespeedkey;
 
-
+#ifdef WIN32
 static double s_flRawInputUpdateTime = 0.0f;
 static bool m_bRawInput = false;
 static bool m_bMouseThread = false;
+#endif
 extern globalvars_t *gpGlobals;
 
 // mouse variables
@@ -82,8 +83,10 @@ static cvar_t *m_customaccel_max;
 //Mouse move is raised to this power before being scaled by scale factor
 static cvar_t *m_customaccel_exponent;
 
+#ifdef WIN32
 // if threaded mouse is enabled then the time to sleep between polls
 static cvar_t *m_mousethread_sleep;
+#endif
 
 int			mouse_buttons;
 int			mouse_oldbuttonstate;
@@ -91,12 +94,16 @@ POINT		current_pos;
 int			old_mouse_x, old_mouse_y, mx_accum, my_accum;
 float		mouse_x, mouse_y;
 
+#ifdef WIN32
 static int	restore_spi;
 static int	originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
+#endif
 static int	mouseactive = 0;
 int			mouseinitialized;
+#ifdef WIN32
 static int	mouseparmsvalid;
 static int	mouseshowtoggle = 1;
+#endif
 
 // joystick defines and variables
 // where should defines be moved?
@@ -522,7 +529,6 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 	//      move the camera, or if the mouse cursor is visible or if we're in intermission
 	if ( !iMouseInUse && !Hud().IsInIntermission() && !g_iVisibleMouse )
 	{
-		int deltaX, deltaY;
 #ifdef _WIN32
 		if ( !m_bRawInput )
 		{
@@ -532,30 +538,14 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 				ThreadInterlockedExchange( &current_pos.y, s_mouseDeltaY );
 				ThreadInterlockedExchange( &s_mouseDeltaX, 0 );
 				ThreadInterlockedExchange( &s_mouseDeltaY, 0 );
-			}
-			else
-			{
-				GetCursorPos (&current_pos);
-			}
-		}
-		else
-#endif
-		{
-			SDL_GetRelativeMouseState( &deltaX, &deltaY );
-			current_pos.x = deltaX;
-			current_pos.y = deltaY;	
-		}
-		
-#ifdef _WIN32
-		if ( !m_bRawInput )
-		{
-			if ( m_bMouseThread )
-			{
+
 				mx = current_pos.x;
 				my = current_pos.y;
 			}
 			else
 			{
+				GetCursorPos (&current_pos);
+
 				mx = current_pos.x - gEngfuncs.GetWindowCenterX() + mx_accum;
 				my = current_pos.y - gEngfuncs.GetWindowCenterY() + my_accum;
 			}
@@ -563,6 +553,12 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 		else
 #endif
 		{
+			int deltaX, deltaY;
+
+			SDL_GetRelativeMouseState( &deltaX, &deltaY );
+			current_pos.x = deltaX;
+			current_pos.y = deltaY;	
+
 			mx = deltaX + mx_accum;
 			my = deltaY + my_accum;
 		}

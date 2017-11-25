@@ -47,7 +47,7 @@ void CBaseToggle::KeyValue( KeyValueData *pkvd )
 =============
 LinearMove
 
-calculate pev->velocity and pev->nextthink to reach vecDest from
+calculate GetAbsVelocity() and GetNextThink() to reach vecDest from
 GetAbsOrigin() traveling at flSpeed
 ===============
 */
@@ -72,11 +72,11 @@ void CBaseToggle::LinearMove( Vector	vecDest, float flSpeed )
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
 	// set nextthink to trigger a call to LinearMoveDone when dest is reached
-	pev->nextthink = pev->ltime + flTravelTime;
+	SetNextThink( GetLastThink() + flTravelTime );
 	SetThink( &CBaseToggle::LinearMoveDone );
 
 	// scale the destdelta vector by the time spent traveling to get velocity
-	pev->velocity = vecDestDelta / flTravelTime;
+	SetAbsVelocity( vecDestDelta / flTravelTime );
 }
 
 /*
@@ -95,8 +95,8 @@ void CBaseToggle::LinearMoveDone( void )
 	}
 
 	SetAbsOrigin( m_vecFinalDest );
-	pev->velocity = g_vecZero;
-	pev->nextthink = -1;
+	SetAbsVelocity( g_vecZero );
+	SetNextThink( -1 );
 	if( m_pfnCallWhenMoveDone )
 		( this->*m_pfnCallWhenMoveDone )( );
 }
@@ -105,7 +105,7 @@ void CBaseToggle::LinearMoveDone( void )
 =============
 AngularMove
 
-calculate pev->velocity and pev->nextthink to reach vecDest from
+calculate GetAbsVelocity() and GetNextThink() to reach vecDest from
 GetAbsOrigin() traveling at flSpeed
 Just like LinearMove, but rotational.
 ===============
@@ -118,24 +118,24 @@ void CBaseToggle::AngularMove( Vector vecDestAngle, float flSpeed )
 	m_vecFinalAngle = vecDestAngle;
 
 	// Already there?
-	if( vecDestAngle == pev->angles )
+	if( vecDestAngle == GetAbsAngles() )
 	{
 		AngularMoveDone();
 		return;
 	}
 
 	// set destdelta to the vector needed to move
-	Vector vecDestDelta = vecDestAngle - pev->angles;
+	Vector vecDestDelta = vecDestAngle - GetAbsAngles();
 
 	// divide by speed to get time to reach dest
 	float flTravelTime = vecDestDelta.Length() / flSpeed;
 
 	// set nextthink to trigger a call to AngularMoveDone when dest is reached
-	pev->nextthink = pev->ltime + flTravelTime;
+	SetNextThink( GetLastThink() + flTravelTime );
 	SetThink( &CBaseToggle::AngularMoveDone );
 
 	// scale the destdelta vector by the time spent traveling to get velocity
-	pev->avelocity = vecDestDelta / flTravelTime;
+	SetAngularVelocity( vecDestDelta / flTravelTime );
 }
 
 
@@ -146,9 +146,9 @@ After rotating, set angle to exact final angle, call "move done" function
 */
 void CBaseToggle::AngularMoveDone( void )
 {
-	pev->angles = m_vecFinalAngle;
-	pev->avelocity = g_vecZero;
-	pev->nextthink = -1;
+	SetAbsAngles( m_vecFinalAngle );
+	SetAngularVelocity( g_vecZero );
+	SetNextThink( -1 );
 	if( m_pfnCallWhenMoveDone )
 		( this->*m_pfnCallWhenMoveDone )( );
 }
@@ -171,12 +171,12 @@ float CBaseToggle::AxisValue( int flags, const Vector &angles )
 
 void CBaseToggle::AxisDir( CBaseEntity* pEntity )
 {
-	if( FBitSet( pEntity->pev->spawnflags, SF_DOOR_ROTATE_Z ) )
-		pEntity->pev->movedir = Vector( 0, 0, 1 );	// around z-axis
-	else if( FBitSet( pEntity->pev->spawnflags, SF_DOOR_ROTATE_X ) )
-		pEntity->pev->movedir = Vector( 1, 0, 0 );	// around x-axis
+	if( pEntity->GetSpawnFlags().Any( SF_DOOR_ROTATE_Z ) )
+		pEntity->SetMoveDir( Vector( 0, 0, 1 ) );	// around z-axis
+	else if( pEntity->GetSpawnFlags().Any( SF_DOOR_ROTATE_X ) )
+		pEntity->SetMoveDir( Vector( 1, 0, 0 ) );	// around x-axis
 	else
-		pEntity->pev->movedir = Vector( 0, 1, 0 );	// around y-axis
+		pEntity->SetMoveDir( Vector( 0, 1, 0 ) );	// around y-axis
 }
 
 

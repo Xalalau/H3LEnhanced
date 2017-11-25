@@ -143,7 +143,7 @@ bool CCommand::Initialize( const char* pszCommand )
 
 		const size_t uiLength = strlen( szBuffer );
 
-		if( m_iArgc < MAX_TOKENS )
+		if( static_cast<size_t>( m_iArgc ) < MAX_TOKENS )
 		{
 			if( uiLength < static_cast<size_t>( MAX_LENGTH - ( pszArgVBuffer - m_szArgsBuffer ) ) )
 			{

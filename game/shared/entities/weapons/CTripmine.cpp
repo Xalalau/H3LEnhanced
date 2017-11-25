@@ -36,14 +36,14 @@ void CTripmine::Spawn( )
 {
 	Precache( );
 	SetModel( "models/v_tripmine.mdl");
-	pev->frame = 0;
+	SetFrame(0);
 	// ############ hu3lifezado ############ //
 	// Posicao extra para evitar que a mina pinto de parede entre na chao na forma world (3)
-	pev->body = 4;
+	SetBody(4);
 	// ############ //
-	pev->sequence = TRIPMINE_GROUND;
+	SetSequence( TRIPMINE_GROUND );
 	// ResetSequenceInfo( );
-	pev->framerate = 0;
+	SetFrameRate( 0 );
 
 	FallInit();// get ready to fall down
 
@@ -78,9 +78,9 @@ void CTripmine::Holster()
 	if (!m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ])
 	{
 		// out of mines
-		m_pPlayer->pev->weapons &= ~(1<<m_iId);
+		m_pPlayer->GetWeapons().ClearFlags( 1 << m_iId );
 		SetThink( &CTripmine::DestroyItem );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 
 	SendWeaponAnim( TRIPMINE_HOLSTER );
@@ -92,7 +92,7 @@ void CTripmine::PrimaryAttack( void )
 	if (m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] <= 0)
 		return;
 
-	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
+	UTIL_MakeVectors( m_pPlayer->GetViewAngle() + m_pPlayer->GetPunchAngle() );
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 	Vector vecAiming = gpGlobals->v_forward;
 
@@ -112,11 +112,11 @@ void CTripmine::PrimaryAttack( void )
 	if (tr.flFraction < 1.0)
 	{
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
-		if ( pEntity && !(pEntity->pev->flags & FL_CONVEYOR) )
+		if ( pEntity && !pEntity->GetFlags().Any( FL_CONVEYOR ) )
 		{
 			Vector angles = UTIL_VecToAngles( tr.vecPlaneNormal );
 
-			CBaseEntity *pEnt = CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, m_pPlayer->edict() );
+			/*CBaseEntity *pEnt = */CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, m_pPlayer->edict() );
 
 			m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ]--;
 

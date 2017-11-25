@@ -48,11 +48,11 @@ public:
 		m_pButton = pButton;
 	}
 
-	virtual void cursorEntered( vgui::Panel* panel )
+	virtual void cursorEntered( vgui::Panel* /*panel*/ )
 	{
 		m_pButton->setArmed( true );
 	};
-	virtual void cursorExited( vgui::Panel* Panel )
+	virtual void cursorExited( vgui::Panel* /*Panel*/ )
 	{
 		m_pButton->setArmed( false );
 	};
@@ -72,12 +72,12 @@ public:
 		m_pCommandButton = pButton;
 	}
 
-	virtual void cursorEntered( vgui::Panel *panel )
+	virtual void cursorEntered( vgui::Panel* /*panel*/ )
 	{
 		m_pCommandButton->cursorEntered();
 	}
 
-	virtual void cursorExited( vgui::Panel *panel )
+	virtual void cursorExited( vgui::Panel* /*panel*/ )
 	{
 		m_pCommandButton->cursorExited();
 	}

@@ -23,7 +23,7 @@ void CFuncTankRocket::Fire( const Vector &barrelEnd, const Vector &forward, CBas
 		{
 			for( i = 0; i < bulletCount; i++ )
 			{
-				CBaseEntity *pRocket = CBaseEntity::Create( "rpg_rocket", barrelEnd, pev->angles, edict() );
+				/*CBaseEntity *pRocket = */CBaseEntity::Create( "rpg_rocket", barrelEnd, GetAbsAngles(), edict() );
 			}
 			CFuncTank::Fire( barrelEnd, forward, pAttacker );
 		}

@@ -243,23 +243,23 @@ public:
 				if ( !m_pParent->IsWithin( screenx, screeny ) )
 				{
 					Panel *page = reinterpret_cast< Panel * >( data->GetPtr( "propertypage" ) );
-					PropertySheet *sheet = reinterpret_cast< PropertySheet * >( data->GetPtr( "propertysheet" ) );
+					PropertySheet *propSheet = reinterpret_cast< PropertySheet * >( data->GetPtr( "propertysheet" ) );
 					char const *title = data->GetString( "tabname", "" );
-					if ( !page || !sheet )
+					if ( !page || !propSheet )
 						return;
 					
 					// Can only create if sheet was part of a ToolWindow derived object
-					ToolWindow *tw = dynamic_cast< ToolWindow * >( sheet->GetParent() );
+					ToolWindow *tw = dynamic_cast< ToolWindow * >( propSheet->GetParent() );
 					if ( tw )
 					{
 						IToolWindowFactory *factory = tw->GetToolWindowFactory();
 						if ( factory )
 						{
-							bool hasContextMenu = sheet->PageHasContextMenu( page );
-							sheet->RemovePage( page );
-							factory->InstanceToolWindow( tw->GetParent(), sheet->ShouldShowContextButtons(), page, title, hasContextMenu );
+							bool hasContextMenu = propSheet->PageHasContextMenu( page );
+							propSheet->RemovePage( page );
+							factory->InstanceToolWindow( tw->GetParent(), propSheet->ShouldShowContextButtons(), page, title, hasContextMenu );
 
-							if ( sheet->GetNumPages() == 0 )
+							if ( propSheet->GetNumPages() == 0 )
 							{
 								tw->MarkForDeletion();
 							}
@@ -875,8 +875,8 @@ void PropertySheet::PerformLayout()
 		{
 			int tabHeight = IsSmallTabs() ? 13 : 27;
 
-            int width, tall;
-            m_PageTabs[i]->GetSize(width, tall);
+            int width, height;
+            m_PageTabs[i]->GetSize(width, height );
 			if (m_PageTabs[i] == _activeTab)
 			{
 				// active tab is taller

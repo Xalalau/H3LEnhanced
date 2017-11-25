@@ -416,14 +416,11 @@ V_CalcIntermissionRefdef
 */
 void V_CalcIntermissionRefdef ( ref_params_t *pparams )
 {
-	cl_entity_t	*ent, *view;
-	float		old;
-
 	// ent is the player model ( visible when out of body )
-	ent = gEngfuncs.GetLocalPlayer();
+	//cl_entity_t* ent = gEngfuncs.GetLocalPlayer();
 	
 	// view is the weapon model (only visible from inside body )
-	view = gEngfuncs.GetViewModel();
+	cl_entity_t* view = gEngfuncs.GetViewModel();
 
 	pparams->vieworg = pparams->simorg;
 	pparams->viewangles = pparams->cl_viewangles;
@@ -431,7 +428,7 @@ void V_CalcIntermissionRefdef ( ref_params_t *pparams )
 	view->model = NULL;
 
 	// allways idle in intermission
-	old = v_idlescale;
+	const float old = v_idlescale;
 	v_idlescale = 1;
 
 	V_AddIdle ( pparams );
@@ -479,7 +476,6 @@ V_CalcRefdef
 void V_CalcNormalRefdef ( ref_params_t *pparams )
 {
 	cl_entity_t		*ent, *view;
-	int				i;
 	Vector			angles;
 	float			bob, waterOffset;
 	static viewinterp_t		ViewInterp;
@@ -535,7 +531,7 @@ void V_CalcNormalRefdef ( ref_params_t *pparams )
 	waterOffset = 0;
 	if ( pparams->waterlevel >= WATERLEVEL_WAIST )
 	{
-		int		i, contents, waterDist, waterEntity;
+		int		contents, waterDist, waterEntity;
 		Vector	point;
 		waterDist = cl_waterdist->value;
 
@@ -562,7 +558,7 @@ void V_CalcNormalRefdef ( ref_params_t *pparams )
 		if ( pparams->waterlevel == WATERLEVEL_WAIST )	
 		{
 			point[2] -= waterDist;
-			for ( i = 0; i < waterDist; i++ )
+			for ( int i = 0; i < waterDist; i++ )
 			{
 				contents = gEngfuncs.PM_PointContents( point, NULL );
 				if ( contents > CONTENTS_WATER )
@@ -576,7 +572,7 @@ void V_CalcNormalRefdef ( ref_params_t *pparams )
 			// eyes are under water.  Make sure we're far enough under
 			point[2] += waterDist;
 
-			for ( i = 0; i < waterDist; i++ )
+			for ( int i = 0; i < waterDist; i++ )
 			{
 				contents = gEngfuncs.PM_PointContents( point, NULL );
 				if ( contents <= CONTENTS_WATER )
@@ -601,7 +597,7 @@ void V_CalcNormalRefdef ( ref_params_t *pparams )
 	// don't allow cheats in multiplayer
 	if ( pparams->maxclients <= 1 )
 	{
-		for ( i=0 ; i<3 ; i++ )
+		for ( int i=0 ; i<3 ; i++ )
 		{
 			pparams->vieworg[i] += scr_ofsx->value*pparams->forward[i] + scr_ofsy->value*pparams->right[i] + scr_ofsz->value*pparams->up[i];
 		}
@@ -621,7 +617,7 @@ void V_CalcNormalRefdef ( ref_params_t *pparams )
 
 		AngleVectors( camAngles, camForward, camRight, camUp );
 
-		for ( i = 0; i < 3; i++ )
+		for ( int i = 0; i < 3; i++ )
 		{
 			pparams->vieworg[ i ] += -ofs[2] * camForward[ i ];
 		}
@@ -642,7 +638,7 @@ void V_CalcNormalRefdef ( ref_params_t *pparams )
 	// Let the viewmodel shake at about 10% of the amplitude
 	gEngfuncs.V_ApplyShake( view->origin, view->angles, 0.9 );
 
-	for ( i = 0; i < 3; i++ )
+	for ( int i = 0; i < 3; i++ )
 	{
 		view->origin[ i ] += bob * 0.4 * pparams->forward[ i ];
 	}
@@ -884,7 +880,7 @@ void V_GetChaseOrigin( const Vector& angles, const Vector& origin, float distanc
 	Vector	vecEnd;
 	Vector	forward;
 	Vector	vecStart;
-	pmtrace_t * trace;
+	pmtrace_t * trace = nullptr;
 	int maxLoops = 8;
 
 	int ignoreent = -1;	// first, ignore no entity

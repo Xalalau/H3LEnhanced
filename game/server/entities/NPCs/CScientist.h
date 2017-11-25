@@ -37,11 +37,11 @@ public:
 	void Spawn() override;
 	void Precache() override;
 
-	void SetYawSpeed() override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
-	void RunTask( const Task_t* pTask ) override;
-	void StartTask( const Task_t* pTask ) override;
+	void RunTask( const Task_t& task ) override;
+	void StartTask( const Task_t& task ) override;
 	int	ObjectCaps() const override { return CTalkMonster::ObjectCaps() | FCAP_IMPULSE_USE; }
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	virtual int FriendNumber( int arrayNumber ) const override;

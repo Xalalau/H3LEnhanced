@@ -27,7 +27,7 @@ cvar_t* skilldata_t::GetSkillCvar( const char* pszName, const SkillLevel skillLe
 {
 	char szBuffer[ 64 ];
 
-	const int iCount = sprintf( szBuffer, "%s%d", pszName, skillLevel );
+	/*const int iCount = */sprintf( szBuffer, "%s%d", pszName, skillLevel );
 
 	cvar_t* pCvar = CVAR_GET_POINTER( szBuffer );
 

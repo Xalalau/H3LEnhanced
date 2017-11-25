@@ -64,14 +64,14 @@ CBaseEntity* CGameRules::GetPlayerSpawnSpot( CBasePlayer* pPlayer )
 
 	//This should never be null.
 	ASSERT( pSpawnSpot );
-	
-	pPlayer->pev->origin = pSpawnSpot->GetAbsOrigin() + Vector(0, 0, 1);
-	pPlayer->pev->v_angle = g_vecZero;
-	pPlayer->pev->velocity = g_vecZero;
-	pPlayer->pev->angles = pSpawnSpot->pev->angles;
-	pPlayer->pev->punchangle = g_vecZero;
-	pPlayer->SetFixAngleMode(FIXANGLE_SET);
 
+	pPlayer->SetAbsOrigin( pSpawnSpot->GetAbsOrigin() + Vector( 0, 0, 1 ) );
+	pPlayer->SetViewAngle( g_vecZero );
+	pPlayer->SetAbsVelocity( g_vecZero );
+	pPlayer->SetAbsAngles( pSpawnSpot->GetAbsAngles() );
+	pPlayer->SetPunchAngle( g_vecZero );
+	pPlayer->SetFixAngleMode( FIXANGLE_SET );
+	
 	return pSpawnSpot;
 }
 
@@ -80,7 +80,7 @@ CBaseEntity* CGameRules::GetPlayerSpawnSpot( CBasePlayer* pPlayer )
 bool CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerWeapon *pWeapon )
 {
 	// only living players can have items
-	if ( pPlayer->pev->deadflag != DEAD_NO )
+	if ( pPlayer->GetDeadFlag() != DEAD_NO )
 		return false;
 
 	if ( pWeapon->pszAmmo1() )

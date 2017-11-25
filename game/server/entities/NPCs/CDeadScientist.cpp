@@ -33,30 +33,30 @@ void CDeadScientist::Spawn()
 	PRECACHE_MODEL( "models/scientist.mdl" );
 	SetModel( "models/scientist.mdl" );
 
-	pev->effects = 0;
-	pev->sequence = 0;
+	GetEffects().ClearAll();
+	SetSequence( 0 );
 	// Corpses have less health
-	pev->health = 8;//gSkillData.GetScientistHealth();
+	SetHealth( 8 );//gSkillData.GetScientistHealth();
 
 	m_bloodColor = BLOOD_COLOR_RED;
 
-	if( pev->body == -1 )
+	if( GetBody() == -1 )
 	{// -1 chooses a random head
-		pev->body = RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 );// pick a head, any head
+		SetBody( RANDOM_LONG( 0, NUM_SCIENTIST_HEADS - 1 ) );// pick a head, any head
 	}
 	// Luther is black, make his hands black
-	if( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+	if( GetBody() == HEAD_LUTHER )
+		SetSkin( 1 );
 	else
-		pev->skin = 0;
+		SetSkin( 0 );
 
-	pev->sequence = LookupSequence( m_szPoses[ m_iPose ] );
-	if( pev->sequence == -1 )
+	SetSequence( LookupSequence( m_szPoses[ m_iPose ] ) );
+	if( GetSequence() == -1 )
 	{
 		ALERT( at_console, "Dead scientist with bad pose\n" );
 	}
 
-	//	pev->skin += 2; // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
+	//	SetSkin( GetSkin() + 2 ); // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
 	MonsterInitDead();
 }
 

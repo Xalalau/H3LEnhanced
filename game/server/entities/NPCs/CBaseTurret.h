@@ -55,7 +55,7 @@ public:
 	void KeyValue( KeyValueData *pkvd ) override;
 	void TurretUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
-	virtual void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	virtual void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 	virtual void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	virtual EntityClassification_t GetClassification() override;
 

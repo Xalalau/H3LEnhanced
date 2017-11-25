@@ -42,12 +42,14 @@ void CPartRainDrop::Touch( Vector pos, Vector normal, int index )
 	Vector vecStart = m_vOrigin;
 	vecStart.z += 32.0f;
 
-	Vector vecEnd = m_vOrigin;
-	vecEnd.z -= 16.0f;
-
 	pmtrace_t trace;
 
-	gEngfuncs.pEventAPI->EV_PlayerTrace( vecStart, vecEnd, PM_WORLD_ONLY, -1, &trace );
+	{
+		Vector vecEnd = m_vOrigin;
+		vecEnd.z -= 16.0f;
+
+		gEngfuncs.pEventAPI->EV_PlayerTrace( vecStart, vecEnd, PM_WORLD_ONLY, -1, &trace );
+	}
 
 	Vector vecNormal;
 

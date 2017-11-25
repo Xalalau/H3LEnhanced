@@ -240,19 +240,19 @@ void CAmbientGeneric::Spawn( void )
 	80  : "Large Radius"
 	*/
 
-	if( FBitSet( pev->spawnflags, AMBIENT_SOUND_EVERYWHERE ) )
+	if( GetSpawnFlags().Any( AMBIENT_SOUND_EVERYWHERE ) )
 	{
 		m_flAttenuation = ATTN_NONE;
 	}
-	else if( FBitSet( pev->spawnflags, AMBIENT_SOUND_SMALLRADIUS ) )
+	else if( GetSpawnFlags().Any( AMBIENT_SOUND_SMALLRADIUS ) )
 	{
 		m_flAttenuation = ATTN_IDLE;
 	}
-	else if( FBitSet( pev->spawnflags, AMBIENT_SOUND_MEDIUMRADIUS ) )
+	else if( GetSpawnFlags().Any( AMBIENT_SOUND_MEDIUMRADIUS ) )
 	{
 		m_flAttenuation = ATTN_STATIC;
 	}
-	else if( FBitSet( pev->spawnflags, AMBIENT_SOUND_LARGERADIUS ) )
+	else if( GetSpawnFlags().Any( AMBIENT_SOUND_LARGERADIUS ) )
 	{
 		m_flAttenuation = ATTN_NORM;
 	}
@@ -261,24 +261,24 @@ void CAmbientGeneric::Spawn( void )
 		m_flAttenuation = ATTN_STATIC;
 	}
 
-	char* szSoundFile = ( char* ) STRING( pev->message );
+	const char* szSoundFile = GetMessage();
 
-	if( FStringNull( pev->message ) || strlen( szSoundFile ) < 1 )
+	if( !HasMessage() || strlen( szSoundFile ) < 1 )
 	{
 		ALERT( at_error, "EMPTY AMBIENT AT: %f, %f, %f\n", GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 		SetThink( &CAmbientGeneric::SUB_Remove );
 		return;
 	}
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
 
 	// Set up think function for dynamic modification 
 	// of ambient sound's pitch or volume. Don't
 	// start thinking yet.
 
 	SetThink( &CAmbientGeneric::RampThink );
-	pev->nextthink = 0;
+	SetNextThink( 0 );
 
 	// allow on/off switching via 'use' function.
 
@@ -286,7 +286,7 @@ void CAmbientGeneric::Spawn( void )
 
 	m_fActive = false;
 
-	if( FBitSet( pev->spawnflags, AMBIENT_SOUND_NOT_LOOPING ) )
+	if( GetSpawnFlags().Any( AMBIENT_SOUND_NOT_LOOPING ) )
 		m_fLooping = false;
 	else
 		m_fLooping = true;
@@ -295,9 +295,9 @@ void CAmbientGeneric::Spawn( void )
 
 void CAmbientGeneric::Precache( void )
 {
-	char* szSoundFile = ( char* ) STRING( pev->message );
+	const char* szSoundFile = GetMessage();
 
-	if( !FStringNull( pev->message ) && strlen( szSoundFile ) > 1 )
+	if( HasMessage() && strlen( szSoundFile ) > 1 )
 	{
 		if( *szSoundFile != '!' )
 			PRECACHE_SOUND( szSoundFile );
@@ -305,7 +305,7 @@ void CAmbientGeneric::Precache( void )
 	// init all dynamic modulation parms
 	InitModulationParms();
 
-	if( !FBitSet( pev->spawnflags, AMBIENT_SOUND_START_SILENT ) )
+	if( !GetSpawnFlags().Any( AMBIENT_SOUND_START_SILENT ) )
 	{
 		// start the sound ASAP
 		if( m_fLooping )
@@ -316,7 +316,7 @@ void CAmbientGeneric::Precache( void )
 		UTIL_EmitAmbientSound( this, GetAbsOrigin(), szSoundFile,
 			( m_dpv.vol * 0.01 ), m_flAttenuation, SND_SPAWNING, m_dpv.pitch );
 
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 }
 
@@ -328,7 +328,7 @@ void CAmbientGeneric::Precache( void )
 //
 void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	char* szSoundFile = ( char* ) STRING( pev->message );
+	const char* szSoundFile = GetMessage();
 	float fraction;
 
 	if( useType != USE_TOGGLE )
@@ -383,7 +383,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 				m_dpv.pitchrun = m_dpv.pitchstart + pitchinc * m_dpv.cspincount;
 				if( m_dpv.pitchrun > 255 ) m_dpv.pitchrun = 255;
 
-				pev->nextthink = gpGlobals->time + 0.1;
+				SetNextThink( gpGlobals->time + 0.1 );
 			}
 
 		}
@@ -392,7 +392,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 			m_fActive = false;
 
 			// HACKHACK - this makes the code in Precache() work properly after a save/restore
-			pev->spawnflags |= AMBIENT_SOUND_START_SILENT;
+			GetSpawnFlags() |= AMBIENT_SOUND_START_SILENT;
 
 			if( m_dpv.spindownsav || m_dpv.fadeoutsav )
 			{
@@ -402,7 +402,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 
 				m_dpv.fadeout = m_dpv.fadeoutsav;
 				m_dpv.fadein = 0;
-				pev->nextthink = gpGlobals->time + 0.1;
+				SetNextThink( gpGlobals->time + 0.1 );
 			}
 			else
 				UTIL_EmitAmbientSound( this, GetAbsOrigin(), szSoundFile,
@@ -431,7 +431,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 		UTIL_EmitAmbientSound( this, GetAbsOrigin(), szSoundFile,
 			( m_dpv.vol * 0.01 ), m_flAttenuation, 0, m_dpv.pitch );
 
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 
 	}
 }
@@ -443,7 +443,7 @@ void CAmbientGeneric::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, 
 
 void CAmbientGeneric::RampThink( void )
 {
-	char* szSoundFile = ( char* ) STRING( pev->message );
+	const char* szSoundFile = GetMessage();
 	int pitch = m_dpv.pitch;
 	int vol = m_dpv.vol;
 	int flags = 0;
@@ -627,7 +627,7 @@ void CAmbientGeneric::RampThink( void )
 	}
 
 	// update ramps at 5hz
-	pev->nextthink = gpGlobals->time + 0.2;
+	SetNextThink( gpGlobals->time + 0.2 );
 	return;
 }
 
@@ -637,7 +637,7 @@ void CAmbientGeneric::InitModulationParms( void )
 {
 	int pitchinc;
 
-	m_dpv.volrun = pev->health * 10;	// 0 - 100
+	m_dpv.volrun = GetHealth() * 10;	// 0 - 100
 	if( m_dpv.volrun > 100 ) m_dpv.volrun = 100;
 	if( m_dpv.volrun < 0 ) m_dpv.volrun = 0;
 

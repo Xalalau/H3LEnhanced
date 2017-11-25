@@ -60,7 +60,7 @@ static CASPluginData* Plugin_GetPluginData()
 	return CASModule_GetPluginData( pModule );
 }
 
-static std::string CPluginData_GetName( const CASPluginData* pThis )
+static std::string CPluginData_GetName( const CASPluginData* /*pThis*/ )
 {
 	auto pScriptModule = GetScriptModuleFromScriptContext( asGetActiveContext() );
 

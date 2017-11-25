@@ -33,7 +33,7 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	void MonsterThink( void ) override;
 	void Move( float flInterval ) override;
 	void PickNewDest( int iCondition );

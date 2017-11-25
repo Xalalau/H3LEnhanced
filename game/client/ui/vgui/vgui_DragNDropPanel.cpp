@@ -14,7 +14,7 @@ using namespace vgui;
 
 //================================================================
 // Input Handler for Drag N Drop panels
-void CDragNDropHandler::cursorMoved( int x, int y, Panel* panel )
+void CDragNDropHandler::cursorMoved( int x, int y, Panel* /*panel*/ )
 {
 	if( m_bDragging )
 	{
@@ -28,7 +28,7 @@ void CDragNDropHandler::cursorMoved( int x, int y, Panel* panel )
 	}
 }
 
-void CDragNDropHandler::mousePressed( MouseCode code, Panel* panel )
+void CDragNDropHandler::mousePressed( MouseCode /*code*/, Panel* panel )
 {
 	int x, y;
 	App::getInstance()->getCursorPos( x, y );
@@ -42,7 +42,7 @@ void CDragNDropHandler::mousePressed( MouseCode code, Panel* panel )
 	m_pPanel->requestFocus();
 }
 
-void CDragNDropHandler::mouseReleased( MouseCode code, Panel* panel )
+void CDragNDropHandler::mouseReleased( MouseCode /*code*/, Panel* /*panel*/ )
 {
 	m_bDragging = false;
 	m_pPanel->setDragged( m_bDragging );

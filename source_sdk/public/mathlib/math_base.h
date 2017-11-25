@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -293,7 +293,7 @@ void inline SinCos( float radians, float *sine, float *cosine )
 		fstp DWORD PTR [eax]
 	}
 #elif POSIX
-	register double __cosr, __sinr;
+	/*register*/ double __cosr, __sinr;
  	__asm __volatile__
     		("fsincos"
      	: "=t" (__cosr), "=u" (__sinr) : "0" (radians));
@@ -583,6 +583,7 @@ template<> FORCEINLINE_TEMPLATE QAngleByValue Lerp<QAngleByValue>( float flPerce
 #endif // VECTOR_NO_SLOW_OPERATIONS
 
 
+#if !( __linux__ && __GNUC__ >= 7 ) 
 // Swap two of anything.
 template <class T> 
 FORCEINLINE_TEMPLATE void swap( T& x, T& y )
@@ -591,6 +592,7 @@ FORCEINLINE_TEMPLATE void swap( T& x, T& y )
 	x = y;
 	y = temp;
 }
+#endif
 
 template <class T> FORCEINLINE_TEMPLATE T AVG(T a, T b)
 {
@@ -1069,8 +1071,10 @@ inline unsigned long RoundFloatToUnsignedLong(float f)
 // Fast, accurate ftol:
 inline int Float2Int( float a )
 {
+#ifdef _WIN32
    int CtrlwdHolder;
    int CtrlwdSetter;
+#endif
    int RetVal;
 
 #ifdef _WIN32
@@ -1096,8 +1100,10 @@ inline int Float2Int( float a )
 // Over 15x faster than: (int)floor(value)
 inline int Floor2Int( float a )
 {
+#ifdef _WIN32
    int CtrlwdHolder;
    int CtrlwdSetter;
+#endif
    int RetVal;
 
 #ifdef _WIN32
@@ -1144,8 +1150,10 @@ inline float ClampToMsec( float in )
 // Over 15x faster than: (int)ceil(value)
 inline int Ceil2Int( float a )
 {
+#ifdef _WIN32
    int CtrlwdHolder;
    int CtrlwdSetter;
+#endif
    int RetVal;
 
 #ifdef _WIN32

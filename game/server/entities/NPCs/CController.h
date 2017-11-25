@@ -37,18 +37,23 @@ public:
 
 	void UpdateOnRemove() override;
 
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 
 	void RunAI( void ) override;
-	bool CheckRangeAttack1( float flDot, float flDist ) override;	// balls
+
+	/**
+	*	@brief shoot a bigass energy ball out of their head
+	*/
+	bool CheckRangeAttack1( float flDot, float flDist ) override;
+
 	bool CheckRangeAttack2( float flDot, float flDist ) override;	// head
 	bool CheckMeleeAttack1( float flDot, float flDist ) override;	// block, throw
 	Schedule_t* GetSchedule( void ) override;
 	Schedule_t* GetScheduleOfType( int Type ) override;
-	void StartTask( const Task_t* pTask ) override;
-	void RunTask( const Task_t* pTask ) override;
+	void StartTask( const Task_t& task ) override;
+	void RunTask( const Task_t& task ) override;
 	DECLARE_SCHEDULES() override;
 
 	void Stop( void ) override;

@@ -26,8 +26,8 @@ LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt );
 
 void CNodeEnt::Spawn( void )
 {
-	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_NOT;// always solid_not 
+	SetMoveType( MOVETYPE_NONE );
+	SetSolidType( SOLID_NOT );// always solid_not 
 
 	if( WorldGraph.m_fGraphPresent )
 	{
@@ -44,7 +44,7 @@ void CNodeEnt::Spawn( void )
 
 	WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_vecOriginPeek =
 		WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_vecOrigin = GetAbsOrigin();
-	WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_flHintYaw = pev->angles.y;
+	WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_flHintYaw = GetAbsAngles().y;
 	WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_sHintType = m_sHintType;
 	WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_sHintActivity = m_sHintActivity;
 

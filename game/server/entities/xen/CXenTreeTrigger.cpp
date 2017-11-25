@@ -22,9 +22,9 @@ LINK_ENTITY_TO_CLASS( xen_ttrigger, CXenTreeTrigger );
 
 void CXenTreeTrigger::Touch( CBaseEntity *pOther )
 {
-	if( pev->owner )
+	if( GetOwner() )
 	{
-		CBaseEntity *pEntity = CBaseEntity::Instance( pev->owner );
+		CBaseEntity *pEntity = GetOwner();
 		pEntity->Touch( pOther );
 	}
 }
@@ -32,10 +32,10 @@ void CXenTreeTrigger::Touch( CBaseEntity *pOther )
 CXenTreeTrigger *CXenTreeTrigger::TriggerCreate( CBaseEntity* pOwner, const Vector &position )
 {
 	auto pTrigger = static_cast<CXenTreeTrigger*>( UTIL_CreateNamedEntity( "xen_ttrigger" ) );
-	pTrigger->pev->origin = position;
-	pTrigger->pev->solid = SOLID_TRIGGER;
-	pTrigger->pev->movetype = MOVETYPE_NONE;
-	pTrigger->pev->owner = pOwner->edict();
+	pTrigger->SetAbsOrigin( position );
+	pTrigger->SetSolidType( SOLID_TRIGGER );
+	pTrigger->SetMoveType( MOVETYPE_NONE );
+	pTrigger->SetOwner( pOwner );
 
 	return pTrigger;
 }

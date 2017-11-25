@@ -31,23 +31,23 @@ void CMomentaryDoor::Spawn( void )
 {
 	SetMovedir( this );
 
-	pev->solid = SOLID_BSP;
-	pev->movetype = MOVETYPE_PUSH;
+	SetSolidType( SOLID_BSP );
+	SetMoveType( MOVETYPE_PUSH );
 
 	SetAbsOrigin( GetAbsOrigin() );
-	SetModel( STRING( pev->model ) );
+	SetModel( GetModelName() );
 
-	if( pev->speed == 0 )
-		pev->speed = 100;
-	if( pev->dmg == 0 )
-		pev->dmg = 2;
+	if( GetSpeed() == 0 )
+		SetSpeed( 100 );
+	if( GetDamage() == 0 )
+		SetDamage( 2 );
 
 	m_vecPosition1 = GetAbsOrigin();
 	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2 = m_vecPosition1 + ( pev->movedir * ( fabs( pev->movedir.x * ( pev->size.x - 2 ) ) + fabs( pev->movedir.y * ( pev->size.y - 2 ) ) + fabs( pev->movedir.z * ( pev->size.z - 2 ) ) - m_flLip ) );
+	m_vecPosition2 = m_vecPosition1 + ( GetMoveDir() * ( fabs( GetMoveDir().x * ( GetBounds().x - 2 ) ) + fabs( GetMoveDir().y * ( GetBounds().y - 2 ) ) + fabs( GetMoveDir().z * ( GetBounds().z - 2 ) ) - m_flLip ) );
 	ASSERTSZ( m_vecPosition1 != m_vecPosition2, "door start/end positions are equal" );
 
-	if( FBitSet( pev->spawnflags, SF_DOOR_START_OPEN ) )
+	if( GetSpawnFlags().Any( SF_DOOR_START_OPEN ) )
 	{	// swap pos1 and pos2, put door at pos2
 		SetAbsOrigin( m_vecPosition2 );
 		m_vecPosition2 = m_vecPosition1;
@@ -112,7 +112,7 @@ void CMomentaryDoor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 	// This entity only thinks when it moves, so if it's thinking, it's in the process of moving
 	// play the sound when it starts moving (not yet thinking)
-	if( pev->nextthink < pev->ltime || pev->nextthink == 0 )
+	if( GetNextThink() < GetLastThink() || GetNextThink() == 0 )
 		EMIT_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noiseMoving ), 1, ATTN_NORM );
 	// If we already moving to designated point, return
 	else if( move == m_vecFinalDest )

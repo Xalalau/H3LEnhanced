@@ -63,13 +63,14 @@ public:
 
 			//Note: when checking for inheritance, check if our concrete type inherits from the given type.
 			//When checking if our C++ type matches, check if the given type inherits from it.
-			//This prevents subclasses from being
+			//This prevents subclasses from being treated as incompatible
 			const bool bIsScriptFunction = m_Instance.GetTypeInfo()->DerivesFrom( pDelegateType );
 
+			//TODO: can probably cache the C++ type pointer - Solokiller
 			auto pCPPType = pDelegateType->GetEngine()->GetTypeInfoByName( m_pClass->GetBaseClassData().szCPPClassName.c_str() );
 
 			if( bIsScriptFunction ||
-				pCPPType && pCPPType->DerivesFrom( pDelegateType ) )
+				( pCPPType && pCPPType->DerivesFrom( pDelegateType ) ) )
 			{
 				bool bIsValid = false;
 
@@ -275,7 +276,7 @@ public:
 		CALL_EXTEND_FUNC_RET( int, BloodColor, "() const" );
 	}
 
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult* ptr ) override
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override
 	{
 		if( auto pFunction = GetObject().GetTypeInfo()->GetMethodByDecl( "void TraceAttack(const CTakeDamageInfo& in, Vector, TraceResult& in)" ) )
 		{
@@ -283,15 +284,15 @@ public:
 
 			CASMethod method( *pFunction, ctx, GetObject().Get() );
 
-			method.Call( CallFlag::NONE, &info, &vecDir, &ptr );
+			method.Call( CallFlag::NONE, &info, &vecDir, &tr );
 		}
 		else
 		{
-			BaseClass::TraceAttack( info, vecDir, ptr );
+			BaseClass::TraceAttack( info, vecDir, tr );
 		}
 	}
 
-	void TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult* ptr ) override
+	void TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override
 	{
 		if( auto pFunction = GetObject().GetTypeInfo()->GetMethodByDecl( "void TraceBleed(const CTakeDamageInfo& in, Vector, TraceResult& in)" ) )
 		{
@@ -299,11 +300,11 @@ public:
 
 			CASMethod method( *pFunction, ctx, GetObject().Get() );
 
-			method.Call( CallFlag::NONE, &info, &vecDir, &ptr );
+			method.Call( CallFlag::NONE, &info, &vecDir, &tr );
 		}
 		else
 		{
-			BaseClass::TraceBleed( info, vecDir, ptr );
+			BaseClass::TraceBleed( info, vecDir, tr );
 		}
 	}
 
@@ -529,7 +530,7 @@ public:
 
 	bool FVisible( const Vector &vecOrigin ) const override
 	{
-		bool bResult;
+		bool bResult = false;
 
 		if( auto pFunction = GetObject().GetTypeInfo()->GetMethodByDecl( "Vector BodyTarget(const Vector& in) const" ) )
 		{

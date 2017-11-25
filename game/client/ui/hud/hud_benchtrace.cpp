@@ -34,8 +34,10 @@ struct trace_params_t
 	HANDLE	hEventDone;
 };
 
+#ifdef WIN32
 // Static forces it to be zeroed out
 static trace_params_t tp;
+#endif
 
 // For doing the actual traceroute
 struct trace_options_t
@@ -44,6 +46,7 @@ struct trace_options_t
 	unsigned char a[7];
 };
 
+#ifdef WIN32
 struct
 {
 	DWORD			dwAddress;
@@ -51,6 +54,7 @@ struct
 	unsigned char	a[8];
 	trace_options_t Options;
 } traceReturn;
+#endif
 
 /*
 ==============

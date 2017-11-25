@@ -273,7 +273,7 @@ void CEnvironment::UpdateSnow()
 
 	Vector vecPlayerDir = g_vPlayerVelocity;
 
-	const float flSpeed = vecPlayerDir.NormalizeInPlace();
+	/*const float flSpeed = */vecPlayerDir.NormalizeInPlace();
 
 	if( 150.0f * m_flWeatherValue > 0.0f )
 	{
@@ -314,7 +314,7 @@ void CEnvironment::UpdateRain()
 
 	Vector vecPlayerDir = g_vPlayerVelocity;
 
-	const float flSpeed = vecPlayerDir.NormalizeInPlace();
+	/*const float flSpeed = */vecPlayerDir.NormalizeInPlace();
 
 	if( 150.0f * m_flWeatherValue > 0.0f )
 	{

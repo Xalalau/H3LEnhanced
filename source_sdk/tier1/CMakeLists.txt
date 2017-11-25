@@ -64,7 +64,7 @@ target_compile_definitions( tier1 PRIVATE
 )
 
 set_target_properties( tier1 
-	PROPERTIES COMPILE_FLAGS "${LINUX_32BIT_FLAG}" 
+	PROPERTIES COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}" 
 	LINK_FLAGS "${LINUX_32BIT_FLAG}" )
 	
 	#No lib prefix

@@ -23,7 +23,7 @@
 #include "html/ihtmlchrome.h"
 #include "html/ichromehtmlwrapper.h"
 
-#include "filesystem.h"
+#include "FileSystem.h"
 #include "../vgui2/src/vgui_key_translation.h"
 
 #undef PostMessage
@@ -422,12 +422,12 @@ void HTML::CalcScrollBars(int w, int h)
 	{
 		for ( int i = 0; i < 2; i++ )
 		{
-			int scrollx, scrolly, scrollwide, scrolltall;
+			int /*scrollx, scrolly,*/ scrollwide, scrolltall;
 			bool bVisible = false;
 			if ( i==0 )
 			{
-				scrollx = m_scrollHorizontal.m_nX;
-				scrolly = m_scrollHorizontal.m_nY;
+				//scrollx = m_scrollHorizontal.m_nX;
+				//scrolly = m_scrollHorizontal.m_nY;
 				scrollwide = m_scrollHorizontal.m_nWide;
 				scrolltall = m_scrollHorizontal.m_nTall;
 				bVisible = m_scrollHorizontal.m_bVisible;
@@ -438,8 +438,8 @@ void HTML::CalcScrollBars(int w, int h)
 			}
 			else
 			{
-				scrollx = m_scrollVertical.m_nX;
-				scrolly = m_scrollVertical.m_nY;
+				//scrollx = m_scrollVertical.m_nX;
+				//scrolly = m_scrollVertical.m_nY;
 				scrollwide = m_scrollVertical.m_nWide;
 				scrolltall = m_scrollVertical.m_nTall;
 				bVisible = m_scrollVertical.m_bVisible;
@@ -1015,6 +1015,8 @@ void HTML::OnKeyCodeTyped(KeyCode code)
 			}
 			break;
 		}
+
+	default: break;
 	}
 
 	m_Serializer->KeyDown( KeyCode_VGUIToVirtualKey( code ), GetKeyModifiers() );

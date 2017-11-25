@@ -259,11 +259,6 @@ inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( 
 */
 void ScaleColors( int& r, int& g, int& b, const int a );
 
-// disable 'possible loss of data converting float to int' warning message
-#pragma warning( disable: 4244 )
-// disable 'truncation from 'const double' to 'float' warning message
-#pragma warning( disable: 4305 )
-
 /**
 *	Unpacks an RGB color into individual components.
 *	@param[ out ] r Red color. [ 0, 255 ].

@@ -29,9 +29,9 @@ void CActAnimating::SetActivity( Activity act )
 	int sequence = LookupActivity( act ); 
 	if ( sequence != ACTIVITY_NOT_AVAILABLE )
 	{
-		pev->sequence = sequence;
+		SetSequence( sequence );
 		m_Activity = act; 
-		pev->frame = 0;
+		SetFrame( 0 );
 		ResetSequenceInfo( );
 	}
 }

@@ -9,7 +9,7 @@ bool CHLASClientInitializer::RegisterCoreAPI( CASManager& manager )
 {
 	CHLASBaseInitializer::RegisterCoreAPI( manager );
 
-	auto& engine = *manager.GetEngine();
+	//auto& engine = *manager.GetEngine();
 
 	return true;
 }

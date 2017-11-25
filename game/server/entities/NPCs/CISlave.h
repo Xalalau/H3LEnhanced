@@ -37,25 +37,37 @@ public:
 
 	void UpdateOnRemove() override;
 
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	int	 ISoundMask( void ) override;
 	EntityClassification_t GetClassification() override;
 	Relationship  IRelationship( CBaseEntity *pTarget ) override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
+
+	/**
+	*	@brief normal beam attack
+	*/
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
+
+	/**
+	*	@brief check bravery and try to resurect dead comrades
+	*/
 	bool CheckRangeAttack2( float flDot, float flDist ) override;
+
 	void CallForHelp( const char* const pszClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation );
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 
 	void DeathSound( void ) override;
 	void PainSound( void ) override;
+	/**
+	*	@brief scream
+	*/
 	void AlertSound( void ) override;
 	void IdleSound( void ) override;
 
 	void Killed( const CTakeDamageInfo& info, GibAction gibAction ) override;
 
-	void StartTask( const Task_t* pTask ) override;
+	void StartTask( const Task_t& task ) override;
 	Schedule_t *GetSchedule( void ) override;
 	Schedule_t *GetScheduleOfType( int Type ) override;
 	DECLARE_SCHEDULES() override;

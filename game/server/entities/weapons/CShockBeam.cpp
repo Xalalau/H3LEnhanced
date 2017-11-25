@@ -69,7 +69,7 @@ void CShockBeam::Spawn()
 
 	m_pSprite->SetScale( 0.35 );
 
-	m_pSprite->SetAttachment( edict(), 0 );
+	m_pSprite->SetAttachment( this, 0 );
 
 	m_pBeam1 = CBeam::BeamCreate( "sprites/lgtning.spr", 60 );
 
@@ -84,7 +84,7 @@ void CShockBeam::Spawn()
 
 		m_pBeam1->SetRenderColor( Vector( 0, 253, 253 ) );
 
-		m_pBeam1->SetFlags( BEAM_FSHADEOUT );
+		m_pBeam1->SetBeamFlags( BEAM_FSHADEOUT );
 		m_pBeam1->SetBrightness( 180 );
 		m_pBeam1->SetNoise( 0 );
 
@@ -109,7 +109,7 @@ void CShockBeam::Spawn()
 
 			m_pBeam2->SetRenderColor( Vector( 255, 255, 157 ) );
 
-			m_pBeam2->SetFlags( BEAM_FSHADEOUT );
+			m_pBeam2->SetBeamFlags( BEAM_FSHADEOUT );
 			m_pBeam2->SetBrightness( 180 );
 			m_pBeam2->SetNoise( 30 );
 
@@ -184,7 +184,7 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 				bIsMultiplayer() ? gSkillData.GetPlrDmgShockRoachM() : gSkillData.GetPlrDmgShockRoachS(),
 				bitsDamageTypes ), 
 			GetAbsVelocity().Normalize(),
-			&tr );
+			tr );
 
 		g_MultiDamage.ApplyMultiDamage( this, pOwner );
 
@@ -211,8 +211,6 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 void CShockBeam::Explode()
 {
-	const Contents contents = UTIL_PointContents( GetAbsOrigin() );
-
 	if( m_pSprite )
 	{
 		UTIL_Remove( m_pSprite );

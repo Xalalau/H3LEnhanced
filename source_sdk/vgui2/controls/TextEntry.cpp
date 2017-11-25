@@ -704,7 +704,7 @@ void TextEntry::PaintBackground()
 	// draw text with an elipsis
 	if ( (!_multiline) && (!_horizScrollingAllowed) )
 	{	
-		int wide = DRAW_OFFSET_X; // buffer on left and right end of text.
+		int drawWide = DRAW_OFFSET_X; // buffer on left and right end of text.
 	
 		int endIndex = m_TextStream.Count();
 		// In editable windows only do the elipsis if we don't have focus.
@@ -718,8 +718,8 @@ void TextEntry::PaintBackground()
 
 			for (i = 0; i < m_TextStream.Count(); ++i)
 			{	
-				wide += getCharWidth(_font, m_TextStream[i]);
-				if (wide > _drawWidth)
+				drawWide += getCharWidth(_font, m_TextStream[i]);
+				if ( drawWide > _drawWidth)
 				{
 					addElipsis = true;
 					break;
@@ -1393,10 +1393,10 @@ void TextEntry::OnCursorMoved(int x, int y)
 	if (_mouseSelection)
 	{
 		// update the cursor position
-		int x, y;
-		input()->GetCursorPos(x, y);
-		ScreenToLocal(x, y);
-		_cursorPos = PixelToCursorSpace(x, y);
+		int cursorX, cursorY;
+		input()->GetCursorPos( cursorX, cursorY );
+		ScreenToLocal( cursorX, cursorY );
+		_cursorPos = PixelToCursorSpace( cursorX, cursorY );
 		
 		// if we are at Start of buffer don't put cursor at end, this will keep
 		// window from scrolling up to a blank line
@@ -3610,11 +3610,11 @@ void TextEntry::ApplySettings( KeyValues *inResourceData )
 //	_font = scheme()->GetFont(GetScheme(), "Default", IsProportional() );
 //	SetFont( _font );
 
-	SetTextHidden((bool)inResourceData->GetInt("textHidden", 0));
-	SetEditable((bool)inResourceData->GetInt("editable", 1));
+	SetTextHidden(inResourceData->GetInt("textHidden", 0) != 0);
+	SetEditable(inResourceData->GetInt("editable", 1) != 0);
 	SetMaximumCharCount(inResourceData->GetInt("maxchars", -1));
-	SetAllowNumericInputOnly(inResourceData->GetInt("NumericInputOnly", 0));
-	SetAllowNonAsciiCharacters(inResourceData->GetInt("unicode", 0));
+	SetAllowNumericInputOnly(inResourceData->GetInt("NumericInputOnly", 0) != 0);
+	SetAllowNonAsciiCharacters(inResourceData->GetInt("unicode", 0) != 0);
 }
 
 //-----------------------------------------------------------------------------

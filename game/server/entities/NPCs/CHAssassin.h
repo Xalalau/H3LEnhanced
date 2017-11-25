@@ -54,20 +54,34 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
 	int  ISoundMask( void ) override;
 	void Shoot( void );
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	Schedule_t* GetSchedule( void ) override;
 	Schedule_t* GetScheduleOfType( int Type ) override;
-	bool CheckMeleeAttack1( float flDot, float flDist ) override;	// jump
-																	// bool CheckMeleeAttack2 ( float flDot, float flDist ) override;
-	bool CheckRangeAttack1( float flDot, float flDist ) override;	// shoot
-	bool CheckRangeAttack2( float flDot, float flDist ) override;	// throw grenade
-	void StartTask( const Task_t* pTask ) override;
+
+	/**
+	*	@brief jump like crazy if the enemy gets too close
+	*/
+	bool CheckMeleeAttack1( float flDot, float flDist ) override;
+
+	// bool CheckMeleeAttack2 ( float flDot, float flDist ) override;
+
+	/**
+	*	@brief drop a cap in their ass (shoot)
+	*/
+	bool CheckRangeAttack1( float flDot, float flDist ) override;
+
+	/**
+	*	@brief toss grenade is enemy gets in the way and is too close
+	*/
+	bool CheckRangeAttack2( float flDot, float flDist ) override;
+
+	void StartTask( const Task_t& task ) override;
 	void RunAI( void ) override;
-	void RunTask( const Task_t* pTask ) override;
+	void RunTask( const Task_t& task ) override;
 	void DeathSound( void ) override;
 	void IdleSound( void ) override;
 	DECLARE_SCHEDULES() override;

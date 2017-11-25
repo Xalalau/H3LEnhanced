@@ -190,7 +190,7 @@ void CShotgun::PrimaryAttack()
 #endif
 
 
-	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
+	m_pPlayer->GetEffects().AddFlags( EF_MUZZLEFLASH );
 
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( );
 	Vector vecAiming = m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
@@ -257,7 +257,7 @@ void CShotgun::SecondaryAttack( void )
 	flags = 0;
 #endif
 
-	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
+	m_pPlayer->GetEffects().AddFlags( EF_MUZZLEFLASH );
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );

@@ -41,34 +41,34 @@ void CPendulum::Spawn( void )
 	// set the axis of rotation
 	CBaseToggle::AxisDir( this );
 
-	if( FBitSet( pev->spawnflags, SF_DOOR_PASSABLE ) )
-		pev->solid = SOLID_NOT;
+	if( GetSpawnFlags().Any( SF_DOOR_PASSABLE ) )
+		SetSolidType( SOLID_NOT );
 	else
-		pev->solid = SOLID_BSP;
-	pev->movetype = MOVETYPE_PUSH;
+		SetSolidType( SOLID_BSP );
+	SetMoveType( MOVETYPE_PUSH );
 	SetAbsOrigin( GetAbsOrigin() );
-	SetModel( STRING( pev->model ) );
+	SetModel( GetModelName() );
 
 	if( m_distance == 0 )
 		return;
 
-	if( pev->speed == 0 )
-		pev->speed = 100;
+	if( GetSpeed() == 0 )
+		SetSpeed( 100 );
 
-	m_accel = ( pev->speed * pev->speed ) / ( 2 * fabs( m_distance ) );	// Calculate constant acceleration from speed and distance
-	m_maxSpeed = pev->speed;
-	m_start = pev->angles;
-	m_center = pev->angles + ( m_distance * 0.5 ) * pev->movedir;
+	m_accel = ( GetSpeed() * GetSpeed() ) / ( 2 * fabs( m_distance ) );	// Calculate constant acceleration from speed and distance
+	m_maxSpeed = GetSpeed();
+	m_start = GetAbsAngles();
+	m_center = GetAbsAngles() + ( m_distance * 0.5 ) * GetMoveDir();
 
-	if( FBitSet( pev->spawnflags, SF_BRUSH_ROTATE_INSTANT ) )
+	if( GetSpawnFlags().Any( SF_BRUSH_ROTATE_INSTANT ) )
 	{
 		SetThink( &CPendulum::SUB_CallUseToggle );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
-	pev->speed = 0;
+	SetSpeed( 0 );
 	SetUse( &CPendulum::PendulumUse );
 
-	if( FBitSet( pev->spawnflags, SF_PENDULUM_SWING ) )
+	if( GetSpawnFlags().Any( SF_PENDULUM_SWING ) )
 	{
 		SetTouch( &CPendulum::RopeTouch );
 	}
@@ -94,67 +94,67 @@ void CPendulum::Swing( void )
 {
 	float delta, dt;
 
-	delta = CBaseToggle::AxisDelta( pev->spawnflags, pev->angles, m_center );
+	delta = CBaseToggle::AxisDelta( GetSpawnFlags().Get(), GetAbsAngles(), m_center );
 	dt = gpGlobals->time - m_time;	// How much time has passed?
 	m_time = gpGlobals->time;		// Remember the last time called
 
 	if( delta > 0 && m_accel > 0 )
-		pev->speed -= m_accel * dt;	// Integrate velocity
+		SetSpeed( GetSpeed() - m_accel * dt );	// Integrate velocity
 	else
-		pev->speed += m_accel * dt;
+		SetSpeed( GetSpeed() + m_accel * dt );
 
-	if( pev->speed > m_maxSpeed )
-		pev->speed = m_maxSpeed;
-	else if( pev->speed < -m_maxSpeed )
-		pev->speed = -m_maxSpeed;
+	if( GetSpeed() > m_maxSpeed )
+		SetSpeed( m_maxSpeed );
+	else if( GetSpeed() < -m_maxSpeed )
+		SetSpeed( -m_maxSpeed );
 	// scale the destdelta vector by the time spent traveling to get velocity
-	pev->avelocity = pev->speed * pev->movedir;
+	SetAngularVelocity( GetSpeed() * GetMoveDir() );
 
 	// Call this again
-	pev->nextthink = pev->ltime + 0.1;
+	SetNextThink( GetLastThink() + 0.1 );
 
 	if( m_damp )
 	{
 		m_dampSpeed -= m_damp * m_dampSpeed * dt;
 		if( m_dampSpeed < 30.0 )
 		{
-			pev->angles = m_center;
-			pev->speed = 0;
+			SetAbsAngles( m_center );
+			SetSpeed( 0 );
 			SetThink( NULL );
-			pev->avelocity = g_vecZero;
+			SetAngularVelocity( g_vecZero );
 		}
-		else if( pev->speed > m_dampSpeed )
-			pev->speed = m_dampSpeed;
-		else if( pev->speed < -m_dampSpeed )
-			pev->speed = -m_dampSpeed;
+		else if( GetSpeed() > m_dampSpeed )
+			SetSpeed( m_dampSpeed );
+		else if( GetSpeed() < -m_dampSpeed )
+			SetSpeed( -m_dampSpeed );
 
 	}
 }
 
 void CPendulum::PendulumUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if( pev->speed )		// Pendulum is moving, stop it and auto-return if necessary
+	if( GetSpeed() )		// Pendulum is moving, stop it and auto-return if necessary
 	{
-		if( FBitSet( pev->spawnflags, SF_PENDULUM_AUTO_RETURN ) )
+		if( GetSpawnFlags().Any( SF_PENDULUM_AUTO_RETURN ) )
 		{
 			float	delta;
 
-			delta = CBaseToggle::AxisDelta( pev->spawnflags, pev->angles, m_start );
+			delta = CBaseToggle::AxisDelta( GetSpawnFlags().Get(), GetAbsAngles(), m_start );
 
-			pev->avelocity = m_maxSpeed * pev->movedir;
-			pev->nextthink = pev->ltime + ( delta / m_maxSpeed );
+			SetAngularVelocity( m_maxSpeed * GetMoveDir() );
+			SetNextThink( GetLastThink() + ( delta / m_maxSpeed ) );
 			SetThink( &CPendulum::Stop );
 		}
 		else
 		{
-			pev->speed = 0;		// Dead stop
+			SetSpeed( 0 );		// Dead stop
 			SetThink( NULL );
-			pev->avelocity = g_vecZero;
+			SetAngularVelocity( g_vecZero );
 		}
 	}
 	else
 	{
-		pev->nextthink = pev->ltime + 0.1;		// Start the pendulum moving
+		SetNextThink( GetLastThink() + 0.1 );		// Start the pendulum moving
 		m_time = gpGlobals->time;		// Save time to calculate dt
 		SetThink( &CPendulum::Swing );
 		m_dampSpeed = m_maxSpeed;
@@ -163,30 +163,30 @@ void CPendulum::PendulumUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 
 void CPendulum::Stop( void )
 {
-	pev->angles = m_start;
-	pev->speed = 0;
+	SetAbsAngles( m_start );
+	SetSpeed( 0 );
 	SetThink( NULL );
-	pev->avelocity = g_vecZero;
+	SetAngularVelocity( g_vecZero );
 }
 
 void CPendulum::Touch( CBaseEntity *pOther )
 {
-	if( pev->dmg <= 0 )
+	if( GetDamage() <= 0 )
 		return;
 
 	// we can't hurt this thing, so we're not concerned with it
-	if( !pOther->pev->takedamage )
+	if( pOther->GetTakeDamageMode() == DAMAGE_NO )
 		return;
 
 	// calculate damage based on rotation speed
-	float damage = pev->dmg * pev->speed * 0.01;
+	float damage = GetDamage() * GetSpeed() * 0.01;
 
 	if( damage < 0 )
 		damage = -damage;
 
 	pOther->TakeDamage( this, this, damage, DMG_CRUSH );
 
-	pOther->pev->velocity = ( pOther->GetAbsOrigin() - VecBModelOrigin( this ) ).Normalize() * damage;
+	pOther->SetAbsVelocity( ( pOther->GetAbsOrigin() - VecBModelOrigin( this ) ).Normalize() * damage );
 }
 
 void CPendulum::RopeTouch( CBaseEntity *pOther )
@@ -203,8 +203,8 @@ void CPendulum::RopeTouch( CBaseEntity *pOther )
 	}
 
 	pev->enemy = pOther->edict();
-	pOther->pev->velocity = g_vecZero;
-	pOther->pev->movetype = MOVETYPE_NONE;
+	pOther->SetAbsVelocity( g_vecZero );
+	pOther->SetMoveType( MOVETYPE_NONE );
 }
 
 void CPendulum::Blocked( CBaseEntity *pOther )

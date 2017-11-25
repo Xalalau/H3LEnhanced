@@ -6,10 +6,6 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#ifndef _XBOX
-#pragma warning (disable:4514)
-#endif
-
 #include "UtlSymbol.h"
 #include "KeyValues.h"
 #include "tier0/threadtools.h"

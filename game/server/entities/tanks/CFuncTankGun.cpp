@@ -14,7 +14,7 @@ void CFuncTankGun::Fire( const Vector &barrelEnd, const Vector &forward, CBaseEn
 	if( m_fireLast != 0 )
 	{
 		// FireBullets needs gpGlobals->v_up, etc.
-		UTIL_MakeAimVectors( pev->angles );
+		UTIL_MakeAimVectors( GetAbsAngles() );
 
 		int bulletCount = ( gpGlobals->time - m_fireLast ) * m_fireRate;
 		if( bulletCount > 0 )

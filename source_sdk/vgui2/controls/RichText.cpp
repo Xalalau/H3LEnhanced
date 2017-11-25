@@ -1299,10 +1299,10 @@ void RichText::OnCursorMoved(int x, int y)
 	if (_mouseSelection)
 	{
 		// update the cursor position
-		int x, y;
-		input()->GetCursorPos(x, y);
-		ScreenToLocal(x, y);
-		_cursorPos = PixelToCursorSpace(x, y);
+		int cursorX, cursorY;
+		input()->GetCursorPos( cursorX, cursorY );
+		ScreenToLocal( cursorX, cursorY );
+		_cursorPos = PixelToCursorSpace( cursorX, cursorY );
 		
 		if (_cursorPos != _select[1])
 		{
@@ -2032,7 +2032,7 @@ void RichText::OnClickPanel(int index)
 	_currentTextClickable = true;
 	TRenderState renderState;
 	GenerateRenderStateForTextStreamIndex(index, renderState);
-	for (int i = index; i < (sizeof(wBuf) - 1) && i < m_TextStream.Count(); i++)
+	for (int i = index; static_cast<size_t>( i ) < (sizeof(wBuf) - 1) && i < m_TextStream.Count(); i++)
 	{
 		// stop getting characters when text is no longer clickable
 		UpdateRenderState(i, renderState);

@@ -25,18 +25,18 @@ void CXenHair::Spawn( void )
 	Precache();
 	SetModel( "models/hair.mdl" );
 	SetSize( Vector( -4, -4, 0 ), Vector( 4, 4, 32 ) );
-	pev->sequence = 0;
+	SetSequence( 0 );
 
-	if( !( pev->spawnflags & SF_HAIR_SYNC ) )
+	if( !GetSpawnFlags().Any( SF_HAIR_SYNC ) )
 	{
-		pev->frame = RANDOM_FLOAT( 0, 255 );
-		pev->framerate = RANDOM_FLOAT( 0.7, 1.4 );
+		SetFrame( RANDOM_FLOAT( 0, 255 ) );
+		SetFrameRate( RANDOM_FLOAT( 0.7, 1.4 ) );
 	}
 	ResetSequenceInfo();
 
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1, 0.4 );	// Load balance these a bit
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	SetNextThink( gpGlobals->time + RANDOM_FLOAT( 0.1, 0.4 ) );	// Load balance these a bit
 }
 
 void CXenHair::Precache( void )
@@ -47,5 +47,5 @@ void CXenHair::Precache( void )
 void CXenHair::Think( void )
 {
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.5;
+	SetNextThink( gpGlobals->time + 0.5 );
 }

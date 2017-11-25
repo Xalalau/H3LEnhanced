@@ -153,9 +153,9 @@ StudioGetAnim
 
 ====================
 */
-mstudioanim_t *CStudioModelRenderer::StudioGetAnim( model_t *m_pSubModel, mstudioseqdesc_t *pseqdesc )
+mstudioanim_t *CStudioModelRenderer::StudioGetAnim( model_t *pSubModel, mstudioseqdesc_t *pseqdesc )
 {
-	return studio::GetAnim( m_pStudioHeader, m_pSubModel, pseqdesc );
+	return studio::GetAnim( m_pStudioHeader, pSubModel, pseqdesc );
 }
 
 /*
@@ -726,7 +726,6 @@ void CStudioModelRenderer::StudioMergeBones ( model_t *pSubModel )
 {
 	int					i, j;
 	double				f;
-	int					do_hunt = true;
 
 	mstudiobone_t		*pbones;
 	mstudioseqdesc_t	*pseqdesc;

@@ -68,10 +68,10 @@ void CFuncMortarField :: KeyValue( KeyValueData *pkvd )
 // Drop bombs from above
 void CFuncMortarField :: Spawn( void )
 {
-	pev->solid = SOLID_NOT;
-	SetModel( STRING(pev->model));    // set size and link into world
-	pev->movetype = MOVETYPE_NONE;
-	SetBits( pev->effects, EF_NODRAW );
+	SetSolidType( SOLID_NOT );
+	SetModel( GetModelName() );    // set size and link into world
+	SetMoveType( MOVETYPE_NONE );
+	GetEffects() |= EF_NODRAW;
 	SetUse( & CFuncMortarField::FieldUse );
 	Precache();
 }
@@ -90,9 +90,9 @@ void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 {
 	Vector vecStart;
 
-	vecStart.x = RANDOM_FLOAT( pev->mins.x, pev->maxs.x );
-	vecStart.y = RANDOM_FLOAT( pev->mins.y, pev->maxs.y );
-	vecStart.z = pev->maxs.z;
+	vecStart.x = RANDOM_FLOAT( GetRelMin().x, GetRelMax().x );
+	vecStart.y = RANDOM_FLOAT( GetRelMin().y, GetRelMax().y );
+	vecStart.z = GetRelMax().z;
 
 	switch( m_fControl )
 	{
@@ -114,7 +114,7 @@ void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 				pController = UTIL_FindEntityByTargetname( NULL, STRING(m_iszXController));
 				if (pController != NULL)
 				{
-					vecStart.x = pev->mins.x + pController->pev->ideal_yaw * (pev->size.x);
+					vecStart.x = GetRelMin().x + pController->GetIdealYaw() * ( GetBounds().x);
 				}
 			}
 			if (!FStringNull(m_iszYController))
@@ -122,7 +122,7 @@ void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 				pController = UTIL_FindEntityByTargetname( NULL, STRING(m_iszYController));
 				if (pController != NULL)
 				{
-					vecStart.y = pev->mins.y + pController->pev->ideal_yaw * (pev->size.y);
+					vecStart.y = GetRelMin().y + pController->GetIdealYaw() * ( GetBounds().y);
 				}
 			}
 		}
@@ -147,7 +147,7 @@ void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 		if (pActivator)	pentOwner = pActivator->edict();
 
 		CBaseEntity *pMortar = Create("monster_mortar", tr.vecEndPos, Vector( 0, 0, 0 ), pentOwner );
-		pMortar->pev->nextthink = gpGlobals->time + t;
+		pMortar->SetNextThink( gpGlobals->time + t );
 		t += RANDOM_FLOAT( 0.2, 0.5 );
 
 		if (i == 0)

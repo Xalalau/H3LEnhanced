@@ -67,10 +67,10 @@ struct DragDrop_t
 {
 	DragDrop_t() :
 		m_bDragEnabled( false ),
-		m_bDropEnabled( false ),
+		m_bDragging( false ),
 		m_bDragStarted( false ),
 		m_nDragStartTolerance( 8 ),
-		m_bDragging( false ),
+		m_bDropEnabled( false ),
 		m_lDropHoverTime( 0 ),
 		m_bDropMenuShown( false ),
 		m_bPreventChaining( false )
@@ -1257,7 +1257,7 @@ bool Panel::IsOpaque()
 //-----------------------------------------------------------------------------
 bool Panel::IsRightAligned()
 {
-	return (_buildModeFlags & BUILDMODE_SAVE_XPOS_RIGHTALIGNED);
+	return (_buildModeFlags & BUILDMODE_SAVE_XPOS_RIGHTALIGNED) != 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1265,7 +1265,7 @@ bool Panel::IsRightAligned()
 //-----------------------------------------------------------------------------
 bool Panel::IsBottomAligned()
 {
-	return (_buildModeFlags & BUILDMODE_SAVE_YPOS_BOTTOMALIGNED);
+	return (_buildModeFlags & BUILDMODE_SAVE_YPOS_BOTTOMALIGNED) != 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -3049,7 +3049,7 @@ void Panel::SetBuildModeEditable(bool state)
 //-----------------------------------------------------------------------------
 bool Panel::IsBuildModeDeletable()
 {
-	return (_buildModeFlags & BUILDMODE_DELETABLE);
+	return (_buildModeFlags & BUILDMODE_DELETABLE) != 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -3964,7 +3964,7 @@ void Panel::ApplySettings(KeyValues *inResourceData)
 		SetVisible(true);
 	}
 
-	SetEnabled( inResourceData->GetInt("enabled", true) );
+	SetEnabled( inResourceData->GetInt("enabled", true) != 0 );
 
 	// tab order
 	SetTabPosition(inResourceData->GetInt("tabPosition", 0));
@@ -4564,7 +4564,7 @@ void Panel::OnOldMessage(KeyValues *params, VPANEL ifromPanel)
 					{
 					case DATATYPE_BOOL:
 						typedef void (Panel::*MessageFunc_Bool_t)(bool);
-						(this->*((MessageFunc_Bool_t)pMessageMap[i].func))( (bool)params->GetInt(pMessageMap[i].firstParamName) );
+						(this->*((MessageFunc_Bool_t)pMessageMap[i].func))( params->GetInt(pMessageMap[i].firstParamName) != 0 );
 						break;
 
 					case DATATYPE_CONSTCHARPTR:
@@ -5714,8 +5714,8 @@ void Panel::OnFinishDragging( bool mousereleased, MouseCode code, bool abort /*=
 				if ( pHover )
 				{
 					// Figure out if it's a menu item...
-					int c = menu->GetItemCount();
-					for ( int i = 0; i < c; ++i )
+					int itemCount = menu->GetItemCount();
+					for ( i = 0; i < itemCount; ++i )
 					{
 						int id = menu->GetMenuID( i );
 						MenuItem *item = menu->GetMenuItem( id );
@@ -6137,13 +6137,13 @@ void CDragDropHelperPanel::PostChildPaint()
 			else
 			{
 				CUtlVector< Panel * > temp;
-				CUtlVector< PHandle >& data = panel->GetDragDropInfo()->m_DragPanels;
+				CUtlVector< PHandle >& dragPanels = panel->GetDragDropInfo()->m_DragPanels;
 				CUtlVector< KeyValues * >& msglist = panel->GetDragDropInfo()->m_DragData;
-				int i, c;
-				c = data.Count();
-				for ( i = 0; i < c ; ++i )
+
+				int dataCount = dragPanels.Count();
+				for ( int j = 0; j < dataCount; ++j )
 				{
-					Panel *pPanel = data[ i ].Get();
+					Panel *pPanel = dragPanels[ j ].Get();
 					if ( pPanel )
 					{
 						temp.AddToTail( pPanel );

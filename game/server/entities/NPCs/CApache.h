@@ -33,8 +33,8 @@ public:
 
 	void SetObjectCollisionBox( void ) override
 	{
-		pev->absmin = GetAbsOrigin() + Vector( -300, -300, -172 );
-		pev->absmax = GetAbsOrigin() + Vector( 300, 300, 8 );
+		SetAbsMin( GetAbsOrigin() + Vector( -300, -300, -172 ) );
+		SetAbsMax( GetAbsOrigin() + Vector( 300, 300, 8 ) );
 	}
 
 	void HuntThink( void );
@@ -50,7 +50,7 @@ public:
 	bool FireGun();
 
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 
 	int m_iRockets;
 	float m_flForce;

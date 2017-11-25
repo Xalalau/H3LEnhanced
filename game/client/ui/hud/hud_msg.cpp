@@ -118,7 +118,7 @@ void CHLHud::MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 	if (m_iConcussionEffect)
 	{
 		const auto& color = GetPrimaryColor();
-		pStatusIcons->EnableIcon("dmg_concuss", color.r, color.g, color.b );
+		pStatusIcons->EnableIcon("dmg_concuss", color.r(), color.g(), color.b() );
 	}
 	else
 		pStatusIcons->DisableIcon("dmg_concuss");
@@ -135,15 +135,15 @@ void CHLHud::MsgFunc_HudColors( const char* pszName, int iSize, void* pBuf )
 {
 	CBufferReader reader( pBuf, iSize );
 
-	m_HudColors.m_PrimaryColor.r = reader.ReadByte();
-	m_HudColors.m_PrimaryColor.g = reader.ReadByte();
-	m_HudColors.m_PrimaryColor.b = reader.ReadByte();
+	m_HudColors.m_PrimaryColor.r( reader.ReadByte() );
+	m_HudColors.m_PrimaryColor.g( reader.ReadByte() );
+	m_HudColors.m_PrimaryColor.b( reader.ReadByte() );
 
-	m_HudColors.m_EmptyItemColor.r = reader.ReadByte();
-	m_HudColors.m_EmptyItemColor.g = reader.ReadByte();
-	m_HudColors.m_EmptyItemColor.b = reader.ReadByte();
+	m_HudColors.m_EmptyItemColor.r( reader.ReadByte() );
+	m_HudColors.m_EmptyItemColor.g( reader.ReadByte() );
+	m_HudColors.m_EmptyItemColor.b( reader.ReadByte() );
 
-	m_HudColors.m_AmmoBarColor.r = reader.ReadByte();
-	m_HudColors.m_AmmoBarColor.g = reader.ReadByte();
-	m_HudColors.m_AmmoBarColor.b = reader.ReadByte();
+	m_HudColors.m_AmmoBarColor.r( reader.ReadByte() );
+	m_HudColors.m_AmmoBarColor.g( reader.ReadByte() );
+	m_HudColors.m_AmmoBarColor.b( reader.ReadByte() );
 }

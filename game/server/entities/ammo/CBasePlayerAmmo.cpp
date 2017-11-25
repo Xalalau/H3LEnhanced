@@ -16,8 +16,8 @@ END_DATADESC()
 
 void CBasePlayerAmmo::Spawn()
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
+	SetMoveType( MOVETYPE_TOSS );
+	SetSolidType( SOLID_TRIGGER );
 	SetSize( Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
 	SetAbsOrigin( GetAbsOrigin() );
 
@@ -41,7 +41,7 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity* pOther )
 		{
 			SetTouch( NULL );
 			SetThink( &CBasePlayerAmmo::SUB_Remove );
-			pev->nextthink = gpGlobals->time + .1;
+			SetNextThink( gpGlobals->time + .1 );
 		}
 	}
 	else if( gEvilImpulse101 )
@@ -49,31 +49,31 @@ void CBasePlayerAmmo::DefaultTouch( CBaseEntity* pOther )
 		// evil impulse 101 hack, kill always
 		SetTouch( NULL );
 		SetThink( &CBasePlayerAmmo::SUB_Remove );
-		pev->nextthink = gpGlobals->time + .1;
+		SetNextThink( gpGlobals->time + .1 );
 	}
 }
 
 CBaseEntity* CBasePlayerAmmo::Respawn()
 {
-	pev->effects |= EF_NODRAW;
+	GetEffects() |= EF_NODRAW;
 	SetTouch( NULL );
 
 	SetAbsOrigin( g_pGameRules->VecAmmoRespawnSpot( this ) );// move to wherever I'm supposed to repawn.
 
 	SetThink( &CBasePlayerAmmo::Materialize );
-	pev->nextthink = g_pGameRules->FlAmmoRespawnTime( this );
+	SetNextThink( g_pGameRules->FlAmmoRespawnTime( this ) );
 
 	return this;
 }
 
 void CBasePlayerAmmo::Materialize()
 {
-	if( pev->effects & EF_NODRAW )
+	if( GetEffects() & EF_NODRAW )
 	{
 		// changing from invisible state to visible.
 		EMIT_SOUND_DYN( this, CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150 );
-		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
+		GetEffects().ClearFlags( EF_NODRAW );
+		GetEffects() |= EF_MUZZLEFLASH;
 	}
 
 	SetTouch( &CBasePlayerAmmo::DefaultTouch );

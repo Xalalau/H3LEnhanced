@@ -366,11 +366,6 @@ public:
 	const Vector& GetAngularVelocity() const { return pev->avelocity; }
 
 	/**
-	*	@return The angular velocity, in mutable form.
-	*/
-	Vector& GetMutableAVelocity() { return pev->avelocity; }
-
-	/**
 	*	Sets the angular velocity.
 	*	@param vecAVelocity Angular velocity to set.
 	*/
@@ -385,11 +380,6 @@ public:
 	const Vector& GetPunchAngle() const { return pev->punchangle; }
 
 	/**
-	*	@return This entity's punch angle, in mutable form.
-	*/
-	Vector& GetMutablePunchAngle() { return pev->punchangle; }
-
-	/**
 	*	Sets the punch angle.
 	*	@param vecPunchAngle Punch angle to set.
 	*/
@@ -402,11 +392,6 @@ public:
 	*	@return The view angle.
 	*/
 	const Vector& GetViewAngle() const { return pev->v_angle; }
-
-	/**
-	*	@return The view angle, in mutable form.
-	*/
-	Vector& GetMutableViewAngle() { return pev->v_angle; }
 
 	/**
 	*	Sets the view angle.
@@ -558,6 +543,8 @@ public:
 		SetModelIndex( 0 );
 	}
 
+	//On the server side the viewmodel is a string_t, on the client it's a model index
+#ifdef SERVER_DLL
 	/**
 	*	@return The view model name.
 	*/
@@ -588,6 +575,36 @@ public:
 	{
 		pev->viewmodel = iStringNull;
 	}
+#endif
+
+#ifdef CLIENT_DLL
+	/**
+	*	@return The view model index
+	*/
+	int GetViewModelIndex() const { return pev->viewmodel; }
+
+	/**
+	*	@brief Sets the view model index
+	*	@param iszModelName Model name
+	*/
+	void SetViewModelIndex( const int iModelIndex )
+	{
+		pev->viewmodel = iModelIndex;
+	}
+
+	/**
+	*	@brief Clears the view model index
+	*/
+	void ClearViewModelIndex()
+	{
+		pev->viewmodel = 0;
+	}
+#endif
+
+	/**
+	*	@brief Whether the weaponmodel name is set
+	*/
+	bool HasWeaponModelName() const { return !!( *STRING( pev->weaponmodel ) ); }
 
 	/**
 	*	@return The third person weapon model name.
@@ -680,17 +697,30 @@ public:
 	}
 
 	/**
-	*	@return The time at which a duck sound was last played.
+	*	@return The time at which a duck was last initiated
 	*/
-	int GetDuckSoundTime() const { return pev->flDuckTime; }
+	int GetDuckTime() const { return pev->flDuckTime; }
 
 	/**
-	*	Sets the time at which a duck sound was last played.
-	*	@param iTime Time to set.
+	*	Sets the time at which a duck was last initiated
+	*	@param iTime Time to set
 	*/
-	void SetDuckSoundTime( const int iTime )
+	void SetDuckTime( const int iTime )
 	{
 		pev->flDuckTime = iTime;
+	}
+
+	/**
+	*	@brief Whether the player is currently jumping out of water, and how much time is left until the jump completes (in milliseconds)
+	*/
+	float GetWaterJumpTime() const { return pev->teleport_time; }
+
+	/**
+	*	@see GetWaterJumpTime
+	*/
+	void SetWaterJumpTime( const float flTime )
+	{
+		pev->teleport_time = flTime;
 	}
 
 	/**
@@ -913,11 +943,6 @@ public:
 	float GetGravity() const { return pev->gravity; }
 
 	/**
-	*	@return The gravity multiplier, in mutable form.
-	*/
-	float& GetMutableGravity() { return pev->gravity; }
-
-	/**
 	*	Sets the gravity multiplier.
 	*	@param flGravity Gravity to set.
 	*/
@@ -930,11 +955,6 @@ public:
 	*	@return The friction.
 	*/
 	float GetFriction() const { return pev->friction; }
-
-	/**
-	*	@return The friction, in mutable form.
-	*/
-	float& GetMutableFriction() { return pev->friction; }
 
 	/**
 	*	Sets the friction.
@@ -988,11 +1008,6 @@ public:
 	*	@return The frame number, as a float.
 	*/
 	float GetFrame() const { return pev->frame; }
-
-	/**
-	*	@return The frame number, as a mutable float.
-	*/
-	float& GetMutableFrame() { return pev->frame; }
 
 	/**
 	*	Sets the frame number.
@@ -1080,11 +1095,6 @@ public:
 	*	@return The render color.
 	*/
 	const Vector& GetRenderColor() const { return pev->rendercolor; }
-
-	/**
-	*	@return The render color, in mutable form.
-	*/
-	Vector& GetMutableRenderColor() { return pev->rendercolor; }
 
 	/**
 	*	Sets the render color.
@@ -1287,19 +1297,19 @@ public:
 	}
 
 	/**
-	*	@return The entity's impulse flags.
+	*	@return The entity's impulse value
 	*/
-	const CBitSet<int>& GetImpulse() const
+	int GetImpulse() const
 	{
-		return *reinterpret_cast<const CBitSet<int>*>( &pev->impulse );
+		return pev->impulse;
 	}
 
 	/**
-	*	@copydoc GetImpulse() const
+	*	@see GetImpulse
 	*/
-	CBitSet<int>& GetImpulse()
+	void SetImpulse( const int iImpulse )
 	{
-		return *reinterpret_cast<CBitSet<int>*>( &pev->impulse );
+		pev->impulse = iImpulse;
 	}
 
 	/**
@@ -1554,7 +1564,53 @@ public:
 	}
 
 	/**
-	*	@return This entity's owner.
+	*	@brief Gets the entity's damage time
+	*/
+	float GetDamageTime() const { return pev->dmgtime; }
+
+	/**
+	*	@see GetDamageTime
+	*/
+	void SetDamageTime( const float flDamageTime )
+	{
+		pev->dmgtime = flDamageTime;
+	}
+
+	/**
+	*	@return The entity that this entity is following, if any
+	*/
+	CBaseEntity* GetAimEntity() const
+	{
+		return pev->aiment ? Instance( pev->aiment ) : nullptr;
+	}
+
+	/**
+	*	@copydoc GetAimEntity() const
+	*/
+	CBaseEntity* GetAimEntity()
+	{
+		return pev->aiment ? Instance( pev->aiment ) : nullptr;
+	}
+
+	/**
+	*	Sets this entity's aim entity
+	*	@param pAimEntity Aim entity to set. Can be null
+	*/
+	void SetAimEntity( CBaseEntity* pAimEntity )
+	{
+		pev->aiment = pAimEntity ? pAimEntity->edict() : nullptr;
+	}
+
+	/**
+	*	@return This entity's owner
+	*/
+	CBaseEntity* GetOwner() const
+	{
+		return pev->owner ? Instance( pev->owner ) : nullptr;
+	}
+
+	/**
+	*	@copydoc GetOwner() const
 	*/
 	CBaseEntity* GetOwner()
 	{
@@ -1852,7 +1908,7 @@ public:
 	virtual int ObjectCaps() const { return FCAP_ACROSS_TRANSITION; }
 
 	/**
-	*	Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
+	*	Setup the object->object collision box (GetRelMin() / GetRelMax() is the object->world collision box)
 	*/
 	virtual void SetObjectCollisionBox();
 
@@ -2029,19 +2085,19 @@ public:
 	*	This is where blood, ricochets, and other effects should be handled.
 	*	@param info Damage info.
 	*	@param vecDir Direction of the attack.
-	*	@param ptr Traceline that represents the attack.
+	*	@param tr Traceline that represents the attack.
 	*	@see g_MultiDamage
 	*/
-	virtual void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult* ptr );
+	virtual void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr );
 
 	/**
 	*	Projects blood decals based on the given damage and traceline.
 	*	@param info Damage info.
 	*	@param vecDir attack direction.
-	*	@param ptr Attack traceline.
+	*	@param tr Attack traceline.
 	*	@see Damage
 	*/
-	virtual void TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult* ptr );
+	virtual void TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr );
 
 	/**
 	*	Deals damage to this entity.
@@ -2112,7 +2168,7 @@ public:
 	/**
 	*	@return Whether this entity is moving.
 	*/
-	virtual bool IsMoving() const { return pev->velocity != g_vecZero; }
+	virtual bool IsMoving() const { return GetAbsVelocity() != g_vecZero; }
 
 	/**
 	*	Called when the entity is restored, and the entity either has a global name or was transitioned over. Resets the entity for the current level.
@@ -2139,17 +2195,17 @@ public:
 	/**
 	*	@return Whether this entity is alive.
 	*/
-	virtual bool IsAlive() const { return ( pev->deadflag == DEAD_NO ) && pev->health > 0; }
+	virtual bool IsAlive() const { return ( GetDeadFlag() == DEAD_NO ) && GetHealth() > 0; }
 
 	/**
 	*	@return Whether this is a BSP model.
 	*/
-	virtual bool IsBSPModel() const { return pev->solid == SOLID_BSP || pev->movetype == MOVETYPE_PUSHSTEP; }
+	virtual bool IsBSPModel() const { return GetSolidType() == SOLID_BSP || GetMoveType() == MOVETYPE_PUSHSTEP; }
 
 	/**
 	*	@return Whether gauss gun beams should reflect off of this entity.
 	*/
-	virtual bool ReflectGauss() const { return ( IsBSPModel() && !pev->takedamage ); }
+	virtual bool ReflectGauss() const { return ( IsBSPModel() && GetTakeDamageMode() == DAMAGE_NO ); }
 
 	/**
 	*	@return Whether this entity has the given target.
@@ -2304,17 +2360,17 @@ public:
 	/**
 	*	@return Center point of entity.
 	*/
-	virtual Vector Center() const { return ( pev->absmax + pev->absmin ) * 0.5; }
+	virtual Vector Center() const { return ( GetAbsMax() + GetAbsMin() ) * 0.5; }
 
 	/**
 	*	@return Position of eyes.
 	*/
-	virtual Vector EyePosition() const { return GetAbsOrigin() + pev->view_ofs; }
+	virtual Vector EyePosition() const { return GetAbsOrigin() + GetViewOffset(); }
 
 	/**
 	*	@return Position of ears.
 	*/
-	virtual Vector EarPosition() const { return GetAbsOrigin() + pev->view_ofs; }
+	virtual Vector EarPosition() const { return GetAbsOrigin() + GetViewOffset(); }
 
 	/**
 	*	@return Position to shoot at.

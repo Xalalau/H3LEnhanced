@@ -32,20 +32,11 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( monster_cockroach, CRoach );
 
-//=========================================================
-// ISoundMask - returns a bit mask indicating which types
-// of sounds this monster regards. In the base class implementation,
-// monsters care about all sounds, but no scents.
-//=========================================================
 int CRoach :: ISoundMask ( void )
 {
 	return	bits_SOUND_CARCASS | bits_SOUND_MEAT;
 }
 
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
 EntityClassification_t CRoach::GetClassification()
 {
 	return EntityClassifications().GetClassificationId( classify::INSECT );
@@ -59,7 +50,7 @@ void CRoach :: Touch ( CBaseEntity *pOther )
 	Vector		vecSpot;
 	TraceResult	tr;
 
-	if ( pOther->pev->velocity == g_vecZero || !pOther->IsPlayer() )
+	if ( pOther->GetAbsVelocity() == g_vecZero || !pOther->IsPlayer() )
 	{
 		return;
 	}
@@ -70,25 +61,18 @@ void CRoach :: Touch ( CBaseEntity *pOther )
 	// This isn't really blood.  So you don't have to screen it out based on violence levels (UTIL_ShouldShowBlood())
 	UTIL_DecalTrace( &tr, DECAL_YBLOOD1 +RANDOM_LONG(0,5) );
 
-	TakeDamage( pOther, pOther, pev->health, DMG_CRUSH );
+	TakeDamage( pOther, pOther, GetHealth(), DMG_CRUSH );
 }
 
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
-void CRoach :: SetYawSpeed ( void )
+void CRoach::UpdateYawSpeed()
 {
 	int ys;
 
 	ys = 120;
 
-	pev->yaw_speed = ys;
+	SetYawSpeed( ys );
 }
 
-//=========================================================
-// Spawn
-//=========================================================
 void CRoach :: Spawn()
 {
 	Precache( );
@@ -96,28 +80,25 @@ void CRoach :: Spawn()
 	SetModel( "models/roach.mdl");
 	SetSize( Vector( -1, -1, 0 ), Vector( 1, 1, 2 ) );
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_STEP );
 	m_bloodColor		= BLOOD_COLOR_YELLOW;
-	pev->effects		= 0;
-	pev->health			= 1;
+	GetEffects().ClearAll();
+	SetHealth( 1 );
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
 	SetActivity ( ACT_IDLE );
 
-	pev->view_ofs		= Vector ( 0, 0, 1 );// position of the eyes relative to monster's origin.
-	pev->takedamage		= DAMAGE_YES;
+	SetViewOffset( Vector ( 0, 0, 1 ) );// position of the eyes relative to monster's origin.
+	SetTakeDamageMode( DAMAGE_YES );
 	m_fLightHacked		= false;
 	m_flLastLightLevel	= -1;
 	m_iMode				= ROACH_IDLE;
 	m_flNextSmellTime	= gpGlobals->time;
 }
 
-//=========================================================
-// Precache - precaches all resources this monster needs
-//=========================================================
 void CRoach :: Precache()
 {
 	PRECACHE_MODEL("models/roach.mdl");
@@ -133,7 +114,7 @@ void CRoach :: Precache()
 //=========================================================
 void CRoach::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 {
-	pev->solid = SOLID_NOT;
+	SetSolidType( SOLID_NOT );
 
 	//random sound
 	if ( RANDOM_LONG(0,4) == 1 )
@@ -147,7 +128,7 @@ void CRoach::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 	
 	CSoundEnt::InsertSound ( bits_SOUND_WORLD, GetAbsOrigin(), 128, 1 );
 
-	CBaseEntity *pOwner = CBaseEntity::Instance(pev->owner);
+	CBaseEntity *pOwner = GetOwner();
 	if ( pOwner )
 	{
 		pOwner->DeathNotice( this );
@@ -161,9 +142,9 @@ void CRoach::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 void CRoach :: MonsterThink( void  )
 {
 	if ( !UTIL_FindClientInPVS( this ) )
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(1,1.5);
+		SetNextThink( gpGlobals->time + RANDOM_FLOAT(1,1.5) );
 	else
-		pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking
+		SetNextThink( gpGlobals->time + 0.1 );// keep monster thinking
 
 	float flInterval = StudioFrameAdvance( ); // animate
 
@@ -171,7 +152,7 @@ void CRoach :: MonsterThink( void  )
 	{
 		// if light value hasn't been collection for the first time yet, 
 		// suspend the creature for a second so the world finishes spawning, then we'll collect the light level.
-		pev->nextthink = gpGlobals->time + 1;
+		SetNextThink( gpGlobals->time + 1 );
 		m_fLightHacked = true;
 		return;
 	}
@@ -329,20 +310,20 @@ void CRoach :: Move ( float flInterval )
 	flWaypointDist = ( m_Route[ m_iRouteIndex ].vecLocation - GetAbsOrigin() ).Length2D();
 	MakeIdealYaw ( m_Route[ m_iRouteIndex ].vecLocation );
 
-	ChangeYaw ( pev->yaw_speed );
-	UTIL_MakeVectors( pev->angles );
+	ChangeYaw ( GetYawSpeed() );
+	UTIL_MakeVectors( GetAbsAngles() );
 
 	if ( RANDOM_LONG(0,7) == 1 )
 	{
 		// randomly check for blocked path.(more random load balancing)
-		if ( !UTIL_WalkMove( this, pev->ideal_yaw, 4, WALKMOVE_NORMAL ) )
+		if ( !UTIL_WalkMove( this, GetIdealYaw(), 4, WALKMOVE_NORMAL ) )
 		{
 			// stuck, so just pick a new spot to run off to
 			PickNewDest( m_iMode );
 		}
 	}
 	
-	UTIL_WalkMove( this, pev->ideal_yaw, m_flGroundSpeed * flInterval, WALKMOVE_NORMAL );
+	UTIL_WalkMove( this, GetIdealYaw(), m_flGroundSpeed * flInterval, WALKMOVE_NORMAL );
 
 	// if the waypoint is closer than step size, then stop after next step (ok for roach to overshoot)
 	if ( flWaypointDist <= m_flGroundSpeed * flInterval )
@@ -398,9 +379,9 @@ void CRoach :: Look ( int iDistance )
 	while ((pSightEnt = UTIL_FindEntityInSphere( pSightEnt, GetAbsOrigin(), iDistance )) != NULL)
 	{
 		// only consider ents that can be damaged. !!!temporarily only considering other monsters and clients
-		if (  pSightEnt->IsPlayer() || FBitSet ( pSightEnt->pev->flags, FL_MONSTER ) )
+		if (  pSightEnt->IsPlayer() || pSightEnt->GetFlags().Any( FL_MONSTER ) )
 		{
-			if ( /*FVisible( pSightEnt ) &&*/ !FBitSet( pSightEnt->pev->flags, FL_NOTARGET ) && pSightEnt->pev->health > 0 )
+			if ( /*FVisible( pSightEnt ) &&*/ !pSightEnt->GetFlags().Any( FL_NOTARGET ) && pSightEnt->GetHealth() > 0 )
 			{
 				// NULL the Link pointer for each ent added to the link list. If other ents follow, the will overwrite
 				// this value. If this ent happens to be the last, the list will be properly terminated.

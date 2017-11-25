@@ -22,10 +22,10 @@ LINK_ENTITY_TO_CLASS( func_illusionary, CFuncIllusionary );
 
 void CFuncIllusionary::Spawn( void )
 {
-	pev->angles = g_vecZero;
-	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_NOT;// always solid_not 
-	SetModel( STRING( pev->model ) );
+	SetAbsAngles( g_vecZero );
+	SetMoveType( MOVETYPE_NONE );
+	SetSolidType( SOLID_NOT );// always solid_not 
+	SetModel( GetModelName() );
 
 	// I'd rather eat the network bandwidth of this than figure out how to save/restore
 	// these entities after they have been moved to the client, or respawn them ala Quake
@@ -37,7 +37,7 @@ void CFuncIllusionary::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "skin" ) )//skin is used for content type
 	{
-		pev->skin = atof( pkvd->szValue );
+		SetSkin( atof( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else

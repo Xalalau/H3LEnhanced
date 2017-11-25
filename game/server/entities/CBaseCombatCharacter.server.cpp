@@ -23,7 +23,7 @@
 bool CBaseCombatCharacter::ShouldFadeOnDeath() const
 {
 	// if flagged to fade out or I have an owner (I came from a monster spawner)
-	if( ( pev->spawnflags & SF_MONSTER_FADECORPSE ) || !FNullEnt( pev->owner ) )
+	if( GetSpawnFlags().Any( SF_MONSTER_FADECORPSE ) || !FNullEnt( GetOwner() ) )
 		return true;
 
 	return false;

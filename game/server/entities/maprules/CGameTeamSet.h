@@ -31,8 +31,8 @@ public:
 	DECLARE_CLASS( CGameTeamSet, CRulePointEntity );
 
 	void		Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
-	inline bool RemoveOnFire() const { return ( pev->spawnflags & SF_TEAMSET_FIREONCE ) != 0; }
-	inline bool ShouldClearTeam() const { return ( pev->spawnflags & SF_TEAMSET_CLEARTEAM ) != 0; }
+	inline bool RemoveOnFire() const { return GetSpawnFlags().Any( SF_TEAMSET_FIREONCE ); }
+	inline bool ShouldClearTeam() const { return GetSpawnFlags().Any( SF_TEAMSET_CLEARTEAM ); }
 
 private:
 };

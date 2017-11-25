@@ -9,13 +9,13 @@ LINK_ENTITY_TO_CLASS( env_beverage, CEnvBeverage );
 void CEnvBeverage::Spawn( void )
 {
 	Precache();
-	pev->solid = SOLID_NOT;
-	pev->effects = EF_NODRAW;
-	pev->frags = 0;
+	SetSolidType( SOLID_NOT );
+	GetEffects() = EF_NODRAW;
+	SetFrags( 0 );
 
-	if( pev->health == 0 )
+	if( GetHealth() == 0 )
 	{
-		pev->health = 10;
+		SetHealth( 10 );
 	}
 }
 
@@ -27,27 +27,27 @@ void CEnvBeverage::Precache( void )
 
 void CEnvBeverage::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if( pev->frags != 0 || pev->health <= 0 )
+	if( GetFrags() != 0 || GetHealth() <= 0 )
 	{
 		// no more cans while one is waiting in the dispenser, or if I'm out of cans.
 		return;
 	}
 
-	CBaseEntity *pCan = CBaseEntity::Create( "item_sodacan", GetAbsOrigin(), pev->angles, edict() );
+	CBaseEntity *pCan = CBaseEntity::Create( "item_sodacan", GetAbsOrigin(), GetAbsAngles(), edict() );
 
-	if( pev->skin == 6 )
+	if( GetSkin() == 6 )
 	{
 		// random
-		pCan->pev->skin = RANDOM_LONG( 0, 5 );
+		pCan->SetSkin( RANDOM_LONG( 0, 5 ) );
 	}
 	else
 	{
-		pCan->pev->skin = pev->skin;
+		pCan->SetSkin( GetSkin() );
 	}
 
-	pev->frags = 1;
-	pev->health--;
+	SetFrags( 1 );
+	SetHealth( GetHealth() - 1 );
 
 	//SetThink (SUB_Remove);
-	//pev->nextthink = gpGlobals->time;
+	//SetNextThink( gpGlobals->time );
 }

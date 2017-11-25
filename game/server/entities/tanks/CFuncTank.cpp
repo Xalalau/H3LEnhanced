@@ -51,15 +51,15 @@ void CFuncTank::Spawn( void )
 {
 	Precache();
 
-	pev->movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
-	pev->solid = SOLID_BSP;
-	SetModel( STRING( pev->model ) );
+	SetMoveType( MOVETYPE_PUSH );  // so it doesn't get pushed by anything
+	SetSolidType( SOLID_BSP );
+	SetModel( GetModelName() );
 
-	m_yawCenter = pev->angles.y;
-	m_pitchCenter = pev->angles.x;
+	m_yawCenter = GetAbsAngles().y;
+	m_pitchCenter = GetAbsAngles().x;
 
 	if( IsActive() )
-		pev->nextthink = pev->ltime + 1.0;
+		SetNextThink( GetLastThink() + 1.0 );
 
 	m_sightOrigin = BarrelPosition(); // Point at the end of the barrel
 
@@ -196,7 +196,7 @@ void CFuncTank::KeyValue( KeyValueData *pkvd )
 
 void CFuncTank::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if( pev->spawnflags & SF_TANK_CANCONTROL )
+	if( GetSpawnFlags().Any( SF_TANK_CANCONTROL ) )
 	{  // player controlled turret
 
 		if( pActivator->Classify() != EntityClassifications().GetClassificationId( classify::PLAYER ) )
@@ -230,10 +230,10 @@ void CFuncTank::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 
 void CFuncTank::Think( void )
 {
-	pev->avelocity = g_vecZero;
+	SetAngularVelocity( g_vecZero );
 	TrackTarget();
 
-	if( fabs( pev->avelocity.x ) > 1 || fabs( pev->avelocity.y ) > 1 )
+	if( fabs( GetAngularVelocity().x ) > 1 || fabs( GetAngularVelocity().y ) > 1 )
 		StartRotSound();
 	else
 		StopRotSound();
@@ -243,30 +243,30 @@ void CFuncTank::TrackTarget( void )
 {
 	TraceResult tr;
 	CBaseEntity* pPlayer = UTIL_FindClientInPVS( this );
-	bool updateTime = false, lineOfSight;
+	bool updateTime = false;
 	Vector angles, direction, targetPosition, barrelEnd;
 
-	CBaseEntity* pTarget;
+	CBaseEntity* pTarget = nullptr;
 
 	// Get a position to aim for
 	if( m_pController )
 	{
 		// Tanks attempt to mirror the player's angles
-		angles = m_pController->pev->v_angle;
+		angles = m_pController->GetViewAngle();
 		angles[ 0 ] = 0 - angles[ 0 ];
-		pev->nextthink = pev->ltime + 0.05;
+		SetNextThink( GetLastThink() + 0.05 );
 	}
 	else
 	{
 		if( IsActive() )
-			pev->nextthink = pev->ltime + 0.1;
+			SetNextThink( GetLastThink() + 0.1 );
 		else
 			return;
 
 		if( FNullEnt( pPlayer ) )
 		{
 			if( IsActive() )
-				pev->nextthink = pev->ltime + 2;	// Wait 2 secs
+				SetNextThink( GetLastThink() + 2 );	// Wait 2 secs
 			return;
 		}
 
@@ -277,7 +277,7 @@ void CFuncTank::TrackTarget( void )
 
 		// Calculate angle needed to aim at target
 		barrelEnd = BarrelPosition();
-		targetPosition = pTarget->GetAbsOrigin() + pTarget->pev->view_ofs;
+		targetPosition = pTarget->GetAbsOrigin() + pTarget->GetViewOffset();
 		float range = ( targetPosition - barrelEnd ).Length();
 
 		if( !InRange( range ) )
@@ -285,11 +285,11 @@ void CFuncTank::TrackTarget( void )
 
 		UTIL_TraceLine( barrelEnd, targetPosition, dont_ignore_monsters, edict(), &tr );
 
-		lineOfSight = false;
+		//bool lineOfSight = false;
 		// No line of sight, don't track
 		if( tr.flFraction == 1.0 || tr.pHit == pTarget->edict() )
 		{
-			lineOfSight = true;
+			//lineOfSight = true;
 
 			if( InRange( range ) && pTarget && pTarget->IsAlive() )
 			{
@@ -331,12 +331,15 @@ void CFuncTank::TrackTarget( void )
 		m_lastSightTime = gpGlobals->time;
 
 	// Move toward target at rate or less
-	float distY = UTIL_AngleDistance( angles.y, pev->angles.y );
-	pev->avelocity.y = distY * 10;
-	if( pev->avelocity.y > m_yawRate )
-		pev->avelocity.y = m_yawRate;
-	else if( pev->avelocity.y < -m_yawRate )
-		pev->avelocity.y = -m_yawRate;
+	float distY = UTIL_AngleDistance( angles.y, GetAbsAngles().y );
+
+	Vector vecAVelocity = GetAngularVelocity();
+
+	vecAVelocity.y = distY * 10;
+	if( vecAVelocity.y > m_yawRate )
+		vecAVelocity.y = m_yawRate;
+	else if( vecAVelocity.y < -m_yawRate )
+		vecAVelocity.y = -m_yawRate;
 
 	// Limit against range in x
 	if( angles.x > m_pitchCenter + m_pitchRange )
@@ -345,24 +348,26 @@ void CFuncTank::TrackTarget( void )
 		angles.x = m_pitchCenter - m_pitchRange;
 
 	// Move toward target at rate or less
-	float distX = UTIL_AngleDistance( angles.x, pev->angles.x );
-	pev->avelocity.x = distX * 10;
+	float distX = UTIL_AngleDistance( angles.x, GetAbsAngles().x );
+	vecAVelocity.x = distX * 10;
 
-	if( pev->avelocity.x > m_pitchRate )
-		pev->avelocity.x = m_pitchRate;
-	else if( pev->avelocity.x < -m_pitchRate )
-		pev->avelocity.x = -m_pitchRate;
+	if( vecAVelocity.x > m_pitchRate )
+		vecAVelocity.x = m_pitchRate;
+	else if( vecAVelocity.x < -m_pitchRate )
+		vecAVelocity.x = -m_pitchRate;
+
+	SetAngularVelocity( vecAVelocity );
 
 	if( m_pController )
 		return;
 
-	if( CanFire() && ( ( fabs( distX ) < m_pitchTolerance && fabs( distY ) < m_yawTolerance ) || ( pev->spawnflags & SF_TANK_LINEOFSIGHT ) ) )
+	if( CanFire() && ( ( fabs( distX ) < m_pitchTolerance && fabs( distY ) < m_yawTolerance ) || GetSpawnFlags().Any( SF_TANK_LINEOFSIGHT ) ) )
 	{
 		bool fire = false;
 		Vector forward;
-		UTIL_MakeVectorsPrivate( pev->angles, &forward, nullptr, nullptr );
+		UTIL_MakeVectorsPrivate( GetAbsAngles(), &forward, nullptr, nullptr );
 
-		if( pev->spawnflags & SF_TANK_LINEOFSIGHT )
+		if( GetSpawnFlags().Any( SF_TANK_LINEOFSIGHT ) )
 		{
 			float length = direction.Length();
 			UTIL_TraceLine( barrelEnd, barrelEnd + forward * length, dont_ignore_monsters, edict(), &tr );
@@ -392,8 +397,10 @@ void CFuncTank::Fire( const Vector &barrelEnd, const Vector &forward, CBaseEntit
 		{
 			CSprite *pSprite = CSprite::SpriteCreate( STRING( m_iszSpriteSmoke ), barrelEnd, true );
 			pSprite->AnimateAndDie( RANDOM_FLOAT( 15.0, 20.0 ) );
-			pSprite->SetTransparency( kRenderTransAlpha, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, 255, kRenderFxNone );
-			pSprite->pev->velocity.z = RANDOM_FLOAT( 40, 80 );
+			pSprite->SetTransparency( kRenderTransAlpha, GetRenderColor().x, GetRenderColor().y, GetRenderColor().z, 255, kRenderFxNone );
+			Vector vecVelocity = pSprite->GetAbsVelocity();
+			vecVelocity.z = RANDOM_FLOAT( 40, 80 );
+			pSprite->SetAbsVelocity( vecVelocity );
 			pSprite->SetScale( m_spriteScale );
 		}
 		if( m_iszSpriteFlash )
@@ -404,7 +411,7 @@ void CFuncTank::Fire( const Vector &barrelEnd, const Vector &forward, CBaseEntit
 			pSprite->SetScale( m_spriteScale );
 
 			// Hack Hack, make it stick around for at least 100 ms.
-			pSprite->pev->nextthink += 0.1;
+			pSprite->SetNextThink( GetNextThink() + 0.1 );
 		}
 		SUB_UseTargets( this, USE_TOGGLE, 0 );
 	}
@@ -413,17 +420,17 @@ void CFuncTank::Fire( const Vector &barrelEnd, const Vector &forward, CBaseEntit
 
 void CFuncTank::StartRotSound( void )
 {
-	if( !pev->noise || ( pev->spawnflags & SF_TANK_SOUNDON ) )
+	if( !pev->noise || GetSpawnFlags().Any( SF_TANK_SOUNDON ) )
 		return;
-	pev->spawnflags |= SF_TANK_SOUNDON;
+	GetSpawnFlags() |= SF_TANK_SOUNDON;
 	EMIT_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noise ), 0.85, ATTN_NORM );
 }
 
 void CFuncTank::StopRotSound( void )
 {
-	if( pev->spawnflags & SF_TANK_SOUNDON )
+	if( GetSpawnFlags().Any( SF_TANK_SOUNDON ) )
 		STOP_SOUND( this, CHAN_STATIC, ( char* ) STRING( pev->noise ) );
-	pev->spawnflags &= ~SF_TANK_SOUNDON;
+	GetSpawnFlags().ClearFlags( SF_TANK_SOUNDON );
 }
 
 bool CFuncTank::InRange( float range ) const
@@ -485,7 +492,7 @@ void CFuncTank::AdjustAnglesForBarrel( Vector &angles, float distance )
 // TANK CONTROLLING
 bool CFuncTank::OnControls( const CBaseEntity* const pTest ) const
 {
-	if( !( pev->spawnflags & SF_TANK_CANCONTROL ) )
+	if( !GetSpawnFlags().Any( SF_TANK_CANCONTROL ) )
 		return false;
 
 	if( ( m_vecControllerUsePos - pTest->GetAbsOrigin() ).Length() < 30 )
@@ -512,15 +519,15 @@ bool CFuncTank::StartControl( CBasePlayer *pController )
 	if( m_pController->m_pActiveItem )
 	{
 		m_pController->m_pActiveItem->Holster();
-		m_pController->pev->weaponmodel = 0;
-		m_pController->pev->viewmodel = 0;
+		m_pController->ClearWeaponModelName();
+		m_pController->ClearViewModelName();
 
 	}
 
 	m_pController->m_iHideHUD |= HIDEHUD_WEAPONS;
 	m_vecControllerUsePos = m_pController->GetAbsOrigin();
 
-	pev->nextthink = pev->ltime + 0.1;
+	SetNextThink( GetLastThink() + 0.1 );
 
 	return true;
 }
@@ -538,11 +545,11 @@ void CFuncTank::StopControl()
 
 	m_pController->m_iHideHUD &= ~HIDEHUD_WEAPONS;
 
-	pev->nextthink = 0;
+	SetNextThink( 0 );
 	m_pController = NULL;
 
 	if( IsActive() )
-		pev->nextthink = pev->ltime + 1.0;
+		SetNextThink( GetLastThink() + 1.0 );
 }
 
 // Called each frame by the player's ItemPostFrame
@@ -553,10 +560,10 @@ void CFuncTank::ControllerPostFrame( void )
 	if( gpGlobals->time < m_flNextAttack )
 		return;
 
-	if( m_pController->pev->button & IN_ATTACK )
+	if( m_pController->GetButtons().Any( IN_ATTACK ) )
 	{
 		Vector vecForward;
-		UTIL_MakeVectorsPrivate( pev->angles, &vecForward, nullptr, nullptr );
+		UTIL_MakeVectorsPrivate( GetAbsAngles(), &vecForward, nullptr, nullptr );
 
 		m_fireLast = gpGlobals->time - ( 1 / m_fireRate ) - 0.01;  // to make sure the gun doesn't fire too many bullets
 

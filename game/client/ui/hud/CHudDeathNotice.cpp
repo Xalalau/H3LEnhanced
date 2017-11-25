@@ -56,7 +56,7 @@ bool CHudDeathNotice::Draw( float flTime )
 {
 	int x, y, r, g, b;
 
-	for ( int i = 0; i < MAX_DEATHNOTICES; i++ )
+	for ( int i = 0; static_cast<size_t>( i ) < MAX_DEATHNOTICES; i++ )
 	{
 		if ( m_rgDeathNoticeList[i].iId == 0 )
 			break;  // we've gone through them all
@@ -135,7 +135,7 @@ void CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pb
 	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
 		pSpectator->DeathMessage(victim);
 	int i;
-	for ( i = 0; i < MAX_DEATHNOTICES; i++ )
+	for ( i = 0; static_cast<size_t>( i ) < MAX_DEATHNOTICES; i++ )
 	{
 		if ( m_rgDeathNoticeList[i].iId == 0 )
 			break;

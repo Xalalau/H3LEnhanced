@@ -354,7 +354,7 @@ int CSquadMonster :: SquadRecruit( int searchRadius, int maxMembers )
 				    !pRecruit->HasNetName() )
 				{
 					TraceResult tr;
-					UTIL_TraceLine( GetAbsOrigin() + pev->view_ofs, pRecruit->GetAbsOrigin() + pev->view_ofs, ignore_monsters, pRecruit->edict(), &tr );// try to hit recruit with a traceline.
+					UTIL_TraceLine( GetAbsOrigin() + GetViewOffset(), pRecruit->GetAbsOrigin() + GetViewOffset(), ignore_monsters, pRecruit->edict(), &tr );// try to hit recruit with a traceline.
 					if ( tr.flFraction == 1.0 )
 					{
 						if (!SquadAdd( pRecruit ))
@@ -413,7 +413,7 @@ void CSquadMonster :: StartMonster( void )
 		if ( HasNetName() )
 		{
 			// if I have a groupname, I can only recruit if I'm flagged as leader
-			if ( !( pev->spawnflags & SF_SQUADMONSTER_LEADER ) )
+			if ( !GetSpawnFlags().Any( SF_SQUADMONSTER_LEADER ) )
 			{
 				return;
 			}
@@ -430,7 +430,7 @@ void CSquadMonster :: StartMonster( void )
 		if ( IsLeader() && ClassnameIs( "monster_human_grunt" ) )
 		{
 			SetBodygroup( 1, 1 ); // UNDONE: truly ugly hack
-			pev->skin = 0;
+			SetSkin( 0 );
 		}
 
 	}
@@ -469,10 +469,10 @@ bool CSquadMonster::NoFriendlyFire()
 		return false;
 	}
 
-	//UTIL_MakeVectors ( pev->angles );
+	//UTIL_MakeVectors ( GetAbsAngles() );
 	
-	vecLeftSide = GetAbsOrigin() - ( gpGlobals->v_right * ( pev->size.x * 1.5 ) );
-	vecRightSide = GetAbsOrigin() + ( gpGlobals->v_right * ( pev->size.x * 1.5 ) );
+	vecLeftSide = GetAbsOrigin() - ( gpGlobals->v_right * ( GetBounds().x * 1.5 ) );
+	vecRightSide = GetAbsOrigin() + ( gpGlobals->v_right * ( GetBounds().x * 1.5 ) );
 	v_left = gpGlobals->v_right * -1;
 
 	leftPlane.InitializePlane ( gpGlobals->v_right, vecLeftSide );
@@ -511,9 +511,7 @@ bool CSquadMonster::NoFriendlyFire()
 //=========================================================
 MONSTERSTATE CSquadMonster :: GetIdealState ( void )
 {
-	int	iConditions;
-
-	iConditions = IScheduleFlags();
+	//int	iConditions = IScheduleFlags();
 	
 	// If no schedule conditions, the new ideal state is probably the reason we're in here.
 	switch ( m_MonsterState )

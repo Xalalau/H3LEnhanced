@@ -87,8 +87,8 @@ public:
 	int m_iDelay;
 	float m_startTime;
 
-	int	m_saved_movetype;
-	int	m_saved_solid;
+	MoveType	m_saved_movetype;
+	Solid	m_saved_solid;
 	int m_saved_effects;
 	//	Vector m_vecOrigOrigin;
 	bool m_interruptable;

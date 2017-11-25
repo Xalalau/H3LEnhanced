@@ -32,7 +32,7 @@ public:
 	void		Touch( CBaseEntity *pOther ) override;
 	void		Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
 
-	inline bool	UseOnly() const { return ( pev->spawnflags & SF_PLAYEREQUIP_USEONLY ) != 0; }
+	inline bool	UseOnly() const { return GetSpawnFlags().Any( SF_PLAYEREQUIP_USEONLY ); }
 
 private:
 

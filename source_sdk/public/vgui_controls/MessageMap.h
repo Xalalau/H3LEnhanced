@@ -14,8 +14,10 @@
 
 #include "tier1/UtlVector.h"
 
+#ifdef WIN32
 // more flexible than default pointers to members code required for casting member function pointers
 #pragma pointers_to_members( full_generality, virtual_inheritance )
+#endif
 
 namespace vgui2
 {
@@ -57,7 +59,9 @@ typedef void (Panel::*MessageFunc_t)(void);
 //			Contains the information to map a string message name with parameters
 //			to a function call
 //-----------------------------------------------------------------------------
+#ifdef WIN32
 #pragma warning(disable:4121)
+#endif
 struct MessageMapItem_t
 {
 	const char *name;

@@ -12,23 +12,23 @@ LINK_ENTITY_TO_CLASS( monster_furniture, CFurniture );
 //=========================================================
 void CFurniture::Spawn()
 {
-	PRECACHE_MODEL( ( char * ) STRING( pev->model ) );
-	SetModel( STRING( pev->model ) );
+	PRECACHE_MODEL( GetModelName() );
+	SetModel( GetModelName() );
 
-	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_BBOX;
-	pev->health = 80000;
-	pev->takedamage = DAMAGE_AIM;
-	pev->effects = 0;
-	pev->yaw_speed = 0;
-	pev->sequence = 0;
-	pev->frame = 0;
+	SetMoveType( MOVETYPE_NONE );
+	SetSolidType( SOLID_BBOX );
+	SetHealth( 80000 );
+	SetTakeDamageMode( DAMAGE_AIM );
+	GetEffects().ClearAll();
+	SetYawSpeed( 0 );
+	SetSequence( 0 );
+	SetFrame( 0 );
 
-	//	pev->nextthink += 1.0;
+	//	SetNextThink( GetNextThink() + 1.0 );
 	//	SetThink (WalkMonsterDelay);
 
 	ResetSequenceInfo();
-	pev->frame = 0;
+	SetFrame( 0 );
 	MonsterInit();
 }
 
@@ -38,7 +38,7 @@ void CFurniture::Spawn()
 void CFurniture::Die( void )
 {
 	SetThink( &CFurniture::SUB_Remove );
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 }
 
 //=========================================================

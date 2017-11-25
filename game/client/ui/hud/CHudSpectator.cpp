@@ -36,9 +36,6 @@
 
 #include "CClientGameInterface.h"
 
-
-#pragma warning(disable: 4244)
-
 extern bool		g_bJumpSpectator;
 extern Vector	vJumpOrigin;
 extern Vector	vJumpAngles;

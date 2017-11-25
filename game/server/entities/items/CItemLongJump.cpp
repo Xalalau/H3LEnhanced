@@ -29,7 +29,7 @@ bool CItemLongJump::MyTouch( CBasePlayer *pPlayer )
 		return false;
 	}
 
-	if( ( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if( ( pPlayer->GetWeapons().Any( 1 << WEAPON_SUIT ) ) )
 	{
 		pPlayer->m_fLongJump = true;// player now has longjump module
 

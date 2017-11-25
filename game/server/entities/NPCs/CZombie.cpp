@@ -68,20 +68,12 @@ const char *CZombie::pPainSounds[] =
 	"zombie/zo_pain2.wav",
 };
 
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
 EntityClassification_t CZombie::GetClassification()
 {
 	return EntityClassifications().GetClassificationId( classify::ALIEN_MONSTER );
 }
 
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
-void CZombie :: SetYawSpeed ( void )
+void CZombie::UpdateYawSpeed()
 {
 	int ys;
 
@@ -93,7 +85,7 @@ void CZombie :: SetYawSpeed ( void )
 	}
 #endif
 
-	pev->yaw_speed = ys;
+	SetYawSpeed( ys );
 }
 
 void CZombie::OnTakeDamage( const CTakeDamageInfo& info )
@@ -103,10 +95,10 @@ void CZombie::OnTakeDamage( const CTakeDamageInfo& info )
 	// Take 30% damage from bullets
 	if ( newInfo.GetDamageTypes() == DMG_BULLET )
 	{
-		Vector vecDir = GetAbsOrigin() - ( newInfo.GetInflictor()->pev->absmin + newInfo.GetInflictor()->pev->absmax) * 0.5;
+		Vector vecDir = GetAbsOrigin() - ( newInfo.GetInflictor()->GetAbsMin() + newInfo.GetInflictor()->GetAbsMax() ) * 0.5;
 		vecDir = vecDir.Normalize();
 		float flForce = DamageForce( newInfo.GetDamage() );
-		pev->velocity = pev->velocity + vecDir * flForce;
+		SetAbsVelocity( GetAbsVelocity() + vecDir * flForce );
 		newInfo.GetMutableDamage() *= 0.3;
 	}
 
@@ -147,11 +139,6 @@ void CZombie :: AttackSound( void )
 	EMIT_SOUND_DYN ( this, CHAN_VOICE, pAttackSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackSounds)-1) ], 1.0, ATTN_NORM, 0, pitch );
 }
 
-
-//=========================================================
-// HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
-//=========================================================
 void CZombie :: HandleAnimEvent( AnimEvent_t& event )
 {
 	switch( event.event )
@@ -163,11 +150,13 @@ void CZombie :: HandleAnimEvent( AnimEvent_t& event )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.GetZombieDmgOneSlash(), DMG_SLASH );
 			if ( pHurt )
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->GetFlags().Any( FL_MONSTER | FL_CLIENT ) )
 				{
-					pHurt->pev->punchangle.z = -18;
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
+					Vector vecPunchAngle = pHurt->GetPunchAngle();
+					vecPunchAngle.z = -18;
+					vecPunchAngle.x = 5;
+					pHurt->SetPunchAngle( vecPunchAngle );
+					pHurt->SetAbsVelocity( pHurt->GetAbsVelocity() - gpGlobals->v_right * 100 );
 				}
 				// Play a random attack hit sound
 				EMIT_SOUND_DYN ( this, CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5) );
@@ -187,11 +176,13 @@ void CZombie :: HandleAnimEvent( AnimEvent_t& event )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.GetZombieDmgOneSlash(), DMG_SLASH );
 			if ( pHurt )
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->GetFlags().Any( FL_MONSTER | FL_CLIENT ) )
 				{
-					pHurt->pev->punchangle.z = 18;
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
+					Vector vecPunchAngle = pHurt->GetPunchAngle();
+					vecPunchAngle.z = 18;
+					vecPunchAngle.x = 5;
+					pHurt->SetPunchAngle( vecPunchAngle );
+					pHurt->SetAbsVelocity( pHurt->GetAbsVelocity() + gpGlobals->v_right * 100 );
 				}
 				EMIT_SOUND_DYN ( this, CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5) );
 			}
@@ -209,10 +200,12 @@ void CZombie :: HandleAnimEvent( AnimEvent_t& event )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.GetZombieDmgBothSlash(), DMG_SLASH );
 			if ( pHurt )
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->GetFlags().Any( FL_MONSTER | FL_CLIENT ) )
 				{
-					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
+					Vector vecPunchAngle = pHurt->GetPunchAngle();
+					vecPunchAngle.x = 5;
+					pHurt->SetPunchAngle( vecPunchAngle );
+					pHurt->SetAbsVelocity( pHurt->GetAbsVelocity() + gpGlobals->v_forward * -100 );
 				}
 				EMIT_SOUND_DYN ( this, CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5) );
 			}
@@ -230,9 +223,6 @@ void CZombie :: HandleAnimEvent( AnimEvent_t& event )
 	}
 }
 
-//=========================================================
-// Spawn
-//=========================================================
 void CZombie :: Spawn()
 {
 	Precache( );
@@ -240,11 +230,11 @@ void CZombie :: Spawn()
 	SetModel( "models/zombie.mdl");
 	SetSize( VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_STEP );
 	m_bloodColor		= BLOOD_COLOR_GREEN;
-	pev->health			= gSkillData.GetZombieHealth();
-	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
+	SetHealth( gSkillData.GetZombieHealth() );
+	SetViewOffset( VEC_VIEW );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
@@ -252,9 +242,6 @@ void CZombie :: Spawn()
 	MonsterInit();
 }
 
-//=========================================================
-// Precache - precaches all resources this monster needs
-//=========================================================
 void CZombie :: Precache()
 {
 	size_t i;
@@ -293,7 +280,7 @@ int CZombie::IgnoreConditions ( void )
 	if ( m_Activity == ACT_MELEE_ATTACK1 )
 	{
 #if 0
-		if (pev->health < 20)
+		if ( GetHealth() < 20)
 			iIgnore |= (bits_COND_LIGHT_DAMAGE|bits_COND_HEAVY_DAMAGE);
 		else
 #endif			

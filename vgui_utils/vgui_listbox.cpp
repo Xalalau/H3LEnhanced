@@ -14,8 +14,8 @@ using namespace vgui;
 
 CListBox::CListBox() : Panel(0, 0, 0, 0),
 	m_ItemsPanel(0,0,0,0),
-	m_ScrollBar(0, 0, 0, 0, true),
-	m_Slider(0, 0, 10, 40, true)
+	m_Slider( 0, 0, 10, 40, true ),
+	m_ScrollBar(0, 0, 0, 0, true)
 {
 	m_Signal.m_pListBox = this;
 
@@ -124,7 +124,7 @@ void CListBox::setSize(int wide,int tall)
 	InternalLayout();
 }
 
-void CListBox::setPixelScroll(int value)
+void CListBox::setPixelScroll(int /*value*/)
 {
 	m_ItemOffset = m_ScrollBar.getValue();
 	InternalLayout();

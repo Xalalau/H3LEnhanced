@@ -135,7 +135,7 @@ cvar_t* CHalfLifeMultiplay::GetSkillCvar( const skilldata_t& skillData, const ch
 		char szBuffer[ 64 ];
 
 		//All overrides have _mp appended to their base name. - Solokiller
-		const int Result = snprintf( szBuffer, sizeof( szBuffer ), "%s_mp", pszSkillCvarName );
+		/*const int Result = */snprintf( szBuffer, sizeof( szBuffer ), "%s_mp", pszSkillCvarName );
 
 		return skilldata_t::GetSkillCvar( szBuffer, skillData.GetSkillLevel() );
 	}
@@ -520,9 +520,9 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 	bool addDefault = true;
 	CBaseEntity	*pWeaponEntity = nullptr;
 
-	pPlayer->pev->weapons |= (1<<WEAPON_SUIT);
+	pPlayer->GetWeapons().AddFlags( 1 << WEAPON_SUIT );
 
-	while ( (pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" )))
+	while( ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ) ) != nullptr )
 	{
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = false;
@@ -578,6 +578,9 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer* pVictim, const CTakeDamageIn
 
 	ASSERT( pKiller );
 	ASSERT( pInflictor );
+
+	//Prevents an unreferenced var warning, inflictor needs to be asserted so can't remove it - Solokiller
+	pInflictor = pInflictor;
 
 	DeathNotice( pVictim, info );
 

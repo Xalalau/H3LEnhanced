@@ -33,8 +33,8 @@ public:
 		: m_Writer( pszClassName )
 		, m_pszEntityClass( pszEntityClass )
 		, m_pszBaseClass( pszBaseClass )
-		, m_BaseClassList( baseClassList )
 		, m_CreateFn( createFn )
+		, m_BaseClassList( baseClassList )
 	{
 		ASSERT( pszEntityClass );
 		ASSERT( pszBaseClass );

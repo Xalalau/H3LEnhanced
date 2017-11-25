@@ -18,23 +18,21 @@ LINK_ENTITY_TO_CLASS( env_bubbles, CBubbling );
 void CBubbling::Spawn( void )
 {
 	Precache();
-	SetModel( STRING( pev->model ) );		// Set size
+	SetModel( GetModelName() );		// Set size
 
-	pev->solid = SOLID_NOT;							// Remove model & collisions
-	pev->renderamt = 0;								// The engine won't draw this model if this is set to 0 and blending is on
-	pev->rendermode = kRenderTransTexture;
-	int speed = pev->speed > 0 ? pev->speed : -pev->speed;
+	SetSolidType( SOLID_NOT );							// Remove model & collisions
+	SetRenderAmount( 0 );								// The engine won't draw this model if this is set to 0 and blending is on
+	SetRenderMode( kRenderTransTexture );
+	int speed = fabs( GetSpeed() );
 
 	// HACKHACK!!! - Speed in rendercolor
-	pev->rendercolor.x = speed >> 8;
-	pev->rendercolor.y = speed & 255;
-	pev->rendercolor.z = ( pev->speed < 0 ) ? 1 : 0;
+	SetRenderColor( Vector( speed >> 8, speed & 255, ( GetSpeed() < 0 ) ? 1 : 0 ) );
 
 
-	if( !( pev->spawnflags & SF_BUBBLES_STARTOFF ) )
+	if( !GetSpawnFlags().Any( SF_BUBBLES_STARTOFF ) )
 	{
 		SetThink( &CBubbling::FizzThink );
-		pev->nextthink = gpGlobals->time + 2.0;
+		SetNextThink( gpGlobals->time + 2.0 );
 		m_state = true;
 	}
 	else
@@ -60,7 +58,7 @@ void CBubbling::KeyValue( KeyValueData *pkvd )
 	}
 	else if( FStrEq( pkvd->szKeyName, "current" ) )
 	{
-		pev->speed = atoi( pkvd->szValue );
+		SetSpeed( atoi( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
 	else
@@ -77,9 +75,9 @@ void CBubbling::FizzThink( void )
 	MESSAGE_END();
 
 	if( m_frequency > 19 )
-		pev->nextthink = gpGlobals->time + 0.5;
+		SetNextThink( gpGlobals->time + 0.5 );
 	else
-		pev->nextthink = gpGlobals->time + 2.5 - ( 0.1 * m_frequency );
+		SetNextThink( gpGlobals->time + 2.5 - ( 0.1 * m_frequency ) );
 }
 
 void CBubbling::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -90,11 +88,11 @@ void CBubbling::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( m_state )
 	{
 		SetThink( &CBubbling::FizzThink );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 	else
 	{
 		SetThink( NULL );
-		pev->nextthink = 0;
+		SetNextThink( 0 );
 	}
 }

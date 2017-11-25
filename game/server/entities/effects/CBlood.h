@@ -30,11 +30,11 @@ public:
 	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
 	void	KeyValue( KeyValueData *pkvd ) override;
 
-	inline	int		Color( void ) { return pev->impulse; }
-	inline	float 	BloodAmount( void ) { return pev->dmg; }
+	inline	int		Color( void ) { return GetImpulse(); }
+	inline	float 	BloodAmount( void ) { return GetDamage(); }
 
-	inline	void SetColor( int color ) { pev->impulse = color; }
-	inline	void SetBloodAmount( float amount ) { pev->dmg = amount; }
+	inline	void SetColor( int color ) { SetImpulse( color ); }
+	inline	void SetBloodAmount( float amount ) { SetDamage( amount ); }
 
 	Vector	Direction( void );
 	Vector	BloodPosition( CBaseEntity *pActivator );

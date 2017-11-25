@@ -29,41 +29,41 @@ void CRotDoor::Spawn( void )
 	CBaseToggle::AxisDir( this );
 
 	// check for clockwise rotation
-	if( FBitSet( pev->spawnflags, SF_DOOR_ROTATE_BACKWARDS ) )
-		pev->movedir = pev->movedir * -1;
+	if( GetSpawnFlags().Any( SF_DOOR_ROTATE_BACKWARDS ) )
+		SetMoveDir( GetMoveDir() * -1 );
 
 	//m_flWait			= 2; who the hell did this? (sjb)
-	m_vecAngle1 = pev->angles;
-	m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
+	m_vecAngle1 = GetAbsAngles();
+	m_vecAngle2 = GetAbsAngles() + GetMoveDir() * m_flMoveDistance;
 
 	ASSERTSZ( m_vecAngle1 != m_vecAngle2, "rotating door start/end positions are equal" );
 
-	if( FBitSet( pev->spawnflags, SF_DOOR_PASSABLE ) )
-		pev->solid = SOLID_NOT;
+	if( GetSpawnFlags().Any( SF_DOOR_PASSABLE ) )
+		SetSolidType( SOLID_NOT );
 	else
-		pev->solid = SOLID_BSP;
+		SetSolidType( SOLID_BSP );
 
-	pev->movetype = MOVETYPE_PUSH;
+	SetMoveType( MOVETYPE_PUSH );
 	SetAbsOrigin( GetAbsOrigin() );
-	SetModel( STRING( pev->model ) );
+	SetModel( GetModelName() );
 
-	if( pev->speed == 0 )
-		pev->speed = 100;
+	if( GetSpeed() == 0 )
+		SetSpeed( 100 );
 
 	// DOOR_START_OPEN is to allow an entity to be lighted in the closed position
 	// but spawn in the open position
-	if( FBitSet( pev->spawnflags, SF_DOOR_START_OPEN ) )
+	if( GetSpawnFlags().Any( SF_DOOR_START_OPEN ) )
 	{	// swap pos1 and pos2, put door at pos2, invert movement direction
-		pev->angles = m_vecAngle2;
+		SetAbsAngles( m_vecAngle2 );
 		Vector vecSav = m_vecAngle1;
 		m_vecAngle2 = m_vecAngle1;
 		m_vecAngle1 = vecSav;
-		pev->movedir = pev->movedir * -1;
+		SetMoveDir( GetMoveDir() * -1 );
 	}
 
 	m_toggle_state = TS_AT_BOTTOM;
 
-	if( FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
+	if( GetSpawnFlags().Any( SF_DOOR_USE_ONLY ) )
 	{
 		SetTouch( NULL );
 	}
@@ -75,9 +75,9 @@ void CRotDoor::Spawn( void )
 void CRotDoor::SetToggleState( int state )
 {
 	if( state == TS_AT_TOP )
-		pev->angles = m_vecAngle2;
+		SetAbsAngles( m_vecAngle2 );
 	else
-		pev->angles = m_vecAngle1;
+		SetAbsAngles( m_vecAngle1 );
 
 	SetAbsOrigin( GetAbsOrigin() );
 }

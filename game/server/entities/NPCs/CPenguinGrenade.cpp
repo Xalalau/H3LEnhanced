@@ -58,8 +58,8 @@ void CPenguinGrenade::Spawn()
 {
 	Precache();
 	// motor
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->solid = SOLID_BBOX;
+	SetMoveType( MOVETYPE_BOUNCE );
+	SetSolidType( SOLID_BBOX );
 
 	SetModel( "models/w_penguin.mdl" );
 	SetSize( Vector( -4, -4, 0 ), Vector( 4, 4, 8 ) );
@@ -206,7 +206,7 @@ void CPenguinGrenade::SuperBounceTouch( CBaseEntity *pOther )
 			{
 				// ALERT( at_console, "hit enemy\n");
 				g_MultiDamage.Clear();
-				pOther->TraceAttack( CTakeDamageInfo( this, gSkillData.GetSnarkDmgBite(), DMG_SLASH ), gpGlobals->v_forward, &tr );
+				pOther->TraceAttack( CTakeDamageInfo( this, gSkillData.GetSnarkDmgBite(), DMG_SLASH ), gpGlobals->v_forward, tr );
 				if( pRealOwner )
 					g_MultiDamage.ApplyMultiDamage( this, pRealOwner );
 				else
@@ -282,7 +282,7 @@ void CPenguinGrenade::HuntThink()
 	// explode when ready
 	if( gpGlobals->time >= m_flDie )
 	{
-		g_vecAttackDir = pev->velocity.Normalize();
+		g_vecAttackDir = GetAbsVelocity().Normalize();
 		SetHealth( -1 );
 		Killed( CTakeDamageInfo( this, 0, 0 ), GIB_NORMAL );
 		return;
@@ -291,18 +291,18 @@ void CPenguinGrenade::HuntThink()
 	// float
 	if( GetWaterLevel() != WATERLEVEL_DRY )
 	{
-		if( pev->movetype == MOVETYPE_BOUNCE )
+		if( GetMoveType() == MOVETYPE_BOUNCE )
 		{
-			pev->movetype = MOVETYPE_FLY;
+			SetMoveType( MOVETYPE_FLY );
 		}
 		Vector vecVelocity = GetAbsVelocity() * 0.9;
 		vecVelocity.z += 8.0;
 
 		SetAbsVelocity( vecVelocity );
 	}
-	else if( pev->movetype == MOVETYPE_FLY )
+	else if( GetMoveType() == MOVETYPE_FLY )
 	{
-		pev->movetype = MOVETYPE_BOUNCE;
+		SetMoveType( MOVETYPE_BOUNCE );
 	}
 
 	// return if not time to hunt
@@ -347,7 +347,7 @@ void CPenguinGrenade::HuntThink()
 			m_vecTarget = vecDir.Normalize();
 		}
 
-		float flVel = pev->velocity.Length();
+		float flVel = GetAbsVelocity().Length();
 		float flAdj = 50.0 / ( flVel + 10.0 );
 
 		if( flAdj > 1.2 )

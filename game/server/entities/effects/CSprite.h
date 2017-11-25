@@ -31,7 +31,7 @@ public:
 	int ObjectCaps() const override
 	{
 		int flags = 0;
-		if( pev->spawnflags & SF_SPRITE_TEMPORARY )
+		if( GetSpawnFlags().Any( SF_SPRITE_TEMPORARY ) )
 			flags = FCAP_DONT_SAVE;
 		return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | flags;
 	}
@@ -42,39 +42,36 @@ public:
 	void Expand( float scaleSpeed, float fadeSpeed );
 	void SpriteInit( const char *pSpriteName, const Vector &origin );
 
-	inline void SetAttachment( edict_t *pEntity, int attachment )
+	inline void SetAttachment( CBaseEntity* pEntity, int attachment )
 	{
 		if( pEntity )
 		{
-			pev->skin = ENTINDEX( pEntity );
-			pev->body = attachment;
-			pev->aiment = pEntity;
-			pev->movetype = MOVETYPE_FOLLOW;
+			SetSkin( pEntity->entindex() );
+			SetBody( attachment );
+			SetAimEntity( pEntity );
+			SetMoveType( MOVETYPE_FOLLOW );
 		}
 	}
 	void TurnOff( void );
 	void TurnOn( void );
 	inline float Frames( void ) { return m_maxFrame; }
-	inline void SetTransparency( int rendermode, int r, int g, int b, int a, int fx )
+	inline void SetTransparency( RenderMode rendermode, int r, int g, int b, int a, RenderFX fx )
 	{
-		pev->rendermode = rendermode;
-		pev->rendercolor.x = r;
-		pev->rendercolor.y = g;
-		pev->rendercolor.z = b;
-		pev->renderamt = a;
-		pev->renderfx = fx;
+		SetRenderMode( rendermode );
+		SetRenderColor( Vector( r, g, b ) );
+		SetRenderAmount( a );
+		SetRenderFX( fx );
 	}
-	inline void SetTexture( int spriteIndex ) { pev->modelindex = spriteIndex; }
-	inline void SetScale( float scale ) { pev->scale = scale; }
-	inline void SetColor( int r, int g, int b ) { pev->rendercolor.x = r; pev->rendercolor.y = g; pev->rendercolor.z = b; }
-	inline void SetBrightness( int brightness ) { pev->renderamt = brightness; }
+	inline void SetTexture( int spriteIndex ) { SetModelIndex( spriteIndex ); }
+	inline void SetColor( int r, int g, int b ) { SetRenderColor( Vector( r, g, b ) ); }
+	inline void SetBrightness( int brightness ) { SetRenderAmount( brightness ); }
 
 	inline void AnimateAndDie( float framerate )
 	{
 		SetThink( &CSprite::AnimateUntilDead );
-		pev->framerate = framerate;
-		pev->dmgtime = gpGlobals->time + ( m_maxFrame / framerate );
-		pev->nextthink = gpGlobals->time;
+		SetFrameRate( framerate );
+		SetDamageTime( gpGlobals->time + ( m_maxFrame / framerate ) );
+		SetNextThink( gpGlobals->time );
 	}
 
 	void AnimateUntilDead( void );

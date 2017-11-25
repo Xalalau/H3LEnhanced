@@ -12,8 +12,8 @@
 namespace keyvalues
 {
 CKeyvaluesLexer::CKeyvaluesLexer( const CKeyvaluesLexerSettings& settings )
-	: m_TokenType( TokenType::NONE )
-	, m_pszCurrentPosition( nullptr )
+	: m_pszCurrentPosition( nullptr )
+	, m_TokenType( TokenType::NONE )
 	, m_Settings( settings )
 {
 }
@@ -42,8 +42,8 @@ CKeyvaluesLexer::CKeyvaluesLexer( Memory_t& memory, CEscapeSequences& escapeSeqC
 }
 
 CKeyvaluesLexer::CKeyvaluesLexer( const char* const pszFilename, const CKeyvaluesLexerSettings& settings )
-	: m_TokenType( TokenType::NONE )
-	, m_pszCurrentPosition( nullptr )
+	: m_pszCurrentPosition( nullptr )
+	, m_TokenType( TokenType::NONE )
 	, m_Settings( settings )
 {
 	assert( pszFilename );
@@ -120,7 +120,6 @@ CKeyvaluesLexer::ReadResult CKeyvaluesLexer::Read()
 
 bool CKeyvaluesLexer::IsValidReadPosition()
 {
-	const size_t offset = ( m_pszCurrentPosition - reinterpret_cast<const char*>( m_Memory.GetMemory() ) );
 	return static_cast<size_type>( m_pszCurrentPosition - reinterpret_cast<const char*>( m_Memory.GetMemory() ) ) < m_Memory.GetSize();
 }
 
@@ -136,7 +135,7 @@ bool CKeyvaluesLexer::SkipComments()
 {
 	bool fSkipped = false;
 
-	if( ( fSkipped = SkipCommentLine() ) )
+	if( ( fSkipped = SkipCommentLine() ) != false )
 	{
 		//Skip any more lines
 		while( SkipCommentLine() )

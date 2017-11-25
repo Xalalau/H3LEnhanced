@@ -29,7 +29,7 @@ BEGIN_DATADESC( CTripmineGrenade )
 	DEFINE_FIELD( m_pBeam, FIELD_CLASSPTR ),
 	DEFINE_FIELD( m_posOwner, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( m_angleOwner, FIELD_VECTOR ),
-	DEFINE_FIELD( m_pRealOwner, FIELD_EDICT ),
+	DEFINE_FIELD( m_hRealOwner, FIELD_EHANDLE ),
 	DEFINE_THINKFUNC( WarningThink ),
 	DEFINE_THINKFUNC( PowerupThink ),
 	DEFINE_THINKFUNC( BeamBreakThink ),
@@ -42,20 +42,20 @@ void CTripmineGrenade::Spawn()
 {
 	Precache();
 	// motor
-	pev->movetype = MOVETYPE_FLY;
-	pev->solid = SOLID_NOT;
+	SetMoveType( MOVETYPE_FLY );
+	SetSolidType( SOLID_NOT );
 
 	SetModel( "models/v_tripmine.mdl" );
-	pev->frame = 0;
-	pev->body = 3;
-	pev->sequence = TRIPMINE_WORLD;
+	SetFrame( 0 );
+	SetBody( 3 );
+	SetSequence( TRIPMINE_WORLD );
 	ResetSequenceInfo();
-	pev->framerate = 0;
+	SetFrameRate( 0 );
 
 	SetSize( Vector( -8, -8, -8 ), Vector( 8, 8, 8 ) );
 	SetAbsOrigin( GetAbsOrigin() );
 
-	if( pev->spawnflags & SF_TRIPMINE_INSTANT_ON )
+	if( GetSpawnFlags().Any( SF_TRIPMINE_INSTANT_ON ) )
 	{
 		// power up quickly
 		m_flPowerUp = gpGlobals->time + 1.0;
@@ -67,22 +67,22 @@ void CTripmineGrenade::Spawn()
 	}
 
 	SetThink( &CTripmineGrenade::PowerupThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	SetNextThink( gpGlobals->time + 0.2 );
 
-	pev->takedamage = DAMAGE_YES;
-	pev->dmg = gSkillData.GetPlrDmgTripmine();
-	pev->health = 1; // don't let die normally
+	SetTakeDamageMode( DAMAGE_YES );
+	SetDamage( gSkillData.GetPlrDmgTripmine() );
+	SetHealth( 1 ); // don't let die normally
 
-	if( pev->owner != NULL )
+	if( GetOwner() )
 	{
 		// play deploy sound
 		EMIT_SOUND( this, CHAN_VOICE, "weapons/mine_deploy.wav", 1.0, ATTN_NORM );
 		EMIT_SOUND( this, CHAN_BODY, "weapons/mine_charge.wav", 0.2, ATTN_NORM ); // chargeup
 
-		m_pRealOwner = pev->owner;// see CTripmineGrenade for why.
+		m_hRealOwner = GetOwner();// see CTripmineGrenade for why.
 	}
 
-	UTIL_MakeAimVectors( pev->angles );
+	UTIL_MakeAimVectors( GetAbsAngles() );
 
 	m_vecDir = gpGlobals->v_forward;
 	m_vecEnd = GetAbsOrigin() + m_vecDir * 2048;
@@ -111,7 +111,7 @@ void CTripmineGrenade::WarningThink()
 
 	// set to power up
 	SetThink( &CTripmineGrenade::PowerupThink );
-	pev->nextthink = gpGlobals->time + 1.0;
+	SetNextThink( gpGlobals->time + 1.0 );
 }
 
 
@@ -122,53 +122,53 @@ void CTripmineGrenade::PowerupThink()
 	if( m_hOwner == NULL )
 	{
 		// find an owner
-		edict_t *oldowner = pev->owner;
-		pev->owner = NULL;
+		CBaseEntity* oldowner = GetOwner();
+		SetOwner( NULL );
 		UTIL_TraceLine( GetAbsOrigin() + m_vecDir * 8, GetAbsOrigin() - m_vecDir * 32, dont_ignore_monsters, ENT( pev ), &tr );
-		if( tr.fStartSolid || ( oldowner && tr.pHit == oldowner ) )
+		if( tr.fStartSolid || ( oldowner && Instance( tr.pHit ) == oldowner ) )
 		{
-			pev->owner = oldowner;
+			SetOwner( oldowner );
 			m_flPowerUp += 0.1;
-			pev->nextthink = gpGlobals->time + 0.1;
+			SetNextThink( gpGlobals->time + 0.1 );
 			return;
 		}
 		if( tr.flFraction < 1.0 )
 		{
-			pev->owner = tr.pHit;
-			m_hOwner = CBaseEntity::Instance( pev->owner );
+			SetOwner( Instance( tr.pHit ) );
+			m_hOwner = GetOwner();
 			m_posOwner = m_hOwner->GetAbsOrigin();
-			m_angleOwner = m_hOwner->pev->angles;
+			m_angleOwner = m_hOwner->GetAbsAngles();
 		}
 		else
 		{
 			STOP_SOUND( this, CHAN_VOICE, "weapons/mine_deploy.wav" );
 			STOP_SOUND( this, CHAN_BODY, "weapons/mine_charge.wav" );
 			SetThink( &CTripmineGrenade::SUB_Remove );
-			pev->nextthink = gpGlobals->time + 0.1;
+			SetNextThink( gpGlobals->time + 0.1 );
 			ALERT( at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", GetAbsOrigin().x, GetAbsOrigin().y, GetAbsOrigin().z );
 			KillBeam();
 			return;
 		}
 	}
-	else if( m_posOwner != m_hOwner->GetAbsOrigin() || m_angleOwner != m_hOwner->pev->angles )
+	else if( m_posOwner != m_hOwner->GetAbsOrigin() || m_angleOwner != m_hOwner->GetAbsAngles() )
 	{
 		// disable
 		STOP_SOUND( this, CHAN_VOICE, "weapons/mine_deploy.wav" );
 		STOP_SOUND( this, CHAN_BODY, "weapons/mine_charge.wav" );
-		CBaseEntity *pMine = Create( "weapon_tripmine", GetAbsOrigin() + m_vecDir * 24, pev->angles );
-		pMine->pev->spawnflags |= SF_NORESPAWN;
+		CBaseEntity *pMine = Create( "weapon_tripmine", GetAbsOrigin() + m_vecDir * 24, GetAbsAngles() );
+		pMine->GetSpawnFlags() |= SF_NORESPAWN;
 
 		SetThink( &CTripmineGrenade::SUB_Remove );
 		KillBeam();
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 		return;
 	}
-	// ALERT( at_console, "%d %.0f %.0f %0.f\n", pev->owner, m_pOwner->GetAbsOrigin().x, m_pOwner->GetAbsOrigin().y, m_pOwner->GetAbsOrigin().z );
+	// ALERT( at_console, "%d %.0f %.0f %0.f\n", GetOwner(), m_pOwner->GetAbsOrigin().x, m_pOwner->GetAbsOrigin().y, m_pOwner->GetAbsOrigin().z );
 
 	if( gpGlobals->time > m_flPowerUp )
 	{
 		// make solid
-		pev->solid = SOLID_BBOX;
+		SetSolidType( SOLID_BBOX );
 		SetAbsOrigin( GetAbsOrigin() );
 
 		MakeBeam();
@@ -176,7 +176,7 @@ void CTripmineGrenade::PowerupThink()
 		// play enabled sound
 		EMIT_SOUND_DYN( this, CHAN_VOICE, "weapons/mine_activate.wav", 0.5, ATTN_NORM, 1.0, 75 );
 	}
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 
@@ -202,7 +202,7 @@ void CTripmineGrenade::MakeBeam()
 
 	// set to follow laser spot
 	SetThink( &CTripmineGrenade::BeamBreakThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	Vector vecTmpEnd = GetAbsOrigin() + m_vecDir * 2048 * m_flBeamLength;
 
@@ -254,33 +254,33 @@ void CTripmineGrenade::BeamBreakThink()
 			bBlowup = true;
 		else if( m_posOwner != m_hOwner->GetAbsOrigin() )
 			bBlowup = true;
-		else if( m_angleOwner != m_hOwner->pev->angles )
+		else if( m_angleOwner != m_hOwner->GetAbsAngles() )
 			bBlowup = true;
 	}
 
 	if( bBlowup )
 	{
-		// a bit of a hack, but all CGrenade code passes pev->owner along to make sure the proper player gets credit for the kill
-		// so we have to restore pev->owner from pRealOwner, because an entity's tracelines don't strike it's pev->owner which meant
+		// a bit of a hack, but all CGrenade code passes GetOwner() along to make sure the proper player gets credit for the kill
+		// so we have to restore GetOwner() from pRealOwner, because an entity's tracelines don't strike it's GetOwner() which meant
 		// that a player couldn't trigger his own tripmine. Now that the mine is exploding, it's safe the restore the owner so the 
 		// CGrenade code knows who the explosive really belongs to.
-		pev->owner = m_pRealOwner;
-		pev->health = 0;
-		Killed( CTakeDamageInfo( Instance( pev->owner ), 0, 0 ), GIB_NORMAL );
+		SetOwner( m_hRealOwner );
+		SetHealth( 0 );
+		Killed( CTakeDamageInfo( GetOwner(), 0, 0 ), GIB_NORMAL );
 		return;
 	}
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 void CTripmineGrenade::OnTakeDamage( const CTakeDamageInfo& info )
 {
-	if( gpGlobals->time < m_flPowerUp && info.GetDamage() < pev->health )
+	if( gpGlobals->time < m_flPowerUp && info.GetDamage() < GetHealth() )
 	{
 		// disable
-		// Create( "weapon_tripmine", GetAbsOrigin() + m_vecDir * 24, pev->angles );
+		// Create( "weapon_tripmine", GetAbsOrigin() + m_vecDir * 24, GetAbsAngles() );
 		SetThink( &CTripmineGrenade::SUB_Remove );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 		KillBeam();
 		return;
 	}
@@ -289,16 +289,16 @@ void CTripmineGrenade::OnTakeDamage( const CTakeDamageInfo& info )
 
 void CTripmineGrenade::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 {
-	pev->takedamage = DAMAGE_NO;
+	SetTakeDamageMode( DAMAGE_NO );
 
-	if( info.GetAttacker() && ( info.GetAttacker()->pev->flags & FL_CLIENT ) )
+	if( info.GetAttacker() && info.GetAttacker()->GetFlags().Any( FL_CLIENT ) )
 	{
 		// some client has destroyed this mine, he'll get credit for any kills
 		SetOwner( info.GetAttacker() );
 	}
 
 	SetThink( &CTripmineGrenade::DelayDeathThink );
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1, 0.3 );
+	SetNextThink( gpGlobals->time + RANDOM_FLOAT( 0.1, 0.3 ) );
 
 	EMIT_SOUND( this, CHAN_BODY, "common/null.wav", 0.5, ATTN_NORM ); // shut off chargeup
 }

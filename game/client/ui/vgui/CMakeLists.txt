@@ -7,8 +7,6 @@ add_sources(
 	vgui_CommandLabel.h
 	vgui_CommandMenu.h
 	vgui_CommandMenu.cpp
-	vgui_ControlConfigPanel.h
-	vgui_ControlConfigPanel.cpp
 	vgui_CustomObjects.cpp
 	vgui_Defs.h
 	vgui_Defs.cpp

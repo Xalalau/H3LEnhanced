@@ -51,8 +51,6 @@ void V_DropPunchAngle( float frametime, Vector& ev_punchangle );
 
 static bool pm_shared_initialized = false;
 
-#pragma warning( disable : 4305 )
-
 playermove_t* pmove = nullptr;
 
 // Ducking time
@@ -67,9 +65,6 @@ playermove_t* pmove = nullptr;
 
 // Only allow bunny jumping up to 1.7x server / player maxspeed setting
 #define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
-
-// double to float warning
-#pragma warning(disable : 4244)
 
 static const size_t STUCKTABLE_SIZE = 54;
 
@@ -313,7 +308,8 @@ void PM_UpdateStepSound()
 	speed = pmove->velocity.Length();
 
 	// determine if we are on a ladder
-	fLadder = ( pmove->movetype == MOVETYPE_FLY );// IsOnLadder();
+	//The Barnacle Grapple sets the FL_IMMUNE_LAVA flag to indicate that the player is not on a ladder - Solokiller
+	fLadder = ( pmove->movetype == MOVETYPE_FLY ) && !( pmove->flags & FL_IMMUNE_LAVA );// IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
 	if ( ( pmove->flags & FL_DUCKING) || fLadder )
@@ -821,7 +817,7 @@ Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 */
 void PM_WalkMove ()
 {
-	int			clip;
+	//int			clip;
 	int			oldonground;
 
 	Vector		wishvel;
@@ -916,7 +912,7 @@ void PM_WalkMove ()
 	originalvel = pmove->velocity;  //  velocity.
 
 	// Slide move
-	clip = PM_FlyMove ();
+	/*clip = */PM_FlyMove ();
 
 	// Copy the results out
 	down = pmove->origin;
@@ -941,7 +937,7 @@ void PM_WalkMove ()
 	}
 
 // slide move the rest of the way.
-	clip = PM_FlyMove ();
+	/*clip = */PM_FlyMove ();
 
 // Now try going back down from the end point
 //  press down the stepheight
@@ -1433,7 +1429,7 @@ bool PM_CheckStuck()
 		if ( ( hitent == 0 ) ||
 			 ( pmove->physents[hitent].model != nullptr ) )
 		{
-			int nReps = 0;
+			size_t nReps = 0;
 			PM_ResetStuckOffsets( pmove->player_index, pmove->server );
 			do 
 			{
@@ -1698,8 +1694,8 @@ void PM_Duck()
 	const int buttonsChanged = ( pmove->oldbuttons ^ pmove->cmd.buttons );	// These buttons have changed this frame
 	const int nButtonPressed =  buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
 
-	const bool duckchange	= ( buttonsChanged & IN_DUCK ) != 0;
-	const bool duckpressed	= ( nButtonPressed & IN_DUCK ) != 0;
+	//const bool duckchange	= ( buttonsChanged & IN_DUCK ) != 0;
+	//const bool duckpressed	= ( nButtonPressed & IN_DUCK ) != 0;
 
 	if ( pmove->cmd.buttons & IN_DUCK )
 	{
@@ -1860,7 +1856,7 @@ void PM_LadderMove( physent_t *pLadder )
 				float normal;
 
 				//ALERT(at_console, "pev %.2f %.2f %.2f - ",
-				//	pev->velocity.x, pev->velocity.y, pev->velocity.z);
+				//	GetAbsVelocity().x, GetAbsVelocity().y, GetAbsVelocity().z);
 				// Calculate player's intended velocity
 				//Vector velocity = (forward * gpGlobals->v_forward) + (right * gpGlobals->v_right);
 				velocity = vpn * forward;
@@ -1896,7 +1892,7 @@ void PM_LadderMove( physent_t *pLadder )
 				{
 					VectorMA( pmove->velocity, CLIMB_MAX_SPEED, trace.plane.normal, pmove->velocity );
 				}
-				//pev->velocity = lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal);
+				//SetAbsVelocity( lateral - (CrossProduct( trace.vecPlaneNormal, perp ) * normal) );
 			}
 			else
 			{

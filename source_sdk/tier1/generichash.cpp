@@ -141,8 +141,8 @@ unsigned HashStringCaselessConventional( const char *pszKey )
 //-----------------------------------------------------------------------------
 unsigned Hash4( const void *pKey )
 {
-	register const uint32 *	p = (const uint32 *) pKey;
-	register unsigned		even,
+	/*register*/ const uint32 *	p = (const uint32 *) pKey;
+	/*register*/ unsigned		even,
 							odd,
 							n;
 	n     = *p;
@@ -150,7 +150,7 @@ unsigned Hash4( const void *pKey )
 	odd   = g_nRandomValues[((n >> 8) & 0xff)];
 
 	even  = g_nRandomValues[odd ^ (n >> 24)];
-	odd   = g_nRandomValues[even ^ (n >> 16) & 0xff];
+	odd   = g_nRandomValues[even ^ ( (n >> 16) & 0xff )];
 	even  = g_nRandomValues[odd ^ ((n >> 8) &  0xff)];
 	odd   = g_nRandomValues[even  ^ (n & 0xff)];
 
@@ -163,8 +163,8 @@ unsigned Hash4( const void *pKey )
 //-----------------------------------------------------------------------------
 unsigned Hash8( const void *pKey )
 {
-	register const uint32 *	p = (const uint32 *) pKey;
-	register unsigned		even,
+	/*register*/ const uint32 *	p = (const uint32 *) pKey;
+	/*register*/ unsigned		even,
 							odd,
 							n;
 	n     = *p;
@@ -172,7 +172,7 @@ unsigned Hash8( const void *pKey )
 	odd   = g_nRandomValues[((n >> 8) & 0xff)];
 
 	even  = g_nRandomValues[odd ^ (n >> 24)];
-	odd   = g_nRandomValues[even ^ (n >> 16) & 0xff];
+	odd   = g_nRandomValues[even ^ ( (n >> 16) & 0xff )];
 	even  = g_nRandomValues[odd ^ ((n >> 8) &  0xff)];
 	odd   = g_nRandomValues[even  ^ (n & 0xff)];
 
@@ -191,8 +191,8 @@ unsigned Hash8( const void *pKey )
 //-----------------------------------------------------------------------------
 unsigned Hash12( const void *pKey )
 {
-	register const uint32 *	p = (const uint32 *) pKey;
-	register unsigned		even,
+	/*register*/ const uint32 *	p = (const uint32 *) pKey;
+	/*register*/ unsigned		even,
 							odd,
 							n;
 	n     = *p;
@@ -200,7 +200,7 @@ unsigned Hash12( const void *pKey )
 	odd   = g_nRandomValues[((n >> 8) & 0xff)];
 
 	even  = g_nRandomValues[odd ^ (n >> 24)];
-	odd   = g_nRandomValues[even ^ (n >> 16) & 0xff];
+	odd   = g_nRandomValues[even ^ ( (n >> 16) & 0xff )];
 	even  = g_nRandomValues[odd ^ ((n >> 8) &  0xff)];
 	odd   = g_nRandomValues[even  ^ (n & 0xff)];
 
@@ -225,8 +225,8 @@ unsigned Hash12( const void *pKey )
 //-----------------------------------------------------------------------------
 unsigned Hash16( const void *pKey )
 {
-	register const uint32 *	p = (const uint32 *) pKey;
-	register unsigned		even,
+	/*register*/ const uint32 *	p = (const uint32 *) pKey;
+	/*register*/ unsigned		even,
 							odd,
 							n;
 	n     = *p;
@@ -234,7 +234,7 @@ unsigned Hash16( const void *pKey )
 	odd   = g_nRandomValues[((n >> 8) & 0xff)];
 
 	even  = g_nRandomValues[odd ^ (n >> 24)];
-	odd   = g_nRandomValues[even ^ (n >> 16) & 0xff];
+	odd   = g_nRandomValues[even ^ ( (n >> 16) & 0xff )];
 	even  = g_nRandomValues[odd ^ ((n >> 8) &  0xff)];
 	odd   = g_nRandomValues[even  ^ (n & 0xff)];
 

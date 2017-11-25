@@ -739,6 +739,7 @@ void CBaseEntity_SetModel( CBaseEntity* pThis, const std::string& szModelName )
 	pThis->SetModel( ALLOC_STRING( szModelName.c_str() ) );
 }
 
+#ifdef SERVER_DLL
 std::string CBaseEntity_GetViewModelName( const CBaseEntity* pThis )
 {
 	return pThis->GetViewModelName();
@@ -748,6 +749,7 @@ void CBaseEntity_SetViewModelName( CBaseEntity* pThis, const std::string& szView
 {
 	pThis->SetViewModelName( ALLOC_STRING( szViewModelName.c_str() ) );
 }
+#endif
 
 std::string CBaseEntity_GetWeaponModelName( const CBaseEntity* pThis )
 {

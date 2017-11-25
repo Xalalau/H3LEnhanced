@@ -115,7 +115,7 @@ CBaseSpawnPoint* FindSpawnPoint( CBasePlayer* pPlayer, const char* const pszClas
 	if( bFallbackToFirst && !bValidPoint && !FNullEnt( pSpot ) )
 	{
 		CBaseEntity* ent = nullptr;
-		while( (ent = UTIL_FindEntityInSphere( ent, pSpot->GetAbsOrigin(), 128 )) )
+		while( ( ent = UTIL_FindEntityInSphere( ent, pSpot->GetAbsOrigin(), 128 ) ) != nullptr )
 		{
 			// if ent is a client, kill em (unless they are ourselves)
 			if( ent->IsPlayer() && ent != pPlayer )

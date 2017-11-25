@@ -52,7 +52,7 @@ void CTriggerXenReturn::ReturnTouch( CBaseEntity* pOther )
 
 	//Find the earth target nearest to the player's original location.
 
-	while( (pDestination = UTIL_FindEntityByClassname( pDestination, "info_displacer_earth_target" )) )
+	while( ( pDestination = UTIL_FindEntityByClassname( pDestination, "info_displacer_earth_target" ) ) != nullptr )
 	{
 		const float flThisDist = ( pPlayer->GetDisplacerReturn() - pDestination->GetAbsOrigin() ).Length();
 

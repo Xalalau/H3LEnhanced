@@ -19,16 +19,11 @@
 #include "cbase.h"
 #include "Weapons.h"
 
-/*
-================
-TraceAttack
-================
-*/
-void CBaseEntity::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBaseEntity::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
-	Vector vecOrigin = ptr->vecEndPos - vecDir * 4;
+	Vector vecOrigin = tr.vecEndPos - vecDir * 4;
 
-	if( pev->takedamage )
+	if( GetTakeDamageMode() != DAMAGE_NO )
 	{
 		g_MultiDamage.AddMultiDamage( info, this );
 
@@ -37,12 +32,12 @@ void CBaseEntity::TraceAttack( const CTakeDamageInfo& info, Vector vecDir, Trace
 		if( blood != DONT_BLEED )
 		{
 			SpawnBlood( vecOrigin, blood, info.GetDamage() );// a little surface blood.
-			TraceBleed( info, vecDir, ptr );
+			TraceBleed( info, vecDir, tr );
 		}
 	}
 }
 
-void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr )
+void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr )
 {
 	if( BloodColor() == DONT_BLEED )
 		return;
@@ -64,14 +59,14 @@ void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceR
 	if ( !IsAlive() )
 	{
 	// dealing with a dead monster.
-	if ( pev->max_health <= 0 )
+	if ( GetMaxHealth() <= 0 )
 	{
 	// no blood decal for a monster that has already decalled its limit.
 	return;
 	}
 	else
 	{
-	pev->max_health--;
+		SetMaxHealth( GetMaxHealth() - 1 );
 	}
 	}
 	*/
@@ -104,7 +99,7 @@ void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceR
 		vecTraceDir.y += RANDOM_FLOAT( -flNoise, flNoise );
 		vecTraceDir.z += RANDOM_FLOAT( -flNoise, flNoise );
 
-		UTIL_TraceLine( ptr->vecEndPos, ptr->vecEndPos + vecTraceDir * -172, ignore_monsters, ENT( pev ), &Bloodtr );
+		UTIL_TraceLine( tr.vecEndPos, tr.vecEndPos + vecTraceDir * -172, ignore_monsters, ENT( pev ), &Bloodtr );
 
 		if( Bloodtr.flFraction != 1.0 )
 		{
@@ -115,15 +110,15 @@ void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceR
 
 void CBaseEntity::SUB_FadeOut( void )
 {
-	if( pev->renderamt > 7 )
+	if( GetRenderAmount() > 7 )
 	{
-		pev->renderamt -= 7;
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetRenderAmount( GetRenderAmount() - 7 );
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 	else
 	{
-		pev->renderamt = 0;
-		pev->nextthink = gpGlobals->time + 0.2;
+		SetRenderAmount( 0 );
+		SetNextThink( gpGlobals->time + 0.2 );
 		SetThink( &CBaseEntity::SUB_Remove );
 	}
 }
@@ -135,16 +130,16 @@ void CBaseEntity::SUB_FadeOut( void )
 // SET A FUTURE THINK AND A RENDERMODE!!
 void CBaseEntity::SUB_StartFadeOut( void )
 {
-	if( pev->rendermode == kRenderNormal )
+	if( GetRenderMode() == kRenderNormal )
 	{
-		pev->renderamt = 255;
-		pev->rendermode = kRenderTransTexture;
+		SetRenderAmount( 255 );
+		SetRenderMode( kRenderTransTexture );
 	}
 
-	pev->solid = SOLID_NOT;
-	pev->avelocity = g_vecZero;
+	SetSolidType( SOLID_NOT );
+	SetAngularVelocity( g_vecZero );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	SetThink( &CBaseEntity::SUB_FadeOut );
 }
 
@@ -230,7 +225,7 @@ void CBaseEntity::FireBullets( const unsigned int cShots,
 
 			if( iDamage )
 			{
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, iDamage, DMG_BULLET | ( ( iDamage > 16 ) ? DMG_ALWAYSGIB : DMG_NEVERGIB ) ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, iDamage, DMG_BULLET | ( ( iDamage > 16 ) ? DMG_ALWAYSGIB : DMG_NEVERGIB ) ), vecDir, tr );
 
 				TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
 				DecalGunshot( &tr, iBulletType );
@@ -239,7 +234,7 @@ void CBaseEntity::FireBullets( const unsigned int cShots,
 			{
 			default:
 			case BULLET_MONSTER_9MM:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetMonDmg9MM(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetMonDmg9MM(), DMG_BULLET ), vecDir, tr );
 
 				TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
 				DecalGunshot( &tr, iBulletType );
@@ -247,7 +242,7 @@ void CBaseEntity::FireBullets( const unsigned int cShots,
 				break;
 
 			case BULLET_MONSTER_MP5:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetMonDmgMP5(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetMonDmgMP5(), DMG_BULLET ), vecDir, tr );
 
 				TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
 				DecalGunshot( &tr, iBulletType );
@@ -255,7 +250,7 @@ void CBaseEntity::FireBullets( const unsigned int cShots,
 				break;
 
 			case BULLET_MONSTER_12MM:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetMonDmg12MM(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetMonDmg12MM(), DMG_BULLET ), vecDir, tr );
 				if( !tracer )
 				{
 					TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
@@ -264,7 +259,7 @@ void CBaseEntity::FireBullets( const unsigned int cShots,
 				break;
 
 			case BULLET_NONE: // FIX 
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, 50, DMG_CLUB ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, 50, DMG_CLUB ), vecDir, tr );
 				TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
 				// only decal glass
 				if( !FNullEnt( tr.pHit ) && GET_PRIVATE( tr.pHit )->GetRenderMode() != kRenderNormal )
@@ -295,11 +290,11 @@ Vector CBaseEntity::FireBulletsPlayer( const unsigned int cShots,
 									   float flDistance, int iBulletType,
 									   int iTracerFreq, int iDamage, CBaseEntity* pAttacker, int shared_rand )
 {
-	static int tracerCount;
+	//static int tracerCount;
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
-	float x, y;
+	float x = 0, y = 0;
 
 	if( pAttacker == nullptr )
 		pAttacker = this;  // the default attacker is ourselves
@@ -328,7 +323,7 @@ Vector CBaseEntity::FireBulletsPlayer( const unsigned int cShots,
 
 			if( iDamage )
 			{
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, iDamage, DMG_BULLET | ( ( iDamage > 16 ) ? DMG_ALWAYSGIB : DMG_NEVERGIB ) ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, iDamage, DMG_BULLET | ( ( iDamage > 16 ) ? DMG_ALWAYSGIB : DMG_NEVERGIB ) ), vecDir, tr );
 
 				TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
 				DecalGunshot( &tr, iBulletType );
@@ -337,38 +332,38 @@ Vector CBaseEntity::FireBulletsPlayer( const unsigned int cShots,
 			{
 			default:
 			case BULLET_PLAYER_9MM:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetDmg9MM(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetDmg9MM(), DMG_BULLET ), vecDir, tr );
 				break;
 
 			case BULLET_PLAYER_MP5:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmgMP5(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmgMP5(), DMG_BULLET ), vecDir, tr );
 				break;
 
 			case BULLET_PLAYER_BUCKSHOT:
 				// make distance based!
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmgBuckshot(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmgBuckshot(), DMG_BULLET ), vecDir, tr );
 				break;
 
 			case BULLET_PLAYER_357:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmg357(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmg357(), DMG_BULLET ), vecDir, tr );
 				break;
 
 #if USE_OPFOR
 			case BULLET_PLAYER_556:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmg556(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmg556(), DMG_BULLET ), vecDir, tr );
 				break;
 
 			case BULLET_PLAYER_762:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmg762(), DMG_BULLET | DMG_NEVERGIB ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmg762(), DMG_BULLET | DMG_NEVERGIB ), vecDir, tr );
 				break;
 
 			case BULLET_PLAYER_DEAGLE:
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmgDeagle(), DMG_BULLET ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, gSkillData.GetPlrDmgDeagle(), DMG_BULLET ), vecDir, tr );
 				break;
 #endif
 
 			case BULLET_NONE: // FIX 
-				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, 50, DMG_CLUB ), vecDir, &tr );
+				pEntity->TraceAttack( CTakeDamageInfo( pAttacker, 50, DMG_CLUB ), vecDir, tr );
 				TEXTURETYPE_PlaySound( tr, vecSrc, vecEnd, iBulletType );
 				// only decal glass
 				if( !FNullEnt( tr.pHit ) && GET_PRIVATE( tr.pHit )->GetRenderMode() != kRenderNormal )
@@ -397,7 +392,7 @@ bool CBaseEntity::FVisible( const CBaseEntity *pEntity ) const
 	Vector		vecLookerOrigin;
 	Vector		vecTargetOrigin;
 
-	if( FBitSet( pEntity->pev->flags, FL_NOTARGET ) )
+	if( pEntity->GetFlags().Any( FL_NOTARGET ) )
 		return false;
 
 	// don't look through water
@@ -405,7 +400,7 @@ bool CBaseEntity::FVisible( const CBaseEntity *pEntity ) const
 		|| ( GetWaterLevel() == WATERLEVEL_HEAD && pEntity->GetWaterLevel() == WATERLEVEL_DRY ) )
 		return false;
 
-	vecLookerOrigin = GetAbsOrigin() + pev->view_ofs;//look through the caller's 'eyes'
+	vecLookerOrigin = GetAbsOrigin() + GetViewOffset();//look through the caller's 'eyes'
 	vecTargetOrigin = pEntity->EyePosition();
 
 	UTIL_TraceLine( vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT( pev )/*pentIgnore*/, &tr );
@@ -451,13 +446,13 @@ bool CBaseEntity::FBoxVisible( const CBaseEntity* pTarget, Vector& vecTargetOrig
 		return false;
 
 	TraceResult tr;
-	Vector	vecLookerOrigin = GetAbsOrigin() + pev->view_ofs;//look through the monster's 'eyes'
+	Vector	vecLookerOrigin = GetAbsOrigin() + GetViewOffset();//look through the monster's 'eyes'
 	for( int i = 0; i < 5; i++ )
 	{
 		Vector vecTarget = pTarget->GetAbsOrigin();
-		vecTarget.x += RANDOM_FLOAT( pTarget->pev->mins.x + flSize, pTarget->pev->maxs.x - flSize );
-		vecTarget.y += RANDOM_FLOAT( pTarget->pev->mins.y + flSize, pTarget->pev->maxs.y - flSize );
-		vecTarget.z += RANDOM_FLOAT( pTarget->pev->mins.z + flSize, pTarget->pev->maxs.z - flSize );
+		vecTarget.x += RANDOM_FLOAT( pTarget->GetRelMin().x + flSize, pTarget->GetRelMax().x - flSize );
+		vecTarget.y += RANDOM_FLOAT( pTarget->GetRelMin().y + flSize, pTarget->GetRelMax().y - flSize );
+		vecTarget.z += RANDOM_FLOAT( pTarget->GetRelMin().z + flSize, pTarget->GetRelMax().z - flSize );
 
 		UTIL_TraceLine( vecLookerOrigin, vecTarget, ignore_monsters, ignore_glass, edict(), &tr );
 

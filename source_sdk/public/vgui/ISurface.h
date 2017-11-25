@@ -56,12 +56,12 @@ struct VGuiVertex
 		, v( v )
 	{
 	}
-	void Init( int x, int y, float u = 0, float v = 0 )
+	void Init( int xIn, int yIn, float uIn = 0, float vIn = 0 )
 	{
-		this->x = x;
-		this->y = y;
-		this->u = u;
-		this->v = v;
+		this->x = xIn;
+		this->y = yIn;
+		this->u = uIn;
+		this->v = vIn;
 	}
 
 	int x, y;

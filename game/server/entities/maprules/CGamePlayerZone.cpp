@@ -72,7 +72,7 @@ void CGamePlayerZone::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 			TraceResult trace;
 			Hull::Hull hullNumber = Hull::HUMAN;
 
-			if( pPlayer->pev->flags & FL_DUCKING )
+			if( pPlayer->GetFlags().Any( FL_DUCKING ) )
 			{
 				hullNumber = Hull::HEAD;
 			}

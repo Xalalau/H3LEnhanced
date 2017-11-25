@@ -27,7 +27,7 @@ void CHealthKit::Precache( void )
 
 bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 {
-	if( pPlayer->pev->deadflag != DEAD_NO )
+	if( pPlayer->GetDeadFlag() != DEAD_NO )
 	{
 		return false;
 	}

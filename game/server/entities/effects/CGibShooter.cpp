@@ -22,8 +22,8 @@ void CGibShooter::Spawn( void )
 {
 	Precache();
 
-	pev->solid = SOLID_NOT;
-	pev->effects = EF_NODRAW;
+	SetSolidType( SOLID_NOT );
+	GetEffects() = EF_NODRAW;
 
 	if( m_flDelay == 0 )
 	{
@@ -36,7 +36,7 @@ void CGibShooter::Spawn( void )
 	}
 
 	SetMovedir( this );
-	pev->body = MODEL_FRAMES( m_iGibModelIndex );
+	SetBody( MODEL_FRAMES( m_iGibModelIndex ) );
 }
 
 void CGibShooter::Precache( void )
@@ -81,33 +81,35 @@ void CGibShooter::KeyValue( KeyValueData *pkvd )
 
 void CGibShooter::ShootThink( void )
 {
-	pev->nextthink = gpGlobals->time + m_flDelay;
+	SetNextThink( gpGlobals->time + m_flDelay );
 
-	Vector vecShootDir;
+	Vector vecShootDir = GetMoveDir();
 
-	vecShootDir = pev->movedir;
-
-	vecShootDir = vecShootDir + gpGlobals->v_right * RANDOM_FLOAT( -1, 1 ) * m_flVariance;;
-	vecShootDir = vecShootDir + gpGlobals->v_forward * RANDOM_FLOAT( -1, 1 ) * m_flVariance;;
-	vecShootDir = vecShootDir + gpGlobals->v_up * RANDOM_FLOAT( -1, 1 ) * m_flVariance;;
+	vecShootDir = vecShootDir + gpGlobals->v_right * RANDOM_FLOAT( -1, 1 ) * m_flVariance;
+	vecShootDir = vecShootDir + gpGlobals->v_forward * RANDOM_FLOAT( -1, 1 ) * m_flVariance;
+	vecShootDir = vecShootDir + gpGlobals->v_up * RANDOM_FLOAT( -1, 1 ) * m_flVariance;
 
 	vecShootDir = vecShootDir.Normalize();
 	CGib *pGib = CreateGib();
 
 	if( pGib )
 	{
-		pGib->pev->origin = GetAbsOrigin();
-		pGib->pev->velocity = vecShootDir * m_flGibVelocity;
+		pGib->SetAbsOrigin( GetAbsOrigin() );
+		pGib->SetAbsVelocity( vecShootDir * m_flGibVelocity );
 
-		pGib->pev->avelocity.x = RANDOM_FLOAT( 100, 200 );
-		pGib->pev->avelocity.y = RANDOM_FLOAT( 100, 300 );
+		Vector vecAVelocity = pGib->GetAngularVelocity();
 
-		float thinkTime = pGib->pev->nextthink - gpGlobals->time;
+		vecAVelocity.x = RANDOM_FLOAT( 100, 200 );
+		vecAVelocity.y = RANDOM_FLOAT( 100, 300 );
+
+		pGib->SetAngularVelocity( vecAVelocity );
+
+		float thinkTime = pGib->GetNextThink() - gpGlobals->time;
 
 		pGib->m_lifeTime = ( m_flGibLife * RANDOM_FLOAT( 0.95, 1.05 ) );	// +/- 5%
 		if( pGib->m_lifeTime < thinkTime )
 		{
-			pGib->pev->nextthink = gpGlobals->time + pGib->m_lifeTime;
+			pGib->SetNextThink( gpGlobals->time + pGib->m_lifeTime );
 			pGib->m_lifeTime = 0;
 		}
 
@@ -115,16 +117,16 @@ void CGibShooter::ShootThink( void )
 
 	if( --m_iGibs <= 0 )
 	{
-		if( pev->spawnflags & SF_GIBSHOOTER_REPEATABLE )
+		if( GetSpawnFlags().Any( SF_GIBSHOOTER_REPEATABLE ) )
 		{
 			m_iGibs = m_iGibCapacity;
 			SetThink( NULL );
-			pev->nextthink = gpGlobals->time;
+			SetNextThink( gpGlobals->time );
 		}
 		else
 		{
 			SetThink( &CGibShooter::SUB_Remove );
-			pev->nextthink = gpGlobals->time;
+			SetNextThink( gpGlobals->time );
 		}
 	}
 }
@@ -132,7 +134,7 @@ void CGibShooter::ShootThink( void )
 void CGibShooter::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SetThink( &CGibShooter::ShootThink );
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 }
 
 CGib *CGibShooter::CreateGib( void )
@@ -143,12 +145,12 @@ CGib *CGibShooter::CreateGib( void )
 	auto pGib = CGib::GibCreate( "models/hgibs.mdl" );
 	pGib->m_bloodColor = BLOOD_COLOR_RED;
 
-	if( pev->body <= 1 )
+	if( GetBody() <= 1 )
 	{
 		ALERT( at_aiconsole, "GibShooter Body is <= 1!\n" );
 	}
 
-	pGib->pev->body = RANDOM_LONG( 1, pev->body - 1 );// avoid throwing random amounts of the 0th gib. (skull).
+	pGib->SetBody( RANDOM_LONG( 1, GetBody() - 1 ) );// avoid throwing random amounts of the 0th gib. (skull).
 
 	return pGib;
 }

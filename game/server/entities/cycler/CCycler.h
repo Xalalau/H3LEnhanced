@@ -21,7 +21,7 @@ public:
 	DECLARE_CLASS( CCycler, CBaseMonster );
 	DECLARE_DATADESC();
 
-	void GenericCyclerSpawn( char *szModel, Vector vecMin, Vector vecMax );
+	void GenericCyclerSpawn( const char* szModel, Vector vecMin, Vector vecMax );
 	virtual int	ObjectCaps() const override { return ( CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE ); }
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	void Spawn() override;

@@ -287,7 +287,7 @@ void CShockRifle::PrimaryAttack()
 
 	Vector vecAngles = m_pPlayer->GetAutoaimVectorFromPoint( vecSrc, AUTOAIM_10DEGREES );
 
-	CShockBeam* pBeam = CShockBeam::CreateShockBeam( vecSrc, vecAnglesAim + vecAngles, m_pPlayer );
+	/*CShockBeam* pBeam = */CShockBeam::CreateShockBeam( vecSrc, vecAnglesAim + vecAngles, m_pPlayer );
 #endif
 
 	if( bIsMultiplayer() )

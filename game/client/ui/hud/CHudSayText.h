@@ -43,7 +43,7 @@ public:
 	bool Draw( float flTime ) override;
 	void MsgFunc_SayText( const char *pszName, int iSize, void *pbuf );
 	void SayTextPrint( const char *pszBuf, size_t uiBufSize, int clientIndex = -1 );
-	void EnsureTextFitsInOneLineAndWrapIfHaveTo( int line );
+	void EnsureTextFitsInOneLineAndWrapIfHaveTo( size_t line );
 	friend class CHudSpectator; //TODO: needed? - Solokiller
 
 private:

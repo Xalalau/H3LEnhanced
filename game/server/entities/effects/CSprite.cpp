@@ -16,71 +16,74 @@ LINK_ENTITY_TO_CLASS( env_sprite, CSprite );
 
 void CSprite::Spawn( void )
 {
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-	pev->effects = 0;
-	pev->frame = 0;
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	GetEffects().ClearAll();
+	SetFrame( 0 );
 
 	Precache();
-	SetModel( STRING( pev->model ) );
+	SetModel( GetModelName() );
 
-	m_maxFrame = ( float ) MODEL_FRAMES( pev->modelindex ) - 1;
-	if( HasTargetname() && !( pev->spawnflags & SF_SPRITE_STARTON ) )
+	m_maxFrame = ( float ) MODEL_FRAMES( GetModelIndex() ) - 1;
+	if( HasTargetname() && !GetSpawnFlags().Any( SF_SPRITE_STARTON ) )
 		TurnOff();
 	else
 		TurnOn();
 
 	// Worldcraft only sets y rotation, copy to Z
-	if( pev->angles.y != 0 && pev->angles.z == 0 )
+	if( GetAbsAngles().y != 0 && GetAbsAngles().z == 0 )
 	{
-		pev->angles.z = pev->angles.y;
-		pev->angles.y = 0;
+		Vector vecAngles = GetAbsAngles();
+		vecAngles.z = vecAngles.y;
+		vecAngles.y = 0;
+		SetAbsAngles( vecAngles );
 	}
 }
 
 void CSprite::Precache( void )
 {
-	PRECACHE_MODEL( ( char * ) STRING( pev->model ) );
+	PRECACHE_MODEL( GetModelName() );
 
 	// Reset attachment after save/restore
-	if( pev->aiment )
-		SetAttachment( pev->aiment, pev->body );
+	if( auto pAimEnt = GetAimEntity() )
+		SetAttachment( pAimEnt, GetBody() );
 	else
 	{
 		// Clear attachment
-		pev->skin = 0;
-		pev->body = 0;
+		SetSkin( 0 );
+		SetBody( 0 );
 	}
 }
 
 void CSprite::AnimateThink( void )
 {
-	Animate( pev->framerate * ( gpGlobals->time - m_lastTime ) );
+	Animate( GetFrameRate() * ( gpGlobals->time - m_lastTime ) );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	m_lastTime = gpGlobals->time;
 }
 
 void CSprite::ExpandThink( void )
 {
 	float frametime = gpGlobals->time - m_lastTime;
-	pev->scale += pev->speed * frametime;
-	pev->renderamt -= pev->health * frametime;
-	if( pev->renderamt <= 0 )
+	SetScale( GetScale() + ( GetSpeed() * frametime ) );
+	SetRenderAmount( GetRenderAmount() - ( GetHealth() * frametime ) );
+	if( GetRenderAmount() <= 0 )
 	{
-		pev->renderamt = 0;
+		SetRenderAmount( 0 );
 		UTIL_Remove( this );
 	}
 	else
 	{
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 		m_lastTime = gpGlobals->time;
 	}
 }
 
 void CSprite::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	const bool on = pev->effects != EF_NODRAW;
+	//TODO: not going to work properly if any other flags are set - Solokiller
+	const bool on = GetEffects().Get() != EF_NODRAW;
 	if( ShouldToggle( useType, on ) )
 	{
 		if( on )
@@ -96,64 +99,64 @@ void CSprite::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTy
 
 void CSprite::Animate( float frames )
 {
-	pev->frame += frames;
-	if( pev->frame > m_maxFrame )
+	SetFrame( GetFrame() + frames );
+	if( GetFrame() > m_maxFrame )
 	{
-		if( pev->spawnflags & SF_SPRITE_ONCE )
+		if( GetSpawnFlags().Any( SF_SPRITE_ONCE ) )
 		{
 			TurnOff();
 		}
 		else
 		{
 			if( m_maxFrame > 0 )
-				pev->frame = fmod( pev->frame, m_maxFrame );
+				SetFrame( fmod( GetFrame(), m_maxFrame ) );
 		}
 	}
 }
 
 void CSprite::Expand( float scaleSpeed, float fadeSpeed )
 {
-	pev->speed = scaleSpeed;
-	pev->health = fadeSpeed;
+	SetSpeed( scaleSpeed );
+	SetHealth( fadeSpeed );
 	SetThink( &CSprite::ExpandThink );
 
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 	m_lastTime = gpGlobals->time;
 }
 
 void CSprite::SpriteInit( const char *pSpriteName, const Vector &origin )
 {
-	pev->model = MAKE_STRING( pSpriteName );
-	pev->origin = origin;
+	SetModelName( pSpriteName );
+	SetAbsOrigin( origin );
 	Spawn();
 }
 
 void CSprite::TurnOff( void )
 {
-	pev->effects = EF_NODRAW;
-	pev->nextthink = 0;
+	GetEffects() = EF_NODRAW;
+	SetNextThink( 0 );
 }
 
 void CSprite::TurnOn( void )
 {
-	pev->effects = 0;
-	if( ( pev->framerate && m_maxFrame > 1.0 ) || ( pev->spawnflags & SF_SPRITE_ONCE ) )
+	GetEffects().ClearAll();
+	if( ( GetFrameRate() && m_maxFrame > 1.0 ) || GetSpawnFlags().Any( SF_SPRITE_ONCE ) )
 	{
 		SetThink( &CSprite::AnimateThink );
-		pev->nextthink = gpGlobals->time;
+		SetNextThink( gpGlobals->time );
 		m_lastTime = gpGlobals->time;
 	}
-	pev->frame = 0;
+	SetFrame( 0 );
 }
 
 void CSprite::AnimateUntilDead( void )
 {
-	if( gpGlobals->time > pev->dmgtime )
+	if( gpGlobals->time > GetDamageTime() )
 		UTIL_Remove( this );
 	else
 	{
 		AnimateThink();
-		pev->nextthink = gpGlobals->time;
+		SetNextThink( gpGlobals->time );
 	}
 }
 
@@ -161,8 +164,8 @@ CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, c
 {
 	auto pSprite = static_cast<CSprite*>( UTIL_CreateNamedEntity( "env_sprite" ) );
 	pSprite->SpriteInit( pSpriteName, origin );
-	pSprite->pev->solid = SOLID_NOT;
-	pSprite->pev->movetype = MOVETYPE_NOCLIP;
+	pSprite->SetSolidType( SOLID_NOT );
+	pSprite->SetMoveType( MOVETYPE_NOCLIP );
 	if( animate )
 		pSprite->TurnOn();
 

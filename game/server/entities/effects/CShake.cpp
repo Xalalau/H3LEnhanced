@@ -8,13 +8,13 @@ LINK_ENTITY_TO_CLASS( env_shake, CShake );
 
 void CShake::Spawn( void )
 {
-	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
-	pev->effects = 0;
-	pev->frame = 0;
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	GetEffects().ClearAll();
+	SetFrame( 0 );
 
-	if( pev->spawnflags & SF_SHAKE_EVERYONE )
-		pev->dmg = 0;
+	if( GetSpawnFlags().Any( SF_SHAKE_EVERYONE ) )
+		SetDamage( 0 );
 }
 
 void CShake::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

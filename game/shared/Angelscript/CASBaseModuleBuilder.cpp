@@ -222,7 +222,7 @@ bool CASBaseModuleBuilder::IncludeScript( CScriptBuilder& builder, const char* c
 
 		auto data = std::make_unique<char[]>( size + 1 );
 
-		if( file.Read( data.get(), size ) == size )
+		if( file.Read( data.get(), size ) == static_cast<int>( size ) )
 		{
 			const auto result = builder.AddSectionFromMemory( szRelativePath.c_str(), data.get(), size );
 

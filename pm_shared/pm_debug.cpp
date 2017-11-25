@@ -25,9 +25,6 @@
 
 #include "com_model.h"
 
-#pragma warning(disable : 4244)
-#pragma warning(disable : 4305)
-
 extern playermove_t *pmove;
 
 // Expand debugging BBOX particle hulls by this many units.
@@ -73,9 +70,9 @@ void PM_ShowClipBox()
 	}
 
 	// Show our BBOX in particles.
-	PM_DrawBBox( pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], org, pmove->server ? 132 : 0, 0.1 );
+	PM_DrawBBox( pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], org, pmove->server ? 132 : 0, 0.1f );
 
-	PM_ParticleLine( org, org, pmove->server ? 132 : 0, 0.1, 5.0 );
+	PM_ParticleLine( org, org, pmove->server ? 132 : 0, 0.1f, 5.0f );
 /*
 	{
 		int i;
@@ -115,7 +112,7 @@ void PM_ParticleLine( const Vector& start, const Vector& end, int pcolor, float 
 	{
 		VectorMA( start, curdist, diff, curpos );
 		
-		pmove->PM_Particle( curpos, pcolor, life, 0, vert);
+		pmove->PM_Particle( curpos, pcolor, life, 0, static_cast<int>( vert ) );
 		curdist += linestep;
 	}
 
@@ -289,7 +286,7 @@ void PM_ViewEntity()
 
 	const Vector origin = pmove->origin;
 
-	float fup = 0.5*( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
+	float fup = 0.5f*( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
 	fup += pmove->view_ofs[2];
 	fup -= 4;
 

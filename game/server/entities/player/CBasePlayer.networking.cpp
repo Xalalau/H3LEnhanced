@@ -146,10 +146,10 @@ void CBasePlayer::UpdateClientData()
 		gDisplayTitle = false;
 	}
 
-	if( pev->health != m_iClientHealth )
+	if( GetHealth() != m_iClientHealth )
 	{
-		int iHealth = clamp( static_cast<int>( pev->health ), 0, 255 );  // make sure that no negative health values are sent
-		if( pev->health > 0.0f && pev->health <= 1.0f )
+		int iHealth = clamp( static_cast<int>( GetHealth() ), 0, 255 );  // make sure that no negative health values are sent
+		if( GetHealth() > 0.0f && GetHealth() <= 1.0f )
 			iHealth = 1;
 
 		// send "health" update message
@@ -157,18 +157,18 @@ void CBasePlayer::UpdateClientData()
 			WRITE_BYTE( iHealth );
 		MESSAGE_END();
 
-		m_iClientHealth = pev->health;
+		m_iClientHealth = GetHealth();
 	}
 
 
-	if( pev->armorvalue != m_iClientBattery )
+	if( GetArmorAmount() != m_iClientBattery )
 	{
-		m_iClientBattery = pev->armorvalue;
+		m_iClientBattery = GetArmorAmount();
 
 		ASSERT( gmsgBattery > 0 );
 		// send "health" update message
 		MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, this );
-			WRITE_SHORT( ( int ) pev->armorvalue );
+			WRITE_SHORT( ( int ) GetArmorAmount() );
 		MESSAGE_END();
 	}
 

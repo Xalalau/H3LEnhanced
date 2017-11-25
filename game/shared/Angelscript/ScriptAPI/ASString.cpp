@@ -6,9 +6,9 @@
 
 #include "ASString.h"
 
-static void RegisterScriptStringExtensions( asIScriptEngine& engine )
+static void RegisterScriptStringExtensions( asIScriptEngine& /*engine*/ )
 {
-	const char* const pszObjectName = "string";
+	//const char* const pszObjectName = "string";
 
 	//Additional features for the string class can be added here. - Solokiller
 }

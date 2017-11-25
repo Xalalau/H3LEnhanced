@@ -12,6 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include <cstdint>
+
 #include "extdll.h"
 #include "UTFUtils.h"
 
@@ -19,7 +21,10 @@ bool Q_IsValidUChar32( uchar32 uVal )
 {
 	// Values > 0x10FFFF are explicitly invalid; ditto for UTF-16 surrogate halves,
 	// values ending in FFFE or FFFF, or values in the 0x00FDD0-0x00FDEF reserved range
-	return ( uVal < 0x110000u ) && ( ( uVal - 0x00D800u ) > 0x7FFu ) && ( ( uVal & 0xFFFFu ) < 0xFFFEu ) && ( ( uVal - 0x00FDD0u ) > 0x1Fu );
+	return ( static_cast<uint32_t>( uVal ) < 0x110000u ) &&
+		( ( static_cast<uint32_t>( uVal ) - 0x00D800u ) > 0x7FFu ) &&
+		( ( static_cast<uint32_t>( uVal ) & 0xFFFFu ) < 0xFFFEu ) &&
+		( ( static_cast<uint32_t>( uVal ) - 0x00FDD0u ) > 0x1Fu );
 }
 
 int Q_UTF8ToUChar32( const char* pUTF8_, uchar32& uValueOut, bool& bErrorOut )

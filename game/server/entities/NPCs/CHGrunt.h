@@ -120,18 +120,45 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
+	/**
+	*	@brief Overidden for human grunts because they hear the DANGER sound that is made by hand grenades and other dangerous items.
+	*/
 	int ISoundMask( void ) override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
+
+	/**
+	*	@brief this is overridden for human grunts because they can throw/shoot grenades when
+	*	they can't see their target and the base class doesn't check attacks if the monster cannot see its enemy
+	*	
+	*	!!!BUGBUG - this gets called before a 3-round burst is fired
+	*	which means that a friendly can still be hit with up to 2 rounds
+	*	ALSO, grenades will not be tossed if there is a friendly in front,
+	*	this is a bad bug. Friendly machine gun fire avoidance
+	*	will unecessarily prevent the throwing of a grenade as well
+	*/
 	bool FCanCheckAttacks() const override;
+
 	bool CheckMeleeAttack1( float flDot, float flDist ) override;
+
+	/**
+	*	@brief overridden for HGrunt, cause FCanCheckAttacks() doesn't disqualify all attacks based
+	*	on whether or not the enemy is occluded because unlike the base class,
+	*	the HGrunt can attack when the enemy is occluded (throw grenade over wall, etc).
+	*	We must disqualify the machine gun attack if the enemy is occluded.
+	*/
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
+
+	/**
+	*	@brief this checks the Grunt's grenade attack
+	*/
 	bool CheckRangeAttack2( float flDot, float flDist ) override;
+
 	void CheckAmmo( void ) override;
 	void SetActivity( Activity NewActivity ) override;
-	void StartTask( const Task_t* pTask ) override;
-	void RunTask( const Task_t* pTask ) override;
+	void StartTask( const Task_t& task ) override;
+	void RunTask( const Task_t& task ) override;
 	void DeathSound( void ) override;
 	void PainSound( void ) override;
 	void IdleSound( void ) override;
@@ -145,9 +172,16 @@ public:
 	CBaseEntity	*Kick( void );
 	Schedule_t	*GetSchedule( void ) override;
 	Schedule_t  *GetScheduleOfType( int Type ) override;
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+
+	/**
+	*	@brief make sure we're not taking it in the helmet
+	*/
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 
+	/**
+	*	@brief overridden because Alien Grunts are Human Grunt's nemesis
+	*/
 	Relationship IRelationship( CBaseEntity *pTarget ) override;
 
 	bool FOkToSpeak() const;

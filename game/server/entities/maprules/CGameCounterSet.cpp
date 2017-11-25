@@ -25,7 +25,7 @@ void CGameCounterSet::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	if( !CanFireForActivator( pActivator ) )
 		return;
 
-	SUB_UseTargets( pActivator, USE_SET, pev->frags );
+	SUB_UseTargets( pActivator, USE_SET, GetFrags() );
 
 	if( RemoveOnFire() )
 	{

@@ -68,15 +68,15 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		// create a temp object to fire at a later time
 		auto pTemp = static_cast<CBaseDelay*>( UTIL_CreateNamedEntity( "DelayedUse" ) );
 
-		pTemp->pev->nextthink = gpGlobals->time + m_flDelay;
+		pTemp->SetNextThink( gpGlobals->time + m_flDelay );
 
 		pTemp->SetThink( &CBaseDelay::DelayThink );
 
 		// Save the useType
-		pTemp->pev->button = ( int ) useType;
+		pTemp->GetButtons().Set( ( int ) useType );
 		pTemp->m_iszKillTarget = m_iszKillTarget;
 		pTemp->m_flDelay = 0; // prevent "recursion"
-		pTemp->pev->target = pev->target;
+		pTemp->SetTarget( GetTarget() );
 
 		// HACKHACK
 		// This wasn't in the release build of Half-Life.  We should have moved m_hActivator into this class
@@ -84,11 +84,11 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		// This code is not as ugly as that code
 		if( pActivator && pActivator->IsPlayer() )		// If a player activates, then save it
 		{
-			pTemp->pev->owner = pActivator->edict();
+			pTemp->SetOwner( pActivator );
 		}
 		else
 		{
-			pTemp->pev->owner = NULL;
+			pTemp->SetOwner( NULL );
 		}
 
 		return;
@@ -103,7 +103,7 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		CBaseEntity* pKillTarget = nullptr;
 
 		ALERT( at_aiconsole, "KillTarget: %s\n", STRING( m_iszKillTarget ) );
-		while( (pKillTarget = UTIL_FindEntityByTargetname( pKillTarget, STRING( m_iszKillTarget ) )) )
+		while( ( pKillTarget = UTIL_FindEntityByTargetname( pKillTarget, STRING( m_iszKillTarget ) ) ) != nullptr )
 		{
 			UTIL_Remove( pKillTarget );
 
@@ -124,11 +124,11 @@ void CBaseDelay::DelayThink( void )
 {
 	CBaseEntity *pActivator = NULL;
 
-	if( pev->owner != NULL )		// A player activated this on delay
+	if( GetOwner() )		// A player activated this on delay
 	{
-		pActivator = CBaseEntity::Instance( pev->owner );
+		pActivator = GetOwner();
 	}
-	// The use type is cached (and stashed) in pev->button
-	SUB_UseTargets( pActivator, ( USE_TYPE ) pev->button, 0 );
+	// The use type is cached (and stashed) in GetButtons()
+	SUB_UseTargets( pActivator, ( USE_TYPE ) GetButtons().Get(), 0 );
 	UTIL_RemoveNow( this );
 }

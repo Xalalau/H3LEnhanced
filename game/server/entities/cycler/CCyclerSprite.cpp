@@ -28,35 +28,35 @@ LINK_ENTITY_TO_CLASS( cycler_sprite, CCyclerSprite );
 
 void CCyclerSprite::Spawn( void )
 {
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_NONE;
-	pev->takedamage = DAMAGE_YES;
-	pev->effects = 0;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_NONE );
+	SetTakeDamageMode( DAMAGE_YES );
+	GetEffects().ClearAll();
 
-	pev->frame = 0;
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetFrame( 0 );
+	SetNextThink( gpGlobals->time + 0.1 );
 	m_animate = 1;
 	m_lastTime = gpGlobals->time;
 
-	PRECACHE_MODEL( ( char * ) STRING( pev->model ) );
-	SetModel( STRING( pev->model ) );
+	PRECACHE_MODEL( GetModelName() );
+	SetModel( GetModelName() );
 
-	m_maxFrame = ( float ) MODEL_FRAMES( pev->modelindex ) - 1;
+	m_maxFrame = ( float ) MODEL_FRAMES( GetModelIndex() ) - 1;
 }
 
 void CCyclerSprite::Think( void )
 {
 	if( ShouldAnimate() )
-		Animate( pev->framerate * ( gpGlobals->time - m_lastTime ) );
+		Animate( GetFrameRate() * ( gpGlobals->time - m_lastTime ) );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	m_lastTime = gpGlobals->time;
 }
 
 void CCyclerSprite::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	m_animate = !m_animate;
-	ALERT( at_console, "Sprite: %s\n", STRING( pev->model ) );
+	ALERT( at_console, "Sprite: %s\n", GetModelName() );
 }
 
 void CCyclerSprite::OnTakeDamage( const CTakeDamageInfo& info )
@@ -69,7 +69,7 @@ void CCyclerSprite::OnTakeDamage( const CTakeDamageInfo& info )
 
 void CCyclerSprite::Animate( float frames )
 {
-	pev->frame += frames;
+	SetFrame( GetFrame() + frames );
 	if( m_maxFrame > 0 )
-		pev->frame = fmod( pev->frame, m_maxFrame );
+		SetFrame( fmod( GetFrame(), m_maxFrame ) );
 }

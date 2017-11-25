@@ -498,7 +498,7 @@ FileOpenDialog::FileOpenDialog(Panel *parent, const char *title, bool bOpenOnly,
 
 	// list panel
 	m_pFileList = new ListPanel(this, "FileList");
-	for ( int i = 0; i < ARRAYSIZE( g_ColInfo ); ++i )
+	for ( int i = 0; static_cast<size_t>( i ) < ARRAYSIZE( g_ColInfo ); ++i )
 	{
 		const ColumnInfo_t& info = g_ColInfo[ i ];
 

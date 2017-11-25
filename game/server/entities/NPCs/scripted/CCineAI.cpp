@@ -22,16 +22,16 @@ bool CCineAI::StartSequence( CBaseMonster *pTarget, int iszSeq, const bool compl
 		return true;
 	}
 
-	pTarget->pev->sequence = pTarget->LookupSequence( STRING( iszSeq ) );
+	pTarget->SetSequence( pTarget->LookupSequence( STRING( iszSeq ) ) );
 
-	if( pTarget->pev->sequence == -1 )
+	if( pTarget->GetSequence() == -1 )
 	{
 		ALERT( at_error, "%s: unknown aiscripted sequence \"%s\"\n", pTarget->GetTargetname(), STRING( iszSeq ) );
-		pTarget->pev->sequence = 0;
+		pTarget->SetSequence( 0 );
 		// return false;
 	}
 
-	pTarget->pev->frame = 0;
+	pTarget->SetFrame( 0 );
 	pTarget->ResetSequenceInfo();
 	return true;
 }
@@ -59,10 +59,10 @@ void CCineAI::PossessEntity( void )
 		pTarget->m_pCine = this;
 		pTarget->m_hTargetEnt = this;
 
-		m_saved_movetype = pTarget->pev->movetype;
-		m_saved_solid = pTarget->pev->solid;
-		m_saved_effects = pTarget->pev->effects;
-		pTarget->pev->effects |= pev->effects;
+		m_saved_movetype = pTarget->GetMoveType();
+		m_saved_solid = pTarget->GetSolidType();
+		m_saved_effects = pTarget->GetEffects();
+		pTarget->GetEffects() |= GetEffects();
 
 		switch( m_fMoveTo )
 		{
@@ -80,18 +80,22 @@ void CCineAI::PossessEntity( void )
 			break;
 
 		case 4:
-			// zap the monster instantly to the site of the script entity.
-			pTarget->SetAbsOrigin( GetAbsOrigin() );
-			pTarget->pev->ideal_yaw = pev->angles.y;
-			pTarget->pev->avelocity = Vector( 0, 0, 0 );
-			pTarget->pev->velocity = Vector( 0, 0, 0 );
-			pTarget->pev->effects |= EF_NOINTERP;
-			pTarget->pev->angles.y = pev->angles.y;
-			pTarget->m_scriptState = SCRIPT_WAIT;
-			m_startTime = gpGlobals->time + 1E6;
-			// UNDONE: Add a flag to do this so people can fixup physics after teleporting monsters
-			pTarget->pev->flags &= ~FL_ONGROUND;
-			break;
+			{
+				// zap the monster instantly to the site of the script entity.
+				pTarget->SetAbsOrigin( GetAbsOrigin() );
+				pTarget->SetIdealYaw( GetAbsAngles().y );
+				pTarget->SetAngularVelocity( g_vecZero );
+				pTarget->SetAbsVelocity( Vector( 0, 0, 0 ) );
+				pTarget->GetEffects() |= EF_NOINTERP;
+				Vector vecAngles = pTarget->GetAbsAngles();
+				vecAngles.y = GetAbsAngles().y;
+				pTarget->SetAbsAngles( vecAngles );
+				pTarget->m_scriptState = SCRIPT_WAIT;
+				m_startTime = gpGlobals->time + 1E6;
+				// UNDONE: Add a flag to do this so people can fixup physics after teleporting monsters
+				pTarget->GetFlags().ClearFlags( FL_ONGROUND );
+				break;
+			}
 		default:
 			ALERT( at_aiconsole, "aiscript:  invalid Move To Position value!" );
 			break;
@@ -107,7 +111,7 @@ void CCineAI::PossessEntity( void )
 		StartSequence( pTarget, m_iszIdle, false );
 		if (FStrEq( STRING(m_iszIdle), STRING(m_iszPlay)))
 		{
-		pTarget->pev->framerate = 0;
+		pTarget->SetFrameRate( 0 );
 		}
 		}
 		*/

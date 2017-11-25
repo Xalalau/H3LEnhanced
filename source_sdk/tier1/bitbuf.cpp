@@ -852,10 +852,10 @@ long bf_read::ReadLong()
 
 float bf_read::ReadFloat()
 {
-	float ret;
-	Assert( sizeof(ret) == 4 );
-	ReadBits(&ret, 32);
-	return ret;
+	float retVal;
+	Assert( sizeof( retVal ) == 4 );
+	ReadBits(&retVal, 32);
+	return retVal;
 }
 
 bool bf_read::ReadBytes(void *pOut, int nBytes)

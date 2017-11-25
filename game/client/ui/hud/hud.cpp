@@ -55,7 +55,7 @@ public:
 	{
 		color[0] = color[1] = color[2] = 255;
 
-		if( entindex >= 0 && entindex < sizeof(g_PlayerExtraInfo)/sizeof(g_PlayerExtraInfo[0]) )
+		if( entindex >= 0 && static_cast<size_t>( entindex ) < ARRAYSIZE( g_PlayerExtraInfo ) )
 		{
 			int iTeam = g_PlayerExtraInfo[entindex].teamnumber;
 

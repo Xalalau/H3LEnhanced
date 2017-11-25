@@ -54,7 +54,7 @@ public:
 
 	virtual int	ObjectCaps() const override
 	{
-		if( pev->spawnflags & SF_ITEM_USE_ONLY )
+		if( GetSpawnFlags().Any( SF_ITEM_USE_ONLY ) )
 			return ( CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | FCAP_IMPULSE_USE;
 		else
 			return ( CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION );

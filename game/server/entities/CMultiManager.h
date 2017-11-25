@@ -51,13 +51,13 @@ public:
 	int		m_iTargetName[ MAX_MULTI_TARGETS ];// list if indexes into global string array
 	float	m_flTargetDelay[ MAX_MULTI_TARGETS ];// delay (in seconds) from time of manager fire to target fire
 private:
-	inline bool IsClone() const { return ( pev->spawnflags & SF_MULTIMAN_CLONE ) != 0; }
+	inline bool IsClone() const { return GetSpawnFlags().Any( SF_MULTIMAN_CLONE ); }
 	inline bool ShouldClone() const
 	{
 		if( IsClone() )
 			return false;
 
-		return ( pev->spawnflags & SF_MULTIMAN_THREAD ) != 0;
+		return GetSpawnFlags().Any( SF_MULTIMAN_THREAD );
 	}
 
 	CMultiManager *Clone( void );

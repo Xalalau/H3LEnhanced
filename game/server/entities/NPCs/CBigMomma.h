@@ -38,7 +38,7 @@
 #define BIG_AE_EARLY_TARGET			50		// Fire target early
 
 // User defined conditions
-#define bits_COND_NODE_SEQUENCE			( bits_COND_SPECIAL1 )		// pev->netname contains the name of a sequence to play
+#define bits_COND_NODE_SEQUENCE			( bits_COND_SPECIAL1 )		// GetNetname() contains the name of a sequence to play
 
 // Attack distance constants
 #define	BIG_ATTACKDIST		170
@@ -65,29 +65,29 @@ public:
 	void Activate( void ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
 
-	void		RunTask( const Task_t* pTask ) override;
-	void		StartTask( const Task_t* pTask ) override;
+	void		RunTask( const Task_t& task ) override;
+	void		StartTask( const Task_t& task ) override;
 	Schedule_t	*GetSchedule( void ) override;
 	Schedule_t	*GetScheduleOfType( int Type ) override;
-	void		TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void		TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 
-	void NodeStart( int iszNextNode );
+	void NodeStart( string_t iszNextNode );
 	void NodeReach( void );
 	bool ShouldGoToNode() const;
 
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	void LayHeadcrab( void );
 
-	int GetNodeSequence( void )
+	string_t GetNodeSequence( void )
 	{
 		CBaseEntity *pTarget = m_hTargetEnt;
 		if( pTarget )
 		{
-			return pTarget->pev->netname;	// netname holds node sequence
+			return MAKE_STRING( pTarget->GetNetName() );	// netname holds node sequence
 		}
-		return 0;
+		return iStringNull;
 	}
 
 
@@ -106,7 +106,7 @@ public:
 		CBaseEntity *pTarget = m_hTargetEnt;
 		if( pTarget )
 		{
-			return pTarget->pev->speed;	// Speed holds node delay
+			return pTarget->GetSpeed();	// Speed holds node delay
 		}
 		return 0;
 	}
@@ -116,7 +116,7 @@ public:
 		CBaseEntity *pTarget = m_hTargetEnt;
 		if( pTarget )
 		{
-			return pTarget->pev->scale;	// Scale holds node delay
+			return pTarget->GetScale();	// Scale holds node delay
 		}
 		return 1e6;
 	}
@@ -126,10 +126,10 @@ public:
 		CBaseEntity *pTarget = m_hTargetEnt;
 		if( pTarget )
 		{
-			if( pTarget->pev->angles.y != 0 )
-				return pTarget->pev->angles.y;
+			if( pTarget->GetAbsAngles().y != 0 )
+				return pTarget->GetAbsAngles().y;
 		}
-		return pev->angles.y;
+		return GetAbsAngles().y;
 	}
 
 	// Restart the crab count on each new level
@@ -165,8 +165,8 @@ public:
 
 	void SetObjectCollisionBox( void ) override
 	{
-		pev->absmin = GetAbsOrigin() + Vector( -95, -95, 0 );
-		pev->absmax = GetAbsOrigin() + Vector( 95, 95, 190 );
+		SetAbsMin( GetAbsOrigin() + Vector( -95, -95, 0 ) );
+		SetAbsMax( GetAbsOrigin() + Vector( 95, 95, 190 ) );
 	}
 
 	bool CheckMeleeAttack1( float flDot, float flDist ) override;	// Slash

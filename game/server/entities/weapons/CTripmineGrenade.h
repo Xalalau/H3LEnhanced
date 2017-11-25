@@ -51,7 +51,7 @@ public:
 	CBeam		*m_pBeam;
 	Vector		m_posOwner;
 	Vector		m_angleOwner;
-	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
+	EHANDLE		m_hRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
 };
 
 #endif //GAME_SERVER_ENTITIES_WEAPONS_CTRIPMINEGRENADE_H

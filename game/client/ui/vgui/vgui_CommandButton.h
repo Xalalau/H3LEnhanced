@@ -20,6 +20,10 @@ class CommandLabel;
 // Command Buttons
 class CommandButton : public vgui::Button
 {
+public:
+	//Was 255 in the SDK, but emits a truncation of constant value warning. -1 is the same value - Solokiller
+	static const char NO_BOUND_KEY = static_cast<char>( -1 );
+
 private:
 	int		m_iPlayerClass;
 	bool	m_bFlat;

@@ -61,7 +61,7 @@ public:
 	BUTTON_CODE	ButtonResponseToTouch( void );
 
 	// Buttons that don't take damage can be IMPULSE used
-	virtual int	ObjectCaps() const override { return ( CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | ( pev->takedamage ? 0 : FCAP_IMPULSE_USE ); }
+	virtual int	ObjectCaps() const override { return ( CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | ( ( GetTakeDamageMode() != DAMAGE_NO ) ? 0 : FCAP_IMPULSE_USE ); }
 
 	bool	m_fStayPushed;	// button stays pushed in until touched again?
 	bool	m_fRotating;		// a rotating button?  default is a sliding button.

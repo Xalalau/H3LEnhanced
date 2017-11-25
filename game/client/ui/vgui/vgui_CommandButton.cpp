@@ -73,7 +73,7 @@ void CommandButton::RecalculateText( void )
 
 	if( m_cBoundKey != 0 )
 	{
-		if( m_cBoundKey == ( char ) 255 )
+		if( m_cBoundKey == NO_BOUND_KEY )
 		{
 			strcpy( szBuf, m_sMainText );
 		}

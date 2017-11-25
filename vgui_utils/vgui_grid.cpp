@@ -292,7 +292,7 @@ void CGrid::paint()
 	Panel::paint();
 
 	// walk the grid looking for underlined rows
-	int x = 0, y = 0;
+	int y = 0;
 	for (int row = 0; row < m_yRows; row++)
 	{
 		CGridEntry *cell = GridEntry(0, row);
@@ -321,10 +321,10 @@ void CGrid::SetRowUnderline(int row, bool enabled, int offset, int r, int g, int
 	if (enabled)
 	{
 		cell->m_iUnderlineOffset = offset;
-		cell->m_UnderlineColor[0] = r;
-		cell->m_UnderlineColor[1] = g;
-		cell->m_UnderlineColor[2] = b;
-		cell->m_UnderlineColor[3] = a;
+		cell->m_UnderlineColor[0] = static_cast<short>( r );
+		cell->m_UnderlineColor[1] = static_cast<short>( g );
+		cell->m_UnderlineColor[2] = static_cast<short>( b );
+		cell->m_UnderlineColor[3] = static_cast<short>( a );
 	}
 }
 

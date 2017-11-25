@@ -40,10 +40,10 @@ CCrossbowBolt *CCrossbowBolt::BoltCreate()
 void CCrossbowBolt::Spawn()
 {
 	Precache();
-	pev->movetype = MOVETYPE_FLY;
-	pev->solid = SOLID_BBOX;
+	SetMoveType( MOVETYPE_FLY );
+	SetSolidType( SOLID_BBOX );
 
-	pev->gravity = 0.5;
+	SetGravity( 0.5 );
 
 	SetModel( "models/crossbow_bolt.mdl" );
 
@@ -52,7 +52,7 @@ void CCrossbowBolt::Spawn()
 
 	SetTouch( &CCrossbowBolt::BoltTouch );
 	SetThink( &CCrossbowBolt::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	SetNextThink( gpGlobals->time + 0.2 );
 }
 
 
@@ -78,27 +78,27 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 	SetTouch( NULL );
 	SetThink( NULL );
 
-	if( pOther->pev->takedamage )
+	if( pOther->GetTakeDamageMode() != DAMAGE_NO )
 	{
 		TraceResult tr = UTIL_GetGlobalTrace();
 
-		auto pOwner = Instance( pev->owner );
+		auto pOwner = GetOwner();
 
 		// UNDONE: this needs to call TraceAttack instead
 		g_MultiDamage.Clear();
 
 		if( pOther->IsPlayer() )
 		{
-			pOther->TraceAttack( CTakeDamageInfo( pOwner, gSkillData.GetPlrDmgCrossbowClient(), DMG_NEVERGIB ), pev->velocity.Normalize(), &tr );
+			pOther->TraceAttack( CTakeDamageInfo( pOwner, gSkillData.GetPlrDmgCrossbowClient(), DMG_NEVERGIB ), GetAbsVelocity().Normalize(), tr );
 		}
 		else
 		{
-			pOther->TraceAttack( CTakeDamageInfo( pOwner, gSkillData.GetPlrDmgCrossbowMonster(), DMG_BULLET | DMG_NEVERGIB ), pev->velocity.Normalize(), &tr );
+			pOther->TraceAttack( CTakeDamageInfo( pOwner, gSkillData.GetPlrDmgCrossbowMonster(), DMG_BULLET | DMG_NEVERGIB ), GetAbsVelocity().Normalize(), tr );
 		}
 
 		g_MultiDamage.ApplyMultiDamage( this, pOwner );
 
-		pev->velocity = Vector( 0, 0, 0 );
+		SetAbsVelocity( Vector( 0, 0, 0 ) );
 		// play body "thwack" sound
 		switch( RANDOM_LONG( 0, 1 ) )
 		{
@@ -118,20 +118,25 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 		EMIT_SOUND_DYN( this, CHAN_BODY, "weapons/xbow_hit1.wav", RANDOM_FLOAT( 0.95, 1.0 ), ATTN_NORM, 0, 98 + RANDOM_LONG( 0, 7 ) );
 
 		SetThink( &CCrossbowBolt::SUB_Remove );
-		pev->nextthink = gpGlobals->time;// this will get changed below if the bolt is allowed to stick in what it hit.
+		SetNextThink( gpGlobals->time );// this will get changed below if the bolt is allowed to stick in what it hit.
 
 		if( pOther->ClassnameIs( "worldspawn" ) )
 		{
 			// if what we hit is static architecture, can stay around for a while.
-			Vector vecDir = pev->velocity.Normalize();
+			Vector vecDir = GetAbsVelocity().Normalize();
 			SetAbsOrigin( GetAbsOrigin() - vecDir * 12 );
-			pev->angles = UTIL_VecToAngles( vecDir );
-			pev->solid = SOLID_NOT;
-			pev->movetype = MOVETYPE_FLY;
-			pev->velocity = Vector( 0, 0, 0 );
-			pev->avelocity.z = 0;
-			pev->angles.z = RANDOM_LONG( 0, 360 );
-			pev->nextthink = gpGlobals->time + 10.0;
+
+			Vector vecAngles = UTIL_VecToAngles( vecDir );
+			vecAngles.z = RANDOM_LONG( 0, 360 );
+			SetAbsAngles( vecAngles );
+
+			SetSolidType( SOLID_NOT );
+			SetMoveType( MOVETYPE_FLY );
+			SetAbsVelocity( Vector( 0, 0, 0 ) );
+			Vector vecAVelocity = GetAngularVelocity();
+			vecAVelocity.z = 0;
+			SetAngularVelocity( vecAVelocity );
+			SetNextThink( gpGlobals->time + 10.0 );
 		}
 
 		if( UTIL_PointContents( GetAbsOrigin() ) != CONTENTS_WATER )
@@ -143,18 +148,18 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 	if( g_pGameRules->IsMultiplayer() )
 	{
 		SetThink( &CCrossbowBolt::ExplodeThink );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 }
 
 void CCrossbowBolt::BubbleThink()
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	if( GetWaterLevel() == WATERLEVEL_DRY )
 		return;
 
-	UTIL_BubbleTrail( GetAbsOrigin() - pev->velocity * 0.1, GetAbsOrigin(), 1 );
+	UTIL_BubbleTrail( GetAbsOrigin() - GetAbsVelocity() * 0.1, GetAbsOrigin(), 1 );
 }
 
 void CCrossbowBolt::ExplodeThink()
@@ -162,7 +167,7 @@ void CCrossbowBolt::ExplodeThink()
 	int iContents = UTIL_PointContents( GetAbsOrigin() );
 	int iScale;
 
-	pev->dmg = 40;
+	SetDamage( 40 );
 	iScale = 10;
 
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, GetAbsOrigin() );
@@ -183,11 +188,11 @@ void CCrossbowBolt::ExplodeThink()
 	WRITE_BYTE( TE_EXPLFLAG_NONE );
 	MESSAGE_END();
 
-	CBaseEntity* pOwner = pev->owner ? Instance( pev->owner ) : nullptr;
+	CBaseEntity* pOwner = GetOwner();
 
-	pev->owner = nullptr; // can't traceline attack owner if this is set
+	SetOwner( nullptr ); // can't traceline attack owner if this is set
 
-	::RadiusDamage( GetAbsOrigin(), CTakeDamageInfo( this, pOwner, pev->dmg, DMG_BLAST | DMG_ALWAYSGIB ), 128, EntityClassifications().GetNoneId() );
+	::RadiusDamage( GetAbsOrigin(), CTakeDamageInfo( this, pOwner, GetDamage(), DMG_BLAST | DMG_ALWAYSGIB ), 128, EntityClassifications().GetNoneId() );
 
 	UTIL_Remove( this );
 }

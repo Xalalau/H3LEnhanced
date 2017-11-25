@@ -127,7 +127,7 @@ enum FixAngleMode
 	FIXANGLE_NO			= 0,
 
 	/**
-	*	Set view angles to pev->angles
+	*	Set view angles to GetAbsAngles()
 	*/
 	FIXANGLE_SET		= 1,
 

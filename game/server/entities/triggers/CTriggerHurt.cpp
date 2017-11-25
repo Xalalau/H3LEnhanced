@@ -35,11 +35,11 @@ void CTriggerHurt::Spawn( void )
 	if( m_bitsDamageInflict & DMG_RADIATION )
 	{
 		SetThink( &CTriggerHurt::RadiationThink );
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.0, 0.5 );
+		SetNextThink( gpGlobals->time + RANDOM_FLOAT( 0.0, 0.5 ) );
 	}
 
-	if( FBitSet( pev->spawnflags, SF_TRIGGER_HURT_START_OFF ) )// if flagged to Start Turned Off, make trigger nonsolid.
-		pev->solid = SOLID_NOT;
+	if( GetSpawnFlags().Any( SF_TRIGGER_HURT_START_OFF ) )// if flagged to Start Turned Off, make trigger nonsolid.
+		SetSolidType( SOLID_NOT );
 
 	SetAbsOrigin( GetAbsOrigin() );		// Link into the list
 }
@@ -63,15 +63,15 @@ void CTriggerHurt::RadiationThink( void )
 
 	// set origin to center of trigger so that this check works
 	origin = GetAbsOrigin();
-	view_ofs = pev->view_ofs;
+	view_ofs = GetViewOffset();
 
-	pev->origin = ( pev->absmin + pev->absmax ) * 0.5;
-	pev->view_ofs = pev->view_ofs * 0.0;
+	SetAbsOrigin( ( GetAbsMin() + GetAbsMax() ) * 0.5 );
+	SetViewOffset( GetViewOffset() * 0.0 );
 
 	CBaseEntity* pentPlayer = UTIL_FindClientInPVS( this );
 
-	pev->origin = origin;
-	pev->view_ofs = view_ofs;
+	SetAbsOrigin( origin );
+	SetViewOffset( view_ofs );
 
 	// reset origin
 
@@ -81,8 +81,8 @@ void CTriggerHurt::RadiationThink( void )
 
 		// get range to player;
 
-		vecSpot1 = ( pev->absmin + pev->absmax ) * 0.5;
-		vecSpot2 = ( pPlayer->pev->absmin + pPlayer->pev->absmax ) * 0.5;
+		vecSpot1 = ( GetAbsMin() + GetAbsMax() ) * 0.5;
+		vecSpot2 = ( pPlayer->GetAbsMin() + pPlayer->GetAbsMax() ) * 0.5;
 
 		vecRange = vecSpot1 - vecSpot2;
 		flRange = vecRange.Length();
@@ -95,7 +95,7 @@ void CTriggerHurt::RadiationThink( void )
 			pPlayer->m_flgeigerRange = flRange;
 	}
 
-	pev->nextthink = gpGlobals->time + 0.25;
+	SetNextThink( gpGlobals->time + 0.25 );
 }
 
 // When touched, a hurt trigger does DMG points of damage each half-second
@@ -103,16 +103,16 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 {
 	float fldmg;
 
-	if( !pOther->pev->takedamage )
+	if( pOther->GetTakeDamageMode() == DAMAGE_NO )
 		return;
 
-	if( ( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYTOUCH ) && !pOther->IsPlayer() )
+	if( GetSpawnFlags().Any( SF_TRIGGER_HURT_CLIENTONLYTOUCH ) && !pOther->IsPlayer() )
 	{
 		// this trigger is only allowed to touch clients, and this ain't a client.
 		return;
 	}
 
-	if( ( pev->spawnflags & SF_TRIGGER_HURT_NO_CLIENTS ) && pOther->IsPlayer() )
+	if( GetSpawnFlags().Any( SF_TRIGGER_HURT_NO_CLIENTS ) && pOther->IsPlayer() )
 		return;
 
 	// HACKHACK -- In multiplayer, players touch this based on packet receipt.
@@ -120,7 +120,7 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 	// how much time has passed and whether or not you've touched that player
 	if( g_pGameRules->IsMultiplayer() )
 	{
-		if( pev->dmgtime > gpGlobals->time )
+		if( GetDamageTime() > gpGlobals->time )
 		{
 			if( gpGlobals->time != pev->pain_finished )
 			{// too early to hurt again, and not same frame with a different entity
@@ -129,12 +129,12 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 					int playerMask = 1 << ( pOther->entindex() - 1 );
 
 					// If I've already touched this player (this time), then bail out
-					if( pev->impulse & playerMask )
+					if( GetImpulse() & playerMask )
 						return;
 
 					// Mark this player as touched
-					// BUGBUG - There can be only 32 players!
-					pev->impulse |= playerMask;
+					// BUGBUG - There can be only 32 players! TODO - Solokiller
+					SetImpulse( GetImpulse() | playerMask );
 				}
 				else
 				{
@@ -145,20 +145,20 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 		else
 		{
 			// New clock, "un-touch" all players
-			pev->impulse = 0;
+			SetImpulse( 0 );
 			if( pOther->IsPlayer() )
 			{
 				int playerMask = 1 << ( pOther->entindex() - 1 );
 
 				// Mark this player as touched
 				// BUGBUG - There can be only 32 players!
-				pev->impulse |= playerMask;
+				SetImpulse( GetImpulse() | playerMask );
 			}
 		}
 	}
 	else	// Original code -- single player
 	{
-		if( pev->dmgtime > gpGlobals->time && gpGlobals->time != pev->pain_finished )
+		if( GetDamageTime() > gpGlobals->time && gpGlobals->time != pev->pain_finished )
 		{// too early to hurt again, and not same frame with a different entity
 			return;
 		}
@@ -166,12 +166,12 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 
 
 
-	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
+	// If this is time_based damage (poison, radiation), override the GetDamage() with a 
 	// default for the given damage type.  Monsters only take time-based damage
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
 
-	fldmg = pev->dmg * 0.5;	// 0.5 seconds worth of damage, pev->dmg is damage/second
+	fldmg = GetDamage() * 0.5;	// 0.5 seconds worth of damage, GetDamage() is damage/second
 
 
 							// JAY: Cut this because it wasn't fully realized.  Damage is simpler now.
@@ -198,14 +198,14 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 	pev->pain_finished = gpGlobals->time;
 
 	// Apply damage every half second
-	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+	SetDamageTime( gpGlobals->time + 0.5 );// half second delay until this trigger can hurt toucher again
 
 
 
 	if( HasTarget() )
 	{
 		// trigger has a target it wants to fire. 
-		if( pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYFIRE )
+		if( GetSpawnFlags().Any( SF_TRIGGER_HURT_CLIENTONLYFIRE ) )
 		{
 			// if the toucher isn't a client, don't fire the target!
 			if( !pOther->IsPlayer() )
@@ -215,7 +215,7 @@ void CTriggerHurt::HurtTouch( CBaseEntity *pOther )
 		}
 
 		SUB_UseTargets( pOther, USE_TOGGLE, 0 );
-		if( pev->spawnflags & SF_TRIGGER_HURT_TARGETONCE )
-			pev->target = 0;
+		if( GetSpawnFlags().Any( SF_TRIGGER_HURT_TARGETONCE ) )
+			ClearTarget();
 	}
 }

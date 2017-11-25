@@ -30,17 +30,17 @@ void CXenPLight::Spawn( void )
 	Precache();
 
 	SetModel( "models/light.mdl" );
-	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_TRIGGER;
+	SetMoveType( MOVETYPE_NONE );
+	SetSolidType( SOLID_TRIGGER );
 
 	SetSize( Vector( -80, -80, 0 ), Vector( 80, 80, 32 ) );
 	SetActivity( ACT_IDLE );
-	pev->nextthink = gpGlobals->time + 0.1;
-	pev->frame = RANDOM_FLOAT( 0, 255 );
+	SetNextThink( gpGlobals->time + 0.1 );
+	SetFrame( RANDOM_FLOAT( 0, 255 ) );
 
-	m_pGlow = CSprite::SpriteCreate( XEN_PLANT_GLOW_SPRITE, GetAbsOrigin() + Vector( 0, 0, ( pev->mins.z + pev->maxs.z )*0.5 ), false );
-	m_pGlow->SetTransparency( kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx );
-	m_pGlow->SetAttachment( edict(), 1 );
+	m_pGlow = CSprite::SpriteCreate( XEN_PLANT_GLOW_SPRITE, GetAbsOrigin() + Vector( 0, 0, ( GetRelMin().z + GetRelMax().z )*0.5 ), false );
+	m_pGlow->SetTransparency( kRenderGlow, GetRenderColor().x, GetRenderColor().y, GetRenderColor().z, GetRenderAmount(), GetRenderFX() );
+	m_pGlow->SetAttachment( this, 1 );
 }
 
 void CXenPLight::Precache( void )
@@ -53,7 +53,7 @@ void CXenPLight::Touch( CBaseEntity *pOther )
 {
 	if( pOther->IsPlayer() )
 	{
-		pev->dmgtime = gpGlobals->time + XEN_PLANT_HIDE_TIME;
+		SetDamageTime( gpGlobals->time + XEN_PLANT_HIDE_TIME );
 		if( GetActivity() == ACT_IDLE || GetActivity() == ACT_STAND )
 		{
 			SetActivity( ACT_CROUCH );
@@ -64,7 +64,7 @@ void CXenPLight::Touch( CBaseEntity *pOther )
 void CXenPLight::Think( void )
 {
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	switch( GetActivity() )
 	{
@@ -77,7 +77,7 @@ void CXenPLight::Think( void )
 		break;
 
 	case ACT_CROUCHIDLE:
-		if( gpGlobals->time > pev->dmgtime )
+		if( gpGlobals->time > GetDamageTime() )
 		{
 			SetActivity( ACT_STAND );
 			LightOn();
@@ -99,12 +99,12 @@ void CXenPLight::LightOn( void )
 {
 	SUB_UseTargets( this, USE_ON, 0 );
 	if( m_pGlow )
-		m_pGlow->pev->effects &= ~EF_NODRAW;
+		m_pGlow->GetEffects().ClearFlags( EF_NODRAW );
 }
 
 void CXenPLight::LightOff( void )
 {
 	SUB_UseTargets( this, USE_OFF, 0 );
 	if( m_pGlow )
-		m_pGlow->pev->effects |= EF_NODRAW;
+		m_pGlow->GetEffects() |= EF_NODRAW;
 }

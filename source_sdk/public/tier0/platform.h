@@ -384,11 +384,11 @@ typedef void * HINSTANCE;
 #ifdef _WIN32
 // Alloca defined for this platform
 #define  stackalloc( _size ) _alloca( _size )
-#define  stackfree( _p )   0
+#define  stackfree( _p )   ( ( void ) 0 )
 #elif POSIX
 // Alloca defined for this platform
 #define  stackalloc( _size ) alloca( _size )
-#define  stackfree( _p )   0
+#define  stackfree( _p )   ( ( void ) 0 )
 #endif
 
 #ifdef _WIN32
@@ -423,7 +423,7 @@ typedef void * HINSTANCE;
 #endif
 
 // When we port to 64 bit, we'll have to resolve the int, ptr vs size_t 32/64 bit problems...
-#if !defined( _WIN64 )
+#if !defined( _WIN64 ) && defined( WIN32 )
 #pragma warning( disable : 4267 )	// conversion from 'size_t' to 'int', possible loss of data
 #pragma warning( disable : 4311 )	// pointer truncation from 'char *' to 'int'
 #pragma warning( disable : 4312 )	// conversion from 'unsigned int' to 'memhandle_t' of greater size

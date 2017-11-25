@@ -138,13 +138,15 @@ void CBasePlayer::PackDeadPlayerItems()
 	}
 
 	// create a box to pack the stuff into.
-	CWeaponBox *pWeaponBox = ( CWeaponBox * ) CBaseEntity::Create( "weaponbox", GetAbsOrigin(), pev->angles, edict() );
+	CWeaponBox *pWeaponBox = ( CWeaponBox * ) CBaseEntity::Create( "weaponbox", GetAbsOrigin(), GetAbsAngles(), edict() );
 
-	pWeaponBox->pev->angles.x = 0;// don't let weaponbox tilt.
-	pWeaponBox->pev->angles.z = 0;
+	Vector vecAngles = pWeaponBox->GetAbsAngles();
+	vecAngles.x = 0;// don't let weaponbox tilt.
+	vecAngles.z = 0;
+	pWeaponBox->SetAbsAngles( vecAngles );
 
 	pWeaponBox->SetThink( &CWeaponBox::Kill );
-	pWeaponBox->pev->nextthink = gpGlobals->time + 120;
+	pWeaponBox->SetNextThink( gpGlobals->time + 120 );
 
 	// back these two lists up to their first elements
 	iPA = 0;
@@ -166,7 +168,7 @@ void CBasePlayer::PackDeadPlayerItems()
 		iPW++;
 	}
 
-	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
+	pWeaponBox->SetAbsVelocity( GetAbsVelocity() * 1.2 );// weaponbox has player's velocity, then some.
 
 	RemoveAllItems( true );// now strip off everything that wasn't handled by the code above.
 }
@@ -203,13 +205,13 @@ void CBasePlayer::RemoveAllItems( const bool removeSuit )
 	}
 	m_pActiveItem = NULL;
 
-	pev->viewmodel = 0;
-	pev->weaponmodel = 0;
+	ClearViewModelName();
+	ClearWeaponModelName();
 
 	if( removeSuit )
-		pev->weapons = 0;
+		GetWeapons().ClearAll();
 	else
-		pev->weapons &= ~WEAPON_ALLWEAPONS;
+		GetWeapons().ClearFlags( WEAPON_ALLWEAPONS );
 
 	for( i = 0; i < CAmmoTypes::MAX_AMMO_TYPES; i++ )
 		m_rgAmmo[ i ] = 0;
@@ -312,13 +314,15 @@ bool CBasePlayer::RemovePlayerItem( CBasePlayerWeapon *pItem )
 	{
 		ResetAutoaim();
 		pItem->Holster();
-		pItem->pev->nextthink = 0;// crowbar may be trying to swing again, etc.
+		pItem->SetNextThink( 0 );// crowbar may be trying to swing again, etc.
 		pItem->SetThink( NULL );
 		m_pActiveItem = NULL;
-		pev->viewmodel = 0;
-		pev->weaponmodel = 0;
+		ClearViewModelName();
+		ClearWeaponModelName();
 	}
-	else if( m_pLastItem == pItem )
+
+	//In some cases an item can be both the active and last item, like for instance dropping all weapons and only having an exhaustible weapon left. - Solokiller
+	if( m_pLastItem == pItem )
 		m_pLastItem = NULL;
 
 	CBasePlayerWeapon *pPrev = m_rgpPlayerItems[ pItem->iItemSlot() ];
@@ -402,15 +406,17 @@ void CBasePlayer::DropPlayerItem( char *pszItemName )
 			if( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) )
 				return; // can't drop the item they asked for, may be our last item or something we can't holster
 
-			UTIL_MakeVectors( pev->angles );
+			UTIL_MakeVectors( GetAbsAngles() );
 
-			pev->weapons &= ~( 1 << pWeapon->m_iId );// take item off hud
+			GetWeapons().ClearFlags( 1 << pWeapon->m_iId );// take item off hud
 
-			CWeaponBox *pWeaponBox = ( CWeaponBox * ) CBaseEntity::Create( "weaponbox", GetAbsOrigin() + gpGlobals->v_forward * 10, pev->angles, edict() );
-			pWeaponBox->pev->angles.x = 0;
-			pWeaponBox->pev->angles.z = 0;
+			CWeaponBox *pWeaponBox = ( CWeaponBox * ) CBaseEntity::Create( "weaponbox", GetAbsOrigin() + gpGlobals->v_forward * 10, GetAbsAngles(), edict() );
+			Vector vecAngles = pWeaponBox->GetAbsAngles();
+			vecAngles.x = 0;
+			vecAngles.z = 0;
+			pWeaponBox->SetAbsAngles( vecAngles );
 			pWeaponBox->PackWeapon( pWeapon );
-			pWeaponBox->pev->velocity = gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100;
+			pWeaponBox->SetAbsVelocity( gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100 );
 
 			// drop half of the ammo for this weapon.
 			int	iAmmoIndex;
@@ -827,7 +833,7 @@ Vector CBasePlayer::GetAutoaimVectorFromPoint( const Vector& vecSrc, float flDel
 {
 	if( gSkillData.GetSkillLevel() == SKILL_HARD )
 	{
-		UTIL_MakeVectors( pev->v_angle + pev->punchangle );
+		UTIL_MakeVectors( GetViewAngle() + GetPunchAngle() );
 		return gpGlobals->v_forward;
 	}
 
@@ -899,7 +905,7 @@ Vector CBasePlayer::GetAutoaimVectorFromPoint( const Vector& vecSrc, float flDel
 
 	// ALERT( at_console, "%f %f\n", angles.x, angles.y );
 
-	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
+	UTIL_MakeVectors( GetViewAngle() + GetPunchAngle() + m_vecAutoAim );
 	return gpGlobals->v_forward;
 }
 
@@ -918,7 +924,7 @@ Vector CBasePlayer::AutoaimDeflection( const Vector &vecSrc, float flDist, float
 		return g_vecZero;
 	}
 
-	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
+	UTIL_MakeVectors( GetViewAngle() + GetPunchAngle() + m_vecAutoAim );
 
 	// try all possible entities
 	bestdir = gpGlobals->v_forward;
@@ -1017,7 +1023,7 @@ Vector CBasePlayer::AutoaimDeflection( const Vector &vecSrc, float flDist, float
 	{
 		bestdir = UTIL_VecToAngles( bestdir );
 		bestdir.x = -bestdir.x;
-		bestdir = bestdir - pev->v_angle - pev->punchangle;
+		bestdir = bestdir - GetViewAngle() - GetPunchAngle();
 
 		if( bestent->v.takedamage == DAMAGE_AIM )
 			m_fOnTarget = true;

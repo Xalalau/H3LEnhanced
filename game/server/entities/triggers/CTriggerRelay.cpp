@@ -40,6 +40,6 @@ void CTriggerRelay::Spawn( void )
 void CTriggerRelay::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SUB_UseTargets( this, triggerType, 0 );
-	if( pev->spawnflags & SF_RELAY_FIREONCE )
+	if( GetSpawnFlags().Any( SF_RELAY_FIREONCE ) )
 		UTIL_Remove( this );
 }

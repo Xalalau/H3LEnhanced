@@ -47,10 +47,10 @@ void CEnvExplosion::KeyValue( KeyValueData *pkvd )
 
 void CEnvExplosion::Spawn( void )
 { 
-	pev->solid = SOLID_NOT;
-	pev->effects = EF_NODRAW;
+	SetSolidType( SOLID_NOT );
+	GetEffects() = EF_NODRAW;
 
-	pev->movetype = MOVETYPE_NONE;
+	SetMoveType( MOVETYPE_NONE );
 	/*
 	if ( m_iMagnitude > 250 )
 	{
@@ -79,8 +79,8 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 { 
 	TraceResult tr;
 
-	pev->model = iStringNull;//invisible
-	pev->solid = SOLID_NOT;// intangible
+	SetModelName( iStringNull );//invisible
+	SetSolidType( SOLID_NOT );// intangible
 
 	Vector		vecSpot;// trace starts here!
 
@@ -91,15 +91,15 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	// Pull out of the wall a bit
 	if ( tr.flFraction != 1.0 )
 	{
-		pev->origin = tr.vecEndPos + (tr.vecPlaneNormal * (m_iMagnitude - 24) * 0.6);
+		SetAbsOrigin( tr.vecEndPos + (tr.vecPlaneNormal * (m_iMagnitude - 24) * 0.6) );
 	}
 	else
 	{
-		pev->origin = GetAbsOrigin();
+		SetAbsOrigin( GetAbsOrigin() );
 	}
 
 	// draw decal
-	if (! ( pev->spawnflags & SF_ENVEXPLOSION_NODECAL))
+	if( !GetSpawnFlags().Any( SF_ENVEXPLOSION_NODECAL ) )
 	{
 		if ( RANDOM_FLOAT( 0 , 1 ) < 0.5 )
 		{
@@ -112,7 +112,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	// draw fireball
-	if ( !( pev->spawnflags & SF_ENVEXPLOSION_NOFIREBALL ) )
+	if( !GetSpawnFlags().Any( SF_ENVEXPLOSION_NOFIREBALL ) )
 	{
 		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, GetAbsOrigin() );
 			WRITE_BYTE( TE_EXPLOSION);
@@ -140,16 +140,16 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 
 	// do damage
-	if ( !( pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE ) )
+	if ( !GetSpawnFlags().Any( SF_ENVEXPLOSION_NODAMAGE ) )
 	{
 		RadiusDamage( this, this, m_iMagnitude, EntityClassifications().GetNoneId(), DMG_BLAST );
 	}
 
 	SetThink( &CEnvExplosion::Smoke );
-	pev->nextthink = gpGlobals->time + 0.3;
+	SetNextThink( gpGlobals->time + 0.3 );
 
 	// draw sparks
-	if ( !( pev->spawnflags & SF_ENVEXPLOSION_NOSPARKS ) )
+	if ( !GetSpawnFlags().Any( SF_ENVEXPLOSION_NOSPARKS ) )
 	{
 		int sparkCount = RANDOM_LONG(0,3);
 
@@ -162,7 +162,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 
 void CEnvExplosion::Smoke( void )
 {
-	if ( !( pev->spawnflags & SF_ENVEXPLOSION_NOSMOKE ) )
+	if ( !GetSpawnFlags().Any( SF_ENVEXPLOSION_NOSMOKE ) )
 	{
 		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, GetAbsOrigin() );
 			WRITE_BYTE( TE_SMOKE );
@@ -175,7 +175,7 @@ void CEnvExplosion::Smoke( void )
 		MESSAGE_END();
 	}
 	
-	if ( !(pev->spawnflags & SF_ENVEXPLOSION_REPEATABLE) )
+	if ( !GetSpawnFlags().Any( SF_ENVEXPLOSION_REPEATABLE ) )
 	{
 		UTIL_Remove( this );
 	}
@@ -194,7 +194,7 @@ void UTIL_CreateExplosion( Vector vecCenter, const Vector& vecAngles, CBaseEntit
 	pExplosion->SetMagnitude( iMagnitude );
 
 	if( !bDoDamage )
-		pExplosion->pev->spawnflags |= SF_ENVEXPLOSION_NODAMAGE;
+		pExplosion->GetSpawnFlags() |= SF_ENVEXPLOSION_NODAMAGE;
 
 	pExplosion->Spawn();
 
@@ -205,6 +205,6 @@ void UTIL_CreateExplosion( Vector vecCenter, const Vector& vecAngles, CBaseEntit
 	else
 	{
 		pExplosion->SetThink( &CBaseEntity::SUB_CallUseToggle );
-		pExplosion->pev->nextthink = gpGlobals->time + flDelay;
+		pExplosion->SetNextThink( gpGlobals->time + flDelay );
 	}
 }

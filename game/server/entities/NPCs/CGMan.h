@@ -27,15 +27,15 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	int ISoundMask( void ) override;
 
-	void StartTask( const Task_t* pTask ) override;
-	void RunTask( const Task_t* pTask ) override;
+	void StartTask( const Task_t& task ) override;
+	void RunTask( const Task_t& task ) override;
 	void OnTakeDamage( const CTakeDamageInfo& info ) override;
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 
 	void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, const bool bConcurrent, CBaseEntity *pListener ) override;
 

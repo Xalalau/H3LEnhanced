@@ -37,7 +37,7 @@
 
 extern engine_studio_api_t IEngineStudio;
 
-static int tracerCount[ MAX_CLIENTS ];
+static int g_TracerCount[ MAX_CLIENTS ];
 
 #include "pm_shared.h"
 
@@ -476,7 +476,7 @@ void EV_FireGlock2( event_args_t *args )
 	
 	Vector vecAiming = forward;
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &tracerCount[idx-1], args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_9MM, 0, &g_TracerCount[idx-1], args->fparam1, args->fparam2 );
 	
 }
 //======================
@@ -499,7 +499,6 @@ void EV_FireShotGunDouble( event_args_t *args )
 	Vector vecSrc;
 	Vector vecSpread;
 	Vector up, right, forward;
-	float flSpread = 0.01;
 
 	AngleVectors( angles, forward, right, up );
 
@@ -528,11 +527,11 @@ void EV_FireShotGunDouble( event_args_t *args )
 
 	if ( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx-1], VECTOR_CONE_DM_DOUBLESHOTGUN[ 0 ], VECTOR_CONE_DM_DOUBLESHOTGUN[ 1 ] );
+		EV_HLDM_FireBullets( idx, forward, right, up, 8, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_TracerCount[idx-1], VECTOR_CONE_DM_DOUBLESHOTGUN[ 0 ], VECTOR_CONE_DM_DOUBLESHOTGUN[ 1 ] );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx-1], VECTOR_CONE_10DEGREES[ 0 ], VECTOR_CONE_10DEGREES[ 1 ] );
+		EV_HLDM_FireBullets( idx, forward, right, up, 12, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_TracerCount[idx-1], VECTOR_CONE_10DEGREES[ 0 ], VECTOR_CONE_10DEGREES[ 1 ] );
 	}
 }
 
@@ -549,7 +548,6 @@ void EV_FireShotGunSingle( event_args_t *args )
 	Vector vecSrc;
 	Vector vecSpread;
 	Vector up, right, forward;
-	float flSpread = 0.01;
 
 	AngleVectors( angles, forward, right, up );
 
@@ -576,11 +574,11 @@ void EV_FireShotGunSingle( event_args_t *args )
 
 	if ( gEngfuncs.GetMaxClients() > 1 )
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx-1], VECTOR_CONE_DM_SHOTGUN[ 0 ], VECTOR_CONE_DM_SHOTGUN[ 1 ] );
+		EV_HLDM_FireBullets( idx, forward, right, up, 4, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_TracerCount[idx-1], VECTOR_CONE_DM_SHOTGUN[ 0 ], VECTOR_CONE_DM_SHOTGUN[ 1 ] );
 	}
 	else
 	{
-		EV_HLDM_FireBullets( idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &tracerCount[idx-1], VECTOR_CONE_10DEGREES[ 0 ], VECTOR_CONE_10DEGREES[ 1 ] );
+		EV_HLDM_FireBullets( idx, forward, right, up, 6, vecSrc, vecAiming, 2048, BULLET_PLAYER_BUCKSHOT, 0, &g_TracerCount[idx-1], VECTOR_CONE_10DEGREES[ 0 ], VECTOR_CONE_10DEGREES[ 1 ] );
 	}
 }
 //======================
@@ -602,7 +600,6 @@ void EV_FireMP5( event_args_t *args )
 
 	Vector vecSrc;
 	Vector up, right, forward;
-	float flSpread = 0.01;
 
 	AngleVectors( angles, forward, right, up );
 
@@ -635,7 +632,7 @@ void EV_FireMP5( event_args_t *args )
 
 	Vector vecAiming = forward;
 
-	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &tracerCount[idx-1], args->fparam1, args->fparam2 );
+	EV_HLDM_FireBullets( idx, forward, right, up, 1, vecSrc, vecAiming, 8192, BULLET_PLAYER_MP5, 2, &g_TracerCount[idx-1], args->fparam1, args->fparam2 );
 }
 
 // We only predict the animation and sound
@@ -674,11 +671,9 @@ void EV_FirePython( event_args_t *args )
 	const int idx = args->entindex;
 	Vector origin = args->origin;
 	Vector angles = args->angles;
-	Vector velocity = args->velocity;
 
 	Vector vecSrc;
 	Vector up, right, forward;
-	float flSpread = 0.01;
 
 	AngleVectors( angles, forward, right, up );
 
@@ -724,8 +719,6 @@ void EV_SpinGauss( event_args_t *args )
 {
 	const int idx = args->entindex;
 	Vector origin = args->origin;
-	Vector angles = args->angles;
-	Vector velocity = args->velocity;
 	int iSoundState = 0;
 
 	const int pitch = args->iparam1;
@@ -755,17 +748,13 @@ void EV_FireGauss( event_args_t *args )
 	const int idx = args->entindex;
 	Vector origin = args->origin;
 	Vector angles = args->angles;
-	Vector velocity = args->velocity;
 	float flDamage = args->fparam1;
-	int primaryfire = args->bparam1;
 
 	int m_fPrimaryFire = args->bparam1;
-	int m_iWeaponVolume = GAUSS_PRIMARY_FIRE_VOLUME;
 	Vector vecSrc;
 	Vector vecDest;
 	pmtrace_t tr, beam_tr;
 	float flMaxFrac = 1.0;
-	int	nTotal = 0;
 	int fHasPunched = 0;
 	int fFirstBeam = 1;
 	int	nMaxHits = 10;
@@ -870,9 +859,7 @@ void EV_FireGauss( event_args_t *args )
 
 		if ( pEntity->solid == SOLID_BSP )
 		{
-			float n;
-
-			n = -DotProduct( tr.plane.normal, forward );
+			float n = -DotProduct( tr.plane.normal, forward );
 
 			if (n < 0.5) // 60 degrees	
 			{
@@ -937,22 +924,19 @@ void EV_FireGauss( event_args_t *args )
 
 					if ( !beam_tr.allsolid )
 					{
-						Vector delta;
-						float n;
-
 						// trace backwards to find exit point
 
 						gEngfuncs.pEventAPI->EV_PlayerTrace( beam_tr.endpos, tr.endpos, PM_STUDIO_BOX, -1, &beam_tr );
 
-						delta = beam_tr.endpos - tr.endpos;
+						Vector delta = beam_tr.endpos - tr.endpos;
 						
-						n = delta.Length();
+						float n2 = delta.Length();
 
-						if (n < flDamage)
+						if ( n2 < flDamage)
 						{
-							if (n == 0)
-								n = 1;
-							flDamage -= n;
+							if ( n2 == 0)
+								n2 = 1;
+							flDamage -= n2;
 
 							// absorption balls
 							{
@@ -962,7 +946,7 @@ void EV_FireGauss( event_args_t *args )
 							}
 
 	//////////////////////////////////// WHAT TO DO HERE
-							// CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
+							// CSoundEnt::InsertSound ( bits_SOUND_COMBAT, GetAbsOrigin(), NORMAL_EXPLOSION_VOLUME, 3.0 );
 
 							EV_HLDM_DecalGunshot( &beam_tr, BULLET_MONSTER_12MM );
 							
@@ -1153,7 +1137,6 @@ void EV_FireCrossbow2( event_args_t *args )
 	const int idx = args->entindex;
 	Vector origin = args->origin;
 	Vector angles = args->angles;
-	Vector velocity = args->velocity;
 	
 	AngleVectors( angles, forward, right, up );
 
@@ -1293,7 +1276,7 @@ void EV_EgonFire( event_args_t *args )
 	const int idx = args->entindex;
 	Vector origin = args->origin;
 
-	const int iFireState = args->iparam1;
+	//const int iFireState = args->iparam1;
 	const int iFireMode = args->iparam2;
 	const int iStartup = args->bparam1;
 
@@ -1417,9 +1400,8 @@ void EV_HornetGunFire( event_args_t *args )
 {
 	const int idx = args->entindex;
 	Vector origin = args->origin;
-	Vector angles = args->angles;
 
-	const int iFireMode = args->iparam1;
+	//const int iFireMode = args->iparam1;
 
 	//Only play the weapon anims if I shot it.
 	if ( EV_IsLocal( idx ) )

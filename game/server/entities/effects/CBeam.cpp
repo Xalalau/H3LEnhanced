@@ -16,25 +16,26 @@ LINK_ENTITY_TO_CLASS( beam, CBeam );
 
 void CBeam::Spawn( void )
 {
-	pev->solid = SOLID_NOT;							// Remove model & collisions
+	SetSolidType( SOLID_NOT );							// Remove model & collisions
 	Precache();
 }
 
 void CBeam::Precache( void )
 {
-	if( pev->owner )
-		SetStartEntity( ENTINDEX( pev->owner ) );
-	if( pev->aiment )
-		SetEndEntity( ENTINDEX( pev->aiment ) );
+	if( GetOwner() )
+		SetStartEntity( GetOwner()->entindex() );
+
+	if( auto pAimEnt = GetAimEntity() )
+		SetEndEntity( pAimEnt->entindex() );
 }
 
 void CBeam::TriggerTouch( CBaseEntity *pOther )
 {
-	if( pOther->pev->flags & ( FL_CLIENT | FL_MONSTER ) )
+	if( pOther->GetFlags().Any( FL_CLIENT | FL_MONSTER ) )
 	{
-		if( pev->owner )
+		if( GetOwner() )
 		{
-			CBaseEntity *pOwner = CBaseEntity::Instance( pev->owner );
+			CBaseEntity *pOwner = GetOwner();
 			pOwner->Use( pOther, this, USE_TOGGLE, 0 );
 		}
 		ALERT( at_console, "Firing targets!!!\n" );
@@ -43,14 +44,14 @@ void CBeam::TriggerTouch( CBaseEntity *pOther )
 
 void CBeam::SetStartEntity( int entityIndex )
 {
-	pev->sequence = ( entityIndex & 0x0FFF ) | ( ( pev->sequence & 0xF000 ) << 12 );
-	pev->owner = g_engfuncs.pfnPEntityOfEntIndex( entityIndex );
+	SetSequence( ( entityIndex & 0x0FFF ) | ( ( GetSequence() & 0xF000 ) << 12 ) );
+	SetOwner( UTIL_EntityByIndex( entityIndex ) );
 }
 
 void CBeam::SetEndEntity( int entityIndex )
 {
-	pev->skin = ( entityIndex & 0x0FFF ) | ( ( pev->skin & 0xF000 ) << 12 );
-	pev->aiment = g_engfuncs.pfnPEntityOfEntIndex( entityIndex );
+	SetSkin( ( entityIndex & 0x0FFF ) | ( ( GetSkin() & 0xF000 ) << 12 ) );
+	SetAimEntity( UTIL_EntityByIndex( entityIndex ) );
 }
 
 // These don't take attachments into account
@@ -69,29 +70,33 @@ const Vector& CBeam::GetEndPos() const
 	int type = GetType();
 	if( type == BEAM_POINTS || type == BEAM_HOSE )
 	{
-		return pev->angles;
+		return GetAbsAngles();
 	}
 
 	edict_t *pent = g_engfuncs.pfnPEntityOfEntIndex( GetEndEntity() );
 	if( pent )
 		return pent->v.origin;
-	return pev->angles;
+	return GetAbsAngles();
 }
 
 void CBeam::RelinkBeam( void )
 {
 	const Vector &startPos = GetStartPos(), &endPos = GetEndPos();
 
-	pev->mins.x = min( startPos.x, endPos.x );
-	pev->mins.y = min( startPos.y, endPos.y );
-	pev->mins.z = min( startPos.z, endPos.z );
-	pev->maxs.x = max( startPos.x, endPos.x );
-	pev->maxs.y = max( startPos.y, endPos.y );
-	pev->maxs.z = max( startPos.z, endPos.z );
-	pev->mins = pev->mins - GetAbsOrigin();
-	pev->maxs = pev->maxs - GetAbsOrigin();
+	Vector vecMins(
+		min( startPos.x, endPos.x ),
+		min( startPos.y, endPos.y ),
+		min( startPos.z, endPos.z )
+	);
+	Vector vecMaxs(
+		max( startPos.x, endPos.x ),
+		max( startPos.y, endPos.y ),
+		max( startPos.z, endPos.z )
+	);
+	vecMins = vecMins - GetAbsOrigin();
+	vecMaxs = vecMaxs - GetAbsOrigin();
 
-	SetSize( pev->mins, pev->maxs );
+	SetSize( vecMins, vecMaxs );
 	SetAbsOrigin( GetAbsOrigin() );
 }
 
@@ -100,24 +105,29 @@ void CBeam::SetObjectCollisionBox( void )
 {
 	const Vector &startPos = GetStartPos(), &endPos = GetEndPos();
 
-	pev->absmin.x = min( startPos.x, endPos.x );
-	pev->absmin.y = min( startPos.y, endPos.y );
-	pev->absmin.z = min( startPos.z, endPos.z );
-	pev->absmax.x = max( startPos.x, endPos.x );
-	pev->absmax.y = max( startPos.y, endPos.y );
-	pev->absmax.z = max( startPos.z, endPos.z );
+	SetAbsMin( Vector(
+		min( startPos.x, endPos.x ),
+		min( startPos.y, endPos.y ),
+		min( startPos.z, endPos.z )
+		) );
+
+	SetAbsMax( Vector(
+		max( startPos.x, endPos.x ),
+		max( startPos.y, endPos.y ),
+		max( startPos.z, endPos.z )
+	) );
 }
 #endif
 
 void CBeam::DoSparks( const Vector &start, const Vector &end )
 {
-	if( pev->spawnflags & ( SF_BEAM_SPARKSTART | SF_BEAM_SPARKEND ) )
+	if( GetSpawnFlags().Any( SF_BEAM_SPARKSTART | SF_BEAM_SPARKEND ) )
 	{
-		if( pev->spawnflags & SF_BEAM_SPARKSTART )
+		if( GetSpawnFlags().Any( SF_BEAM_SPARKSTART ) )
 		{
 			UTIL_Sparks( start );
 		}
-		if( pev->spawnflags & SF_BEAM_SPARKEND )
+		if( GetSpawnFlags().Any( SF_BEAM_SPARKEND ) )
 		{
 			UTIL_Sparks( end );
 		}
@@ -133,32 +143,32 @@ void CBeam::BeamDamage( TraceResult *ptr )
 		if( pHit )
 		{
 			g_MultiDamage.Clear();
-			pHit->TraceAttack( CTakeDamageInfo( this, pev->dmg * ( gpGlobals->time - pev->dmgtime ), DMG_ENERGYBEAM ), ( ptr->vecEndPos - GetAbsOrigin() ).Normalize(), ptr );
+			pHit->TraceAttack( CTakeDamageInfo( this, GetDamage() * ( gpGlobals->time - GetDamageTime() ), DMG_ENERGYBEAM ), ( ptr->vecEndPos - GetAbsOrigin() ).Normalize(), *ptr );
 			g_MultiDamage.ApplyMultiDamage( this, this );
-			if( pev->spawnflags & SF_BEAM_DECALS )
+			if( GetSpawnFlags().Any( SF_BEAM_DECALS ) )
 			{
 				if( pHit->IsBSPModel() )
 					UTIL_DecalTrace( ptr, DECAL_BIGSHOT1 + RANDOM_LONG( 0, 4 ) );
 			}
 		}
 	}
-	pev->dmgtime = gpGlobals->time;
+	SetDamageTime( gpGlobals->time );
 }
 
 void CBeam::BeamInit( const char *pSpriteName, int width )
 {
-	pev->flags |= FL_CUSTOMENTITY;
+	GetFlags() |= FL_CUSTOMENTITY;
 	SetColor( 255, 255, 255 );
 	SetBrightness( 255 );
 	SetNoise( 0 );
 	SetFrame( 0 );
 	SetScrollRate( 0 );
-	pev->model = MAKE_STRING( pSpriteName );
-	SetTexture( PRECACHE_MODEL( ( char * ) pSpriteName ) );
+	SetModelName( pSpriteName );
+	SetTexture( PRECACHE_MODEL( pSpriteName ) );
 	SetWidth( width );
-	pev->skin = 0;
-	pev->sequence = 0;
-	pev->rendermode = 0;
+	SetSkin( 0 );
+	SetSequence( 0 );
+	SetRenderMode( kRenderNormal );
 }
 
 void CBeam::PointsInit( const Vector &start, const Vector &end )

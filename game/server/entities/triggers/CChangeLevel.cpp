@@ -47,7 +47,7 @@ void CChangeLevel::Spawn( void )
 		SetUse( &CChangeLevel::UseChangeLevel );
 	}
 	InitTrigger();
-	if( !( pev->spawnflags & SF_CHANGELEVEL_USEONLY ) )
+	if( !GetSpawnFlags().Any( SF_CHANGELEVEL_USEONLY ) )
 		SetTouch( &CChangeLevel::TouchChangeLevel );
 	//	ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
 }
@@ -130,10 +130,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// ############ //
 
 	// Some people are firing these multiple times in a frame, disable
-	if( gpGlobals->time == pev->dmgtime )
+	if( gpGlobals->time == GetDamageTime() )
 		return;
 
-	pev->dmgtime = gpGlobals->time;
+	SetDamageTime( gpGlobals->time );
 
 
 	CBaseEntity *pPlayer = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
@@ -150,9 +150,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		if( pFireAndDie )
 		{
 			// Set target and delay
-			pFireAndDie->pev->target = m_changeTarget;
+			pFireAndDie->SetTarget( m_changeTarget );
 			pFireAndDie->m_flDelay = m_changeTargetDelay;
-			pFireAndDie->pev->origin = pPlayer->GetAbsOrigin();
+			pFireAndDie->SetAbsOrigin( pPlayer->GetAbsOrigin() );
 			// Call spawn
 			DispatchSpawn( pFireAndDie->edict() );
 		}
@@ -188,7 +188,7 @@ CBaseEntity* CChangeLevel::FindLandmark( const char* const pszLandmarkName )
 {
 	CBaseEntity* pLandmark = nullptr;
 
-	while( (pLandmark = UTIL_FindEntityByTargetname( pLandmark, pszLandmarkName )) )
+	while( ( pLandmark = UTIL_FindEntityByTargetname( pLandmark, pszLandmarkName ) ) != nullptr )
 	{
 		// Found the landmark
 		if( pLandmark->ClassnameIs( "info_landmark" ) )
@@ -212,7 +212,7 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 	CBaseEntity* pChangelevel = nullptr;
 
 	// Find all of the possible level changes on this BSP
-	while( (pChangelevel = UTIL_FindEntityByClassname( pChangelevel, "trigger_changelevel" )) )
+	while( ( pChangelevel = UTIL_FindEntityByClassname( pChangelevel, "trigger_changelevel" ) ) != nullptr )
 	{
 		CBaseEntity* pLandmark;
 
@@ -329,16 +329,17 @@ bool CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 		return true;
 
 	// If you're following another entity, follow it through the transition (weapons follow the player)
-	if( pEntity->pev->movetype == MOVETYPE_FOLLOW )
+	if( pEntity->GetMoveType() == MOVETYPE_FOLLOW )
 	{
-		if( pEntity->pev->aiment != NULL )
-			pEntity = CBaseEntity::Instance( pEntity->pev->aiment );
+		auto pAimEnt = pEntity->GetAimEntity();
+		if( pAimEnt )
+			pEntity = pAimEnt;
 	}
 
 	bool inVolume = true;	// Unless we find a trigger_transition, everything is in the volume
 
 	CBaseEntity* pVolume = nullptr;
-	while( (pVolume = UTIL_FindEntityByTargetname( pVolume, pVolumeName )) )
+	while( ( pVolume = UTIL_FindEntityByTargetname( pVolume, pVolumeName ) ) != nullptr )
 	{
 		if( pVolume->ClassnameIs( "trigger_transition" ) )
 		{

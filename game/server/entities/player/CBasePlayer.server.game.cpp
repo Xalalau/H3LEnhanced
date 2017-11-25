@@ -63,7 +63,7 @@ void CBasePlayer::PlayerUse()
 		return;
 
 	// Was use pressed or released?
-	if( !( ( pev->button | m_afButtonPressed | m_afButtonReleased ) & IN_USE ) )
+	if( !( ( GetButtons().Get() | m_afButtonPressed | m_afButtonReleased ) & IN_USE ) )
 		return;
 
 #if USE_ANGELSCRIPT
@@ -96,12 +96,16 @@ void CBasePlayer::PlayerUse()
 			}
 			else
 			{	// Start controlling the train!
-				CBaseEntity *pTrain = CBaseEntity::Instance( pev->groundentity );
+				CBaseEntity *pTrain = GetGroundEntity();
 
-				if( pTrain && !( pev->button & IN_JUMP ) && FBitSet( pev->flags, FL_ONGROUND ) && ( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( this ) )
+				//To match original behavior, Instance returns the world if entity is null - Solokiller
+				if( !pTrain )
+					pTrain = CWorld::GetInstance();
+
+				if( pTrain && !GetButtons().Any( IN_JUMP ) && GetFlags().Any( FL_ONGROUND ) && ( pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE ) && pTrain->OnControls( this ) )
 				{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
-					m_iTrain = TrainSpeed( pTrain->pev->speed, pTrain->pev->impulse );
+					m_iTrain = TrainSpeed( pTrain->GetSpeed(), pTrain->GetImpulse() );
 					m_iTrain |= TRAIN_NEW;
 					EMIT_SOUND( this, CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM );
 					return;
@@ -116,7 +120,7 @@ void CBasePlayer::PlayerUse()
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
 
-	UTIL_MakeVectors( pev->v_angle );// so we know which way we are facing
+	UTIL_MakeVectors( GetViewAngle() );// so we know which way we are facing
 
 	while( ( pObject = UTIL_FindEntityInSphere( pObject, GetAbsOrigin(), PLAYER_USE_SEARCH_RADIUS ) ) != NULL )
 	{
@@ -126,11 +130,11 @@ void CBasePlayer::PlayerUse()
 			// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
 			// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
 			// when player hits the use key. How many objects can be in that area, anyway? (sjb)
-			vecLOS = ( VecBModelOrigin( pObject ) - ( GetAbsOrigin() + pev->view_ofs ) );
+			vecLOS = ( VecBModelOrigin( pObject ) - ( GetAbsOrigin() + GetViewOffset() ) );
 
 			// This essentially moves the origin of the target to the corner nearest the player to test to see 
 			// if it's "hull" is in the view cone
-			vecLOS = UTIL_ClampVectorToBox( vecLOS, pObject->pev->size * 0.5 );
+			vecLOS = UTIL_ClampVectorToBox( vecLOS, pObject->GetBounds() * 0.5 );
 
 			flDot = DotProduct( vecLOS, gpGlobals->v_forward );
 			if( flDot > flMaxDot )
@@ -153,7 +157,7 @@ void CBasePlayer::PlayerUse()
 		if( m_afButtonPressed & IN_USE )
 			EMIT_SOUND( this, CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM );
 
-		if( ( ( pev->button & IN_USE ) && ( caps & FCAP_CONTINUOUS_USE ) ) ||
+		if( ( GetButtons().Any( IN_USE ) && ( caps & FCAP_CONTINUOUS_USE ) ) ||
 			( ( m_afButtonPressed & IN_USE ) && ( caps & ( FCAP_IMPULSE_USE | FCAP_ONOFF_USE ) ) ) )
 		{
 			if( caps & FCAP_CONTINUOUS_USE )
@@ -176,7 +180,7 @@ void CBasePlayer::PlayerUse()
 
 void CBasePlayer::Jump()
 {
-	if( FBitSet( pev->flags, FL_WATERJUMP ) )
+	if( GetFlags().Any( FL_WATERJUMP ) )
 		return;
 
 	if( GetWaterLevel() >= WATERLEVEL_WAIST )
@@ -190,43 +194,43 @@ void CBasePlayer::Jump()
 	if( !FBitSet( m_afButtonPressed, IN_JUMP ) )
 		return;         // don't pogo stick
 
-	if( !( pev->flags & FL_ONGROUND ) || !pev->groundentity )
+	if( !GetFlags().Any( FL_ONGROUND ) || !GetGroundEntity() )
 	{
 		return;
 	}
 
 	// many features in this function use v_forward, so makevectors now.
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 
-	// ClearBits(pev->flags, FL_ONGROUND);		// don't stairwalk
+	// GetFlags().ClearFlags( FL_ONGROUND );		// don't stairwalk
 
 	SetAnimation( PLAYER_JUMP );
 
 	if( m_fLongJump &&
-		( pev->button & IN_DUCK ) &&
-		( pev->flDuckTime > 0 ) &&
-		pev->velocity.Length() > 50 )
+		GetButtons().Any( IN_DUCK ) &&
+		( GetDuckTime() > 0 ) &&
+		GetAbsVelocity().Length() > 50 )
 	{
 		SetAnimation( PLAYER_SUPERJUMP );
 	}
 
-	if( CBaseEntity* pGround = Instance( pev->groundentity ) )
+	if( CBaseEntity* pGround = GetGroundEntity() )
 	{
 		//Add ground entity velocity to yourself. Maintains intertia. - Solokiller
-		pev->velocity = pev->velocity + pGround->GetAbsVelocity();
+		SetAbsVelocity( GetAbsVelocity() + pGround->GetAbsVelocity() );
 
 		// If you're standing on a conveyor, add it's velocity to yours (for momentum)
-		if( ( pGround->pev->flags & FL_CONVEYOR ) )
+		if( pGround->GetFlags().Any( FL_CONVEYOR ) )
 		{
 			//Note: basevelocity is set by the physics code. It accounts for conveyors. - Solokiller
-			pev->velocity = pev->velocity + pev->basevelocity;
+			SetAbsVelocity( GetAbsVelocity() + GetBaseVelocity() );
 		}
 	}
 }
 
 void CBasePlayer::Duck()
 {
-	if( pev->button & IN_DUCK )
+	if( GetButtons().Any( IN_DUCK ) )
 	{
 		if( m_IdealActivity != ACT_LEAP )
 		{
@@ -279,12 +283,12 @@ void CBasePlayer::DeathSound()
 
 bool CBasePlayer::IsOnLadder() const
 {
-	return ( pev->movetype == MOVETYPE_FLY );
+	return ( GetMoveType() == MOVETYPE_FLY );
 }
 
 bool CBasePlayer::FlashlightIsOn() const
 {
-	return FBitSet( pev->effects, EF_DIMLIGHT ) != 0;
+	return GetEffects().Any( EF_DIMLIGHT );
 }
 
 void CBasePlayer::FlashlightTurnOn()
@@ -294,10 +298,10 @@ void CBasePlayer::FlashlightTurnOn()
 		return;
 	}
 
-	if( ( pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+	if( GetWeapons().Any( 1 << WEAPON_SUIT ) )
 	{
 		EMIT_SOUND_DYN( this, CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits( pev->effects, EF_DIMLIGHT );
+		GetEffects() |= EF_DIMLIGHT;
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, this );
 			WRITE_BYTE( 1 );
 			WRITE_BYTE( m_iFlashBattery );
@@ -310,7 +314,7 @@ void CBasePlayer::FlashlightTurnOn()
 void CBasePlayer::FlashlightTurnOff()
 {
 	EMIT_SOUND_DYN( this, CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-	ClearBits( pev->effects, EF_DIMLIGHT );
+	GetEffects().ClearFlags( EF_DIMLIGHT );
 	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, this );
 		WRITE_BYTE( 0 );
 		WRITE_BYTE( m_iFlashBattery );
@@ -337,21 +341,21 @@ void CBasePlayer::AddPoints( int score, const bool bAllowNegativeScore )
 	{
 		if( !bAllowNegativeScore )
 		{
-			if( pev->frags < 0 )		// Can't go more negative
+			if( GetFrags() < 0 )		// Can't go more negative
 				return;
 
-			if( -score > pev->frags )	// Will this go negative?
+			if( -score > GetFrags() )	// Will this go negative?
 			{
-				score = -pev->frags;		// Sum will be 0
+				score = -GetFrags();		// Sum will be 0
 			}
 		}
 	}
 
-	pev->frags += score;
+	SetFrags( GetFrags() + score );
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
 	WRITE_BYTE( entindex() );
-		WRITE_SHORT( pev->frags );
+		WRITE_SHORT( GetFrags() );
 		WRITE_SHORT( m_iDeaths );
 		WRITE_SHORT( 0 );
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
@@ -380,9 +384,9 @@ void CBasePlayer::AddPointsToTeam( int score, const bool bAllowNegativeScore )
 void CBasePlayer::EnableControl( const bool fControl )
 {
 	if( !fControl )
-		pev->flags |= FL_FROZEN;
+		GetFlags() |= FL_FROZEN;
 	else
-		pev->flags &= ~FL_FROZEN;
+		GetFlags().ClearFlags( FL_FROZEN );
 }
 
 // Set the activity based on an event or current state
@@ -392,9 +396,9 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	float speed;
 	char szAnim[ 64 ];
 
-	speed = pev->velocity.Length2D();
+	speed = GetAbsVelocity().Length2D();
 
-	if( pev->flags & FL_FROZEN )
+	if( GetFlags().Any( FL_FROZEN ) )
 	{
 		speed = 0;
 		playerAnim = PLAYER_IDLE;
@@ -432,7 +436,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		break;
 	case PLAYER_IDLE:
 	case PLAYER_WALK:
-		if( !FBitSet( pev->flags, FL_ONGROUND ) && ( m_Activity == ACT_HOP || m_Activity == ACT_LEAP ) )	// Still jumping
+		if( !GetFlags().Any( FL_ONGROUND ) && ( m_Activity == ACT_HOP || m_Activity == ACT_LEAP ) )	// Still jumping
 		{
 			m_IdealActivity = m_Activity;
 		}
@@ -483,17 +487,17 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 		animDesired = LookupActivity( m_Activity );
 		// Already using the desired animation?
-		if( pev->sequence == animDesired )
+		if( GetSequence() == animDesired )
 			return;
 
 		pev->gaitsequence = 0;
-		pev->sequence = animDesired;
-		pev->frame = 0;
+		SetSequence( animDesired );
+		SetFrame( 0 );
 		ResetSequenceInfo();
 		return;
 
 	case ACT_RANGE_ATTACK1:
-		if( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
+		if( GetFlags().Any( FL_DUCKING ) )	// crouching
 			strcpy( szAnim, "crouch_shoot_" );
 		else
 			strcpy( szAnim, "ref_shoot_" );
@@ -502,26 +506,26 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		if( animDesired == -1 )
 			animDesired = 0;
 
-		if( pev->sequence != animDesired || !m_fSequenceLoops )
+		if( GetSequence() != animDesired || !m_fSequenceLoops )
 		{
-			pev->frame = 0;
+			SetFrame( 0 );
 		}
 
 		if( !m_fSequenceLoops )
 		{
-			pev->effects |= EF_NOINTERP;
+			GetEffects() |= EF_NOINTERP;
 		}
 
 		m_Activity = m_IdealActivity;
 
-		pev->sequence = animDesired;
+		SetSequence( animDesired );
 		ResetSequenceInfo();
 		break;
 
 	case ACT_WALK:
 		if( m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished )
 		{
-			if( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
+			if( GetFlags().Any( FL_DUCKING ) )	// crouching
 				strcpy( szAnim, "crouch_aim_" );
 			else
 				strcpy( szAnim, "ref_aim_" );
@@ -533,11 +537,11 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		}
 		else
 		{
-			animDesired = pev->sequence;
+			animDesired = GetSequence();
 		}
 	}
 
-	if( FBitSet( pev->flags, FL_DUCKING ) )
+	if( GetFlags().Any( FL_DUCKING ) )
 	{
 		if( speed == 0 )
 		{
@@ -565,12 +569,12 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 
 	// Already using the desired animation?
-	if( pev->sequence == animDesired )
+	if( GetSequence() == animDesired )
 		return;
 
 	//ALERT( at_console, "Set animation to %d\n", animDesired );
 	// Reset to first frame of desired animation
-	pev->sequence = animDesired;
-	pev->frame = 0;
+	SetSequence( animDesired );
+	SetFrame( 0 );
 	ResetSequenceInfo();
 }

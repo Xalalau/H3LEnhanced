@@ -954,7 +954,7 @@ void UpdateClientData( const edict_t* pClient, int sendweapons, clientdata_t* cd
 	entvars_t*		pevOrg = nullptr;
 
 	// if user is spectating different player in First person, override some vars
-	if ( pl && pl->pev->iuser1 == OBS_IN_EYE )
+	if ( pl && pl->GetObserverMode() == OBS_IN_EYE )
 	{
 		if ( pl->m_hObserverTarget )
 		{
@@ -964,36 +964,38 @@ void UpdateClientData( const edict_t* pClient, int sendweapons, clientdata_t* cd
 		}
 	}
 
-	cd->flags			= pev->flags;
-	cd->health			= pev->health;
+	cd->flags			= pl->GetFlags().Get();
+	cd->health			= pl->GetHealth();
 
-	cd->viewmodel		= MODEL_INDEX( STRING( pev->viewmodel ) );
+	cd->viewmodel		= MODEL_INDEX( pl->GetViewModelName() );
 
-	cd->waterlevel		= pev->waterlevel;
-	cd->watertype		= pev->watertype;
-	cd->weapons			= pev->weapons;
+	cd->waterlevel		= pl->GetWaterLevel();
+	cd->watertype		= pl->GetWaterType();
+	cd->weapons			= pl->GetWeapons().Get();
 
 	// Vectors
-	cd->origin			= pev->origin;
-	cd->velocity		= pev->velocity;
-	cd->view_ofs		= pev->view_ofs;
-	cd->punchangle		= pev->punchangle;
+	cd->origin			= pl->GetAbsOrigin();
+	cd->velocity		= pl->GetAbsVelocity();
+	cd->view_ofs		= pl->GetViewOffset();
+	cd->punchangle		= pl->GetPunchAngle();
 
-	cd->bInDuck			= pev->bInDuck;
-	cd->flTimeStepSound = pev->flTimeStepSound;
-	cd->flDuckTime		= pev->flDuckTime;
-	cd->flSwimTime		= pev->flSwimTime;
-	cd->waterjumptime	= pev->teleport_time;
+	//This is only touched in pm_shared code, but it gets synced in the engine during SV_RunCmd - Solokiller
+	cd->bInDuck			= pl->IsDucking();
+	cd->flTimeStepSound = pl->GetStepSoundTime();
+	cd->flDuckTime		= pl->GetDuckTime();
+	cd->flSwimTime		= pl->GetSwimSoundTime();
+	cd->waterjumptime	= pl->GetWaterJumpTime();
 
 	strcpy( cd->physinfo, ENGINE_GETPHYSINFO( pClient ) );
 
-	cd->maxspeed		= pev->maxspeed;
-	cd->fov				= pev->fov;
-	cd->weaponanim		= pev->weaponanim;
+	cd->maxspeed		= pl->GetMaxSpeed();
+	cd->fov				= pl->GetFOV();
+	cd->weaponanim		= pl->GetWeaponAnim();
 
 	cd->pushmsec		= pev->pushmsec;
 
 	//Spectator mode
+	//TODO: this is kinda stupid, just always set pevOrg and use it for this - Solokiller
 	if ( pevOrg != NULL )
 	{
 		// don't use spec vars from chased player
@@ -1114,7 +1116,7 @@ ConnectionlessPacket
 int	ConnectionlessPacket( const netadr_t *net_from, const char *args, char *response_buffer, int *response_buffer_size )
 {
 	// Parse stuff from args
-	int max_buffer_size = *response_buffer_size;
+	/*int max_buffer_size = *response_buffer_size;*/
 
 	// Zero it out since we aren't going to respond.
 	// If we wanted to response, we'd write data into response_buffer
@@ -1169,7 +1171,7 @@ to be created during play ( e.g., grenades, ammo packs, projectiles, corpses, et
 */
 void CreateInstancedBaselines()
 {
-	int iret = 0;
+	//int iret = 0;
 	entity_state_t state;
 
 	memset( &state, 0, sizeof( state ) );

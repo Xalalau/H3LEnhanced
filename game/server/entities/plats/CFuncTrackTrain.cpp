@@ -31,41 +31,41 @@ LINK_ENTITY_TO_CLASS( func_tracktrain, CFuncTrackTrain );
 
 void CFuncTrackTrain::Spawn( void )
 {
-	if( pev->speed == 0 )
+	if( GetSpeed() == 0 )
 		m_speed = 100;
 	else
-		m_speed = pev->speed;
+		m_speed = GetSpeed();
 
-	pev->speed = 0;
-	pev->velocity = g_vecZero;
-	pev->avelocity = g_vecZero;
-	pev->impulse = m_speed;
+	SetSpeed( 0 );
+	SetAbsVelocity( g_vecZero );
+	SetAngularVelocity( g_vecZero );
+	SetImpulse( m_speed );
 
 	m_dir = 1;
 
 	if( !HasTarget() )
 		ALERT( at_console, "FuncTrain with no target" );
 
-	if( pev->spawnflags & SF_TRACKTRAIN_PASSABLE )
-		pev->solid = SOLID_NOT;
+	if( GetSpawnFlags().Any( SF_TRACKTRAIN_PASSABLE ) )
+		SetSolidType( SOLID_NOT );
 	else
-		pev->solid = SOLID_BSP;
-	pev->movetype = MOVETYPE_PUSH;
+		SetSolidType( SOLID_BSP );
+	SetMoveType( MOVETYPE_PUSH );
 
-	SetModel( STRING( pev->model ) );
+	SetModel( GetModelName() );
 
-	SetSize( pev->mins, pev->maxs );
+	SetSize( GetRelMin(), GetRelMax() );
 	SetAbsOrigin( GetAbsOrigin() );
 
 	// Cache off placed origin for train controls
 	SetOldOrigin( GetAbsOrigin() );
 
-	m_controlMins = pev->mins;
-	m_controlMaxs = pev->maxs;
+	m_controlMins = GetRelMin();
+	m_controlMaxs = GetRelMax();
 	m_controlMaxs.z += 72;
 	// start trains on the next frame, to make sure their targets have had
 	// a chance to spawn/activate
-	NextThink( pev->ltime + 0.1, false );
+	NextThink( GetLastThink() + 0.1, false );
 	SetThink( &CFuncTrackTrain::Find );
 	Precache();
 }
@@ -98,62 +98,66 @@ void CFuncTrackTrain::Precache( void )
 void CFuncTrackTrain::Blocked( CBaseEntity *pOther )
 {
 	// Blocker is on-ground on the train
-	if( FBitSet( pOther->pev->flags, FL_ONGROUND ) && GET_PRIVATE( pOther->pev->groundentity ) == this )
+	if( pOther->GetFlags().Any( FL_ONGROUND ) && pOther->GetGroundEntity() == this )
 	{
-		float deltaSpeed = fabs( pev->speed );
+		float deltaSpeed = fabs( GetSpeed() );
 		if( deltaSpeed > 50 )
 			deltaSpeed = 50;
-		if( !pOther->pev->velocity.z )
-			pOther->pev->velocity.z += deltaSpeed;
+		if( !pOther->GetAbsVelocity().z )
+		{
+			Vector vecVelocity = pOther->GetAbsVelocity();
+			vecVelocity.z += deltaSpeed;
+			pOther->SetAbsVelocity( vecVelocity );
+		}
 		return;
 	}
 	else
-		pOther->pev->velocity = ( pOther->GetAbsOrigin() - GetAbsOrigin() ).Normalize() * pev->dmg;
+		pOther->SetAbsVelocity( ( pOther->GetAbsOrigin() - GetAbsOrigin() ).Normalize() * GetDamage() );
 
-	ALERT( at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", GetTargetname(), pOther->GetClassname(), pev->dmg );
-	if( pev->dmg <= 0 )
+	ALERT( at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", GetTargetname(), pOther->GetClassname(), GetDamage() );
+	if( GetDamage() <= 0 )
 		return;
 	// we can't hurt this thing, so we're not concerned with it
-	pOther->TakeDamage( this, this, pev->dmg, DMG_CRUSH );
+	pOther->TakeDamage( this, this, GetDamage(), DMG_CRUSH );
 }
 
 void CFuncTrackTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	if( useType != USE_SET )
 	{
-		if( !ShouldToggle( useType, ( pev->speed != 0 ) ) )
+		if( !ShouldToggle( useType, ( GetSpeed() != 0 ) ) )
 			return;
 
-		if( pev->speed == 0 )
+		if( GetSpeed() == 0 )
 		{
-			pev->speed = m_speed * m_dir;
+			SetSpeed( m_speed * m_dir );
 
 			Next();
 		}
 		else
 		{
-			pev->speed = 0;
-			pev->velocity = g_vecZero;
-			pev->avelocity = g_vecZero;
+			SetSpeed( 0 );
+			SetAbsVelocity( g_vecZero );
+			SetAngularVelocity( g_vecZero );
 			StopSound();
 			SetThink( NULL );
 		}
 	}
 	else
 	{
-		float delta = ( ( int ) ( pev->speed * 4 ) / ( int ) m_speed )*0.25 + 0.25 * value;
+		float delta = ( ( int ) ( GetSpeed() * 4 ) / ( int ) m_speed )*0.25 + 0.25 * value;
 		if( delta > 1 )
 			delta = 1;
 		else if( delta < -1 )
 			delta = -1;
-		if( pev->spawnflags & SF_TRACKTRAIN_FORWARDONLY )
+		if( GetSpawnFlags().Any( SF_TRACKTRAIN_FORWARDONLY ) )
 		{
 			if( delta < 0 )
 				delta = 0;
 		}
-		pev->speed = m_speed * delta;
+		SetSpeed( m_speed * delta );
 		Next();
-		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", GetTargetname(), pev->speed );
+		ALERT( at_aiconsole, "TRAIN(%s), speed to %.2f\n", GetTargetname(), GetSpeed() );
 	}
 }
 
@@ -198,7 +202,7 @@ void CFuncTrackTrain::Next( void )
 {
 	float time = 0.5;
 
-	if( !pev->speed )
+	if( !GetSpeed() )
 	{
 		ALERT( at_aiconsole, "TRAIN(%s): Speed is 0\n", GetTargetname() );
 		StopSound();
@@ -219,10 +223,10 @@ void CFuncTrackTrain::Next( void )
 	Vector nextPos = GetAbsOrigin();
 
 	nextPos.z -= m_height;
-	CPathTrack *pnext = m_ppath->LookAhead( nextPos, pev->speed * 0.1, true );
+	CPathTrack *pnext = m_ppath->LookAhead( nextPos, GetSpeed() * 0.1, true );
 	nextPos.z += m_height;
 
-	pev->velocity = ( nextPos - GetAbsOrigin() ) * 10;
+	SetAbsVelocity( ( nextPos - GetAbsOrigin() ) * 10 );
 	Vector nextFront = GetAbsOrigin();
 
 	nextFront.z -= m_height;
@@ -239,77 +243,82 @@ void CFuncTrackTrain::Next( void )
 
 	// !!!  All of this crap has to be done to make the angles not wrap around, revisit this.
 	FixupAngles( angles );
-	FixupAngles( pev->angles );
+	Vector vecAngles = GetAbsAngles();
+	FixupAngles( vecAngles );
+	SetAbsAngles( vecAngles );
 
 	if( !pnext || ( delta.x == 0 && delta.y == 0 ) )
-		angles = pev->angles;
+		angles = GetAbsAngles();
 
 	float vy, vx;
-	if( !( pev->spawnflags & SF_TRACKTRAIN_NOPITCH ) )
-		vx = UTIL_AngleDistance( angles.x, pev->angles.x );
+	if( !GetSpawnFlags().Any( SF_TRACKTRAIN_NOPITCH ) )
+		vx = UTIL_AngleDistance( angles.x, GetAbsAngles().x );
 	else
 		vx = 0;
-	vy = UTIL_AngleDistance( angles.y, pev->angles.y );
+	vy = UTIL_AngleDistance( angles.y, GetAbsAngles().y );
 
-	pev->avelocity.y = vy * 10;
-	pev->avelocity.x = vx * 10;
+	Vector vecAVelocity = GetAngularVelocity();
+	vecAVelocity.y = vy * 10;
+	vecAVelocity.x = vx * 10;
 
 	if( m_flBank != 0 )
 	{
-		if( pev->avelocity.y < -5 )
-			pev->avelocity.z = UTIL_AngleDistance( UTIL_ApproachAngle( -m_flBank, pev->angles.z, m_flBank * 2 ), pev->angles.z );
-		else if( pev->avelocity.y > 5 )
-			pev->avelocity.z = UTIL_AngleDistance( UTIL_ApproachAngle( m_flBank, pev->angles.z, m_flBank * 2 ), pev->angles.z );
+		if( vecAVelocity.y < -5 )
+			vecAVelocity.z = UTIL_AngleDistance( UTIL_ApproachAngle( -m_flBank, GetAbsAngles().z, m_flBank * 2 ), GetAbsAngles().z );
+		else if( vecAVelocity.y > 5 )
+			vecAVelocity.z = UTIL_AngleDistance( UTIL_ApproachAngle( m_flBank, GetAbsAngles().z, m_flBank * 2 ), GetAbsAngles().z );
 		else
-			pev->avelocity.z = UTIL_AngleDistance( UTIL_ApproachAngle( 0, pev->angles.z, m_flBank * 4 ), pev->angles.z ) * 4;
+			vecAVelocity.z = UTIL_AngleDistance( UTIL_ApproachAngle( 0, GetAbsAngles().z, m_flBank * 4 ), GetAbsAngles().z ) * 4;
 	}
+
+	SetAngularVelocity( vecAVelocity );
 
 	if( pnext )
 	{
 		if( pnext != m_ppath )
 		{
 			CPathTrack *pFire;
-			if( pev->speed >= 0 )
+			if( GetSpeed() >= 0 )
 				pFire = pnext;
 			else
 				pFire = m_ppath;
 
 			m_ppath = pnext;
 			// Fire the pass target if there is one
-			if( pFire->pev->message )
+			if( pFire->HasMessage() )
 			{
-				FireTargets( STRING( pFire->pev->message ), this, this, USE_TOGGLE, 0 );
-				if( FBitSet( pFire->pev->spawnflags, SF_PATH_FIREONCE ) )
-					pFire->pev->message = 0;
+				FireTargets( pFire->GetMessage(), this, this, USE_TOGGLE, 0 );
+				if( pFire->GetSpawnFlags().Any( SF_PATH_FIREONCE ) )
+					pFire->ClearMessage();
 			}
 
-			if( pFire->pev->spawnflags & SF_PATH_DISABLE_TRAIN )
-				pev->spawnflags |= SF_TRACKTRAIN_NOCONTROL;
+			if( pFire->GetSpawnFlags().Any( SF_PATH_DISABLE_TRAIN ) )
+				GetSpawnFlags() |= SF_TRACKTRAIN_NOCONTROL;
 
 			// Don't override speed if under user control
-			if( pev->spawnflags & SF_TRACKTRAIN_NOCONTROL )
+			if( GetSpawnFlags().Any( SF_TRACKTRAIN_NOCONTROL ) )
 			{
-				if( pFire->pev->speed != 0 )
+				if( pFire->GetSpeed() != 0 )
 				{// don't copy speed from target if it is 0 (uninitialized)
-					pev->speed = pFire->pev->speed;
-					ALERT( at_aiconsole, "TrackTrain %s speed to %4.2f\n", GetTargetname(), pev->speed );
+					SetSpeed( pFire->GetSpeed() );
+					ALERT( at_aiconsole, "TrackTrain %s speed to %4.2f\n", GetTargetname(), GetSpeed() );
 				}
 			}
 
 		}
 		SetThink( &CFuncTrackTrain::Next );
-		NextThink( pev->ltime + time, true );
+		NextThink( GetLastThink() + time, true );
 	}
 	else	// end of path, stop
 	{
 		StopSound();
-		pev->velocity = ( nextPos - GetAbsOrigin() );
-		pev->avelocity = g_vecZero;
-		float distance = pev->velocity.Length();
-		m_oldSpeed = pev->speed;
+		SetAbsVelocity( nextPos - GetAbsOrigin() );
+		SetAngularVelocity( g_vecZero );
+		float distance = GetAbsVelocity().Length();
+		m_oldSpeed = GetSpeed();
 
 
-		pev->speed = 0;
+		SetSpeed( 0 );
 
 		// Move to the dead end
 
@@ -318,9 +327,9 @@ void CFuncTrackTrain::Next( void )
 		{
 			// no, how long to get there?
 			time = distance / m_oldSpeed;
-			pev->velocity = pev->velocity * ( m_oldSpeed / distance );
+			SetAbsVelocity( GetAbsVelocity() * ( m_oldSpeed / distance ) );
 			SetThink( &CFuncTrackTrain::DeadEnd );
-			NextThink( pev->ltime + time, false );
+			NextThink( GetLastThink() + time, false );
 		}
 		else
 		{
@@ -350,16 +359,18 @@ void CFuncTrackTrain::Find( void )
 	m_ppath->LookAhead( look, m_length, false );
 	look.z += m_height;
 
-	pev->angles = UTIL_VecToAngles( look - nextPos );
+	Vector vecAngles = UTIL_VecToAngles( look - nextPos );
 	// The train actually points west
-	pev->angles.y += 180;
+	vecAngles.y += 180;
 
-	if( pev->spawnflags & SF_TRACKTRAIN_NOPITCH )
-		pev->angles.x = 0;
+	if( GetSpawnFlags().Any( SF_TRACKTRAIN_NOPITCH ) )
+		vecAngles.x = 0;
+	SetAbsAngles( vecAngles );
+
 	SetAbsOrigin( nextPos );
-	NextThink( pev->ltime + 0.1, false );
+	NextThink( GetLastThink() + 0.1, false );
 	SetThink( &CFuncTrackTrain::Next );
-	pev->speed = m_startSpeed;
+	SetSpeed( m_startSpeed );
 
 	UpdateSound();
 }
@@ -375,7 +386,7 @@ void CFuncTrackTrain::NearestPath( void )
 	while( ( pTrack = UTIL_FindEntityInSphere( pTrack, GetAbsOrigin(), 1024 ) ) != NULL )
 	{
 		// filter out non-tracks
-		if( !( pTrack->pev->flags & ( FL_CLIENT | FL_MONSTER ) ) && pTrack->ClassnameIs( "path_track" ) )
+		if( !pTrack->GetFlags().Any( FL_CLIENT | FL_MONSTER ) && pTrack->ClassnameIs( "path_track" ) )
 		{
 			dist = ( GetAbsOrigin() - pTrack->GetAbsOrigin() ).Length();
 			if( dist < closest )
@@ -404,9 +415,9 @@ void CFuncTrackTrain::NearestPath( void )
 
 	m_ppath = ( CPathTrack * ) pNearest;
 
-	if( pev->speed != 0 )
+	if( GetSpeed() != 0 )
 	{
-		NextThink( pev->ltime + 0.1, false );
+		NextThink( GetLastThink() + 0.1, false );
 		SetThink( &CFuncTrackTrain::Next );
 	}
 }
@@ -446,8 +457,8 @@ void CFuncTrackTrain::DeadEnd( void )
 		}
 	}
 
-	pev->velocity = g_vecZero;
-	pev->avelocity = g_vecZero;
+	SetAbsVelocity( g_vecZero );
+	SetAngularVelocity( g_vecZero );
 	if( pTrack )
 	{
 		ALERT( at_aiconsole, "at %s\n", pTrack->GetTargetname() );
@@ -461,11 +472,11 @@ void CFuncTrackTrain::DeadEnd( void )
 void CFuncTrackTrain::NextThink( float thinkTime, const bool alwaysThink )
 {
 	if( alwaysThink )
-		pev->flags |= FL_ALWAYSTHINK;
+		GetFlags() |= FL_ALWAYSTHINK;
 	else
-		pev->flags &= ~FL_ALWAYSTHINK;
+		GetFlags().ClearFlags( FL_ALWAYSTHINK );
 
-	pev->nextthink = thinkTime;
+	SetNextThink( thinkTime );
 }
 
 void CFuncTrackTrain::SetTrack( CPathTrack *track )
@@ -477,19 +488,19 @@ void CFuncTrackTrain::SetControls( CBaseEntity* pControls )
 {
 	Vector offset = pControls->GetAbsOrigin() - GetOldOrigin();
 
-	m_controlMins = pControls->pev->mins + offset;
-	m_controlMaxs = pControls->pev->maxs + offset;
+	m_controlMins = pControls->GetRelMin() + offset;
+	m_controlMaxs = pControls->GetRelMax() + offset;
 }
 
 bool CFuncTrackTrain::OnControls( const CBaseEntity* const pTest ) const
 {
 	const Vector offset = pTest->GetAbsOrigin() - GetAbsOrigin();
 
-	if( pev->spawnflags & SF_TRACKTRAIN_NOCONTROL )
+	if( GetSpawnFlags().Any( SF_TRACKTRAIN_NOCONTROL ) )
 		return false;
 
 	// Transform offset into local coordinates
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 	Vector local;
 	local.x = DotProduct( offset, gpGlobals->v_forward );
 	local.y = -DotProduct( offset, gpGlobals->v_right );
@@ -535,7 +546,7 @@ void CFuncTrackTrain::UpdateSound( void )
 	if( !pev->noise )
 		return;
 
-	flpitch = TRAIN_STARTPITCH + ( fabs( pev->speed ) * ( TRAIN_MAXPITCH - TRAIN_STARTPITCH ) / TRAIN_MAXSPEED );
+	flpitch = TRAIN_STARTPITCH + ( fabs( GetSpeed() ) * ( TRAIN_MAXPITCH - TRAIN_STARTPITCH ) / TRAIN_MAXSPEED );
 
 	if( !m_soundPlaying )
 	{
@@ -576,6 +587,6 @@ CFuncTrackTrain* CFuncTrackTrain::Instance( CBaseEntity* pEntity )
 
 void CFuncTrackTrain::OverrideReset( void )
 {
-	NextThink( pev->ltime + 0.1, false );
+	NextThink( GetLastThink() + 0.1, false );
 	SetThink( &CFuncTrackTrain::NearestPath );
 }

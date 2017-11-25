@@ -301,12 +301,12 @@ void ImagePanel::ApplySettings(KeyValues *inResourceData)
 	m_pszDrawColorName = NULL;		// HPE addition
 
 	//Center image isn't implemented in Source 2013. - Solokiller
-	m_bCenterImage = inResourceData->GetInt( "centerImage", 0 );
-	m_bScaleImage = inResourceData->GetInt("scaleImage", 0);
+	m_bCenterImage = inResourceData->GetInt( "centerImage", 0 ) != 0;
+	m_bScaleImage = inResourceData->GetInt("scaleImage", 0) != 0;
 	m_fScaleAmount = inResourceData->GetFloat( "scaleAmount", 0.0f );
-	m_bTileImage = inResourceData->GetInt( "tileImage", 0 );
-	m_bTileHorizontally = inResourceData->GetInt( "tileHorizontally", m_bTileImage );
-	m_bTileVertically = inResourceData->GetInt( "tileVertically", m_bTileImage );
+	m_bTileImage = inResourceData->GetInt( "tileImage", 0 ) != 0;
+	m_bTileHorizontally = inResourceData->GetInt( "tileHorizontally", m_bTileImage ) != 0;
+	m_bTileVertically = inResourceData->GetInt( "tileVertically", m_bTileImage ) != 0;
 	const char *imageName = inResourceData->GetString("image", "");
 	if (*imageName)
 	{

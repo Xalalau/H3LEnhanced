@@ -34,23 +34,23 @@ void CTestHull::Spawn()
 	SetModel( "models/player.mdl" );
 	SetSize( VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_STEP;
-	pev->effects = 0;
-	pev->health = 50;
-	pev->yaw_speed = 8;
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_STEP );
+	GetEffects().ClearAll();
+	SetHealth( 50 );
+	SetYawSpeed( 8 );
 
 	if( WorldGraph.m_fGraphPresent )
 	{
 		// graph loaded from disk, so we don't need the test hull
 		SetThink( &CTestHull::SUB_Remove );
-		pev->nextthink = gpGlobals->time;
+		SetNextThink( gpGlobals->time );
 	}
 
 	// Make this invisible
 	// UNDONE: Shouldn't we just use EF_NODRAW?  This doesn't need to go to the client.
-	pev->rendermode = kRenderTransTexture;
-	pev->renderamt = 0;
+	SetRenderMode( kRenderTransTexture );
+	SetRenderAmount( 0 );
 }
 
 extern bool gTouchDisabled;
@@ -73,7 +73,6 @@ void CTestHull::CallBuildNodeGraph()
 //=========================================================
 void CTestHull::BuildNodeGraph()
 {
-	TraceResult	tr;
 	FILE	*file;
 
 	char	szNrpFilename[ MAX_PATH ];// text node report filename
@@ -90,10 +89,6 @@ void CTestHull::BuildNodeGraph()
 
 	int		iBadNode;// this is the node that caused graph generation to fail
 
-	int		cMaxInitialLinks = 0;
-	int		cMaxValidLinks = 0;
-
-	int		iPoolIndex = 0;
 	int		cPoolLinks;// number of links in the pool.
 
 	Vector	vecDirToCheckNode;
@@ -125,7 +120,7 @@ void CTestHull::BuildNodeGraph()
 	}
 
 	SetThink( &CTestHull::SUB_Remove );// no matter what happens, the hull gets rid of itself.
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 
 	ALERT( at_console, "**Building node graph...\n" );
 
@@ -242,8 +237,8 @@ void CTestHull::BuildNodeGraph()
 		if( g_pDeveloper->value != 0 )
 		{
 			SetThink( &CTestHull::ShowBadNode );// send the hull off to show the offending node.
-												//pev->solid = SOLID_NOT;
-			pev->origin = WorldGraph.m_pNodes[ iBadNode ].m_vecOrigin;
+												//SetSolidType( SOLID_NOT );
+			SetAbsOrigin( WorldGraph.m_pNodes[ iBadNode ].m_vecOrigin );
 		}
 
 		if( pTempPool )
@@ -349,7 +344,9 @@ void CTestHull::BuildNodeGraph()
 					bool bWalkFailed = false;
 
 					// in this loop we take tiny steps from the current node to the nodes that it links to, one at a time.
-					// pev->angles.y = flYaw;
+					// Vector vecAngles = GetAbsAngles();
+					// vecAngles.y = flYaw;
+					// SetAbsAngles( vecAngles );
 					for( step = 0; step < flDist && !bWalkFailed; step += HULL_STEP_SIZE )
 					{
 						float stepSize = HULL_STEP_SIZE;
@@ -560,10 +557,12 @@ void CTestHull::BuildNodeGraph()
 //=========================================================
 void CTestHull::ShowBadNode()
 {
-	pev->movetype = MOVETYPE_FLY;
-	pev->angles.y = pev->angles.y + 4;
+	SetMoveType( MOVETYPE_FLY );
+	Vector vecAngles = GetAbsAngles();
+	vecAngles.y += 4;
+	SetAbsAngles( vecAngles );
 
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 
 	UTIL_ParticleEffect( GetAbsOrigin(), g_vecZero, 255, 25 );
 	UTIL_ParticleEffect( GetAbsOrigin() + gpGlobals->v_forward * 64, g_vecZero, 255, 25 );
@@ -571,7 +570,7 @@ void CTestHull::ShowBadNode()
 	UTIL_ParticleEffect( GetAbsOrigin() + gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 	UTIL_ParticleEffect( GetAbsOrigin() - gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 //=========================================================

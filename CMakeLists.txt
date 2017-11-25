@@ -182,6 +182,13 @@ elseif( UNIX )
 	endif()
 endif()
 
+#Highest warning level and warnings as errors
+if( MSVC )
+	set( WARNING_LEVEL_STRICTEST "/W4 /WX " )
+else()
+	set( WARNING_LEVEL_STRICTEST "-Wall -Werror " )
+endif()
+
 #Shared directories
 #Include paths for external dependencies. Should always come after all project paths.
 set( SHARED_EXTERNAL_INCLUDE_PATHS
@@ -356,16 +363,21 @@ else()
 endif()
 
 #Link with client dependencies
+if( USE_ANGELSCRIPT )
+	target_link_libraries( client 
+		optimized ${ANGELSCRIPTUTILS}
+		debug ${ANGELSCRIPTUTILSD}
+		optimized ${ANGELSCRIPTLIB}
+		debug ${ANGELSCRIPTLIBD}
+	)
+endif()
+
 target_link_libraries( client 
-	"${SHARED_DEPENDENCIES}"
-	optimized "${ANGELSCRIPTUTILS}"
-	optimized "${ANGELSCRIPTLIB}"
-	debug "${ANGELSCRIPTUTILSD}"
-	debug "${ANGELSCRIPTLIBD}"
 	vgui
-	"${CLIENT_PLAT_LIBS}"
-	"${SDL2}"
-	"${VGUI2_LIBS}"
+	${VGUI2_LIBS}
+	${CLIENT_PLAT_LIBS}
+	${SDL2}
+	${SHARED_DEPENDENCIES}
 	Threads::Threads
 	${UNIX_FS_LIB}
 )
@@ -388,7 +400,7 @@ if( NOT MSVC AND NOT APPLE )
 endif()
 
 set_target_properties( client PROPERTIES
-	COMPILE_FLAGS "${LINUX_32BIT_FLAG}"
+	COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}"
 	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${CLIENT_LINK_FLAGS} ${LINUX_32BIT_FLAG}"
 )
 
@@ -468,16 +480,15 @@ if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
 	find_library( ASSQLD AngelscriptSQLd PATHS external/ASSQL/lib/ )
 
 	if( WIN32 )
-		find_library( SQLITE3 "sqlite3${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/SQLite/lib )
-		find_library( MARIADB "mariadbclient${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/MariaDB/lib )
-		find_library( MARIADBD "mariadbclientd${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/MariaDB/lib )
-		set( PTHREAD "" )
+		#Never use the default install for these (we need our builds with PDBs).
+		find_library( SQLITE3 "sqlite3${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/SQLite/lib NO_DEFAULT_PATH )
+		find_library( MARIADB "mariadbclient${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/MariaDB/lib/release NO_DEFAULT_PATH )
+		find_library( MARIADBD "mariadbclient${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/MariaDB/lib/debug NO_DEFAULT_PATH )
 	else()
 		#Never use the default install for these (could try to use 64 bit versions, which don't work for 32 bit builds).
 		find_library( SQLITE3 "${CMAKE_SHARED_LIBRARY_PREFIX}sqlite3${CMAKE_SHARED_LIBRARY_SUFFIX}" PATHS "${GAME_BASE_PATH}" NO_DEFAULT_PATH )
 		find_library( MARIADB "${CMAKE_SHARED_LIBRARY_PREFIX}mariadb.so.2" PATHS "${GAME_BASE_PATH}" NO_DEFAULT_PATH )
 		set( MARIADBD ${MARIADB} )
-		set( PTHREAD "pthread" )
 	endif()
 else()
 	set( ASSQL )
@@ -485,31 +496,45 @@ else()
 	set( SQLITE3 )
 	set( MARIADB )
 	set( MARIADBD )
-	set( PTHREAD )
 endif()
 
 #Set the list of platform specific libraries
 if( WIN32 )
-	set( SERVER_PLAT_LIBS "" )
+	set( SERVER_PLAT_LIBS Ws2_32 Shlwapi )
 else()
-	set( SERVER_PLAT_LIBS "dl" )
+	set( SERVER_PLAT_LIBS dl )
 endif()
 
 #Link with server dependencies
+if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
+	target_link_libraries( hl 
+		optimized ${ASSQL}
+		debug ${ASSQLD}
+	)
+endif()
+
+if( USE_ANGELSCRIPT )
+	target_link_libraries( hl 
+		optimized ${ANGELSCRIPTUTILS}
+		debug ${ANGELSCRIPTUTILSD}
+		optimized ${ANGELSCRIPTLIB}
+		debug ${ANGELSCRIPTLIBD}
+	)
+endif()
+
+if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
+	target_link_libraries( hl 
+		${SQLITE3}
+		optimized ${MARIADB}
+		debug ${MARIADBD}
+	)
+endif()
+
 target_link_libraries( hl 
-	"${SHARED_DEPENDENCIES}"
-	optimized "${ASSQL}"
-	optimized "${ANGELSCRIPTUTILS}"
-	optimized "${ANGELSCRIPTLIB}"
-	debug "${ASSQLD}"
-	debug "${ANGELSCRIPTUTILSD}"
-	debug "${ANGELSCRIPTLIBD}"
-	"${SQLITE3}"
-	optimized "${MARIADB}"
-	debug "${MARIADBD}"
-	"${DELAYIMP}"
+	${DELAYIMP}
 	Threads::Threads
 	${SERVER_PLAT_LIBS}
+	${SHARED_DEPENDENCIES}
 	${UNIX_FS_LIB}
 )
 
@@ -529,10 +554,13 @@ if( MSVC )
 	else()
 		set( SQL_DLL_DELAYLOAD )
 	endif()
+	
+	#Copy the def file so it's local to the binary directory
+	file( COPY ${CMAKE_SOURCE_DIR}/hl.def DESTINATION ${CMAKE_BINARY_DIR} )
 
-	#Add the module definition file. Needed for GiveFnptrsToDll function export. Requires the project dir to be near the file.
+	#Add the module definition file. Needed for GiveFnptrsToDll function export.
 	#Add delay loaded libraries.
-	set( SERVER_LINK_FLAGS "/DEF:../hl.def ${SQL_DLL_DELAYLOAD} " )
+	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD} " )
 else()
 	if( NOT APPLE )
 		#Generate a map file that provides information about the linking stage.
@@ -544,7 +572,7 @@ endif()
 
 #SQL libraries are delay loaded to keep them in the game directory.
 set_target_properties( hl PROPERTIES
-	COMPILE_FLAGS "${LINUX_32BIT_FLAG}" 
+	COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}" 
 	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS} ${LINUX_32BIT_FLAG}"
 )
 

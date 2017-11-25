@@ -63,7 +63,7 @@ public:
 	// breakables use an overridden takedamage
 	virtual void OnTakeDamage( const CTakeDamageInfo& info ) override;
 	// To spark when hit
-	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult *ptr ) override;
+	void TraceAttack( const CTakeDamageInfo& info, Vector vecDir, TraceResult& tr ) override;
 
 	bool IsBreakable() const;
 	bool SparkWhenHit() const;
@@ -74,8 +74,8 @@ public:
 	virtual int		ObjectCaps() const override { return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ); }
 
 	inline bool		Explodable() const { return ExplosionMagnitude() > 0; }
-	inline int		ExplosionMagnitude() const { return pev->impulse; }
-	inline void		ExplosionSetMagnitude( int magnitude ) { pev->impulse = magnitude; }
+	inline int		ExplosionMagnitude() const { return GetImpulse(); }
+	inline void		ExplosionSetMagnitude( int magnitude ) { SetImpulse( magnitude ); }
 
 	static void MaterialSoundPrecache( Materials precacheMaterial );
 	static void MaterialSoundRandom( CBaseEntity* pEntity, Materials soundMaterial, float volume );

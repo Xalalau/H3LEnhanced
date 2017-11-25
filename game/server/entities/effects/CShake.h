@@ -21,10 +21,10 @@
 #define SF_SHAKE_INAIR		0x0004		// Shake players in air
 
 // Screen shake
-// pev->scale is amplitude
+// GetScale() is amplitude
 // pev->dmg_save is frequency
 // pev->dmg_take is duration
-// pev->dmg is radius
+// GetDamage() is radius
 // radius of 0 means all players
 // NOTE: UTIL_ScreenShake() will only shake players who are on the ground
 class CShake : public CPointEntity
@@ -36,15 +36,15 @@ public:
 	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ) override;
 	void	KeyValue( KeyValueData *pkvd ) override;
 
-	inline	float	Amplitude( void ) { return pev->scale; }
+	inline	float	Amplitude( void ) { return GetScale(); }
 	inline	float	Frequency( void ) { return pev->dmg_save; }
 	inline	float	Duration( void ) { return pev->dmg_take; }
-	inline	float	Radius( void ) { return pev->dmg; }
+	inline	float	Radius( void ) { return GetDamage(); }
 
-	inline	void	SetAmplitude( float amplitude ) { pev->scale = amplitude; }
+	inline	void	SetAmplitude( float amplitude ) { SetScale( amplitude ); }
 	inline	void	SetFrequency( float frequency ) { pev->dmg_save = frequency; }
 	inline	void	SetDuration( float duration ) { pev->dmg_take = duration; }
-	inline	void	SetRadius( float radius ) { pev->dmg = radius; }
+	inline	void	SetRadius( float radius ) { SetDamage( radius ); }
 private:
 };
 

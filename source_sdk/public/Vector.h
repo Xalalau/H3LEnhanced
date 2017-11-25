@@ -54,7 +54,7 @@
 #ifdef VECTOR_PARANOIA
 #define CHECK_VALID( _v)	Assert( (_v).IsValid() )
 #else
-#define CHECK_VALID( _v)	0
+#define CHECK_VALID( _v)	( ( void ) 0 )
 #endif
 
 #ifdef __cplusplus

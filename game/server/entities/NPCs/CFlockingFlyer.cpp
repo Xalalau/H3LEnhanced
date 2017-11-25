@@ -34,8 +34,8 @@ void CFlockingFlyer::Spawn()
 	Precache();
 	SpawnCommonCode();
 
-	pev->frame = 0;
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetFrame( 0 );
+	SetNextThink( gpGlobals->time + 0.1 );
 	SetThink( &CFlockingFlyer::IdleThink );
 }
 
@@ -48,11 +48,11 @@ void CFlockingFlyer::Precache()
 
 void CFlockingFlyer::SpawnCommonCode()
 {
-	pev->deadflag = DEAD_NO;
-	pev->solid = SOLID_SLIDEBOX;
-	pev->movetype = MOVETYPE_FLY;
-	pev->takedamage = DAMAGE_NO;
-	pev->health = 1;
+	SetDeadFlag( DEAD_NO );
+	SetSolidType( SOLID_SLIDEBOX );
+	SetMoveType( MOVETYPE_FLY );
+	SetTakeDamageMode( DAMAGE_NO );
+	SetHealth( 1 );
 
 	m_fPathBlocked = false;// obstacles will be detected
 	m_flFieldOfView = 0.2;
@@ -66,34 +66,36 @@ void CFlockingFlyer::SpawnCommonCode()
 
 void CFlockingFlyer::IdleThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.2;
+	SetNextThink( gpGlobals->time + 0.2 );
 
 	// see if there's a client in the same pvs as the monster
 	if( UTIL_FindClientInPVS( this ) )
 	{
 		SetThink( &CFlockingFlyer::Start );
-		pev->nextthink = gpGlobals->time + 0.1;
+		SetNextThink( gpGlobals->time + 0.1 );
 	}
 }
 
 void CFlockingFlyer::BoidAdvanceFrame()
 {
-	float flapspeed = ( pev->speed - pev->armorvalue ) / AFLOCK_ACCELERATE;
-	pev->armorvalue = pev->armorvalue * .8 + pev->speed * .2;
+	float flapspeed = ( GetSpeed() - GetArmorAmount() ) / AFLOCK_ACCELERATE;
+	SetArmorAmount( GetArmorAmount() * .8 + GetSpeed() * .2 );
 
 	if( flapspeed < 0 ) flapspeed = -flapspeed;
 	if( flapspeed < 0.25 ) flapspeed = 0.25;
 	if( flapspeed > 1.9 ) flapspeed = 1.9;
 
-	pev->framerate = flapspeed;
+	SetFrameRate( flapspeed );
 
+	Vector vecAVelocity = GetAngularVelocity();
 	// lean
-	pev->avelocity.x = -( pev->angles.x + flapspeed * 5 );
+	vecAVelocity.x = -( GetAbsAngles().x + flapspeed * 5 );
 
 	// bank
-	pev->avelocity.z = -( pev->angles.z + pev->avelocity.y );
+	vecAVelocity.z = -( GetAbsAngles().z + vecAVelocity.y );
+	SetAngularVelocity( vecAVelocity );
 
-	// pev->framerate		= flapspeed;
+	// SetFrameRate( flapspeed );
 	StudioFrameAdvance( 0.1 );
 }
 
@@ -128,7 +130,7 @@ void CFlockingFlyer::FormFlock( void )
 	}
 
 	SetThink( &CFlockingFlyer::IdleThink );// now that flock is formed, go to idle and wait for a player to come along.
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 }
 
 //=========================================================
@@ -136,7 +138,7 @@ void CFlockingFlyer::FormFlock( void )
 //=========================================================
 void CFlockingFlyer::Start( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	if( IsLeader() )
 	{
@@ -155,17 +157,17 @@ void CFlockingFlyer::Start( void )
 	vecTakeOff.x = 20 - RANDOM_FLOAT ( 0, 40);
 	vecTakeOff.y = 20 - RANDOM_FLOAT ( 0, 40);
 
-	pev->velocity = vecTakeOff;
+	SetAbsVelocity( vecTakeOff );
 
 
-	pev->speed = pev->velocity.Length();
-	pev->sequence = 0;
+	SetSpeed( GetAbsVelocity().Length() );
+	SetSequence( 0 );
 	*/
 	SetActivity( ACT_FLY );
 	ResetSequenceInfo();
 	BoidAdvanceFrame();
 
-	pev->speed = AFLOCK_FLY_SPEED;// no delay!
+	SetSpeed( AFLOCK_FLY_SPEED );// no delay!
 }
 
 //=========================================================
@@ -176,14 +178,14 @@ void CFlockingFlyer::FlockLeaderThink( void )
 	TraceResult		tr;
 	Vector			vecDist;// used for general measurements
 	Vector			vecDir;// used for general measurements
-	int				cProcessed = 0;// keep track of how many other boids we've processed 
+	/*int				cProcessed = 0;*/// keep track of how many other boids we've processed 
 	float			flLeftSide;
 	float			flRightSide;
 
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 
 	// is the way ahead clear?
 	if( !FPathBlocked() )
@@ -192,15 +194,17 @@ void CFlockingFlyer::FlockLeaderThink( void )
 		if( m_fTurning )
 		{
 			m_fTurning = false;
-			pev->avelocity.y = 0;
+			Vector vecAVelocity = GetAngularVelocity();
+			vecAVelocity.y = 0;
+			SetAngularVelocity( vecAVelocity );
 		}
 
 		m_fPathBlocked = false;
 
-		if( pev->speed <= AFLOCK_FLY_SPEED )
-			pev->speed += 5;
+		if( GetSpeed() <= AFLOCK_FLY_SPEED )
+			SetSpeed( GetSpeed() + 5 );
 
-		pev->velocity = gpGlobals->v_forward * pev->speed;
+		SetAbsVelocity( gpGlobals->v_forward * GetSpeed() );
 
 		BoidAdvanceFrame();
 
@@ -221,16 +225,17 @@ void CFlockingFlyer::FlockLeaderThink( void )
 		vecDist = ( tr.vecEndPos - GetAbsOrigin() );
 		flLeftSide = vecDist.Length();
 
+		Vector vecAVelocity = GetAngularVelocity();
 		// turn right if more clearance on right side
 		if( flRightSide > flLeftSide )
 		{
-			pev->avelocity.y = -AFLOCK_TURN_RATE;
+			vecAVelocity.y = -AFLOCK_TURN_RATE;
 			m_fTurning = true;
 		}
 		// default to left turn :)
 		else if( flLeftSide > flRightSide )
 		{
-			pev->avelocity.y = AFLOCK_TURN_RATE;
+			vecAVelocity.y = AFLOCK_TURN_RATE;
 			m_fTurning = true;
 		}
 		else
@@ -240,28 +245,35 @@ void CFlockingFlyer::FlockLeaderThink( void )
 
 			if( RANDOM_LONG( 0, 1 ) == 0 )
 			{
-				pev->avelocity.y = AFLOCK_TURN_RATE;
+				vecAVelocity.y = AFLOCK_TURN_RATE;
 			}
 			else
 			{
-				pev->avelocity.y = -AFLOCK_TURN_RATE;
+				vecAVelocity.y = -AFLOCK_TURN_RATE;
 			}
 		}
+		SetAngularVelocity( vecAVelocity );
 	}
 	SpreadFlock();
 
-	pev->velocity = gpGlobals->v_forward * pev->speed;
+	SetAbsVelocity( gpGlobals->v_forward * GetSpeed() );
 
 	// check and make sure we aren't about to plow into the ground, don't let it happen
 	UTIL_TraceLine( GetAbsOrigin(), GetAbsOrigin() - gpGlobals->v_up * 16, ignore_monsters, ENT( pev ), &tr );
-	if( tr.flFraction != 1.0 && pev->velocity.z < 0 )
-		pev->velocity.z = 0;
+	if( tr.flFraction != 1.0 && GetAbsVelocity().z < 0 )
+	{
+		Vector vecVelocity = GetAbsVelocity();
+		vecVelocity.z = 0;
+		SetAbsVelocity( vecVelocity );
+	}
 
 	// maybe it did, though.
-	if( FBitSet( pev->flags, FL_ONGROUND ) )
+	if( GetFlags().Any( FL_ONGROUND ) )
 	{
 		SetAbsOrigin( GetAbsOrigin() + Vector( 0, 0, 1 ) );
-		pev->velocity.z = 0;
+		Vector vecVelocity = GetAbsVelocity();
+		vecVelocity.z = 0;
+		SetAbsVelocity( vecVelocity );
 	}
 
 	if( m_flFlockNextSoundTime < gpGlobals->time )
@@ -286,7 +298,7 @@ void CFlockingFlyer::FlockFollowerThink( void )
 	Vector			vecDirToLeader;
 	float			flDistToLeader;
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	if( IsLeader() || !InSquad() )
 	{
@@ -299,7 +311,7 @@ void CFlockingFlyer::FlockFollowerThink( void )
 	flDistToLeader = vecDirToLeader.Length();
 
 	// match heading with leader
-	pev->angles = m_pSquadLeader->pev->angles;
+	SetAbsAngles( m_pSquadLeader->GetAbsAngles() );
 
 	//
 	// We can see the leader, so try to catch up to it
@@ -309,31 +321,31 @@ void CFlockingFlyer::FlockFollowerThink( void )
 		// if we're too far away, speed up
 		if( flDistToLeader > AFLOCK_TOO_FAR )
 		{
-			m_flGoalSpeed = m_pSquadLeader->pev->velocity.Length() * 1.5;
+			m_flGoalSpeed = m_pSquadLeader->GetAbsVelocity().Length() * 1.5;
 		}
 
 		// if we're too close, slow down
 		else if( flDistToLeader < AFLOCK_TOO_CLOSE )
 		{
-			m_flGoalSpeed = m_pSquadLeader->pev->velocity.Length() * 0.5;
+			m_flGoalSpeed = m_pSquadLeader->GetAbsVelocity().Length() * 0.5;
 		}
 	}
 	else
 	{
 		// wait up! the leader isn't out in front, so we slow down to let him pass
-		m_flGoalSpeed = m_pSquadLeader->pev->velocity.Length() * 0.5;
+		m_flGoalSpeed = m_pSquadLeader->GetAbsVelocity().Length() * 0.5;
 	}
 
 	SpreadFlock2();
 
-	pev->speed = pev->velocity.Length();
-	pev->velocity = pev->velocity.Normalize();
+	SetSpeed( GetAbsVelocity().Length() );
+	SetAbsVelocity( GetAbsVelocity().Normalize() );
 
 	// if we are too far from leader, average a vector towards it into our current velocity
 	if( flDistToLeader > AFLOCK_TOO_FAR )
 	{
 		vecDirToLeader = vecDirToLeader.Normalize();
-		pev->velocity = ( pev->velocity + vecDirToLeader ) * 0.5;
+		SetAbsVelocity( ( GetAbsVelocity() + vecDirToLeader ) * 0.5 );
 	}
 
 	// clamp speeds and handle acceleration
@@ -342,16 +354,16 @@ void CFlockingFlyer::FlockFollowerThink( void )
 		m_flGoalSpeed = AFLOCK_FLY_SPEED * 2;
 	}
 
-	if( pev->speed < m_flGoalSpeed )
+	if( GetSpeed() < m_flGoalSpeed )
 	{
-		pev->speed += AFLOCK_ACCELERATE;
+		SetSpeed( GetSpeed() + AFLOCK_ACCELERATE );
 	}
-	else if( pev->speed > m_flGoalSpeed )
+	else if( GetSpeed() > m_flGoalSpeed )
 	{
-		pev->speed -= AFLOCK_ACCELERATE;
+		SetSpeed( GetSpeed() - AFLOCK_ACCELERATE );
 	}
 
-	pev->velocity = pev->velocity * pev->speed;
+	SetAbsVelocity( GetAbsVelocity() * GetSpeed() );
 
 	BoidAdvanceFrame();
 }
@@ -364,7 +376,7 @@ if ( FBoidPathBlocked (pev) )
 // velocity
 if ( m_fCourseAdjust )
 {
-pev->velocity = m_vecAdjustedVelocity * pev->speed;
+SetAbsVelocity( m_vecAdjustedVelocity * GetSpeed() );
 return;
 }
 else // set course adjust flag and calculate adjusted velocity
@@ -372,10 +384,10 @@ else // set course adjust flag and calculate adjusted velocity
 m_fCourseAdjust = true;
 
 // use VELOCITY, not angles, not all boids point the direction they are flying
-//vecDir = UTIL_VecToAngles( pev->velocity );
+//vecDir = UTIL_VecToAngles( GetAbsVelocity() );
 //UTIL_MakeVectors ( vecDir );
 
-UTIL_MakeVectors ( pev->angles );
+UTIL_MakeVectors ( GetAbsAngles() );
 
 // measure clearance on left and right to pick the best dir to turn
 UTIL_TraceLine(GetAbsOrigin(), GetAbsOrigin() + gpGlobals->v_right * AFLOCK_CHECK_DIST, ignore_monsters, ENT(pev), &tr);
@@ -406,16 +418,16 @@ m_fCourseAdjust = false;
 
 void CFlockingFlyer::FallHack( void )
 {
-	if( pev->flags & FL_ONGROUND )
+	if( GetFlags().Any( FL_ONGROUND ) )
 	{
 		if( !GetGroundEntity()->ClassnameIs( "worldspawn" ) )
 		{
-			pev->flags &= ~FL_ONGROUND;
-			pev->nextthink = gpGlobals->time + 0.1;
+			GetFlags().ClearFlags( FL_ONGROUND );
+			SetNextThink( gpGlobals->time + 0.1 );
 		}
 		else
 		{
-			pev->velocity = g_vecZero;
+			SetAbsVelocity( g_vecZero );
 			SetThink( NULL );
 		}
 	}
@@ -462,10 +474,12 @@ void CFlockingFlyer::SpreadFlock()
 
 			// store the magnitude of the other boid's velocity, and normalize it so we
 			// can average in a course that points away from the leader.
-			flSpeed = pList->pev->velocity.Length();
-			pList->pev->velocity = pList->pev->velocity.Normalize();
-			pList->pev->velocity = ( pList->pev->velocity + vecDir ) * 0.5;
-			pList->pev->velocity = pList->pev->velocity * flSpeed;
+			Vector vecVelocity = pList->GetAbsVelocity();
+			flSpeed = vecVelocity.Length();
+			vecVelocity = vecVelocity.Normalize();
+			vecVelocity = ( vecVelocity + vecDir ) * 0.5;
+			vecVelocity = vecVelocity * flSpeed;
+			pList->SetAbsVelocity( vecVelocity );
 		}
 
 		pList = pList->m_pSquadNext;
@@ -489,7 +503,7 @@ void CFlockingFlyer::SpreadFlock2()
 			vecDir = ( GetAbsOrigin() - pList->GetAbsOrigin() );
 			vecDir = vecDir.Normalize();
 
-			pev->velocity = ( pev->velocity + vecDir );
+			SetAbsVelocity( GetAbsVelocity() + vecDir );
 		}
 
 		pList = pList->m_pSquadNext;
@@ -513,16 +527,16 @@ void CFlockingFlyer::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 		m_pSquadLeader->SquadRemove( this );
 	}
 
-	pev->deadflag = DEAD_DEAD;
+	SetDeadFlag( DEAD_DEAD );
 
-	pev->framerate = 0;
-	pev->effects = EF_NOINTERP;
+	SetFrameRate( 0 );
+	GetEffects() = EF_NOINTERP;
 
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
-	pev->movetype = MOVETYPE_TOSS;
+	SetMoveType( MOVETYPE_TOSS );
 
 	SetThink( &CFlockingFlyer::FallHack );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 }
 
 //=========================================================
@@ -543,7 +557,7 @@ bool CFlockingFlyer::FPathBlocked()
 
 	// use VELOCITY, not angles, not all boids point the direction they are flying
 	//vecDir = UTIL_VecToAngles( pevBoid->velocity );
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 
 	fBlocked = false;// assume the way ahead is clear
 

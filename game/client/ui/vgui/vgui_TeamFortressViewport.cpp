@@ -1169,7 +1169,7 @@ void TeamFortressViewport::UpdatePlayerMenu(int menuIndex)
 		SpectButton *pButton = new SpectButton(1 , g_PlayerInfoList[pEnt->index].name ,
 							 XRES( ( 15 + OPTIONS_BUTTON_X + 15 ) + 31 ),PANEL_HEIGHT+(i-1)*CMENU_SIZE_X, flLabelSize, BUTTON_SIZE_Y /2 );
 
-		pButton->setBoundKey( (char)255  );
+		pButton->setBoundKey( CommandButton::NO_BOUND_KEY );
 		pButton->setContentAlignment( vgui::Label::a_center );
 		m_pCommandMenus[menuIndex]->AddButton( pButton );
 		pButton->setParentMenu( m_pCommandMenus[menuIndex] );
@@ -1480,10 +1480,10 @@ CMenuPanel* TeamFortressViewport::CreateTextWindow( int iTextToShow )
 		Localize().LocaliseTextString( "#Spec_Help_Title", cTitle, MAX_TITLE_LENGTH );
 		cTitle[MAX_TITLE_LENGTH-1] = 0;
 		
-		char* pfile = Localize().BufferedLocaliseTextString( "#Spec_Help_Text" );
-		if ( pfile )
+		char* pszLocalized = Localize().BufferedLocaliseTextString( "#Spec_Help_Text" );
+		if ( pszLocalized )
 		{
-			cText = pfile;
+			cText = pszLocalized;
 		}
 	}
 

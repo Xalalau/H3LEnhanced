@@ -332,7 +332,7 @@ inline void bf_write::WriteUBitLong( unsigned int curData, int numbits, bool bCh
 		iCurBit += nBitsWritten;
 		curData >>= nBitsWritten;
 
-		unsigned long iCurBitMasked = iCurBit & 31;
+		iCurBitMasked = iCurBit & 31;
 		((unsigned long*)m_pData)[iDWord+1] &= g_BitWriteMasks[iCurBitMasked][nBitsLeft];
 		((unsigned long*)m_pData)[iDWord+1] |= curData << iCurBitMasked;
 	}

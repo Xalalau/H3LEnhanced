@@ -71,7 +71,7 @@ void CMonsterMaker::KeyValue(KeyValueData *pkvd)
 
 void CMonsterMaker::Spawn()
 {
-	pev->solid = SOLID_NOT;
+	SetSolidType( SOLID_NOT );
 
 	m_cLiveChildren = 0;
 	Precache();
@@ -253,7 +253,7 @@ void CMonsterMaker::ToggleUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 		SetThink(&CMonsterMaker::MakerThink);
 	}
 
-	pev->nextthink = gpGlobals->time;
+	SetNextThink( gpGlobals->time );
 }
 
 //=========================================================
@@ -261,7 +261,7 @@ void CMonsterMaker::ToggleUse(CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 //=========================================================
 void CMonsterMaker::MakerThink(void)
 {
-	pev->nextthink = gpGlobals->time + m_flDelay;
+	SetNextThink( gpGlobals->time + m_flDelay );
 
 	MakeMonster();
 }
@@ -286,6 +286,6 @@ void CMonsterMaker::DeathNotice(CBaseEntity* pChild)
 
 	if (!m_fFadeChildren)
 	{
-		pChild->pev->owner = nullptr;
+		pChild->SetOwner( nullptr );
 	}
 }

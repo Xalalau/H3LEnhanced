@@ -19,9 +19,9 @@ void CEnvSpark::Spawn( void )
 	SetThink( NULL );
 	SetUse( NULL );
 
-	if( FBitSet( pev->spawnflags, SF_SPARK_TOGGLE ) ) // Use for on/off
+	if( GetSpawnFlags().Any( SF_SPARK_TOGGLE ) ) // Use for on/off
 	{
-		if( FBitSet( pev->spawnflags, SF_SPARK_START_ON ) ) // Start on
+		if( GetSpawnFlags().Any( SF_SPARK_START_ON ) ) // Start on
 		{
 			SetThink( &CEnvSpark::SparkThink );	// start sparking
 			SetUse( &CEnvSpark::SparkStop );		// set up +USE to stop sparking
@@ -32,7 +32,7 @@ void CEnvSpark::Spawn( void )
 	else
 		SetThink( &CEnvSpark::SparkThink );
 
-	pev->nextthink = gpGlobals->time + ( 0.1 + RANDOM_FLOAT( 0, 1.5 ) );
+	SetNextThink( gpGlobals->time + ( 0.1 + RANDOM_FLOAT( 0, 1.5 ) ) );
 
 	if( m_flDelay <= 0 )
 		m_flDelay = 1.5;
@@ -52,7 +52,7 @@ void CEnvSpark::Precache( void )
 
 void CEnvSpark::SparkThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1 + RANDOM_FLOAT( 0, m_flDelay );
+	SetNextThink( gpGlobals->time + 0.1 + RANDOM_FLOAT( 0, m_flDelay ) );
 	DoSpark( this, GetAbsOrigin() );
 }
 
@@ -60,7 +60,7 @@ void CEnvSpark::SparkStart( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 {
 	SetUse( &CEnvSpark::SparkStop );
 	SetThink( &CEnvSpark::SparkThink );
-	pev->nextthink = gpGlobals->time + ( 0.1 + RANDOM_FLOAT( 0, m_flDelay ) );
+	SetNextThink( gpGlobals->time + ( 0.1 + RANDOM_FLOAT( 0, m_flDelay ) ) );
 }
 
 void CEnvSpark::SparkStop( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

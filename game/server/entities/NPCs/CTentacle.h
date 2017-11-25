@@ -101,8 +101,8 @@ public:
 
 	void SetObjectCollisionBox() override
 	{
-		pev->absmin = GetAbsOrigin() + Vector( -400, -400, 0 );
-		pev->absmax = GetAbsOrigin() + Vector( 400, 400, 850 );
+		SetAbsMin( GetAbsOrigin() + Vector( -400, -400, 0 ) );
+		SetAbsMax( GetAbsOrigin() + Vector( 400, 400, 850 ) );
 	}
 
 	void Cycle();

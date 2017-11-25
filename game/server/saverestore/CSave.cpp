@@ -31,11 +31,8 @@ void CSave::WriteFloat( const char *pname, const float *data, int count )
 
 void CSave::WriteTime( const char *pname, const float *data, int count )
 {
-	int i;
-	Vector tmp, input;
-
 	BufferHeader( pname, sizeof( float ) * count );
-	for( i = 0; i < count; i++ )
+	for( int i = 0; i < count; i++ )
 	{
 		float tmp = data[ 0 ];
 
@@ -111,11 +108,8 @@ void CSave::WritePositionVector( const char *pname, const Vector &value )
 
 void CSave::WritePositionVector( const char *pname, const float *value, int count )
 {
-	int i;
-	Vector tmp, input;
-
 	BufferHeader( pname, sizeof( float ) * 3 * count );
-	for( i = 0; i < count; i++ )
+	for( int i = 0; i < count; i++ )
 	{
 		Vector tmp( value[ 0 ], value[ 1 ], value[ 2 ] );
 
@@ -190,7 +184,7 @@ bool CSave::WriteFields( const char *pname, void *pBaseData, const DataMap_t& da
 		case FIELD_EDICT:
 		case FIELD_ENTITY:
 		case FIELD_EHANDLE:
-			if( pTest->fieldSize > MAX_ENTITYARRAY )
+			if( static_cast<size_t>( pTest->fieldSize ) > MAX_ENTITYARRAY )
 				ALERT( at_error, "Can't save more than %d entities in an array!!!\n", MAX_ENTITYARRAY );
 			for( j = 0; j < pTest->fieldSize; j++ )
 			{

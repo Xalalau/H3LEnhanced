@@ -647,7 +647,7 @@ void TreeNode::SetKeyValues(KeyValues *data)
 
     // set text
     m_pText->SetText(data->GetString("Text", ""));
- 	m_bExpandableWithoutChildren = data->GetInt("Expand");
+ 	m_bExpandableWithoutChildren = data->GetInt("Expand") != 0;
     InvalidateLayout();
 }
 

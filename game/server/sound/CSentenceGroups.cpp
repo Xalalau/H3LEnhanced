@@ -303,12 +303,13 @@ int CSentenceGroups::Pick( int isentenceg, char* szfound )
 	const unsigned char count = m_SentenceGroups[ isentenceg ].count;
 	unsigned char* plru = m_SentenceGroups[ isentenceg ].rgblru;
 
-	unsigned char ipick;
+	unsigned char ipick = 0xFF;
 	bool bFound = false;
 
 	while( !bFound )
 	{
 		for( unsigned char i = 0; i < count; i++ )
+		{
 			if( plru[ i ] != 0xFF )
 			{
 				ipick = plru[ i ];
@@ -316,6 +317,7 @@ int CSentenceGroups::Pick( int isentenceg, char* szfound )
 				bFound = true;
 				break;
 			}
+		}
 
 		if( !bFound )
 			InitLRU( plru, count );

@@ -27,13 +27,13 @@ LINK_ENTITY_TO_CLASS( monster_mortar, CMortar );
 
 void CMortar::Spawn()
 {
-	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_NOT;
+	SetMoveType( MOVETYPE_NONE );
+	SetSolidType( SOLID_NOT );
 
-	pev->dmg = 200;
+	SetDamage( 200 );
 
 	SetThink( &CMortar::MortarExplode );
-	pev->nextthink = 0;
+	SetNextThink( 0 );
 
 	Precache();
 }
@@ -78,7 +78,7 @@ void CMortar::MortarExplode( void )
 	WRITE_COORD( GetAbsOrigin().z + 32 );
 	WRITE_COORD( GetAbsOrigin().x );
 	WRITE_COORD( GetAbsOrigin().y );
-	WRITE_COORD( GetAbsOrigin().z + 32 + pev->dmg * 2 / .2 ); // reach damage radius over .3 seconds
+	WRITE_COORD( GetAbsOrigin().z + 32 + GetDamage() * 2 / .2 ); // reach damage radius over .3 seconds
 	WRITE_SHORT( m_spriteTexture );
 	WRITE_BYTE( 0 ); // startframe
 	WRITE_BYTE( 0 ); // framerate
@@ -107,7 +107,7 @@ void CMortar::MortarExplode( void )
 
 	// ExplodeModel( GetAbsOrigin(), 400, g_sModelIndexShrapnel, 30 );
 
-	RadiusDamage( this, GET_PRIVATE( pev->owner ), pev->dmg, EntityClassifications().GetNoneId(), DMG_BLAST );
+	RadiusDamage( this, GetOwner(), GetDamage(), EntityClassifications().GetNoneId(), DMG_BLAST );
 
 	/*
 	if ( RANDOM_FLOAT ( 0 , 1 ) < 0.5 )
@@ -121,7 +121,7 @@ void CMortar::MortarExplode( void )
 	*/
 
 	SetThink( &CMortar::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 #endif
 
 }
@@ -135,7 +135,7 @@ void CMortar::ShootTimed( EVARS *pevOwner, Vector vecStart, float time )
 	TraceResult tr;
 	UTIL_TraceLine( vecStart, vecStart + Vector( 0, 0, -1 ) * 4096, ignore_monsters, ENT( pMortar->pev ), &tr );
 
-	pMortar->pev->nextthink = gpGlobals->time + time;
+	pMortar->SetNextThink( gpGlobals->time + time );
 
 	pMortar->SetAbsOrigin( tr.vecEndPos );
 }

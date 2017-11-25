@@ -36,9 +36,9 @@ public:
 
 private:
 
-	inline bool RemoveOnFire() const { return ( pev->spawnflags & SF_PTEAM_FIREONCE ) != 0; }
-	inline bool ShouldKillPlayer() const { return ( pev->spawnflags & SF_PTEAM_KILL ) != 0; }
-	inline bool ShouldGibPlayer() const { return ( pev->spawnflags & SF_PTEAM_GIB ) != 0; }
+	inline bool RemoveOnFire() const { return GetSpawnFlags().Any( SF_PTEAM_FIREONCE ); }
+	inline bool ShouldKillPlayer() const { return GetSpawnFlags().Any( SF_PTEAM_KILL ); }
+	inline bool ShouldGibPlayer() const { return GetSpawnFlags().Any( SF_PTEAM_GIB ); }
 
 	const char *TargetTeamName( const char *pszTargetName );
 };

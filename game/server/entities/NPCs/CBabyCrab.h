@@ -24,7 +24,7 @@ public:
 
 	void Spawn( void ) override;
 	void Precache( void ) override;
-	void SetYawSpeed( void ) override;
+	void UpdateYawSpeed() override;
 	float GetDamageAmount( void ) override { return gSkillData.GetHeadcrabDmgBite() * 0.3; }
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
 	Schedule_t* GetScheduleOfType( int Type ) override;

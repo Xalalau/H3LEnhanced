@@ -17,8 +17,8 @@
 
 //=========================================================
 // Beverage Dispenser
-// overloaded pev->frags, is now a flag for whether or not a can is stuck in the dispenser. 
-// overloaded pev->health, is now how many cans remain in the machine.
+// overloaded GetFrags(), is now a flag for whether or not a can is stuck in the dispenser. 
+// overloaded GetHealth(), is now how many cans remain in the machine.
 //=========================================================
 class CEnvBeverage : public CBaseDelay
 {

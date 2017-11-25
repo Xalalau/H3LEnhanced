@@ -66,8 +66,8 @@ void CSqueakGrenade::Spawn( void )
 {
 	Precache();
 	// motor
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->solid = SOLID_BBOX;
+	SetMoveType( MOVETYPE_BOUNCE );
+	SetSolidType( SOLID_BBOX );
 
 	SetModel( "models/w_squeak.mdl" );
 	SetSize( Vector( -4, -4, 0 ), Vector( 4, 4, 8 ) );
@@ -75,27 +75,27 @@ void CSqueakGrenade::Spawn( void )
 
 	SetTouch( &CSqueakGrenade::SuperBounceTouch );
 	SetThink( &CSqueakGrenade::HuntThink );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 	m_flNextHunt = gpGlobals->time + 1E6;
 
-	pev->flags |= FL_MONSTER;
-	pev->takedamage = DAMAGE_AIM;
-	pev->health = gSkillData.GetSnarkHealth();
-	pev->gravity = 0.5;
-	pev->friction = 0.5;
+	GetFlags() |= FL_MONSTER;
+	SetTakeDamageMode( DAMAGE_AIM );
+	SetHealth( gSkillData.GetSnarkHealth() );
+	SetGravity( 0.5 );
+	SetFriction( 0.5 );
 
-	pev->dmg = gSkillData.GetSnarkDmgPop();
+	SetDamage( gSkillData.GetSnarkDmgPop() );
 
 	m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
 
 	m_flFieldOfView = 0; // 180 degrees
 
-	if( pev->owner )
-		m_hOwner = Instance( pev->owner );
+	if( GetOwner() )
+		m_hOwner = GetOwner();
 
 	m_flNextBounceSoundTime = gpGlobals->time;// reset each time a snark is spawned.
 
-	pev->sequence = WSQUEAK_RUN;
+	SetSequence( WSQUEAK_RUN );
 	ResetSequenceInfo();
 }
 
@@ -114,15 +114,15 @@ void CSqueakGrenade::Precache( void )
 
 void CSqueakGrenade::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 {
-	pev->model = iStringNull;// make invisible
+	SetModelName( iStringNull );// make invisible
 	SetThink( &CSqueakGrenade::SUB_Remove );
 	SetTouch( NULL );
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	// since squeak grenades never leave a body behind, clear out their takedamage now.
 	// Squeaks do a bit of radius damage when they pop, and that radius damage will
 	// continue to call this function unless we acknowledge the Squeak's death now. (sjb)
-	pev->takedamage = DAMAGE_NO;
+	SetTakeDamageMode( DAMAGE_NO );
 
 	// play squeek blast
 	EMIT_SOUND_DYN( this, CHAN_ITEM, "squeek/sqk_blast1.wav", 1, 0.5, 0, PITCH_NORM );
@@ -132,13 +132,13 @@ void CSqueakGrenade::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 	UTIL_BloodDrips( GetAbsOrigin(), g_vecZero, BloodColor(), 80 );
 
 	if( m_hOwner != NULL )
-		RadiusDamage( this, m_hOwner, pev->dmg, EntityClassifications().GetNoneId(), DMG_BLAST );
+		RadiusDamage( this, m_hOwner, GetDamage(), EntityClassifications().GetNoneId(), DMG_BLAST );
 	else
-		RadiusDamage( this, this, pev->dmg, EntityClassifications().GetNoneId(), DMG_BLAST );
+		RadiusDamage( this, this, GetDamage(), EntityClassifications().GetNoneId(), DMG_BLAST );
 
 	// reset owner so death message happens
 	if( m_hOwner != NULL )
-		pev->owner = m_hOwner->edict();
+		SetOwner( m_hOwner );
 
 	CBaseMonster::Killed( info, GIB_ALWAYS );
 }
@@ -162,15 +162,15 @@ void CSqueakGrenade::HuntThink( void )
 	}
 
 	StudioFrameAdvance();
-	pev->nextthink = gpGlobals->time + 0.1;
+	SetNextThink( gpGlobals->time + 0.1 );
 
 	// explode when ready
 	if( gpGlobals->time >= m_flDie )
 	{
-		g_vecAttackDir = pev->velocity.Normalize();
+		g_vecAttackDir = GetAbsVelocity().Normalize();
 		// ############ hu3lifezado ############ //
 		// Barriguinha mole nao morre mais por tempo
-		//pev->health = -1;
+		//SetHealth( -1 );
 		//Killed( CTakeDamageInfo( this, 0, 0 ), GIB_NORMAL );
 		m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
 		// ############ //
@@ -180,16 +180,18 @@ void CSqueakGrenade::HuntThink( void )
 	// float
 	if( GetWaterLevel() != WATERLEVEL_DRY )
 	{
-		if( pev->movetype == MOVETYPE_BOUNCE )
+		if( GetMoveType() == MOVETYPE_BOUNCE )
 		{
-			pev->movetype = MOVETYPE_FLY;
+			SetMoveType( MOVETYPE_FLY );
 		}
-		pev->velocity = pev->velocity * 0.9;
-		pev->velocity.z += 8.0;
+
+		Vector vecVelocity = GetAbsVelocity() * 0.9;
+		vecVelocity.z += 8.0;
+		SetAbsVelocity( vecVelocity );
 	}
-	else if( pev->movetype == MOVETYPE_FLY )
+	else if( GetMoveType() == MOVETYPE_FLY )
 	{
-		pev->movetype = MOVETYPE_BOUNCE;
+		SetMoveType( MOVETYPE_BOUNCE );
 	}
 
 	// return if not time to hunt
@@ -198,15 +200,14 @@ void CSqueakGrenade::HuntThink( void )
 
 	m_flNextHunt = gpGlobals->time + 2.0;
 
-	CBaseEntity *pOther = NULL;
 	Vector vecDir;
 	TraceResult tr;
 
-	Vector vecFlat = pev->velocity;
+	Vector vecFlat = GetAbsVelocity();
 	vecFlat.z = 0;
 	vecFlat = vecFlat.Normalize();
 
-	UTIL_MakeVectors( pev->angles );
+	UTIL_MakeVectors( GetAbsAngles() );
 
 	if( m_hEnemy == NULL || !m_hEnemy->IsAlive() )
 	{
@@ -235,7 +236,7 @@ void CSqueakGrenade::HuntThink( void )
 			m_vecTarget = vecDir.Normalize();
 		}
 
-		float flVel = pev->velocity.Length();
+		float flVel = GetAbsVelocity().Length();
 		float flAdj = 50.0 / ( flVel + 10.0 );
 
 		if( flAdj > 1.2 )
@@ -245,32 +246,38 @@ void CSqueakGrenade::HuntThink( void )
 
 		// ALERT( at_console, "%.0f %.2f %.2f %.2f\n", flVel, m_vecTarget.x, m_vecTarget.y, m_vecTarget.z );
 
-		pev->velocity = pev->velocity * flAdj + m_vecTarget * 300;
+		SetAbsVelocity( GetAbsVelocity() * flAdj + m_vecTarget * 300 );
 	}
 
-	if( pev->flags & FL_ONGROUND )
+	if( GetFlags().Any( FL_ONGROUND ) )
 	{
-		pev->avelocity = Vector( 0, 0, 0 );
+		SetAngularVelocity( g_vecZero );
 	}
 	else
 	{
-		if( pev->avelocity == Vector( 0, 0, 0 ) )
+		if( GetAngularVelocity() == g_vecZero )
 		{
-			pev->avelocity.x = RANDOM_FLOAT( -100, 100 );
-			pev->avelocity.z = RANDOM_FLOAT( -100, 100 );
+			Vector vecAVelocity = GetAngularVelocity();
+			vecAVelocity.x = RANDOM_FLOAT( -100, 100 );
+			vecAVelocity.z = RANDOM_FLOAT( -100, 100 );
+			SetAngularVelocity( vecAVelocity );
 		}
 	}
 
 	if( ( GetAbsOrigin() - m_posPrev ).Length() < 1.0 )
 	{
-		pev->velocity.x = RANDOM_FLOAT( -100, 100 );
-		pev->velocity.y = RANDOM_FLOAT( -100, 100 );
+		Vector vecVelocity = GetAbsVelocity();
+		vecVelocity.x = RANDOM_FLOAT( -100, 100 );
+		vecVelocity.y = RANDOM_FLOAT( -100, 100 );
+		SetAbsVelocity( vecVelocity );
 	}
 	m_posPrev = GetAbsOrigin();
 
-	pev->angles = UTIL_VecToAngles( pev->velocity );
-	pev->angles.z = 0;
-	pev->angles.x = 0;
+	SetAbsAngles( UTIL_VecToAngles( GetAbsVelocity() ) );
+	Vector vecAngles = GetAbsAngles();
+	vecAngles.z = 0;
+	vecAngles.x = 0;
+	SetAbsAngles( vecAngles );
 }
 
 
@@ -281,14 +288,16 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 	TraceResult tr = UTIL_GetGlobalTrace();
 
 	// don't hit the guy that launched this grenade
-	if( pev->owner && pOther->edict() == pev->owner )
+	if( GetOwner() && pOther == GetOwner() )
 		return;
 
 	// at least until we've bounced once
-	pev->owner = NULL;
+	SetOwner( NULL );
 
-	pev->angles.x = 0;
-	pev->angles.z = 0;
+	Vector vecAngles = GetAbsAngles();
+	vecAngles.x = 0;
+	vecAngles.z = 0;
+	SetAbsAngles( vecAngles );
 
 	// avoid bouncing too much
 	if( m_flNextHit > gpGlobals->time )
@@ -297,7 +306,7 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 	// higher pitch as squeeker gets closer to detonation time
 	flpitch = 155.0 - 60.0 * ( ( m_flDie - gpGlobals->time ) / SQUEEK_DETONATE_DELAY );
 
-	if( pOther->pev->takedamage && m_flNextAttack < gpGlobals->time )
+	if( pOther->GetTakeDamageMode() != DAMAGE_NO && m_flNextAttack < gpGlobals->time )
 	{
 		// attack!
 
@@ -305,17 +314,17 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		if( tr.pHit == pOther->edict() )
 		{
 			// and it's not another squeakgrenade
-			if( tr.pHit->v.modelindex != pev->modelindex )
+			if( tr.pHit->v.modelindex != GetModelIndex() )
 			{
 				// ALERT( at_console, "hit enemy\n");
 				g_MultiDamage.Clear();
-				pOther->TraceAttack( CTakeDamageInfo( this, gSkillData.GetSnarkDmgBite(), DMG_SLASH ), gpGlobals->v_forward, &tr );
+				pOther->TraceAttack( CTakeDamageInfo( this, gSkillData.GetSnarkDmgBite(), DMG_SLASH ), gpGlobals->v_forward, tr );
 				if( m_hOwner != NULL )
 					g_MultiDamage.ApplyMultiDamage( this, m_hOwner );
 				else
 					g_MultiDamage.ApplyMultiDamage( this, this );
 
-				pev->dmg += gSkillData.GetSnarkDmgPop(); // add more explosion damage
+				SetDamage( GetDamage() + gSkillData.GetSnarkDmgPop() ); // add more explosion damage
 														 // m_flDie += 2.0; // add more life
 
 														 // make bite sound
@@ -342,7 +351,7 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		}
 	}
 
-	if( !( pev->flags & FL_ONGROUND ) )
+	if( !GetFlags().Any( FL_ONGROUND ) )
 	{
 		// play bounce sound
 		float flRndSound = RANDOM_FLOAT( 0, 1 );

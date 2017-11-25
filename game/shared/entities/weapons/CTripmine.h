@@ -40,8 +40,8 @@ public:
 	void SetObjectCollisionBox( void ) override
 	{
 		//!!!BUGBUG - fix the model!
-		pev->absmin = GetAbsOrigin() + Vector( -16, -16, -5 );
-		pev->absmax = GetAbsOrigin() + Vector( 16, 16, 28 );
+		SetAbsMin( GetAbsOrigin() + Vector( -16, -16, -5 ) );
+		SetAbsMax( GetAbsOrigin() + Vector( 16, 16, 28 ) );
 	}
 
 	void PrimaryAttack( void ) override;

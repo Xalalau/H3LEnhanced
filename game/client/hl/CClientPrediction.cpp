@@ -214,22 +214,22 @@ void CClientPrediction::WeaponsPostThink( local_state_t *from, local_state_t *to
 	m_pPlayer->m_afButtonReleased = buttonsChanged & ( ~cmd->buttons );
 
 	// Set player variables that weapons code might check/alter
-	m_pPlayer->pev->button = cmd->buttons;
+	m_pPlayer->GetButtons().Set( cmd->buttons );
 
-	m_pPlayer->pev->velocity = from->client.velocity;
-	m_pPlayer->pev->flags = from->client.flags;
+	m_pPlayer->SetAbsVelocity( from->client.velocity );
+	m_pPlayer->GetFlags().Set( from->client.flags );
 
-	m_pPlayer->pev->deadflag = from->client.deadflag;
-	m_pPlayer->pev->waterlevel = from->client.waterlevel;
-	m_pPlayer->pev->maxspeed = from->client.maxspeed;
-	m_pPlayer->pev->fov = from->client.fov;
-	m_pPlayer->pev->weaponanim = from->client.weaponanim;
-	m_pPlayer->pev->viewmodel = from->client.viewmodel;
+	m_pPlayer->SetDeadFlag( static_cast<DeadFlag>( from->client.deadflag ) );
+	m_pPlayer->SetWaterLevel( static_cast<WaterLevel>( from->client.waterlevel ) );
+	m_pPlayer->SetMaxSpeed( from->client.maxspeed );
+	m_pPlayer->SetFOV( from->client.fov );
+	m_pPlayer->SetWeaponAnim( from->client.weaponanim );
+	m_pPlayer->SetViewModelIndex( from->client.viewmodel );
 	m_pPlayer->m_flNextAttack = from->client.m_flNextAttack;
 	m_pPlayer->m_flNextAmmoBurn = from->client.fuser2;
 	m_pPlayer->m_flAmmoStartCharge = from->client.fuser3;
 
-	g_vPlayerVelocity = m_pPlayer->pev->velocity;
+	g_vPlayerVelocity = m_pPlayer->GetAbsVelocity();
 
 	//Stores all our ammo info, so the client side weapons can use them.
 	m_pPlayer->SetAmmoCount( "9mm", ( int ) from->client.vuser1[ 0 ] );
@@ -265,8 +265,8 @@ void CClientPrediction::WeaponsPostThink( local_state_t *from, local_state_t *to
 
 	// Don't go firing anything if we have died or are spectating
 	// Or if we don't have a weapon model deployed
-	if( ( m_pPlayer->pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) &&
-		!CL_IsDead() && m_pPlayer->pev->viewmodel && !g_iUser1 )
+	if( ( m_pPlayer->GetDeadFlag() != ( DEAD_DISCARDBODY + 1 ) ) &&
+		!CL_IsDead() && m_pPlayer->GetViewModelIndex() && !g_iUser1 )
 	{
 		if( pWeapon->GetNextThink() > 0 && pWeapon->GetNextThink() <= gpGlobals->time )
 		{
@@ -285,7 +285,7 @@ void CClientPrediction::WeaponsPostThink( local_state_t *from, local_state_t *to
 	to->client.m_iId = from->client.m_iId;
 
 	// Now see if we issued a changeweapon command ( and we're not dead )
-	if( cmd->weaponselect && ( m_pPlayer->pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) )
+	if( cmd->weaponselect && ( m_pPlayer->GetDeadFlag() != ( DEAD_DISCARDBODY + 1 ) ) )
 	{
 		// Switched to a different weapon?
 		if( from->weapondata[ cmd->weaponselect ].m_iId == cmd->weaponselect )
@@ -313,13 +313,13 @@ void CClientPrediction::WeaponsPostThink( local_state_t *from, local_state_t *to
 	}
 
 	// Copy in results of prediction code
-	to->client.viewmodel		= m_pPlayer->pev->viewmodel;
-	to->client.fov				= m_pPlayer->pev->fov;
-	to->client.weaponanim		= m_pPlayer->pev->weaponanim;
+	to->client.viewmodel		= m_pPlayer->GetViewModelIndex();
+	to->client.fov				= m_pPlayer->GetFOV();
+	to->client.weaponanim		= m_pPlayer->GetWeaponAnim();
 	to->client.m_flNextAttack	= m_pPlayer->m_flNextAttack;
 	to->client.fuser2			= m_pPlayer->m_flNextAmmoBurn;
 	to->client.fuser3			= m_pPlayer->m_flAmmoStartCharge;
-	to->client.maxspeed			= m_pPlayer->pev->maxspeed;
+	to->client.maxspeed			= m_pPlayer->GetMaxSpeed();
 
 	//HL Weapons
 	to->client.vuser1[ 0 ] = m_pPlayer->GetAmmoCount( "9mm" );

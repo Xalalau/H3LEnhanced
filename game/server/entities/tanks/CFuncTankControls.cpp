@@ -19,15 +19,15 @@ int	CFuncTankControls::ObjectCaps() const
 
 void CFuncTankControls::Spawn( void )
 {
-	pev->solid = SOLID_TRIGGER;
-	pev->movetype = MOVETYPE_NONE;
-	pev->effects |= EF_NODRAW;
-	SetModel( STRING( pev->model ) );
+	SetSolidType( SOLID_TRIGGER );
+	SetMoveType( MOVETYPE_NONE );
+	GetEffects() |= EF_NODRAW;
+	SetModel( GetModelName() );
 
-	SetSize( pev->mins, pev->maxs );
+	SetSize( GetRelMin(), GetRelMax() );
 	SetAbsOrigin( GetAbsOrigin() );
 
-	pev->nextthink = gpGlobals->time + 0.3;	// After all the func_tank's have spawned
+	SetNextThink( gpGlobals->time + 0.3 );	// After all the func_tank's have spawned
 
 	CBaseEntity::Spawn();
 }

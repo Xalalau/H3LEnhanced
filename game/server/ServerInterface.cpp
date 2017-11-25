@@ -185,8 +185,8 @@ int DispatchSpawn( edict_t *pent )
 	if( pEntity )
 	{
 		// Initialize these or entities who don't link to the world won't have anything in here
-		pEntity->pev->absmin = pEntity->GetAbsOrigin() - Vector( 1, 1, 1 );
-		pEntity->pev->absmax = pEntity->GetAbsOrigin() + Vector( 1, 1, 1 );
+		pEntity->SetAbsMin( pEntity->GetAbsOrigin() - Vector( 1, 1, 1 ) );
+		pEntity->SetAbsMax( pEntity->GetAbsOrigin() + Vector( 1, 1, 1 ) );
 
 		pEntity->Spawn();
 
@@ -207,7 +207,7 @@ int DispatchSpawn( edict_t *pent )
 		// Handle global stuff here
 		if( pEntity && pEntity->HasGlobalName() )
 		{
-			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( pEntity->pev->globalname );
+			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( MAKE_STRING( pEntity->GetGlobalName() ) );
 			if( pGlobal )
 			{
 				// Already dead? delete
@@ -220,7 +220,7 @@ int DispatchSpawn( edict_t *pent )
 			else
 			{
 				// Spawned entities default to 'On'
-				gGlobalState.EntityAdd( pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON );
+				gGlobalState.EntityAdd( MAKE_STRING( pEntity->GetGlobalName() ), gpGlobals->mapname, GLOBAL_ON );
 				//				ALERT( at_console, "Added global entity %s (%s)\n", pEntity->GetClassname(), pEntity->GetGlobalName() );
 			}
 		}
@@ -324,11 +324,11 @@ void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData )
 			return;
 
 		// These don't use ltime & nextthink as times really, but we'll fudge around it.
-		if( pEntity->pev->movetype == MOVETYPE_PUSH )
+		if( pEntity->GetMoveType() == MOVETYPE_PUSH )
 		{
-			float delta = pEntity->pev->nextthink - pEntity->pev->ltime;
-			pEntity->pev->ltime = gpGlobals->time;
-			pEntity->pev->nextthink = pEntity->pev->ltime + delta;
+			float delta = pEntity->GetNextThink() - pEntity->GetLastThink();
+			pEntity->SetLastThink( gpGlobals->time );
+			pEntity->SetNextThink( pEntity->GetLastThink() + delta );
 		}
 
 		pTable->location = pSaveData->size;		// Remember entity position for file I/O
@@ -398,11 +398,11 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 				//				ALERT( at_console, "Overlay %s with %s\n", pNewEntity->GetClassname(), STRING(tmpVars.classname) );
 				// Tell the restore code we're overlaying a global entity from another level
 				restoreHelper.SetGlobalMode( 1 );	// Don't overwrite global fields
-				pSaveData->vecLandmarkOffset = ( pSaveData->vecLandmarkOffset - pNewEntity->pev->mins ) + tmpVars.mins;
+				pSaveData->vecLandmarkOffset = ( pSaveData->vecLandmarkOffset - pNewEntity->GetRelMin() ) + tmpVars.mins;
 				pEntity = pNewEntity;// we're going to restore this data OVER the old entity
 				pent = ENT( pEntity->pev );
 				// Update the global table to say that the global definition of this entity should come from this level
-				gGlobalState.EntityUpdate( pEntity->pev->globalname, gpGlobals->mapname );
+				gGlobalState.EntityUpdate( MAKE_STRING( pEntity->GetGlobalName() ), gpGlobals->mapname );
 			}
 			else
 			{
@@ -430,14 +430,14 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 #if 0
 		if( pEntity && pEntity->HasGlobalName() && globalEntity )
 		{
-			ALERT( at_console, "Global %s is %s\n", pEntity->GetGlobalName(), STRING( pEntity->pev->model ) );
+			ALERT( at_console, "Global %s is %s\n", pEntity->GetGlobalName(), pEntity->GetModelName() );
 		}
 #endif
 
 		// Is this an overriding global entity (coming over the transition), or one restoring in a level
 		if( globalEntity )
 		{
-			//			ALERT( at_console, "After: %f %f %f %s\n", pEntity->GetAbsOrigin().x, pEntity->GetAbsOrigin().y, pEntity->GetAbsOrigin().z, STRING(pEntity->pev->model) );
+			//			ALERT( at_console, "After: %f %f %f %s\n", pEntity->GetAbsOrigin().x, pEntity->GetAbsOrigin().y, pEntity->GetAbsOrigin().z, pEntity->GetModelName() );
 			pSaveData->vecLandmarkOffset = oldOffset;
 			if( pEntity )
 			{
@@ -447,7 +447,7 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 		}
 		else if( pEntity && pEntity->HasGlobalName() )
 		{
-			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( pEntity->pev->globalname );
+			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( MAKE_STRING( pEntity->GetGlobalName() ) );
 			if( pGlobal )
 			{
 				// Already dead? delete
@@ -463,7 +463,7 @@ int DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity
 			{
 				ALERT( at_error, "Global Entity %s (%s) not in table!!!\n", pEntity->GetGlobalName(), pEntity->GetClassname() );
 				// Spawned entities default to 'On'
-				gGlobalState.EntityAdd( pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON );
+				gGlobalState.EntityAdd( MAKE_STRING( pEntity->GetGlobalName() ), gpGlobals->mapname, GLOBAL_ON );
 			}
 		}
 	}

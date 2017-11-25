@@ -2371,11 +2371,11 @@ void Menu::MoveMenuItem( int itemID, int moveBeforeThisItemID )
 
 	// Now find insert pos
 	c = m_SortedItems.Count();
-	for ( int i = 0; i < c; ++i )
+	for ( int j = 0; j < c; ++j )
 	{
-		if ( m_SortedItems[i] == moveBeforeThisItemID )
+		if ( m_SortedItems[j] == moveBeforeThisItemID )
 		{
-			m_SortedItems.InsertBefore( i, itemID );
+			m_SortedItems.InsertBefore( j, itemID );
 			break;
 		}
 	}

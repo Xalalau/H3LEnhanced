@@ -6,9 +6,6 @@
 // Serialization buffer
 //===========================================================================//
 
-#ifndef _XBOX
-#pragma warning (disable : 4514)
-#endif
 #include "UtlBuffer.h"
 #include <stdio.h>
 #include <stdarg.h>
@@ -92,14 +89,14 @@ CUtlCStringConversion::CUtlCStringConversion( char nEscapeChar, const char *pDel
 	memset( m_pConversion, 0x0, sizeof(m_pConversion) );
 	for ( int i = 0; i < nCount; ++i )
 	{
-		m_pConversion[ pArray[i].m_pReplacementString[0] ] = pArray[i].m_nActualChar;
+		m_pConversion[ static_cast<size_t>( pArray[i].m_pReplacementString[0] ) ] = pArray[i].m_nActualChar;
 	}
 }
 
 // Finds a conversion for the passed-in string, returns length
 char CUtlCStringConversion::FindConversion( const char *pString, int *pLength )
 {
-	char c = m_pConversion[ pString[0] ];
+	char c = m_pConversion[ static_cast<size_t>( pString[0] ) ];
 	*pLength = (c != '\0') ? 1 : 0;
 	return c;
 }
@@ -122,7 +119,7 @@ CUtlCharConversion::CUtlCharConversion( char nEscapeChar, const char *pDelimiter
 	for ( int i = 0; i < nCount; ++i )
 	{
 		m_pList[i] = pArray[i].m_nActualChar;
-		ConversionInfo_t &info = m_pReplacements[ m_pList[i] ];
+		ConversionInfo_t &info = m_pReplacements[ static_cast<size_t>( m_pList[i] ) ];
 		Assert( info.m_pReplacementString == 0 );
 		info.m_pReplacementString = pArray[i].m_pReplacementString;
 		info.m_nLength = Q_strlen( info.m_pReplacementString );
@@ -158,12 +155,12 @@ int CUtlCharConversion::GetDelimiterLength() const
 //-----------------------------------------------------------------------------
 const char *CUtlCharConversion::GetConversionString( char c ) const
 {
-	return m_pReplacements[ c ].m_pReplacementString;
+	return m_pReplacements[ static_cast<size_t>( c ) ].m_pReplacementString;
 }
 
 int CUtlCharConversion::GetConversionLength( char c ) const
 {
-	return m_pReplacements[ c ].m_nLength;
+	return m_pReplacements[ static_cast<size_t>( c ) ].m_nLength;
 }
 
 int CUtlCharConversion::MaxConversionLength() const
@@ -179,9 +176,9 @@ char CUtlCharConversion::FindConversion( const char *pString, int *pLength )
 {
 	for ( int i = 0; i < m_nCount; ++i )
 	{
-		if ( !Q_strcmp( pString, m_pReplacements[ m_pList[i] ].m_pReplacementString ) )
+		if ( !Q_strcmp( pString, m_pReplacements[ static_cast<size_t>( m_pList[i] ) ].m_pReplacementString ) )
 		{
-			*pLength = m_pReplacements[ m_pList[i] ].m_nLength;
+			*pLength = m_pReplacements[ static_cast<size_t>( m_pList[i] ) ].m_nLength;
 			return m_pList[i];
 		}
 	}
@@ -872,8 +869,6 @@ void CUtlBuffer::SeekGet( SeekType_t type, int offset )
 // Parse...
 //-----------------------------------------------------------------------------
 
-#pragma warning ( disable : 4706 )
-
 int CUtlBuffer::VaScanf( const char* pFmt, va_list list )
 {
 	Assert( pFmt );
@@ -884,7 +879,7 @@ int CUtlBuffer::VaScanf( const char* pFmt, va_list list )
 	int nLength;
 	char c;
 	char* pEnd;
-	while ( ( c = *pFmt++ ) )
+	while ( ( c = *pFmt++ ) != '\0' )
 	{
 		// Stop if we hit the end of the buffer
 		if ( m_Get >= TellMaxPut() )
@@ -1042,8 +1037,6 @@ int CUtlBuffer::VaScanf( const char* pFmt, va_list list )
 	}
 	return numScanned;
 }
-
-#pragma warning ( default : 4706 )
 
 int CUtlBuffer::Scanf( const char* pFmt, ... )
 {

@@ -27,9 +27,9 @@ END_DATADESC()
 
 void CRuleEntity::Spawn( void )
 {
-	pev->solid			= SOLID_NOT;
-	pev->movetype		= MOVETYPE_NONE;
-	pev->effects		= EF_NODRAW;
+	SetSolidType( SOLID_NOT );
+	SetMoveType( MOVETYPE_NONE );
+	GetEffects() = EF_NODRAW;
 }
 
 void CRuleEntity::KeyValue( KeyValueData *pkvd )
