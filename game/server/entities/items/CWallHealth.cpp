@@ -127,10 +127,13 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 
 	// ############ hu3lifezado ############ //
 	// Unidade do SUS te mata. (1)
-	if ( pActivator->GiveHealth( -7, DMG_GENERIC ) )
-	{
+	int susdamage = -7;
+
+	if (pActivator->GetHealth() - 7 == 0)
+		susdamage = -6;
+
+	if ( pActivator->GiveHealth( susdamage, DMG_GENERIC ) )
 		m_iJuice--;
-	}
 	// ############ //
 
 	// govern the rate of charge
