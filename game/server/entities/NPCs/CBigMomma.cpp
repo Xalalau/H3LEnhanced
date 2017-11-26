@@ -360,7 +360,10 @@ void CBigMomma::LaunchMortar( void )
 	m_mortarTime = gpGlobals->time + RANDOM_FLOAT( 2, 15 );
 	
 	Vector startPos = GetAbsOrigin();
-	startPos.z += 180;
+	// ############ hu3lifezado ############ //
+	// A cagada de porra tem que sair da bunda dele (180)
+	startPos.z += 300;
+	// ############ //
 
 	EMIT_SOUND_DYN( this, CHAN_WEAPON, RANDOM_SOUND_ARRAY(pSackSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5) );
 	CBMortar *pBomb = CBMortar::Shoot( this, startPos, GetMoveDir() );
