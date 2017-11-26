@@ -506,21 +506,7 @@ void CDesertEagle::PrimaryAttack()
 		--m_iClip;
 
 		// Novo espalhamento todo zoado (distancia do centro)
-		// BUGBUG: o Linux nao tem espalhamento abaixo de 1.0, bug do HL1 ou do Enhanced. Por isso fiz esses contornos estranhos.
-		int low, high;
-		float percentage;
-		percentage = m_qualitypercentageeffect;
-#if defined ( _WIN32 )
-		low = 0.01;
-		high = 0.1 + 0.3 * percentage;
-#elif defined(OSX) // Nao faco ideia de como isso vai reagir, mas ta ai...
-		low = 0.01;
-		high = 0.91 + 0.49 * m_qualitypercentageeffect;
-#elif defined(LINUX)
-		low = 0.01;
-		high = 0.91 + 0.49 * m_qualitypercentageeffect;
-#endif
-		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, low, high);
+		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, 0.01, 0.91 + 0.49 * m_qualitypercentageeffect);
 
 		Vector vecSpread;
 
