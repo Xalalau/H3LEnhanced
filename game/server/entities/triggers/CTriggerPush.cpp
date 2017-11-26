@@ -44,6 +44,8 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 	case MOVETYPE_NOCLIP:
 	case MOVETYPE_FOLLOW:
 		return;
+
+	default: break;
 	}
 
 	if( pOther->GetSolidType() != SOLID_NOT && pOther->GetSolidType() != SOLID_BSP )
