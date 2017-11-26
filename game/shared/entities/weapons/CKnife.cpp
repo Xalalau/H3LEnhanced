@@ -166,6 +166,7 @@ void CKnife::SecondaryAttack()
 
 	// Faz a mudanca de cor ficar desativada durante tempo da animacao
 	m_nextcolorchange = gpGlobals->time + 0.35;
+	m_flNextPrimaryAttack = GetNextAttackDelay(0.35);
 
 	// Idle tambem so volta depois desse tempo
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.35;
@@ -390,8 +391,9 @@ void CKnife::WeaponIdle()
 		EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/spray_eupichavasim.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM);
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 8;
 
-		// Impedir a troca de cores de funcionar por pouco tempo para impedir que o jogador corte bruscamente a animacao
+		// Impedir a arma de funcionar por pouco tempo para evitar que o jogador corte bruscamente a animacao
 		m_nextcolorchange = gpGlobals->time + 3;
+		m_flNextPrimaryAttack = GetNextAttackDelay(2.0);
 	}
 	// 97% de chance de executar essa parte
 	else
