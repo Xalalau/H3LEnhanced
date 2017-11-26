@@ -25,7 +25,7 @@ public:
 	void IdleSound( void ) override;
 	void AlertSound( void ) override;
 	void PrescheduleThink( void ) override;
-	EntityClassification_t Classify( void );
+	EntityClassification_t GetClassification() override;
 	void HandleAnimEvent( AnimEvent_t& event ) override;
 	bool CheckRangeAttack1( float flDot, float flDist ) override;
 	bool CheckRangeAttack2( float flDot, float flDist ) override;

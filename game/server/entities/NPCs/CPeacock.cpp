@@ -99,7 +99,7 @@ const char *CPeacock::pDeathSounds[] =
 
 LINK_ENTITY_TO_CLASS( monster_peacock, CPeacock );
 
-EntityClassification_t CPeacock :: Classify ( void )
+EntityClassification_t CPeacock :: GetClassification ( void )
 {
 	// Alguns pavoes sao assassinos
 	switch (RANDOM_LONG(1, 6))
@@ -272,9 +272,7 @@ void CPeacock :: Precache()
 //=========================================================
 void CPeacock :: RunTask ( const Task_t& pTask )
 {
-	const Task_t *pTask2 = &pTask;
-
-	switch ( pTask2->iTask )
+	switch (pTask.iTask)
 	{
 	case TASK_RANGE_ATTACK1:
 	case TASK_RANGE_ATTACK2:
