@@ -140,9 +140,11 @@ void CGameRules::PlayerRespawn( CBasePlayer* pPlayer, const bool bCopyCorpse )
 	}
 }
 
-//=========================================================
-//=========================================================
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Uso vazio e generalizado do changelevel do modo coop
 void CGameRules::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
 {
 	return;
 }
+// ############ //

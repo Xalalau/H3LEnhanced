@@ -1,6 +1,32 @@
 // ##############################
 // HU3-LIFE REGRAS DO COOP
 // ##############################
+/*
+Este arquivo controla o nosso modo cooperativo quase todo.
+
+Modificacoes espalhadas pelo codigo:
+
+game/server/Server.cpp: 
+-- monstros permitidos por padrao no multiplayer
+game/server/entities/player/CBasePlayer.frame.cpp:
+-- executo as alteracoes no nome dos jogadores;
+-- restauro estados de godmode e noclip.
+game/server/entities/player/CBasePlayer.weapons.cpp:
+-- processo sangue negativo (devido a bugs);
+-- retorno a entidade criada em GiveNamedItem() para poder lidar com ela.
+game/shared/entities/player/CBasePlayer.h:
+-- declaracao de GiveNamedItem() modificada.
+game/server/entities/triggers/CChangeLevel.cpp:
+-- conecto o changelevel do modo coop na entidade trigger_changelevel.
+game/server/gamerules/CGameRules.*:
+-- uso vazio e generalizado do changelevel do modo coop.
+game/server/gamerules/CHu3LifeCoop.*:
+-- guarda as variaveis do modo coop que precisam ser acessadas e modificadas em diversos arquivos.
+game/server/gamerules/GameRules.*:
+-- selecao do modo coop modificada para suportar nossos codigos
+
+*/
+
 
 #include "extdll.h"
 #include "util.h"
@@ -236,14 +262,14 @@ bool CBaseHalfLifeCoop::IsMultiplayer() const
 //=========================================================
 bool CBaseHalfLifeCoop::IsDeathmatch() const
 {
-	return true;
+	return true; // Eu retorno como verdadeiro porque quero aproveitar partes do deathmatch
 }
 
 //=========================================================
 //=========================================================
 bool CBaseHalfLifeCoop::IsCoOp() const
 {
-	return gpGlobals->coop != 0;
+	return true;
 }
 
 //=========================================================
@@ -336,6 +362,11 @@ bool CBaseHalfLifeCoop::GetNextBestWeapon(CBasePlayer *pPlayer, CBasePlayerWeapo
 bool CBaseHalfLifeCoop::ClientConnected(edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[CCONNECT_REJECT_REASON_SIZE])
 {
 	g_VoiceGameMgr2.ClientConnected(pEntity);
+	
+	// Se tivermos passado por um changelevel por trigger, ja temos que desativar essa variavel aqui (antes dos jogadores voltarem)
+	if (hu3ChangingLevelWithTrigger)
+		hu3ChangingLevelWithTrigger = false;
+
 	return true;
 }
 
@@ -359,7 +390,7 @@ void CBaseHalfLifeCoop::InitHUD(CBasePlayer *pl)
 			pl->GetNetName(),
 			UTIL_GetPlayerUserId(pl),
 			UTIL_GetPlayerAuthId(pl),
-			g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pl->edict()), " = modelo"));
+			g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pl->edict()), "model"));
 	}
 	else
 	{
@@ -417,6 +448,11 @@ void CBaseHalfLifeCoop::ClientDisconnected(edict_t *pClient)
 	{
 		CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pClient);
 
+		// Isso evita que o jogador recupere informacoes de spawn caso ele saia do jogo por conta propria e volte depois
+		// Tambem tem o mesmo efeito quando o servidor faz changelevel diretamente pelo console
+		if (!hu3ChangingLevelWithTrigger)
+			CoopPlyData[pPlayer->entindex()].pName = "Player";
+
 		if (pPlayer)
 		{
 			FireTargets("game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0);
@@ -428,7 +464,7 @@ void CBaseHalfLifeCoop::ClientDisconnected(edict_t *pClient)
 					pPlayer->GetNetName(),
 					UTIL_GetPlayerUserId(pPlayer),
 					UTIL_GetPlayerAuthId(pPlayer),
-					g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), " = modelo"));
+					g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pPlayer->edict()), "model"));
 			}
 			else
 			{
@@ -512,14 +548,16 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	CBaseEntity *pPlayer2 = NULL;
 	pPlayer2 = (CBaseEntity *)pPlayer;
 
+	// Pego o indice do jogador
+	int i = pPlayer2->entindex();
+
 	// Configuramos o nome do jogador
 	// O retorno dessa funcao eh o indice desse na nossa tabela coop
-	int i = SetPlayerName(pPlayer2);
+	if (!SetPlayerName(pPlayer2))
+		CoopPlyData[i].newplayer = true;
 
-	// A seguinte verificacao faz:
-	// nao reaproveitar nossas infos de spawn quando o jogador usa o comando changelevel no console
-	// nao carregar dados inexistentes (definimos o used para true onde quisermos)
-	if (CoopPlyData[i].used == false)
+	// Configuramos o jogador no caso dele ser novo no server ou dele estar fazendo parte de um changelevel
+	if (!CoopPlyData[i].newplayer)
 	{
 		CBaseEntity* pLandmark = nullptr;
 
@@ -557,11 +595,20 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 				if (CoopPlyData[i].flashlight)
 					pPlayer->FlashlightTurnOn();
 
+				// Restaurar godmode e notarget
+				if (CoopPlyData[i].notarget || CoopPlyData[i].godmode)
+				{
+					CoopPlyData[i].respawncommands = true;
+					hu3ChangelevelPlyCommands = true;
+				}
+
+				// Restaurar noclip
+				if (CoopPlyData[i].noclip)
+					pPlayer2->SetMoveType(MOVETYPE_NOCLIP);
+
 				// Carregar armas e municoes
 				LoadPlayerItems(pPlayer, &CoopPlyData[i]);
 
-				// Finalizacao
-				CoopPlyData[i].used = true;
 				break;
 			}
 		}
@@ -570,9 +617,10 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 
 //=========================================================
 //=========================================================
-int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
+bool CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 {
 	// Vamos validar o nome do jogador. Nao pode ser "Player" e tem que ser unico
+	// retorno: true = nome encontrado na tabela coop; false = nao encontrado
 	// Obs: nunca existem nomes repetidos na nossa tabela coop
 
 	char *name, *aux;
@@ -609,7 +657,7 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 					// Se ainda nao houver um novo nome proposto, entao o nome registrado eh valido. Vou retornar o indice
 					if (strcmp(newName, "") == 0)
 					{
-						return i;
+						return true;
 					}
 					// Caso contrario o jogador encontrado eh um jogador qualquer e precisamos gerar outro novo nome
 					else
@@ -675,14 +723,19 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 
 			// Volto para o loop
 		}
-		// Finalizando a execucao, o nome eh valido
+		// Finalizando a execucao, o nome eh valido!
+		// Obs: o codigo so chega aqui caso haja um nome novo a ser aplicado ou caso nao exista referencias
+		// desse nome na tabela coop (jogador novo com nome valido).
 		else
 		{
+			// Pego o indice do jogador
+			i = pPlayer->entindex();
+
 			// Se houver um novo nome a ser aceito, temos que passar isso adiante
 			if (strcmp(newName, "") != 0)
 			{
 				// Marco as variaveis especiais do CHu3LifeCoop.cpp para rodar no CBasePlayer.server.game.cpp 
-				hu3CoopPlyIndex = pPlayer->entindex();
+				hu3CoopPlyIndex = i;
 				strcpy(hu3NetNewName, newName);
 				hu3ChangeNetName = true;
 			}
@@ -690,11 +743,7 @@ int CBaseHalfLifeCoop::SetPlayerName(CBaseEntity *pPlayer)
 			// Adiciono o jogador na nossa tabela coop
 			CoopPlyData[i].pName = newName;
 
-			// Bloqueio o respawn coop completo ate que esse jogador passe por changelevel
-			CoopPlyData[i].used = true;
-
-			// Retorno o indice do jogador na nossa tabela coop
-			return i;
+			return false;
 		}
 	}
 }
@@ -776,7 +825,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 	// Invalido a tabela de players coop atual atribuindo aos campos de nome usados um nome impossivel de existir
 	// No client MAX_PLAYERS eh 64...
 	for (i; i <= 64; i++)
-		if (CoopPlyData[i].used)
+		if (CoopPlyData[i].pName)
 			CoopPlyData[i].pName = "Player";
 
 	// Salvo o nome do landmark (sera usado no proximo mapa)
@@ -807,6 +856,21 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 		if (pPlayer2->FlashlightIsOn())
 			flashlightState = true;
 
+		// Verifico o godmode
+		bool godmodeState = false;
+		if (hu3Player->pev->flags & FL_GODMODE)
+			godmodeState = true;
+
+		// Verifico o notarget
+		bool notargetState = false;
+		if (hu3Player->pev->flags & FL_NOTARGET)
+			notargetState = true;
+
+		// Verifico o noclip
+		bool noclipState = false;
+		if (hu3Player->GetMoveType() == MOVETYPE_NOCLIP)
+			noclipState = true;
+		
 		// Salvo as infos gerais
 		CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
 		CoopPlyData[i].relPos = relPos;
@@ -824,8 +888,12 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 		CoopPlyData[i].health = hu3Player->pev->health;
 		CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
 		CoopPlyData[i].weapons = hu3Player->pev->weapons;
-		CoopPlyData[i].used = false;
+		CoopPlyData[i].newplayer = false;
 		CoopPlyData[i].changinglevel = true;
+		CoopPlyData[i].godmode = godmodeState;
+		CoopPlyData[i].notarget = notargetState;
+		CoopPlyData[i].noclip = noclipState;
+		CoopPlyData[i].respawncommands = true;
 
 		// Salvo as infos de municao e armas
 		SavePlayerItems(pPlayer2, &CoopPlyData[i]);
@@ -969,28 +1037,8 @@ int CBaseHalfLifeCoop::IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKill
 //=========================================================
 void CBaseHalfLifeCoop::PlayerKilled(CBasePlayer* pVictim, const CTakeDamageInfo& info)
 {
-	// libera o respawn de coop do jogador para uma nova utilizacao (respawn nas mesmas condicoes iniciais do changelevel)
-	// Restricao: jogadores novos ainda nao podem respawnar por completo. Podemos bloquear essa parte deles vendo se o campo velocity esta configurado, eles ainda nao o tem
-	const char *currentName = STRING(pVictim->pev->netname);;
-	int i = 1;
-
-	while (CoopPlyData[i].pName)
-	{
-		if (strcmp(currentName, CoopPlyData[i].pName) == 0)
-		{
-			if (CoopPlyData[i].velocity)
-			{
-				CoopPlyData[i].used = false;
-			}
-			break;
-		}
-
-		i++;
-	}
-	// --
-
 	auto pKiller = info.GetAttacker();
-	//auto pInflictor = info.GetInflictor();
+	auto pInflictor = info.GetInflictor();
 
 	ASSERT(pKiller);
 	ASSERT(pInflictor);
@@ -1124,7 +1172,7 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 		// team match?
 		if (g_teamplay)
 		{
-			UTIL_LogPrintf("\"%s<%i><%s><%s>\" committed suicide with \"%s\"\n",
+			UTIL_LogPrintf("\"%s<%i><%s><%s>\" cometeu suicidio com um(a) \"%s\"\n",
 				pVictim->GetNetName(),
 				UTIL_GetPlayerUserId(pVictim),
 				UTIL_GetPlayerAuthId(pVictim),
@@ -1133,7 +1181,7 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 		}
 		else
 		{
-			UTIL_LogPrintf("\"%s<%i><%s><%i>\" committed suicide with \"%s\"\n",
+			UTIL_LogPrintf("\"%s<%i><%s><%i>\" cometeu suicidio com um(a) \"%s\"\n",
 				pVictim->GetNetName(),
 				UTIL_GetPlayerUserId(pVictim),
 				UTIL_GetPlayerAuthId(pVictim),
@@ -1146,7 +1194,7 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 		// team match?
 		if (g_teamplay)
 		{
-			UTIL_LogPrintf("\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",
+			UTIL_LogPrintf("\"%s<%i><%s><%s>\" matou \"%s<%i><%s><%s>\" com um(a) \"%s\"\n",
 				pKiller->GetNetName(),
 				UTIL_GetPlayerUserId(pKiller),
 				UTIL_GetPlayerAuthId(pKiller),
@@ -1159,7 +1207,7 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 		}
 		else
 		{
-			UTIL_LogPrintf("\"%s<%i><%s><%i>\" killed \"%s<%i><%s><%i>\" with \"%s\"\n",
+			UTIL_LogPrintf("\"%s<%i><%s><%i>\" matou \"%s<%i><%s><%i>\" com um(a) \"%s\"\n",
 				pKiller->GetNetName(),
 				UTIL_GetPlayerUserId(pKiller),
 				UTIL_GetPlayerAuthId(pKiller),
@@ -1178,7 +1226,7 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 		// team match?
 		if (g_teamplay)
 		{
-			UTIL_LogPrintf("\"%s<%i><%s><%s>\" committed suicide with \"%s\" (world)\n",
+			UTIL_LogPrintf("\"%s<%i><%s><%s>\" cometeu suicidio com um(a) \"%s\" (world)\n",
 				pVictim->GetNetName(),
 				UTIL_GetPlayerUserId(pVictim),
 				UTIL_GetPlayerAuthId(pVictim),
@@ -1187,7 +1235,7 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 		}
 		else
 		{
-			UTIL_LogPrintf("\"%s<%i><%s><%i>\" committed suicide with \"%s\" (world)\n",
+			UTIL_LogPrintf("\"%s<%i><%s><%i>\" cometeu suicidio com um(a) \"%s\" (world)\n",
 				pVictim->GetNetName(),
 				UTIL_GetPlayerUserId(pVictim),
 				UTIL_GetPlayerAuthId(pVictim),
@@ -1216,11 +1264,11 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 	if (pKiller->GetFlags().Any(FL_MONSTER))
 	{
 		// killed by a monster
-		snprintf(szBuffer, sizeof(szBuffer), "%s was killed by a monster.\n", pVictim->GetNetName());
+		snprintf(szBuffer, sizeof(szBuffer), "%s foi morto por um monstro.\n", pVictim->GetNetName());
 	}
 	else if (pKiller == pVictim)
 	{
-		snprintf(szBuffer, sizeof(szBuffer), "%s commited suicide.\n", pVictim->GetNetName());
+		snprintf(szBuffer, sizeof(szBuffer), "%s cometeu suicidio.\n", pVictim->GetNetName());
 	}
 	else if (pKiller->GetFlags().Any(FL_CLIENT))
 	{
@@ -1228,15 +1276,15 @@ void CBaseHalfLifeCoop::DeathNotice(CBasePlayer* pVictim, const CTakeDamageInfo&
 	}
 	else if (pKiller->ClassnameIs("worldspawn"))
 	{
-		snprintf(szBuffer, sizeof(szBuffer), "%s fell or drowned or something.\n", pVictim->GetNetName());
+		snprintf(szBuffer, sizeof(szBuffer), "%s caiu ou se afogou ou qualquer coisa.\n", pVictim->GetNetName());
 	}
 	else if (pKiller->GetSolidType() == SOLID_BSP)
 	{
-		snprintf(szBuffer, sizeof(szBuffer), "%s was mooshed.\n", pVictim->GetNetName());
+		snprintf(szBuffer, sizeof(szBuffer), "%s foi assaltado.\n", pVictim->GetNetName());
 	}
 	else
 	{
-		snprintf(szBuffer, sizeof(szBuffer), "%s died mysteriously.\n", pVictim->GetNetName());
+		snprintf(szBuffer, sizeof(szBuffer), "%s morreu misteriosamente.\n", pVictim->GetNetName());
 	}
 
 	UTIL_ClientPrintAll(HUD_PRINTNOTIFY, szBuffer);
@@ -1256,16 +1304,7 @@ void CBaseHalfLifeCoop::PlayerGotWeapon(CBasePlayer *pPlayer, CBasePlayerWeapon 
 //=========================================================
 float CBaseHalfLifeCoop::FlWeaponRespawnTime(CBasePlayerWeapon *pWeapon)
 {
-	if (weaponstay.value > 0)
-	{
-		// make sure it's only certain weapons
-		if (!(pWeapon->iFlags() & ITEM_FLAG_LIMITINWORLD))
-		{
-			return gpGlobals->time + 0;		// weapon respawns almost instantly
-		}
-	}
-
-	return gpGlobals->time + WEAPON_RESPAWN_TIME;
+	return gpGlobals->time + 0;
 }
 
 //=========================================================
@@ -1372,7 +1411,14 @@ int CBaseHalfLifeCoop::ItemShouldRespawn(CItem *pItem)
 //=========================================================
 float CBaseHalfLifeCoop::FlItemRespawnTime(CItem *pItem)
 {
-	return gpGlobals->time + ITEM_RESPAWN_TIME;
+	CBaseEntity *pItem2 = (CBaseEntity *)pItem;
+
+	if ((strcmp(pItem2->GetClassname(), "item_healthkit") == 0) || (strcmp(pItem2->GetClassname(), "item_battery") == 0))
+	{
+		return gpGlobals->time + 20;
+	}
+
+	return gpGlobals->time + 0; // AGORA!
 }
 
 //=========================================================
@@ -1416,7 +1462,7 @@ int CBaseHalfLifeCoop::AmmoShouldRespawn(CBasePlayerAmmo *pAmmo)
 //=========================================================
 float CBaseHalfLifeCoop::FlAmmoRespawnTime(CBasePlayerAmmo *pAmmo)
 {
-	return gpGlobals->time + AMMO_RESPAWN_TIME;
+	return gpGlobals->time + 5;
 }
 
 //=========================================================
@@ -1536,44 +1582,47 @@ void CBaseHalfLifeCoop::ChangeLevel(void)
 
 void CBaseHalfLifeCoop::SendMOTDToClient(CBasePlayer* pPlayer)
 {
-	// read from the MOTD.txt file
-	int length, char_count = 0;
-	char *pFileList;
-	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME((char *)CVAR_GET_STRING("motdfile"), &length);
-
-	// send the server name
-	MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer);
-	WRITE_STRING(CVAR_GET_STRING("hostname"));
-	MESSAGE_END();
-
-	// Send the message of the day
-	// read it chunk-by-chunk,  and send it in parts
-
-	while (pFileList && *pFileList && char_count < MAX_MOTD_LENGTH)
+	if (CoopPlyData[pPlayer->entindex()].newplayer)
 	{
-		char chunk[MAX_MOTD_CHUNK + 1];
+		// read from the MOTD.txt file
+		int length, char_count = 0;
+		char *pFileList;
+		char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME((char *)CVAR_GET_STRING("motdfile"), &length);
 
-		if (strlen(pFileList) < MAX_MOTD_CHUNK)
-		{
-			strcpy(chunk, pFileList);
-		}
-		else
-		{
-			strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
-			chunk[MAX_MOTD_CHUNK] = 0;		// strncpy doesn't always append the null terminator
-		}
-
-		char_count += strlen(chunk);
-		if (char_count < MAX_MOTD_LENGTH)
-			pFileList = aFileList + char_count;
-		else
-			*pFileList = 0;
-
-		MESSAGE_BEGIN(MSG_ONE, gmsgMOTD, NULL, pPlayer);
-		WRITE_BYTE(*pFileList ? 0 : 1);	// 0 means there is still more message to come
-		WRITE_STRING(chunk);
+		// send the server name
+		MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer);
+		WRITE_STRING(CVAR_GET_STRING("hostname"));
 		MESSAGE_END();
-	}
 
-	FREE_FILE(aFileList);
+		// Send the message of the day
+		// read it chunk-by-chunk,  and send it in parts
+
+		while (pFileList && *pFileList && char_count < MAX_MOTD_LENGTH)
+		{
+			char chunk[MAX_MOTD_CHUNK + 1];
+
+			if (strlen(pFileList) < MAX_MOTD_CHUNK)
+			{
+				strcpy(chunk, pFileList);
+			}
+			else
+			{
+				strncpy(chunk, pFileList, MAX_MOTD_CHUNK);
+				chunk[MAX_MOTD_CHUNK] = 0;		// strncpy doesn't always append the null terminator
+			}
+
+			char_count += strlen(chunk);
+			if (char_count < MAX_MOTD_LENGTH)
+				pFileList = aFileList + char_count;
+			else
+				*pFileList = 0;
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgMOTD, NULL, pPlayer);
+			WRITE_BYTE(*pFileList ? 0 : 1);	// 0 means there is still more message to come
+			WRITE_STRING(chunk);
+			MESSAGE_END();
+		}
+
+		FREE_FILE(aFileList);
+	}
 }

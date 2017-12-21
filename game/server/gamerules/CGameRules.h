@@ -403,7 +403,7 @@ public:
 
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
-	// Novo changelevel gambiarrado
+	// Declaracao do uso vazio e generalizado do changelevel do modo coop
 	virtual void ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap);
 	// ############ //
 };

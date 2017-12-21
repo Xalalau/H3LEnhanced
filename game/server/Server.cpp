@@ -50,7 +50,7 @@ cvar_t	defaultteam = {"mp_defaultteam","0" };
 // ############ hu3lifezado ############ //
 // Remover as armas do jogador
 cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
-// [MODO COOP]
+// [MODO COOP] (tambem)
 // Permitir monstros por padrao no multiplayer
 cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
 // ############ //

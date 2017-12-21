@@ -8,6 +8,11 @@
 
 #include "CChangeLevel.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/CHu3LifeCoop.h"
+// ############ //
+
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity );
 
 extern DLL_GLOBAL bool		g_fGameOver;
@@ -178,7 +183,10 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// [MODO COOP]
 	// Changelevel do coop eh diferente no final
 	if (g_pGameRules->IsCoOp())
+	{
+		hu3ChangingLevelWithTrigger = true;
 		g_pGameRules->ChangeLevelCoop(pLandmark, m_szLandmarkName, st_szNextMap);
+	}
 	else
 		CHANGE_LEVEL(st_szNextMap, st_szNextSpot);
 	// ############ //

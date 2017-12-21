@@ -23,4 +23,10 @@ char hu3NetNewName[32] = "";
 // Se um nome precisa ser alterado ou nao
 bool hu3ChangeNetName = false;
 
+// Restaurar godmode e notarget depois de um changelevel ou morte
+bool hu3ChangelevelPlyCommands = false;
+
+// Informa que o jogo esta passando por um changelevel ativado por trigger
+extern bool hu3ChangingLevelWithTrigger = false;
+
 #endif //GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP
