@@ -24,7 +24,8 @@ game/server/gamerules/CHu3LifeCoop.*:
 -- guarda as variaveis do modo coop que precisam ser acessadas e modificadas em diversos arquivos.
 game/server/gamerules/GameRules.*:
 -- selecao do modo coop modificada para suportar nossos codigos
-
+game/shared/entities/NPCs/CRoach.cpp:
+-- uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada
 */
 
 
