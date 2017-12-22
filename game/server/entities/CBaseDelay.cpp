@@ -77,6 +77,10 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 		pTemp->m_iszKillTarget = m_iszKillTarget;
 		pTemp->m_flDelay = 0; // prevent "recursion"
 		pTemp->SetTarget( GetTarget() );
+		// ############ hu3lifezado ############ //
+		// CONSERTO: DelayedUse estava sendo passada ao inves da entidade correta
+		pTemp->SetChain( this );
+		// ############ //
 
 		// HACKHACK
 		// This wasn't in the release build of Half-Life.  We should have moved m_hActivator into this class
@@ -116,7 +120,10 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 	//
 	if( HasTarget() )
 	{
-		FireTargets( GetTarget(), pActivator, this, useType, value );
+		// ############ hu3lifezado ############ //
+		// CONSERTO: DelayedUse estava sendo passada ao inves da entidade correta
+		FireTargets( GetTarget(), pActivator, GetChain(), useType, value );
+		// ############ //
 	}
 }
 
