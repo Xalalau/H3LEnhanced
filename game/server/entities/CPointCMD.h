@@ -19,16 +19,14 @@ class CPointCMD : public CPointEntity
 {
 public:
 	DECLARE_CLASS( CPointCMD, CPointEntity );
-	DECLARE_DATADESC();
 
 	void Spawn(void);
 
 	void KeyValue(KeyValueData *pkvd);
 	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	void Think(void);
-	void RunCommand(void);
 
-	string_t m_Command;		// command to execute
+	string_t m_command;		// Comando
+	string_t m_target;      // Alvo(s)
 };
 
 #endif //GAME_SERVER_CPOINTCMD_H

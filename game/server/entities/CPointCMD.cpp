@@ -1,7 +1,16 @@
 // ##############################
 // HU3-LIFE point_cmd
 // ##############################
-// Entidade que roda comandos de console
+/*
+Entidade que executa comandos de console nos seguintes alvos:
+
+1) "clients" = em cada jogador;
+2) "server" = no servidor;
+4) "random client" = em um jogador qualquer.
+
+Ela eh ativada apenas por chamada de outras entidades (via target).
+Ela So funciona uma unica vez.
+*/
 
 #include "extdll.h"
 #include "util.h"
@@ -10,17 +19,18 @@
 
 #include "CPointCMD.h"
 
-BEGIN_DATADESC( CPointCMD )
-	DEFINE_FIELD(m_Command, FIELD_STRING),
-END_DATADESC()
-
 LINK_ENTITY_TO_CLASS(point_cmd, CPointCMD);
 
 void CPointCMD::KeyValue(KeyValueData *pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "command"))
+	if (FStrEq(pkvd->szKeyName, "command")) // Comando
 	{
-		m_Command = ALLOC_STRING(pkvd->szValue);
+		m_command = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = true;
+	}
+	else if (FStrEq(pkvd->szKeyName, "hu3target")) // Alvo. Obs: hu3target porque target ja esta em uso pelo jogo
+	{
+		m_target = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = true;
 	}
 	else
@@ -29,6 +39,10 @@ void CPointCMD::KeyValue(KeyValueData *pkvd)
 
 void CPointCMD::Spawn(void)
 {
+	// Precisa dos argumentos
+	if ((m_command == NULL) || (m_target == NULL))
+		ALERT(at_console, "Estao faltando argumentos num point_cmd... Ele nao funcionara!\n");
+
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 
@@ -38,40 +52,41 @@ void CPointCMD::Spawn(void)
 
 void CPointCMD::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	RunCommand();
-}
-
-// only plays for ONE client, so only use in single play!
-void CPointCMD::Think(void)
-{
-	edict_t *pClient;
-
-	// manually find the single player. 
-	pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
-
-	// Can't play if the client is not connected!
-	if (!pClient)
+	// Precisa dos argumentos
+	if ((m_command == NULL) || (m_target == NULL))
+	{
+		ALERT(at_console, "Estao faltando argumentos num point_cmd... Ele nao funcionara!\n");
 		return;
+	}
 
-	pev->nextthink = gpGlobals->time + 0.5;
+	// Rodar comando uma unica vez no servidor
+	if (strcmp(STRING(m_target), "server") == 0)
+	{
+		SERVER_COMMAND(UTIL_VarArgs("%s\n", STRING(m_command)));
+	}
+	// Rodar comando em cada jogador
+	else if (strcmp(STRING(m_target), "clients") == 0)
+	{
+		edict_t *hu3Player;
+		int i = 1;
 
-	if ((pClient->v.origin - pev->origin).Length() <= pev->scale)
-		RunCommand();
+		while ((hu3Player = g_engfuncs.pfnPEntityOfEntIndex(i)) != nullptr)
+		{
+			CLIENT_COMMAND(hu3Player, "%s\n", STRING(m_command));
+			i++;
+		}
+	}
+	// Rodar comando em algum jogador qualquer
+	else if (strcmp(STRING(m_target), "random client") == 0)
+	{
+		int i = 1;
 
-}
+		while (g_engfuncs.pfnPEntityOfEntIndex(i) != nullptr)
+			i++;
 
-void CPointCMD::RunCommand()
-{
-	ASSERT(!FStrEq(STRING(m_Command), ""));
+		CLIENT_COMMAND(g_engfuncs.pfnPEntityOfEntIndex(RANDOM_LONG(1, i)), "%s\n", STRING(m_command));
+	}
 
-	edict_t *pClient;
-
-	// manually find the single player. 
-	pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
-
-	// Can't play if the client is not connected!
-	if (!pClient)
-		return;
-
-	CLIENT_COMMAND(pClient, "%s\n", STRING(m_Command));
+	// Remover a entidade
+	UTIL_Remove(this);
 }

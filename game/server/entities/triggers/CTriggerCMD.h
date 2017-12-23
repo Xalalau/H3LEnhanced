@@ -19,17 +19,15 @@ class CTriggerCMD : public CBaseTrigger
 {
 public:
 	DECLARE_CLASS( CTriggerCMD, CBaseTrigger );
-	DECLARE_DATADESC();
 
 	void Spawn( void );
 
 	void KeyValue( KeyValueData *pkvd );
-	virtual void Use( CBaseEntity pActivator, CBaseEntity pCaller, USE_TYPE useType, float value );
-	void RunCommand( );
 
 	void Touch ( CBaseEntity *pOther );
 
-	string_t m_Command;		// command to execute
+	string_t m_command;		// Comando
+	string_t m_target;      // Alvo(s)
 };
 
 
