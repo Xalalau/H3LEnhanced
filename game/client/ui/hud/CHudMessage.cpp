@@ -239,7 +239,10 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 {
 	int i, j, length, width;
 	const char *pText;
-	unsigned char line[80];
+	// ############ hu3lifezado ############ //
+	// Limite aumentado de 80 para 160.
+	unsigned char line[160];
+	// ############ //
 
 	pText = pMessage->pMessage;
 	// Count lines
