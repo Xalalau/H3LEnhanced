@@ -8,6 +8,8 @@
 #include "CGameRules.h"
 #include "CHu3LifeCoop.h"
 
+#define SPAWNPROTECTIONTIME 4;
+
 class CBaseHalfLifeCoop : public CGameRules
 {
 public:

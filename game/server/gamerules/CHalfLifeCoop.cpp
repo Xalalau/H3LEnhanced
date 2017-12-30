@@ -17,7 +17,10 @@ game/server/entities/player/CBasePlayer.weapons.cpp:
 game/shared/entities/player/CBasePlayer.h:
 -- declaracao de GiveNamedItem() modificada.
 game/server/entities/triggers/CChangeLevel.cpp:
--- conecto o changelevel do modo coop na entidade trigger_changelevel.
+-- ChangeLevelNow() foi:
+--- conectada com a funcao ChangeLevelCoop();
+--- adaptada para prender os jogadores que entram em posicao valida de changelevel.
+-- InTransitionVolume() foi adaptada para usar o trigger_changelevel e validar varios jogadores.
 game/server/gamerules/CGameRules.*:
 -- uso vazio e generalizado do changelevel do modo coop.
 game/server/gamerules/CHu3LifeCoop.*:
@@ -26,6 +29,8 @@ game/server/gamerules/GameRules.*:
 -- selecao do modo coop modificada para suportar nossos codigos
 game/shared/entities/NPCs/CRoach.cpp:
 -- uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada
+game/shared/entities/CWorld.cpp:
+-- precache do sprite do changelevel
 */
 
 
@@ -376,6 +381,15 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	MESSAGE_BEGIN(MSG_ONE, gmsgGameMode, NULL, pPlayer);
 	WRITE_BYTE(0);  // game mode none
 	MESSAGE_END();
+
+	// Adiciono um sprite em cada landmark
+	CBaseEntity* pLandmark = nullptr;
+
+	while ((pLandmark = UTIL_FindEntityByClassname(pLandmark, "info_landmark")) != nullptr)
+	{
+		CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
+		pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
+	}
 }
 
 void CBaseHalfLifeCoop::InitHUD(CBasePlayer *pl)
@@ -504,6 +518,10 @@ float CBaseHalfLifeCoop::FlPlayerFallDamage(CBasePlayer *pPlayer)
 //=========================================================
 bool CBaseHalfLifeCoop::FPlayerCanTakeDamage(CBasePlayer *pPlayer, const CTakeDamageInfo& info)
 {
+	// Nao deixo matarem jogadores que estao aguardando o changelevel kkkk
+	if (CoopPlyData[pPlayer->entindex()].waitingforchangelevel)
+		return false;
+
 	return true;
 }
 
@@ -522,6 +540,29 @@ void CBaseHalfLifeCoop::PlayerThink(CBasePlayer *pPlayer)
 		pPlayer->GetButtons().Set(0);
 		pPlayer->m_afButtonReleased = 0;
 	}
+
+	// Apos respawn e de certo tempo, restaurar solidez de pessoas que nao estejam em area de changelevel
+	if (!CoopPlyData[pPlayer->entindex()].waitingforchangelevel)
+	{
+		if (pPlayer->GetSolidType() == SOLID_NOT)
+			if (CoopPlyData[pPlayer->entindex()].notSolidWait < gpGlobals->time)
+			{
+				// Esse codigo de detectar colisoes eh meio bosta, nao funciona pra tudo
+				TraceResult trace;
+				edict_t *pPlayer2 = ENT(pPlayer);
+				UTIL_TraceHull(pPlayer2->v.origin, pPlayer2->v.origin, dont_ignore_monsters, Hull::HEAD, pPlayer2, &trace);
+				if (trace.fStartSolid)
+				{
+					CoopPlyData[pPlayer->entindex()].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
+				}
+				else
+				{
+					pPlayer->SetSolidType(SOLID_SLIDEBOX);
+					pPlayer->SetRenderMode(kRenderNormal);
+				}
+			}
+	}
+
 }
 
 //=========================================================
@@ -556,6 +597,15 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	// O retorno dessa funcao eh o indice desse na nossa tabela coop
 	if (!SetPlayerName(pPlayer2))
 		CoopPlyData[i].newplayer = true;
+
+	// Deixar o jogador passavel e com efeitos durante algum tempo
+	CoopPlyData[i].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
+	pPlayer2->SetSolidType(SOLID_NOT);
+	pPlayer2->SetRenderMode(kRenderTransAdd);
+	pPlayer2->SetRenderAmount(230);
+	const Vector vecColor = { 0.6f, 0.8f, 1.0f };
+	pPlayer2->SetRenderColor(vecColor);
+	pPlayer2->SetRenderFX(kRenderFxFadeFast);
 
 	// Configuramos o jogador no caso dele ser novo no server ou dele estar fazendo parte de um changelevel
 	if (!CoopPlyData[i].newplayer)
@@ -609,6 +659,10 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 
 				// Carregar armas e municoes
 				LoadPlayerItems(pPlayer, &CoopPlyData[i]);
+
+				// Liberar a checagem de changelevel 
+				if (CoopPlyData[i].waitingforchangelevel)
+					CoopPlyData[i].waitingforchangelevel = false;
 
 				break;
 			}

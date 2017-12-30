@@ -1,6 +1,9 @@
 #ifndef GAME_SERVER_GAMERULES_CHU3FLIFECOOP_H
 #define GAME_SERVER_GAMERULES_CHU3FLIFECOOP_H
 
+class CBaseEntity;
+class CSprite;
+
 //Guardar as informacoes dos players
 struct playerCoopWeapons {
 	char name[30];
@@ -19,6 +22,7 @@ struct playerCoopSaveRestore {
 	Vector punchangle;
 	bool newplayer; // Controle do respawn
 	bool changinglevel; // Serve para o hack de acerto das municoes
+	bool waitingforchangelevel; // Serve para prender os jogadores numa posicao valida de changelevel
 	int weapons; // HUD
 	int team;
 	float armorvalue;
@@ -34,6 +38,7 @@ struct playerCoopSaveRestore {
 	bool notarget;
 	bool noclip;
 	bool respawncommands; // Uso isso para finalizar changelevels ou mortes do jogador
+	float notSolidWait; // Tempo minimo que o jogador precisa levar no estado nao solido assim que spawna
 	struct playerCoopWeapons keepweapons[64];
 };
 

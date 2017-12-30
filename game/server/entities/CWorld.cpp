@@ -137,6 +137,13 @@ void CWorld::Precache()
 
 	InstallGameRules();
 
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Changelevel do coop leva esse sprite
+	if (g_pGameRules->IsCoOp())
+		PRECACHE_MODEL("sprites/changelevel.spr");
+	// ############ //
+
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
 
 	///!!!LATER - do we want a sound ent in deathmatch? (sjb)
