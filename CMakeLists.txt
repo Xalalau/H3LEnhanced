@@ -10,7 +10,7 @@ cmake_minimum_required( VERSION 3.6 )
 include( cmake/InputFilesList.cmake )
 include( cmake/MSVCRuntime.cmake )
 
-project( HLEnhanced )
+project( H3LEnhanced )
 
 include( cmake/WinXPSupport.cmake )
 
@@ -54,7 +54,7 @@ endif()
 
 #Base dir for game outputs
 set( GAME_BIN_PATH "${STEAMCOMMON}/Half-Life" )
-set( GAME_BASE_PATH "${GAME_BIN_PATH}/Hu3-Life" )
+set( GAME_BASE_PATH "${GAME_BIN_PATH}/Hu3-Life_GitHub" )
 
 MESSAGE( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
