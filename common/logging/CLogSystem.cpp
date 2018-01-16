@@ -199,7 +199,13 @@ std::shared_ptr<spdlog::logger> CLogSystem::CreateDailyLogger( const std::string
 		{
 			const auto szCompleteFilename{ PrepareFilename( filename ) };
 
-			return spdlog::LOGGING_FACTORY( daily_logger )( logger_name, szCompleteFilename, hour, minute );
+			auto sink = std::make_shared<LogSink_t>(
+				PrepareFilename( szCompleteFilename ),
+				hour,
+				minute
+			);
+
+			return spdlog::create( logger_name, sink );
 		}
 	);
 }
