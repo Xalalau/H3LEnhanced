@@ -115,6 +115,10 @@ bool CLogSystem::Initialize()
 
 void CLogSystem::Shutdown()
 {
+	//So that there's a "Log file closed" message with a timestamp.
+	if( IsLogToFileEnabled() )
+		DisableLogToFile();
+
 	m_State = State::UNINITIALIZED;
 
 	{
@@ -332,6 +336,50 @@ void CLogSystem::SetBasePath( std::string&& szPath )
 	//TODO: update existing sinks? - Solokiller
 }
 
+bool CLogSystem::IsLogToFileEnabled() const
+{
+	return !!m_LogFileSink;
+}
+
+void CLogSystem::SetLogToFile( const bool bState )
+{
+	if( bState )
+		EnableLogToFile();
+	else
+		DisableLogToFile();
+}
+
+void CLogSystem::EnableLogToFile()
+{
+	if( !IsLogToFileEnabled() )
+	{
+		const char szBaseFilename[] = "L";
+
+		const auto szBaseName = PrepareFilename( szBaseFilename );
+
+		auto logFile = CreateLogSink( szBaseFilename );
+
+		if( logFile )
+		{
+			m_LogFileSink = logFile;
+			Con_Printf( "%s logging data to file %s\n", LIBRARY_NAME, szBaseName.c_str() );
+			m_LogDistSink->add_sink( m_LogFileSink );
+		}
+	}
+}
+
+void CLogSystem::DisableLogToFile()
+{
+	if( IsLogToFileEnabled() )
+	{
+		log->critical( "Log file closed" );
+		m_LogDistSink->remove_sink( m_LogFileSink );
+		m_LogFileSink.reset();
+	}
+
+	Con_Printf( "%s logging disabled.\n", LIBRARY_NAME );
+}
+
 void CLogSystem::Command_LogLevel()
 {
 	if( Cmd_ArgC() < 2 )
@@ -393,30 +441,11 @@ void CLogSystem::Command_LogToFile()
 
 	if( !strcmp( pszNewState, "on" ) )
 	{
-		if( !m_LogFileSink )
-		{
-			const auto szBaseName = PrepareFilename( "L" );
-
-			auto logFile = CreateLogSink( szBaseName );
-
-			if( logFile )
-			{
-				m_LogFileSink = logFile;
-				Con_Printf( "%s logging data to file %s\n", LIBRARY_NAME, szBaseName.c_str() );
-				m_LogDistSink->add_sink( m_LogFileSink );
-			}
-		}
+		EnableLogToFile();
 	}
 	else if( !strcmp( pszNewState, "off" ) )
 	{
-		if( m_LogFileSink )
-		{
-			log->critical( "Log file closed\n" );
-			m_LogDistSink->remove_sink( m_LogFileSink );
-			m_LogFileSink.reset();
-		}
-
-		Con_Printf( "%s logging disabled.\n", LIBRARY_NAME );
+		DisableLogToFile();
 	}
 	else
 	{

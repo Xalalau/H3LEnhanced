@@ -89,6 +89,14 @@ public:
 	*/
 	void SetBasePath( std::string&& szPath );
 
+	bool IsLogToFileEnabled() const;
+
+	void SetLogToFile( const bool bState );
+
+	void EnableLogToFile();
+
+	void DisableLogToFile();
+
 private:
 	void Command_LogLevel();
 
