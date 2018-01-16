@@ -84,13 +84,19 @@ bool CLogSystem::Initialize()
 	if( UTIL_CheckParm( "-condebug" ) )
 	{
 		m_DebugSink = std::make_shared<LogSink_t>( PrepareFilename( "condebug" ), 0, 0 );
+
+		if( !m_DebugSink )
+		{
+			Con_Printf( "Fatal error: Couldn't create condebug log sink\n" );
+			return false;
+		}
 	}
 
 	m_ConsoleSink = std::make_shared<CConsoleLogSink<LoggingMutex_t>>();
 
 	m_LogDistSink = std::make_shared<LOGGING_FACTORY( spdlog::sinks::dist_sink )>();
 
-	if( !m_DebugSink ||!m_ConsoleSink || !m_LogDistSink )
+	if( !m_ConsoleSink || !m_LogDistSink )
 	{
 		Con_Printf( "Fatal error: Couldn't create log sinks\n" );
 		return false;
