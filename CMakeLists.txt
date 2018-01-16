@@ -192,6 +192,7 @@ endif()
 #Shared directories
 #Include paths for external dependencies. Should always come after all project paths.
 set( SHARED_EXTERNAL_INCLUDE_PATHS
+	${EXTERNAL_DIR}/spdlog/include
 )
 
 if( USE_ANGELSCRIPT )
