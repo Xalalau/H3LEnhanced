@@ -11,6 +11,7 @@
 #include <spdlog/sinks/dist_sink.h>
 #include <spdlog/sinks/file_sinks.h>
 
+#include "CLogExtFileNameGenerator.h"
 #include "LogDefs.h"
 
 namespace spdlog
@@ -34,6 +35,8 @@ private:
 		UNINITIALIZED = 0,
 		ACTIVE
 	};
+
+	using LogSink_t = spdlog::sinks::daily_file_sink<LoggingMutex_t, CLogExtFileNameGenerator<spdlog::sinks::default_daily_file_name_calculator>>;
 
 public:
 	CLogSystem();
@@ -113,7 +116,7 @@ private:
 	*/
 	std::string PrepareFilename( const std::string& szFilename ) const;
 
-	std::shared_ptr<LOGGING_FACTORY( spdlog::sinks::daily_file_sink )> CreateLogSink( const std::string& szBaseName );
+	std::shared_ptr<LogSink_t> CreateLogSink( const std::string& szBaseName );
 
 private:
 	std::string m_szBasePath;

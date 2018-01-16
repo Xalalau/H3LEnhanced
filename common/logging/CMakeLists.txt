@@ -1,5 +1,6 @@
 add_sources(
 	CConsoleLogSink.h
+	CLogExtFileNameGenerator.h
 	CLogSystem.cpp
 	CLogSystem.h
 	LogDefs.h

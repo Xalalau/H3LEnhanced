@@ -83,7 +83,7 @@ bool CLogSystem::Initialize()
 
 	if( UTIL_CheckParm( "-condebug" ) )
 	{
-		m_DebugSink = std::make_shared<spdlog::sinks::daily_file_sink<LoggingMutex_t>>( PrepareFilename( "condebug.log" ), 0, 0 );
+		m_DebugSink = std::make_shared<LogSink_t>( PrepareFilename( "condebug" ), 0, 0 );
 	}
 
 	m_ConsoleSink = std::make_shared<CConsoleLogSink<LoggingMutex_t>>();
@@ -147,7 +147,7 @@ void CLogSystem::Shutdown()
 
 //Helper function to create loggers and handle the exception
 template<typename FACTORY>
-std::shared_ptr<spdlog::logger> CreateLogger( const std::string& logger_name, FACTORY factory )
+auto CreateSpdLogObject( const std::string& szName, FACTORY factory )
 {
 	try
 	{
@@ -156,15 +156,15 @@ std::shared_ptr<spdlog::logger> CreateLogger( const std::string& logger_name, FA
 	catch( const spdlog::spdlog_ex& e )
 	{
 		//Should always be shown so devs can catch it
-		Con_Printf( "Failed to create logger \"%s\": %s\n", logger_name.c_str(), e.what() );
+		Con_Printf( "Failed to create spdlog object \"%s\": %s\n", szName.c_str(), e.what() );
 	}
 
-	return nullptr;
+	return decltype( factory() ){};
 }
 
 std::shared_ptr<spdlog::logger> CLogSystem::CreateBasicLogger( const std::string& logger_name, const spdlog::filename_t& filename, bool truncate )
 {
-	return CreateLogger( logger_name,
+	return CreateSpdLogObject( logger_name,
 		[ & ]()
 		{
 			const auto szCompleteFilename{ PrepareFilename( filename ) };
@@ -176,7 +176,7 @@ std::shared_ptr<spdlog::logger> CLogSystem::CreateBasicLogger( const std::string
 
 std::shared_ptr<spdlog::logger> CLogSystem::CreateRotatingLogger( const std::string& logger_name, const spdlog::filename_t& filename, size_t max_file_size, size_t max_files )
 {
-	return CreateLogger( logger_name,
+	return CreateSpdLogObject( logger_name,
 		[ & ]()
 		{
 			const auto szCompleteFilename{ PrepareFilename( filename ) };
@@ -188,7 +188,7 @@ std::shared_ptr<spdlog::logger> CLogSystem::CreateRotatingLogger( const std::str
 
 std::shared_ptr<spdlog::logger> CLogSystem::CreateDailyLogger( const std::string& logger_name, const spdlog::filename_t& filename, int hour, int minute )
 {
-	return CreateLogger( logger_name,
+	return CreateSpdLogObject( logger_name,
 		[ & ]()
 		{
 			const auto szCompleteFilename{ PrepareFilename( filename ) };
@@ -203,7 +203,7 @@ std::shared_ptr<spdlog::logger> CLogSystem::CreateConsoleLogger( const std::stri
 	if( m_State != State::ACTIVE )
 		Con_DPrintf( "Warning: log system has not initialized, console loggers may not function properly\n" );
 
-	return CreateLogger( logger_name,
+	return CreateSpdLogObject( logger_name,
 		[ & ]()
 		{
 			std::vector<spdlog::sink_ptr> sinks;
@@ -224,7 +224,7 @@ std::shared_ptr<spdlog::logger> CLogSystem::CreateMultiLogger( const std::string
 	if( m_State != State::ACTIVE )
 		Con_DPrintf( "Warning: log system has not fully initialized, multi loggers may not function properly\n" );
 
-	return CreateLogger( logger_name,
+	return CreateSpdLogObject( logger_name,
 		[ & ]()
 		{
 			std::vector<spdlog::sink_ptr> sinks;
@@ -243,7 +243,7 @@ std::shared_ptr<spdlog::logger> CLogSystem::CreateMultiLogger( const std::string
 
 std::shared_ptr<spdlog::logger> CLogSystem::CreateNullLogger( const std::string& logger_name )
 {
-	return CreateLogger( logger_name,
+	return CreateSpdLogObject( logger_name,
 		[ & ]()
 		{
 			return spdlog::create( logger_name, m_NullSink );
@@ -529,12 +529,17 @@ std::string CLogSystem::PrepareFilename( const std::string& szFilename ) const
 	return m_szBasePath + szFilename;
 }
 
-std::shared_ptr<LOGGING_FACTORY( spdlog::sinks::daily_file_sink )> CLogSystem::CreateLogSink( const std::string& szBaseName )
+std::shared_ptr<CLogSystem::LogSink_t> CLogSystem::CreateLogSink( const std::string& szBaseName )
 {
-	return std::make_shared<LOGGING_FACTORY( spdlog::sinks::daily_file_sink )>(
-		PrepareFilename( szBaseName ),
-		0,
-		0
+	return CreateSpdLogObject( szBaseName,
+		[ & ]()
+		{
+			return std::make_shared<LogSink_t>(
+				PrepareFilename( szBaseName ),
+				0,
+				0
+			);
+		}
 	);
 }
 }
