@@ -203,24 +203,7 @@ if( USE_ANGELSCRIPT )
 	)
 endif()
 
-#Xerces-C requirements
-#Version used for development. Older versions may not work properly.
-set( XERCESC_DEV_VERSION 3.2.0 )
-
-set( XERCESC_INSTALL_DIR "" CACHE PATH "Install directory for Xercesc-C" )
-
-find_package( XercesC PATHS ${XERCESC_INSTALL_DIR} NO_DEFAULT_PATH REQUIRED )
-
-if( NOT XercesC_FOUND )
-	message( FATAL_ERROR "Could not find Xercesc-C dependency" )
-endif()
-
-message( STATUS "Xerces-C version: ${XercesC_VERSION} (dev version: ${XERCESC_DEV_VERSION})" )
-
-#Warn user if they're using an outdated version
-if( ${XercesC_VERSION} VERSION_LESS ${XERCESC_DEV_VERSION} )
-	message( WARNING "Xerces-C version is older than version used to develop with" )
-endif()
+find_package( XercesC CONFIG 3.2.0 REQUIRED )
 
 set( SHARED_INCLUDE_PATHS
 	common
@@ -237,7 +220,6 @@ set( SHARED_INCLUDE_PATHS
 	source_sdk/public
 	source_sdk/common
 	${CMAKE_SOURCE_DIR}  #Should ideally get rid of this.
-	${XercesC_INCLUDE_DIRS}
 )
 
 add_subdirectory( common )
@@ -277,7 +259,7 @@ set( SHARED_DEPENDENCIES
 	${TIER0}
 	${VSTDLIB}
 	tier1
-	${XercesC_LIBRARIES}
+	XercesC::XercesC
 )
 
 set( THREADS_PREFER_PTHREAD_FLAG ON )
