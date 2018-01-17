@@ -14,6 +14,7 @@ add_sources(
 	CXMLManager.cpp
 	CXMLManager.h
 	CXStr.h
+	Logging.h
 	XMLUtils.cpp
 	XMLUtils.h
 )

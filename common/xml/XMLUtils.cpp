@@ -3,6 +3,7 @@
 #include "extdll.h"
 #include "util.h"
 
+#include "Logging.h"
 #include "XMLUtils.h"
 
 namespace xml
@@ -17,13 +18,13 @@ bool GetKeyValue( const xercesc::DOMNamedNodeMap& map, std::string& szKey, std::
 
 	if( !pKey )
 	{
-		Alert( at_console, "Couldn't find XML keyvalue key attribute\n" );
+		log->debug( "Couldn't find XML keyvalue key attribute\n" );
 		return false;
 	}
 
 	if( !pValue )
 	{
-		Alert( at_console, "Couldn't find XML keyvalue value attribute\n" );
+		log->debug( "Couldn't find XML keyvalue value attribute\n" );
 		return false;
 	}
 
@@ -35,7 +36,7 @@ bool GetKeyValue( const xercesc::DOMNamedNodeMap& map, std::string& szKey, std::
 
 	if( !xercesc::XMLString::transcode( pszKey, &szKey[ 0 ], uiKeyLength ) )
 	{
-		Alert( at_console, "Couldn't transcode XML keyvalue key attribute\n" );
+		log->debug( "Couldn't transcode XML keyvalue key attribute\n" );
 		return false;
 	}
 
@@ -47,7 +48,7 @@ bool GetKeyValue( const xercesc::DOMNamedNodeMap& map, std::string& szKey, std::
 
 	if( !xercesc::XMLString::transcode( pszValue, &szValue[ 0 ], uiValueLength ) )
 	{
-		Alert( at_console, "Couldn't transcode XML keyvalue value attribute\n" );
+		log->debug( "Couldn't transcode XML keyvalue value attribute\n" );
 		szKey.clear();
 		return false;
 	}
