@@ -22,6 +22,8 @@
 #include "util.h"
 #include "CFile.h"
 
+#include "logging/CLogSystem.h"
+
 #include "CConsoleFormatTarget.h"
 #include "CDOMPrintErrorHandler.h"
 #include "CErrorHandler.h"
@@ -45,6 +47,8 @@ CXMLManager& XMLManager()
 	return g_XMLManager;
 }
 
+std::shared_ptr<spdlog::logger> log = nullptr;
+
 CXMLManager::CXMLManager()
 {
 }
@@ -55,6 +59,8 @@ CXMLManager::~CXMLManager()
 
 bool CXMLManager::Initialize()
 {
+	log = logging::LogSystem().CreateMultiLogger( "xml" );
+
 	try
 	{
 		xercesc::XMLPlatformUtils::Initialize();
@@ -78,11 +84,11 @@ bool CXMLManager::Initialize()
 
 		assert( m_pDOMImpl );
 
-		Alert( at_console, "Xerces-C initialized\n" );
+		log->info( "Xerces-C initialized" );
 	}
 	catch( const xercesc::XMLException& e )
 	{
-		Alert( at_error, "Error initializing Xerces XML: %s\n", CStrX( e.getMessage() ).LocalForm() );
+		log->critical( "Error initializing Xerces XML: {}", CStrX( e.getMessage() ).LocalForm() );
 	}
 
 	return m_bInitialized;
@@ -108,10 +114,18 @@ void CXMLManager::Shutdown()
 
 		m_bInitialized = false;
 	}
+
+	if( log )
+	{
+		logging::LogSystem().DropLogger( log );
+		log.reset();
+	}
 }
 
 unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseInputSource( const xercesc::InputSource& source )
 {
+	log->trace( "Parsing input source" );
+
 	bool bErrorsOccurred = true;
 
 	try
@@ -125,29 +139,32 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseInputSource( const xerces
 	}
 	catch( const xercesc::OutOfMemoryException& )
 	{
-		Alert( at_error, "Ran out of memory while parsing XML file\n" );
+		log->critical( "Ran out of memory while parsing XML file" );
 	}
 	catch( const xercesc::XMLException& e )
 	{
-		Alert( at_error, "Error parsing XML file: %s\n", CStrX( e.getMessage() ).LocalForm() );
+		log->error( "Error parsing XML file: {}", CStrX( e.getMessage() ).LocalForm() );
 	}
 	catch( const xercesc::DOMException& e )
 	{
 		const unsigned int maxChars = 2047;
 		XMLCh errText[ maxChars + 1 ];
 
-		Alert( at_error, "\nDOM Error during parsing: '%s'\nDOMException code is:  %hd\n", CStrX( source.getSystemId() ).LocalForm(), e.code );
+		log->error( "\nDOM Error during parsing: '{}'\nDOMException code is: {}", CStrX( source.getSystemId() ).LocalForm(), e.code );
 
 		if( xercesc::DOMImplementation::loadDOMExceptionMsg( e.code, errText, maxChars ) )
-			Alert( at_error, "Message is: %s\n", CStrX( errText ).LocalForm() );
+			log->error( "Message is: {}\n", CStrX( errText ).LocalForm() );
 	}
 	catch( ... )
 	{
-		Alert( at_error, "An error occurred during parsing\n " );
+		log->error( "An error occurred during parsing" );
 	}
+
+	log->trace( "Parsing completed" );
 
 	if( !bErrorsOccurred && !m_ErrorHandler->GetSawErrors() )
 	{
+		log->trace( "No errors" );
 		return unique_xml_ptr<xercesc::DOMDocument>{ m_Parser->adoptDocument() };
 	}
 
@@ -161,22 +178,24 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseBuffer( const char* pszBu
 
 	if( !pszBufId )
 	{
-		Alert( at_error, "NULL buffer id given to CXMLManager::ParseBuffer!" );
+		log->error( "NULL buffer id given to CXMLManager::ParseBuffer!" );
 		return nullptr;
 	}
 
 	if( !pszBuffer )
 	{
-		Alert( at_error, "NULL buffer given to CXMLManager::ParseBuffer!" );
+		log->error( "NULL buffer given to CXMLManager::ParseBuffer!" );
 		return nullptr;
 	}
 
 	//This will likely crash if the buffer size doesn't match the actual buffer size
 	if( uiBufferSize > 0 && pszBuffer[ ( uiBufferSize / sizeof( char ) ) - 1 ] != '\0' )
 	{
-		Alert( at_error, "Unterminated buffer given to CXMLManager::ParseBuffer!" );
+		log->error( "Unterminated buffer given to CXMLManager::ParseBuffer!" );
 		return nullptr;
 	}
+
+	log->trace( "Parsing buffer \"{}\"", pszBufId );
 
 	return ParseInputSource( xercesc::MemBufInputSource{ reinterpret_cast<const XMLByte*>( pszBuffer ), uiBufferSize, pszBufId, false } );
 }
@@ -188,15 +207,17 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseFile( const char* pszBufI
 
 	if( !pszBufId )
 	{
-		Alert( at_error, "NULL buffer id given to CXMLManager::ParseFile!" );
+		log->error( "NULL buffer id given to CXMLManager::ParseFile!" );
 		return nullptr;
 	}
 
 	if( FILESYSTEM_INVALID_HANDLE == hFile )
 	{
-		Alert( at_error, "NULL file handle given to CXMLManager::ParseFile!" );
+		log->error( "NULL file handle given to CXMLManager::ParseFile!" );
 		return nullptr;
 	}
+
+	log->trace( "Parsing file \"{}\"", pszBufId );
 
 	g_pFileSystem->Seek( hFile, 0, FILESYSTEM_SEEK_HEAD );
 
@@ -207,7 +228,7 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseFile( const char* pszBufI
 
 	if( static_cast<decltype( fileSize )>( g_pFileSystem->Read( buffer.get(), fileSize, hFile ) ) != fileSize )
 	{
-		Alert( at_error, "Couldn't read file \"%s\" for XML parsing\n", pszBufId );
+		log->error( "Couldn't read file \"{}\" for XML parsing", pszBufId );
 		return nullptr;
 	}
 
@@ -222,15 +243,16 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseFile( const char* pszFile
 
 	if( !pszFilename )
 	{
-		Alert( at_error, "NULL filename given to CXMLManager::ParseFile!" );
+		log->error( "NULL filename given to CXMLManager::ParseFile!" );
 		return nullptr;
 	}
 
 	CFile file{ pszFilename, "rb", pszPathID };
 
+	//This isn't necessarily an error, it could be an optional file.
 	if( !file.IsOpen() )
 	{
-		Alert( at_error, "Couldn't open file \"%s\" for XML parsing\n", pszFilename );
+		log->debug( "Couldn't open file \"{}\" for XML parsing", pszFilename );
 		return nullptr;
 	}
 
@@ -239,6 +261,8 @@ unique_xml_ptr<xercesc::DOMDocument> CXMLManager::ParseFile( const char* pszFile
 
 bool CXMLManager::WriteToFormTarget( const xercesc::DOMDocument& document, xercesc::XMLFormatTarget& formTarget )
 {
+	log->trace( "Writing document to form target" );
+
 	try
 	{
 		// get a serializer, an instance of DOMLSSerializer
@@ -254,15 +278,15 @@ bool CXMLManager::WriteToFormTarget( const xercesc::DOMDocument& document, xerce
 	}
 	catch( const xercesc::OutOfMemoryException& )
 	{
-		Alert( at_error, "OutOfMemoryException" );
+		log->critical( "OutOfMemoryException" );
 	}
 	catch( const xercesc::DOMLSException& e )
 	{
-		Alert( at_error, "An error occurred during serialization of the DOM tree. Msg is:\n%s\n", CStrX( e.getMessage() ).LocalForm() );
+		log->error( "An error occurred during serialization of the DOM tree. Msg is:\n{}", CStrX( e.getMessage() ).LocalForm() );
 	}
 	catch( const xercesc::XMLException& e )
 	{
-		Alert( at_error, "An error occurred during creation of output transcoder. Msg is:\n%s\n", CStrX( e.getMessage() ).LocalForm() );
+		log->error( "An error occurred during creation of output transcoder. Msg is:\n{}", CStrX( e.getMessage() ).LocalForm() );
 	}
 
 	return false;
@@ -270,24 +294,32 @@ bool CXMLManager::WriteToFormTarget( const xercesc::DOMDocument& document, xerce
 
 bool CXMLManager::WriteToStdOut( const xercesc::DOMDocument& document )
 {
+	log->trace( "Writing document to standard output" );
+
 	CStdOutFormatTarget target{};
 	return WriteToFormTarget( document, target );
 }
 
 bool CXMLManager::WriteToConsole( const xercesc::DOMDocument& document, const bool bDebug )
 {
+	log->trace( "Writing document to console" );
+
 	CConsoleFormatTarget target{ bDebug };
 	return WriteToFormTarget( document, target );
 }
 
 bool CXMLManager::WriteToStream( const xercesc::DOMDocument& document, std::ostream& stream )
 {
+	log->trace( "Writing document to stream" );
+
 	CStreamFormatTarget target{ stream };
 	return WriteToFormTarget( document, target );
 }
 
 bool CXMLManager::WriteToFile( const xercesc::DOMDocument& document, const char* pszFilename, const char* pszPathID )
 {
+	log->trace( "Writing document to file \"{}\" (Path ID: \"{}\")", pszFilename, pszPathID );
+
 	try
 	{
 		CGameFileFormatTarget target{ g_pFileSystem, pszFilename, pszPathID };
@@ -295,7 +327,7 @@ bool CXMLManager::WriteToFile( const xercesc::DOMDocument& document, const char*
 	}
 	catch( const xercesc::IOException& e )
 	{
-		Alert( at_error, "\nError during writing: '%s'\nException message is:  %hd\n", pszFilename, CStrX( e.getMessage() ).LocalForm() );
+		log->error( "\nError during writing: '{}'\nException message is:  {}", pszFilename, CStrX( e.getMessage() ).LocalForm() );
 	}
 
 	return false;
@@ -303,6 +335,8 @@ bool CXMLManager::WriteToFile( const xercesc::DOMDocument& document, const char*
 
 bool CXMLManager::WriteToFile( const xercesc::DOMDocument& document, FileHandle_t hFile, const bool bAdoptHandle )
 {
+	log->trace( "Writing document to file" );
+
 	try
 	{
 		CGameFileFormatTarget target{ g_pFileSystem, hFile, bAdoptHandle };
@@ -310,7 +344,7 @@ bool CXMLManager::WriteToFile( const xercesc::DOMDocument& document, FileHandle_
 	}
 	catch( const xercesc::IOException& e )
 	{
-		Alert( at_error, "\nError during writing:\nException message is:  %hd\n", CStrX( e.getMessage() ).LocalForm() );
+		log->error( "\nError during writing:\nException message is: {}", CStrX( e.getMessage() ).LocalForm() );
 	}
 
 	return false;

@@ -4,6 +4,8 @@
 #include <memory>
 #include <ostream>
 
+#include <spdlog/logger.h>
+
 #include <xercesc/util/XercesDefs.hpp>
 
 #include "FileSystem.h"
@@ -128,6 +130,11 @@ private:
 *	@brief Gets the XML manager
 */
 CXMLManager& XMLManager();
+
+/**
+*	@brief The logger used by XML code. All XML processing code should use this
+*/
+extern std::shared_ptr<spdlog::logger> log;
 }
 
 #endif //COMMON_XML_CXMLMANAGER_H
