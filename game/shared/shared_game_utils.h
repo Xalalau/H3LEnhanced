@@ -1,6 +1,9 @@
 #ifndef GAME_SHARED_SHARED_GAME_UTILS_H
 #define GAME_SHARED_SHARED_GAME_UTILS_H
 
+#include <utility>
+
+#include "cmd_function_t.h"
 #include "Color.h"
 
 #include "FileSystem.h"
@@ -13,6 +16,9 @@
 #endif
 
 #include "strtools.h"
+
+//Access to common loggers & logging headers - Solokiller
+#include "logging/Logging.h"
 
 /**
 *	dll agnostic game utility functionality - Solokiller
@@ -362,5 +368,56 @@ bool UTIL_IsGame( const char* game );
 *	Can cheats (e.g. impulse 101) be used?
 */
 bool UTIL_CheatsAllowed();
+
+/**
+*	@brief Adds a console command, whether client or server side
+*/
+inline void UTIL_AddCommand( const char* pszName, CmdFunction function )
+{
+#ifdef CLIENT_DLL
+	gEngfuncs.pfnAddCommand( pszName, function );
+#else
+	g_engfuncs.pfnAddServerCommand( pszName, function );
+#endif
+}
+
+/**
+*	@brief Gets the number of command arguments
+*/
+inline int Cmd_ArgC()
+{
+#ifdef CLIENT_DLL
+	return gEngfuncs.Cmd_Argc();
+#else
+	return g_engfuncs.pfnCmd_Argc();
+#endif
+}
+
+/**
+*	@brief Gets the N'th command argument
+*/
+inline const char* Cmd_ArgV( int iArg )
+{
+#ifdef CLIENT_DLL
+	return gEngfuncs.Cmd_Argv( iArg );
+#else
+	return g_engfuncs.pfnCmd_Argv( iArg );
+#endif
+}
+
+/**
+*	@brief Checks if a command line parameter is present on the command line, returns the index on the command line if present
+*	@param pszParm Name of the parameter to check
+*	@param ppszNext Optional. If specified, will contain the next command line parameter specified after the given one
+*	@return If found, the index on the command line, else 0
+*/
+inline int UTIL_CheckParm( const char* const pszParm, const char** ppszNext = nullptr )
+{
+#ifdef CLIENT_DLL
+	return gEngfuncs.CheckParm( pszParm, const_cast<char**>( ppszNext ) );
+#else
+	return g_engfuncs.pfnCheckParm( pszParm, const_cast<char**>( ppszNext ) );
+#endif
+}
 
 #endif //GAME_SHARED_SHARED_GAME_UTILS_H

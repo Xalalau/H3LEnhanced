@@ -53,4 +53,5 @@ add_sources(
 	winsani_out.h
 )
 
+add_subdirectory( logging )
 add_subdirectory( xml )

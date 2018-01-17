@@ -15,6 +15,14 @@
 #ifndef GAME_SHARED_GAMECONSTANTS_H
 #define GAME_SHARED_GAMECONSTANTS_H
 
+#ifdef CLIENT_DLL
+#define LIBRARY_NAME "client"
+#elif defined( SERVER_DLL )
+#define LIBRARY_NAME "server"
+#else
+#error "Unhandled library name"
+#endif
+
 /**
 *	Approx 60 feet.
 */

@@ -11,21 +11,55 @@
 #include "interface.h"
 #include "FileSystem.h"
 
+#include "logging/CLogSystem.h"
 #include "xml/CXMLManager.h"
 
 #include "CBaseGameInterface.h"
 
 CSysModule* g_pFileSystemModule = nullptr;
 IFileSystem* g_pFileSystem = nullptr;
+namespace
+{
+CBaseGameInterface* g_pInstance = nullptr;
+}
+
+CBaseGameInterface* CBaseGameInterface::GetInstance()
+{
+	ASSERT( g_pInstance );
+
+	return g_pInstance;
+}
+
+CBaseGameInterface::CBaseGameInterface()
+{
+	ASSERT( !g_pInstance );
+	g_pInstance = this;
+}
+
+CBaseGameInterface::~CBaseGameInterface()
+{
+	ASSERT( g_pInstance == this );
+	g_pInstance = nullptr;
+}
 
 bool CBaseGameInterface::InitializeCommon()
 {
+	if( !UTIL_GetGameDir( m_szGameDirectory, sizeof( m_szGameDirectory ) ) )
+	{
+		return false;
+	}
+
 	if( !InitFileSystem() )
 		return false;
 
 	g_pDeveloper = CVarGetPointer( "developer" );
 
 	if( nullptr == g_pDeveloper )
+	{
+		return false;
+	}
+
+	if( !logging::LogSystem().Initialize() )
 	{
 		return false;
 	}
@@ -42,9 +76,13 @@ void CBaseGameInterface::ShutdownCommon()
 {
 	xml::XMLManager().Shutdown();
 
+	logging::LogSystem().Shutdown();
+
 	g_pDeveloper = nullptr;
 
 	ShutdownFileSystem();
+
+	memset( m_szGameDirectory, 0, sizeof( m_szGameDirectory ) );
 }
 
 bool CBaseGameInterface::InitFileSystem()
