@@ -12,7 +12,7 @@ namespace logging
 template<typename BASE_GENERATOR>
 struct CLogExtFileNameGenerator
 {
-	using base_generator_t = typename BASE_GENERATOR;
+	using base_generator_t = BASE_GENERATOR;
 
 	static spdlog::filename_t calc_filename( const spdlog::filename_t& basename )
 	{
