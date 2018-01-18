@@ -53,7 +53,7 @@ function CMake_GenerateBuildAndInstall( $generate_args, [string] $src_path = "sr
 	cd ..
 }
 
-Write-Host "===  (3/5) Downloading and Installing Dependencies ===" -foregroundcolor green
+Write-Host "=== (3/5) Downloading and Installing Dependencies ===" -foregroundcolor green
 
 # Install only if it wasn't cached
 if( !( Test-Path dependencies -pathType container ) )
