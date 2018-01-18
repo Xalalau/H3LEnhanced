@@ -18,20 +18,38 @@ environment:
 
 before_build:
   # Use the latest version of CMake
-  - ps: Write-Host "=== (1/4) Downloading CMake 3.9.1 ZIP for Windows 64 bits ===" -foregroundcolor green
-  - ps: wget https://cmake.org/files/v3.9/cmake-3.9.1-win64-x64.zip -OutFile cmake.zip
-  - ps: Write-Host "=== (2/4) Installing CMake ===" -foregroundcolor green
-  - cmd: 7z x cmake.zip -o"." -y
+  - ps: Write-Host "=== (1/6) Downloading CMake 3.9.1 ZIP for Windows 64 bits ===" -foregroundcolor green
+  - ps: wget https://cmake.org/files/v3.9/cmake-3.9.1-win64-x64.zip -OutFile cmake_files.zip
+  - ps: Write-Host "=== (2/6) Installing CMake ===" -foregroundcolor green
+  - cmd: 7z x cmake_files.zip -o"." -y
+  # Rename this so we don't have the version number used everywhere
+  - ps: Rename-Item cmake-3.9.1-win64-x64 cmake_install
+  # Download Xerces C
+  - ps: Write-Host "=== (3/6) Downloading XercesC 3.2.0 ZIP ===" -foregroundcolor green
+  - ps: wget http://www-us.apache.org/dist//xerces/c/3/sources/xerces-c-3.2.0.zip -OutFile xercesc.zip
+  - cmd: 7z x xercesc.zip -o"." -y
+  - ps: Rename-Item xerces-c-3.2.0 xercesc
   # Create the build directory and a fake Steam common directory
-  - ps: Write-Host "=== (3/4) Creating build and fake Steam common directory ===" -foregroundcolor green
-  - md build
+  - ps: Write-Host "=== (4/6) Creating build and fake Steam common directory ===" -foregroundcolor green
+  - md build_xerces
+  - md install_xerces
+  - md build_hlenhanced
   - md fake_steamcommon
 
 build_script:
-  - cd build
-  - ps: Write-Host "===  (4/4) Building ===" -foregroundcolor green
-  - ..\cmake-3.9.1-win64-x64\bin\cmake.exe -DSTEAMCOMMON=..\fake_steamcommon %BUILD_RULES% -G"Visual Studio 14 2015" -Tv140_xp ..
-  - msbuild HLEnhanced.sln /t:Rebuild /p:Configuration=%CONFIGURATION% /m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  # Build and install XercesC
+  - cd build_xerces
+  - ps: Write-Host "===  (5/6) Building XercesC ===" -foregroundcolor green
+  
+  # Override the compiler settings to use a static runtime, so linking with HLE doesn't cause problems
+  - ..\cmake_install\bin\cmake.exe -DCMAKE_INSTALL_PREFIX=../install_xerces -DBUILD_SHARED_LIBS=OFF -DCMAKE_USER_MAKE_RULES_OVERRIDE=../cmake/c_flags_overrides.cmake -DCMAKE_USER_MAKE_RULES_OVERRIDE_CXX=../cmake/cxx_flags_overrides.cmake -G"Visual Studio 14 2015" -Tv140_xp ..\xercesc
+  - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION%
+  - ..\cmake_install\bin\cmake.exe --build . --target install --config %CONFIGURATION%
+  # Build HLEnhanced
+  - cd ..\build_hlenhanced
+  - ps: Write-Host "===  (6/6) Building HLEnhanced ===" -foregroundcolor green
+  - ..\cmake_install\bin\cmake.exe -DXercesC_DIR=%APPVEYOR_BUILD_FOLDER%\install_xerces\cmake -DSTEAMCOMMON=..\fake_steamcommon %BUILD_RULES% -G"Visual Studio 14 2015" -Tv140_xp ..
+  - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION%
 
 # If one job fail, mark the build as failed
 matrix:
