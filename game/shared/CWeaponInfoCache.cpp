@@ -165,7 +165,7 @@ bool CWeaponInfoCache::LoadWeaponInfoFromFile( const char* const pszWeaponName, 
 	if( !pRoot || xercesc::XMLString::compareString( pRoot->getNodeName(), xml::AsciiToXMLCh( "weapon" ).data() ) != 0 )
 	{
 		Alert( at_console, "CWeaponInfoCache::LoadWeaponInfoFromFile: File \"%s\": No weapon data found, ignoring\n", szPath );
-		return nullptr;
+		return false;
 	}
 
 	auto pKeyvalues = xml::GetElementsByTagName( *pRoot, "keyvalue" );
