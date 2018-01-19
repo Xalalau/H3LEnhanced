@@ -44,7 +44,7 @@ CMake_GenerateBuildAndInstall()
 	
 	echo "[Dependency] [${projectName}] Generating"
 	# Disable warnings, we don't need to know about those here
-	cmake ${COMPILER_SETTINGS} -DCMAKE_INSTALL_PREFIX="$currentDir/install" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -w" ${generate_args[@]} $full_src_path
+	cmake ${COMPILER_SETTINGS} -DCMAKE_INSTALL_PREFIX="$currentDir/install" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -w -m32" ${generate_args[@]} $full_src_path
 	
 	echo "[Dependency] [${projectName}] Building"
 	cmake --build . --clean-first --config ${CONFIGURATION}
