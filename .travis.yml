@@ -14,11 +14,13 @@ addons:
     - linux-libc-dev
     - gcc-6-multilib
     - g++-6-multilib
+    - libcurl4-openssl-dev:i386
+    - libc6:i386
 
 env:
   global:
-    - COMPILER_VERSION_C="gcc-6"
-    - COMPILER_VERSION_CXX="g++-6"
+    - COMPILER_VERSION_C=gcc-6
+    - COMPILER_VERSION_CXX=g++-6
 
 matrix:
   allow_failures:
@@ -87,20 +89,27 @@ install:
     else
       SDL_LIB=-DSDL2=${TRAVIS_BUILD_DIR}/external/SDL2/lib/libSDL2-2.0.0.dylib
     fi
-    
-  - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
-    
-  - bash ${TRAVIS_BUILD_DIR}/travis_install_dependencies.sh ${DEPENDENCIES_DIR} ${COMPILER_SETTINGS}
 
 before_script:
   # Move to build directory
   - cd ${TRAVIS_BUILD_DIR}
+    
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      # Use a toolchain file to force a 32 bit environment
+      COMPILER_SETTINGS="${COMPILER_SETTINGS} -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/Linux_32bit_toolchain.cmake"
+    fi
+    
+  - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
+    
+  - bash ${TRAVIS_BUILD_DIR}/travis_install_dependencies.sh ${DEPENDENCIES_DIR} "${COMPILER_SETTINGS}"
+  
   - mkdir build && cd build
 
 script:
   # Just execute the cmake and make commands
   # TODO: SDL should be found by CMake at all times, this needs fixing - Solokiller
-  - cmake ${COMPILER_SETTINGS} -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${SDL_LIB} ${BUILD_RULES} -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC" ..
+  - cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -m32" -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${SDL_LIB} ${BUILD_RULES} -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC" ..
   - make
 
 notifications:
