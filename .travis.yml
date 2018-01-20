@@ -22,10 +22,11 @@ env:
     - COMPILER_VERSION_CXX=g++-6
     - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
 
-cache:
-  directories:
-      - ${DEPENDENCIES_DIR}/xercesc/install/include
-      - ${DEPENDENCIES_DIR}/xercesc/install/lib
+# Disable the cache for now; this isn't working quite as expected (and it's in beta)
+#cache:
+#  directories:
+#      - ${DEPENDENCIES_DIR}/xercesc/install/include
+#      - ${DEPENDENCIES_DIR}/xercesc/install/lib
     
 matrix:
   allow_failures:
