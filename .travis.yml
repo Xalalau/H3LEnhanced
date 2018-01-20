@@ -21,11 +21,11 @@ env:
     - COMPILER_VERSION_C=gcc-6
     - COMPILER_VERSION_CXX=g++-6
     - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
+
 cache:
   directories:
       - ${DEPENDENCIES_DIR}/xercesc/install/include
       - ${DEPENDENCIES_DIR}/xercesc/install/lib
-    
     
 matrix:
   allow_failures:
