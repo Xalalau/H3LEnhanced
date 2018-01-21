@@ -20,12 +20,18 @@ include( Ternary )
 project( HLEnhanced )
 
 #C++14 support
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
+set( SHARED_COMPILER_FLAGS "-std=c++1y" )
 
-if( UNIX )
-	#Additional debug info for GDB.
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g" )
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
+	# Always build as 32 bit
+	# Additional debug info for GDB.
+	set( SHARED_COMPILER_FLAGS "${SHARED_COMPILER_FLAGS} -m32 -g" )
 endif()
+
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SHARED_COMPILER_FLAGS}" )
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SHARED_COMPILER_FLAGS}" )
+
+unset( SHARED_COMPILER_FLAGS )
 
 #Get the steam/steamapps/common directory
 set( STEAMCOMMON "$ENV{SteamCommon}" CACHE PATH "Steam common directory path" )
@@ -79,8 +85,6 @@ if( MSVC )
 		_CRT_SECURE_NO_WARNINGS
 		_SCL_SECURE_NO_WARNINGS
 	)
-	
-	set( LINUX_32BIT_FLAG "" )
 else()
 	#All non-MSVC targets need this. That includes Cygwin and Mingw.
 	#Match Source 2013 in defining GNUC for UNIX platforms.
@@ -108,8 +112,6 @@ else()
 			_LINUX
 		)
 	endif()
-
-	set( LINUX_32BIT_FLAG "-m32" )
 endif()
 
 #Shared definitions for the client & server libaries.
@@ -373,8 +375,8 @@ elseif( NOT APPLE )
 endif()
 
 set_target_properties( client PROPERTIES
-	COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}"
-	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${CLIENT_LINK_FLAGS} ${LINUX_32BIT_FLAG}"
+	COMPILE_FLAGS "${WARNING_LEVEL_STRICTEST}"
+	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${CLIENT_LINK_FLAGS}"
 )
 
 #No lib prefix
@@ -550,8 +552,8 @@ endif()
 
 #SQL libraries are delay loaded to keep them in the game directory.
 set_target_properties( hl PROPERTIES
-	COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}" 
-	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS} ${LINUX_32BIT_FLAG}"
+	COMPILE_FLAGS "${WARNING_LEVEL_STRICTEST}" 
+	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
 )
 
 #No lib prefix
