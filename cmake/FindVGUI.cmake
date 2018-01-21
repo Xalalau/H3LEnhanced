@@ -11,7 +11,7 @@ else()
 endif()
 
 include( FindPackageHandleStandardArgs )
-find_package_handle_standard_args( VGUI1 DEFAULT_MSG )
+find_package_handle_standard_args( vgui DEFAULT_MSG VGUI1 )
 
 if( VGUI1 )
 	add_library( vgui SHARED IMPORTED )
