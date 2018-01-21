@@ -3,7 +3,9 @@ if( WINXPSUPPORT_INCLUDED )
 endif()
 set( WINXPSUPPORT_INCLUDED true )
 
-set( WINXP_NOTIFY_THREADSAFE OFF CACHE BOOL "Enable to notify when targets have thread-safe initialization disabled" )
+if( MSVC )
+	set( WINXP_NOTIFY_THREADSAFE OFF CACHE BOOL "Enable to notify when targets have thread-safe initialization disabled" )
+endif()
 
 #!	Checks if thread-safe initialization needs to be disabled for the given target.
 #	If targeting Windows XP (v*_xp toolset) and using an MSVC version of Visual Studio 2015 or newer, it is disabled.
