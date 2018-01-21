@@ -171,7 +171,7 @@ public:
 	  {
 		  	Init();
 			
-			setText( text );
+			setButtonText( text );
 	  }
 		
 	virtual void paintBackground()

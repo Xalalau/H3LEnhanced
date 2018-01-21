@@ -72,7 +72,8 @@ public:
 
 	// Overloaded vgui functions
 	virtual void paint();
-	virtual void setText( const char *text );
+	//Needed to rename this since Clang doesn't like the overload - Solokiller
+	virtual void setButtonText( const char *text );
 	virtual void paintBackground();
 
 	void cursorEntered( void );
