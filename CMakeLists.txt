@@ -213,17 +213,15 @@ else()
 	set( ANGELSCRIPTUTILSD )
 endif()
 
-if( WIN32 )
-	find_library( TIER0 ${CMAKE_SHARED_LIBRARY_PREFIX}tier0${CMAKE_STATIC_LIBRARY_SUFFIX} PATHS ${CMAKE_SOURCE_DIR}/lib/public/ )
-	find_library( VSTDLIB vstdlib${CMAKE_STATIC_LIBRARY_SUFFIX} PATHS ${CMAKE_SOURCE_DIR}/lib/public/ )
-else()
-	find_library( TIER0 ${CMAKE_SHARED_LIBRARY_PREFIX}tier0${CMAKE_SHARED_LIBRARY_SUFFIX} PATHS ${STEAMCOMMON}/Half-Life/ ${CMAKE_SOURCE_DIR}/lib/public/ )
-	find_library( VSTDLIB ${CMAKE_SHARED_LIBRARY_PREFIX}vstdlib${CMAKE_SHARED_LIBRARY_SUFFIX} PATHS ${STEAMCOMMON}/Half-Life/ ${CMAKE_SOURCE_DIR}/lib/public/ )
-endif()
+set( tier0_DIR ${GAME_BIN_PATH} CACHE PATH "tier0 library location" )
+find_package( tier0 MODULE REQUIRED )
+
+set( vstdlib_DIR ${GAME_BIN_PATH} CACHE PATH "vstdlib library location" )
+find_package( vstdlib MODULE REQUIRED )
 
 set( SHARED_DEPENDENCIES
-	${TIER0}
-	${VSTDLIB}
+	tier0
+	vstdlib
 	tier1
 	XercesC::XercesC
 )
