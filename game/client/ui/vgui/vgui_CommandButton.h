@@ -36,7 +36,7 @@ private:
 	char m_sMainText[ MAX_BUTTON_SIZE ];
 	char m_cBoundKey;
 
-	SchemeHandle_t m_hTextScheme;
+	//SchemeHandle_t m_hTextScheme;
 
 	void RecalculateText( void );
 
