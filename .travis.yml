@@ -112,7 +112,7 @@ script:
   # Just execute the cmake and make commands
   # Use the local vgui library
   # TODO: SDL should be found by CMake at all times, this needs fixing - Solokiller
-  - |
+  - >
     cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -m32"
     -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${SDL_LIB} ${BUILD_RULES}
     -Dvgui_DIR="${TRAVIS_BUILD_DIR}/lib/public"
