@@ -281,11 +281,7 @@ target_compile_definitions( client PRIVATE
 )
 
 #Find client dependencies
-if( MSVC )
-	set( vgui_DIR ${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6 CACHE PATH "VGUI1 library location (import library)" )
-else()
-	set( vgui_DIR ${GAME_BIN_PATH} CACHE PATH "VGUI1 library location (shared library)" )
-endif()
+set( vgui_DIR ${GAME_BIN_PATH} CACHE PATH "VGUI1 shared library location" )
 find_package( vgui MODULE REQUIRED )
 
 if( NOT CLANG_DB_BUILD )

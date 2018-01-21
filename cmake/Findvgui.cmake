@@ -3,12 +3,8 @@
 # Expects to be called from the SDK root
 #
 
-# On Windows we need to link with the import library, on other systems we link with the shared library distributed with the game
-if( MSVC )
-	find_library( VGUI1 vgui${CMAKE_STATIC_LIBRARY_SUFFIX} PATHS ${vgui_DIR} NO_DEFAULT_PATH )
-else()
-	find_library( VGUI1 vgui${CMAKE_SHARED_LIBRARY_SUFFIX} PATHS ${vgui_DIR} NO_DEFAULT_PATH )
-endif()
+# Prefer game install directory (for shared libs)
+find_library( VGUI1 vgui PATHS ${vgui_DIR} ${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6 NO_DEFAULT_PATH )
 
 include( FindPackageHandleStandardArgs )
 find_package_handle_standard_args( vgui DEFAULT_MSG VGUI1 )
