@@ -50,7 +50,14 @@ add_subdirectory( ${CMAKE_SOURCE_DIR}/source_sdk/public source_sdk/public )
 
 preprocess_sources()
 
-include_directories(
+add_library( tier1 STATIC ${PREP_SRCS} )
+
+#Needs static CRT to avoid alloc issues.
+configure_msvc_runtime( tier1 STATIC )
+
+check_winxp_support( tier1 )
+
+target_include_directories( tier1 PRIVATE
 	${CMAKE_SOURCE_DIR}/source_sdk/public
 	${CMAKE_SOURCE_DIR}/source_sdk/public/tier1
 	${CMAKE_SOURCE_DIR}/source_sdk/common
@@ -58,13 +65,6 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/public
 	${CMAKE_SOURCE_DIR}
 )
-
-add_library( tier1 STATIC ${PREP_SRCS} )
-
-#Needs static CRT to avoid alloc issues.
-configure_msvc_runtime( tier1 STATIC )
-
-check_winxp_support( tier1 )
 
 target_compile_definitions( tier1 PRIVATE
 	${SHARED_DEFS}

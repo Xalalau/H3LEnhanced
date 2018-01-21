@@ -78,7 +78,14 @@ add_subdirectory( ${CMAKE_SOURCE_DIR}/source_sdk/vgui2/src source_sdk/vgui2/src 
 
 preprocess_sources()
 
-include_directories(
+add_library( vgui2_controls STATIC ${PREP_SRCS} )
+
+#Needs static CRT to avoid alloc issues.
+configure_msvc_runtime( vgui2_controls STATIC )
+
+check_winxp_support( vgui2_controls )
+
+target_include_directories( vgui2_controls PRIVATE
 	${CMAKE_SOURCE_DIR}/source_sdk/common
 	${CMAKE_SOURCE_DIR}/source_sdk/public
 	${CMAKE_SOURCE_DIR}/source_sdk/public/html
@@ -87,13 +94,6 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/public
 	${CMAKE_SOURCE_DIR}
 )
-
-add_library( vgui2_controls STATIC ${PREP_SRCS} )
-
-#Needs static CRT to avoid alloc issues.
-configure_msvc_runtime( vgui2_controls STATIC )
-
-check_winxp_support( vgui2_controls )
 
 target_compile_definitions( vgui2_controls PRIVATE
 	${SHARED_DEFS}
