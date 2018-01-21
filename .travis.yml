@@ -118,6 +118,7 @@ script:
     -Dvgui_DIR="${TRAVIS_BUILD_DIR}/lib/public"
     -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC"
     ..
+
   - make
 
 notifications:
