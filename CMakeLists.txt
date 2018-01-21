@@ -15,6 +15,7 @@ list( APPEND CMAKE_MODULE_PATH
 include( InputFilesList )
 include( MSVCRuntime )
 include( WinXPSupport )
+include( Ternary )
 
 project( HLEnhanced )
 
@@ -31,7 +32,7 @@ set( STEAMCOMMON "$ENV{SteamCommon}" CACHE PATH "Steam common directory path" )
 
 if( "${STEAMCOMMON}" STREQUAL "" )
 
-	MESSAGE( FATAL_ERROR "Unable to get Steam common directory path" )
+	message( FATAL_ERROR "Unable to get Steam common directory path" )
 
 endif()
 
@@ -39,52 +40,32 @@ endif()
 set( GAME_BIN_PATH "${STEAMCOMMON}/Half-Life" )
 set( GAME_BASE_PATH "${GAME_BIN_PATH}/hlenhanced" )
 
-MESSAGE( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
+message( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
 set( EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external )
 
-set( USE_ANGELSCRIPT "0" CACHE BOOL "Whether to include Angelscript" )
-set( USE_AS_SQL "0" CACHE BOOL "Whether to include Angelscript SQL APIs" )
-set( USE_OPFOR "0" CACHE BOOL "Whether to include Opposing Force related stuff" )
-set( USE_VGUI2 "0" CACHE BOOL "Whether to include VGUI2 features" )
+option( USE_ANGELSCRIPT "Whether to include Angelscript" )
+option( USE_AS_SQL "Whether to include Angelscript SQL APIs" )
+option( USE_OPFOR "Whether to include Opposing Force related stuff" )
+option( USE_VGUI2 "Whether to include VGUI2 features" )
 
 #Some libraries that we use don't come with .a files (import libraries) for Cygwin compilation (Unix Makefiles on Windows).
 #This isn't really supported, and since we only use Makefiles on Windows for the compile_commands.json file right now this isn't really an issue.
 #Should we choose to support Cygwin we will need the import libraries though.
-set( CLANG_DB_BUILD OFF CACHE BOOL "Whether this is a Clang database build. If enabled, some settings are disabled in order to function on Windows" )
+option( CLANG_DB_BUILD "Whether this is a Clang database build. If enabled, some settings are disabled in order to function on Windows" )
 
 if( NOT USE_ANGELSCRIPT AND USE_AS_SQL )
-	MESSAGE( STATUS "Forcing USE_AS_SQL to off due to no Angelscript usage" )
-	set( USE_AS_SQL 0 )
+	message( STATUS "Forcing USE_AS_SQL to off due to no Angelscript usage" )
+	set( USE_AS_SQL OFF )
 endif()
 
-if( USE_ANGELSCRIPT )
-	set( USE_ANGELSCRIPT_DEFINE 1 )
-else()
-	set( USE_ANGELSCRIPT_DEFINE 0 )
-endif()
-
-if( USE_AS_SQL )
-	set( USE_AS_SQL_DEFINE 1 )
-else()
-	set( USE_AS_SQL_DEFINE 0 )
-endif()
-
-if( USE_OPFOR )
-	set( USE_OPFOR_DEFINE 1 )
-else()
-	set( USE_OPFOR_DEFINE 0 )
-endif()
-
-#Default to false
-if( USE_VGUI2 )
-	set( USE_VGUI2_DEFINE 1 )
-else()
-	set( USE_VGUI2_DEFINE 0 )
-endif()
+ternary( USE_ANGELSCRIPT_DEFINE USE_ANGELSCRIPT 1 0 )
+ternary( USE_AS_SQL_DEFINE USE_AS_SQL 1 0 )
+ternary( USE_OPFOR_DEFINE USE_OPFOR 1 0 )
+ternary( USE_VGUI2_DEFINE USE_VGUI2 1 0 )
 
 if( CLANG_DB_BUILD )
-	MESSAGE( STATUS "Exporting Compile Commands" )
+	message( STATUS "Exporting Compile Commands" )
 	set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 endif()
 
@@ -397,7 +378,7 @@ set_target_properties( client PROPERTIES
 )
 
 #No lib prefix
-SET_TARGET_PROPERTIES( client PROPERTIES PREFIX "" )
+set_target_properties( client PROPERTIES PREFIX "" )
 
 #Create filters
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
@@ -467,7 +448,7 @@ if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
 endif()
 
 foreach( lib IN LISTS LIBS_TO_COPY )
-	MESSAGE( STATUS "Copying library \"${lib}\"" )
+	message( STATUS "Copying library \"${lib}\"" )
 	file( COPY ${lib} DESTINATION ${GAME_BASE_PATH} )
 endforeach()
 
@@ -574,7 +555,7 @@ set_target_properties( hl PROPERTIES
 )
 
 #No lib prefix
-SET_TARGET_PROPERTIES( hl PROPERTIES PREFIX "" )
+set_target_properties( hl PROPERTIES PREFIX "" )
 
 #Create filters
 create_source_groups( "${CMAKE_SOURCE_DIR}" )

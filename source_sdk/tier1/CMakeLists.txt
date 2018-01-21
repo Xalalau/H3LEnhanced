@@ -76,8 +76,8 @@ set_target_properties( tier1
 	PROPERTIES COMPILE_FLAGS "${LINUX_32BIT_FLAG} ${WARNING_LEVEL_STRICTEST}" 
 	LINK_FLAGS "${LINUX_32BIT_FLAG}" )
 	
-	#No lib prefix
-SET_TARGET_PROPERTIES( tier1 PROPERTIES PREFIX "" )
+#No lib prefix
+set_target_properties( tier1 PROPERTIES PREFIX "" )
 
 #Create filters
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
