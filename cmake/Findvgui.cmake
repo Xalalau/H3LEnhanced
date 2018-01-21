@@ -15,9 +15,14 @@ find_package_handle_standard_args( vgui DEFAULT_MSG VGUI1 )
 
 if( VGUI1 )
 	add_library( vgui SHARED IMPORTED )
+	
+	set_property( TARGET vgui PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/utils/vgui/include )
+	
 	if( MSVC )
 		set_property( TARGET vgui PROPERTY IMPORTED_IMPLIB ${VGUI1} )
 	else()
 		set_property( TARGET vgui PROPERTY IMPORTED_LOCATION ${VGUI1} )
 	endif()
 endif()
+
+unset( VGUI1 CACHE )

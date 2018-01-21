@@ -266,7 +266,6 @@ check_winxp_support( client )
 
 target_include_directories( client PRIVATE
 	shared/engine/client
-	utils/vgui/include
 	vgui_utils
 	game/client
 	game/client/ui
