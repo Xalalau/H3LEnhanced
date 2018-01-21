@@ -159,7 +159,6 @@ endif()
 #Shared directories
 #Include paths for external dependencies. Should always come after all project paths.
 set( SHARED_EXTERNAL_INCLUDE_PATHS
-	${EXTERNAL_DIR}/spdlog/include
 )
 
 if( USE_ANGELSCRIPT )
@@ -168,8 +167,6 @@ if( USE_ANGELSCRIPT )
 		${EXTERNAL_DIR}/Angelscript/include
 	)
 endif()
-
-find_package( XercesC CONFIG 3.2.0 REQUIRED )
 
 set( SHARED_INCLUDE_PATHS
 	common
@@ -201,6 +198,25 @@ get_sources( SHARED_SRCS )
 clear_sources()
 
 #Find shared dependencies
+find_package( XercesC CONFIG 3.2.0 REQUIRED )
+
+add_library( spdlog INTERFACE IMPORTED )
+
+set_property( TARGET spdlog PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EXTERNAL_DIR}/spdlog/include )
+
+set( tier0_DIR ${GAME_BIN_PATH} CACHE PATH "tier0 library location" )
+find_package( tier0 MODULE REQUIRED )
+
+set( vstdlib_DIR ${GAME_BIN_PATH} CACHE PATH "vstdlib library location" )
+find_package( vstdlib MODULE REQUIRED )
+
+set( THREADS_PREFER_PTHREAD_FLAG ON )
+find_package( Threads REQUIRED )
+
+if( UNIX AND NOT APPLE )
+	set( UNIX_FS_LIB stdc++fs )
+endif()
+
 if( USE_ANGELSCRIPT )
 	find_library( ANGELSCRIPTLIB Angelscript PATHS external/Angelscript/lib/ )
 	find_library( ANGELSCRIPTUTILS AngelscriptUtils PATHS external/Angelscript/lib/ )
@@ -213,28 +229,13 @@ else()
 	set( ANGELSCRIPTUTILSD )
 endif()
 
-set( tier0_DIR ${GAME_BIN_PATH} CACHE PATH "tier0 library location" )
-find_package( tier0 MODULE REQUIRED )
-
-set( vstdlib_DIR ${GAME_BIN_PATH} CACHE PATH "vstdlib library location" )
-find_package( vstdlib MODULE REQUIRED )
-
 set( SHARED_DEPENDENCIES
 	tier0
 	vstdlib
 	tier1
 	XercesC::XercesC
+	spdlog
 )
-
-set( THREADS_PREFER_PTHREAD_FLAG ON )
-find_package( Threads REQUIRED )
-
-if( UNIX AND NOT APPLE )
-	set( UNIX_FS_LIB stdc++fs )
-else()
-	set( UNIX_FS_LIB )
-endif()
-
 
 #Set up source_sdk projects first
 add_subdirectory( source_sdk )
