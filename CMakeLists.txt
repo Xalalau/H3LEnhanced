@@ -7,33 +7,16 @@
 ###################################################
 cmake_minimum_required( VERSION 3.6 )
 
-include( cmake/InputFilesList.cmake )
-include( cmake/MSVCRuntime.cmake )
+# Source additional modules from the "cmake" directory
+list( APPEND CMAKE_MODULE_PATH
+	"${CMAKE_CURRENT_LIST_DIR}/cmake"
+)
+
+include( InputFilesList )
+include( MSVCRuntime )
+include( WinXPSupport )
 
 project( HLEnhanced )
-
-include( cmake/WinXPSupport.cmake )
-
-#Needs static CRT to avoid alloc issues.
-set( MSVC_RUNTIME "static" )
-
-configure_msvc_runtime()
-
-set(variables
-  CMAKE_C_FLAGS_DEBUG
-  CMAKE_C_FLAGS_MINSIZEREL
-  CMAKE_C_FLAGS_RELEASE
-  CMAKE_C_FLAGS_RELWITHDEBINFO
-  CMAKE_CXX_FLAGS_DEBUG
-  CMAKE_CXX_FLAGS_MINSIZEREL
-  CMAKE_CXX_FLAGS_RELEASE
-  CMAKE_CXX_FLAGS_RELWITHDEBINFO
-)
-message(STATUS "Initial build flags:")
-foreach(variable ${variables})
-  message(STATUS "  '${variable}': ${${variable}}")
-endforeach()
-message(STATUS "")
 
 #C++14 support
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
@@ -230,7 +213,7 @@ add_subdirectory( public )
 add_subdirectory( shared/engine )
 
 #Save the shares sources into SHARED_SRCS
-get_property(SHARED_SRCS GLOBAL PROPERTY SRCS_LIST)
+get_sources( SHARED_SRCS )
 
 clear_sources()
 
@@ -292,6 +275,11 @@ add_subdirectory( source_sdk/public )
 preprocess_sources()
 
 add_library( client SHARED ${PREP_SRCS} )
+
+#Needs static CRT to avoid alloc issues.
+configure_msvc_runtime( client STATIC )
+
+check_winxp_support( client )
 
 target_include_directories( client PRIVATE
 	shared/engine/client
@@ -437,6 +425,11 @@ add_subdirectory( game/server )
 preprocess_sources()
 
 add_library( hl SHARED ${PREP_SRCS} )
+
+#Needs static CRT to avoid alloc issues.
+configure_msvc_runtime( hl STATIC )
+
+check_winxp_support( hl )
 
 target_include_directories( hl PRIVATE
 	${SHARED_INCLUDE_PATHS}

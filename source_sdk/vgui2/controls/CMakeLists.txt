@@ -6,6 +6,10 @@
 #                                                 #
 ###################################################
 
+include( InputFilesList )
+include( MSVCRuntime )
+include( WinXPSupport )
+
 add_sources(
 	AnimatingImagePanel.cpp
 	AnimationController.cpp
@@ -85,6 +89,11 @@ include_directories(
 )
 
 add_library( vgui2_controls STATIC ${PREP_SRCS} )
+
+#Needs static CRT to avoid alloc issues.
+configure_msvc_runtime( vgui2_controls STATIC )
+
+check_winxp_support( vgui2_controls )
 
 target_compile_definitions( vgui2_controls PRIVATE
 	${SHARED_DEFS}

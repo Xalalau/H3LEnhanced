@@ -6,6 +6,10 @@
 #                                                 #
 ###################################################
 
+include( InputFilesList )
+include( MSVCRuntime )
+include( WinXPSupport )
+
 add_sources(
 	bitbuf.cpp
 	byteswap.cpp
@@ -56,6 +60,11 @@ include_directories(
 )
 
 add_library( tier1 STATIC ${PREP_SRCS} )
+
+#Needs static CRT to avoid alloc issues.
+configure_msvc_runtime( tier1 STATIC )
+
+check_winxp_support( tier1 )
 
 target_compile_definitions( tier1 PRIVATE
 	${SHARED_DEFS}
