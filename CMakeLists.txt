@@ -291,7 +291,7 @@ endif()
 find_package( vgui MODULE REQUIRED )
 
 if( NOT CLANG_DB_BUILD )
-	set( SDL2_DIR ${STEAMCOMMON}/Half-Life CACHE PATH "SDL2 shared library location" )
+	set( SDL2_DIR ${GAME_BIN_PATH} CACHE PATH "SDL2 shared library location" )
 	find_package( SDL2 MODULE REQUIRED )
 endif()
 
