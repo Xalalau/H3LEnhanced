@@ -89,9 +89,6 @@ install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       COMPILER_SETTINGS="-DCMAKE_CXX_COMPILER=${COMPILER_VERSION_CXX} -DCMAKE_C_COMPILER=${COMPILER_VERSION_C}"
-      SDL_LIB=${TRAVIS_BUILD_DIR}/external/SDL2/lib/libSDL2-2.0.so.0
-    else
-      SDL_LIB=-DSDL2=${TRAVIS_BUILD_DIR}/external/SDL2/lib/libSDL2-2.0.0.dylib
     fi
 
 before_script:
@@ -114,7 +111,7 @@ script:
   # TODO: SDL should be found by CMake at all times, this needs fixing - Solokiller
   - >
     cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -m32"
-    -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${SDL_LIB} ${BUILD_RULES}
+    -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${BUILD_RULES}
     -Dvgui_DIR="${TRAVIS_BUILD_DIR}/lib/public"
     -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC"
     ..

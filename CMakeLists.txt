@@ -272,7 +272,6 @@ target_include_directories( client PRIVATE
 	game/client/ui/hud
 	game/client/ui/vgui
 	${SHARED_INCLUDE_PATHS}
-	external/SDL2/include
 	${SHARED_EXTERNAL_INCLUDE_PATHS}
 )
 
@@ -292,19 +291,8 @@ endif()
 find_package( vgui MODULE REQUIRED )
 
 if( NOT CLANG_DB_BUILD )
-	if( UNIX )
-		if ( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-			set( SDL2_NAME "libSDL2-2.0.0.dylib" )
-		else()
-			set( SDL2_NAME "libSDL2-2.0.so.0" )
-		endif()
-	else()
-		set( SDL2_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}SDL2${CMAKE_STATIC_LIBRARY_SUFFIX}" )
-	endif()
-
-	find_library( SDL2 ${SDL2_NAME} PATHS lib/public/ external/SDL2/lib "${STEAMCOMMON}/Half-Life/" )
-else()
-	set( SDL2 )
+	set( SDL2_DIR ${STEAMCOMMON}/Half-Life CACHE PATH "SDL2 shared library location" )
+	find_package( SDL2 MODULE REQUIRED )
 endif()
 
 
@@ -339,7 +327,7 @@ target_link_libraries( client
 	vgui
 	${VGUI2_LIBS}
 	${CLIENT_PLAT_LIBS}
-	${SDL2}
+	SDL2
 	${SHARED_DEPENDENCIES}
 	Threads::Threads
 	${UNIX_FS_LIB}
