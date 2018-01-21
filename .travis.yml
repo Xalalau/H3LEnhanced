@@ -80,12 +80,10 @@ install:
       CMAKE_URL="http://www.cmake.org/files/v3.9/cmake-3.9.1-Linux-x86_64.tar.gz"
       mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-      ln -s ${TRAVIS_BUILD_DIR}/lib/public/vgui.so ${STEAMCOMMON_DIR}/Half-Life/vgui.so
     else
       CMAKE_URL="http://www.cmake.org/files/v3.9/cmake-3.9.1-Darwin-x86_64.tar.gz"
       mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
       export PATH=${DEPS_DIR}/cmake/CMake.app/Contents/bin:${PATH}
-      ln -s ${TRAVIS_BUILD_DIR}/lib/public/vgui.dylib ${STEAMCOMMON_DIR}/Half-Life/vgui.dylib
     fi
 
   - |
@@ -112,8 +110,14 @@ before_script:
 
 script:
   # Just execute the cmake and make commands
+  # Use the local vgui library
   # TODO: SDL should be found by CMake at all times, this needs fixing - Solokiller
-  - cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -m32" -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${SDL_LIB} ${BUILD_RULES} -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC" ..
+  - |
+    cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -m32"
+    -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${SDL_LIB} ${BUILD_RULES}
+    -Dvgui_DIR="${TRAVIS_BUILD_DIR}/lib/public"
+    -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC"
+    ..
   - make
 
 notifications:

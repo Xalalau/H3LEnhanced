@@ -285,21 +285,12 @@ target_compile_definitions( client PRIVATE
 )
 
 #Find client dependencies
-if( UNIX )
-	if ( ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-		set( VGUI1_NAME "vgui.dylib" )
-	else()
-		set( VGUI1_NAME "vgui.so" )
-	endif()
+if( MSVC )
+	set( vgui_DIR ${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6 CACHE PATH "VGUI1 library location (import library)" )
 else()
-	set( VGUI1_NAME "vgui.lib" )
+	set( vgui_DIR ${GAME_BIN_PATH} CACHE PATH "VGUI1 library location (shared library)" )
 endif()
-
-#VGUI1 has issues linking with the client due to its non-standard filename. To work around this, we can instead import it and manually specify the location.
-#That sets the correct linker path and filename.
-add_library( vgui SHARED IMPORTED )
-set_property( TARGET vgui PROPERTY IMPORTED_LOCATION ${GAME_BIN_PATH}/${VGUI1_NAME} )
-set_property( TARGET vgui PROPERTY IMPORTED_IMPLIB ${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6/vgui.lib )
+find_package( vgui MODULE REQUIRED )
 
 if( NOT CLANG_DB_BUILD )
 	if( UNIX )
