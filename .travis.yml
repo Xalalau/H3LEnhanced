@@ -15,6 +15,7 @@ addons:
     - gcc-6-multilib
     - g++-6-multilib
     - libcurl4-openssl-dev:i386
+    - libpthread-stubs0-dev:i386
 
 env:
   global:
