@@ -84,6 +84,12 @@ public:
 	float		m_flBank;
 	float		m_oldSpeed;
 
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Delay para evitar que o trem se mova antes do jogador entrar no server
+	bool hu3_spawn_delay;
+	// ############ //
+
 private:
 	unsigned short m_usAdjustPitch;
 };

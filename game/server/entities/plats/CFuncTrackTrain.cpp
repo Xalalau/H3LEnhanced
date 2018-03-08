@@ -7,6 +7,12 @@
 
 #include "CFuncTrackTrain.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/GameRules.h"
+#include "gamerules/CHu3LifeCoop.h"
+// ############ //
+
 BEGIN_DATADESC( CFuncTrackTrain )
 	DEFINE_FIELD( m_ppath, FIELD_CLASSPTR ),
 	DEFINE_FIELD( m_length, FIELD_FLOAT ),
@@ -31,6 +37,15 @@ LINK_ENTITY_TO_CLASS( func_tracktrain, CFuncTrackTrain );
 
 void CFuncTrackTrain::Spawn( void )
 {
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Delay para evitar que o trem se mova antes do jogador entrar no server
+	if (g_pGameRules->IsCoOp())
+		hu3_spawn_delay = true;
+	else
+		hu3_spawn_delay = false;
+	// ############ //
+
 	if( GetSpeed() == 0 )
 		m_speed = 100;
 	else
@@ -55,6 +70,7 @@ void CFuncTrackTrain::Spawn( void )
 	SetModel( GetModelName() );
 
 	SetSize( GetRelMin(), GetRelMax() );
+
 	SetAbsOrigin( GetAbsOrigin() );
 
 	// Cache off placed origin for train controls
@@ -338,9 +354,28 @@ void CFuncTrackTrain::Next( void )
 	}
 }
 
-void CFuncTrackTrain::Find( void )
+void CFuncTrackTrain::Find(void)
 {
-	m_ppath = CPathTrack::Instance( UTIL_FindEntityByTargetname( nullptr, GetTarget() ) );
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Correcao da posicao de spawn do trem
+	
+	char* hTarget = nullptr;
+
+	// Escolher o target correto usando o comando de console (usar path_tracks, de preferencia)
+	if (g_pGameRules->IsCoOp() && strcmp(GetTargetname(), "train") == 0)
+	{
+		hTarget = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+		if (strcmp(hTarget, "0") == 0)
+			hTarget = nullptr;
+	}
+	if (!hTarget)
+		hTarget = (char*)GetTarget();
+
+	// Instanciar
+	m_ppath = CPathTrack::Instance(UTIL_FindEntityByTargetname(nullptr, hTarget));
+	// ############ //
+
 	if( !m_ppath )
 		return;
 
@@ -368,6 +403,19 @@ void CFuncTrackTrain::Find( void )
 	SetAbsAngles( vecAngles );
 
 	SetAbsOrigin( nextPos );
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Delay para evitar que o trem se mova antes do jogador entrar no server (ele roda a parte de cima do codigo uma vez extra desnecessariamente, mas tanto faz)
+	if (hu3_spawn_delay)
+	{
+		NextThink(gpGlobals->time + 20, false);
+		SetThink(&CFuncTrackTrain::Find);
+		hu3_spawn_delay = false;
+		return;
+	}
+	// ############ //
+
 	NextThink( GetLastThink() + 0.1, false );
 	SetThink( &CFuncTrackTrain::Next );
 	SetSpeed( m_startSpeed );
