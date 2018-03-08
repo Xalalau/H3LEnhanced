@@ -3,6 +3,8 @@ add_sources(
 	CBaseDMStart.cpp
 	CBaseSpawnPoint.h
 	CBaseSpawnPoint.cpp
+	CInfoPlayerCoop.h
+	CInfoPlayerCoop.cpp
 	CInfoPlayerStart.h
 	CInfoPlayerStart.cpp
 )
