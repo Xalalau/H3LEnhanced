@@ -4,33 +4,60 @@
 /*
 Este arquivo controla o nosso modo cooperativo quase todo.
 
-Modificacoes espalhadas pelo codigo:
+Aqui esta uma lista explicada de modificacoes que ficaram espalhadas pelo projeto:
 
+game/shared/entities/CBaseEntity.shared.cpp:
+game/shared/entities/CBaseEntity.shared.h:
+-- Adicionado keyvalue "coop" para podermos armazenar estados especiais do modo cooperativo.
 game/server/Server.cpp: 
--- monstros permitidos por padrao no multiplayer
+-- Monstros permitidos por padrao no multiplayer.
 game/server/entities/player/CBasePlayer.frame.cpp:
--- executo as alteracoes no nome dos jogadores;
--- restauro estados de godmode e noclip.
+-- Executo as alteracoes no nome dos jogadores;
+-- Restauro estados de godmode e noclip.
 game/server/entities/player/CBasePlayer.weapons.cpp:
--- processo sangue negativo (devido a bugs);
--- retorno a entidade criada em GiveNamedItem() para poder lidar com ela.
+-- Processo sangue negativo (devido a bugs);
+-- Retorno a entidade criada em GiveNamedItem() para poder lidar com ela.
 game/shared/entities/player/CBasePlayer.h:
--- declaracao de GiveNamedItem() modificada.
+-- Declaracao de GiveNamedItem() modificada.
 game/server/entities/triggers/CChangeLevel.cpp:
 -- ChangeLevelNow() foi:
---- conectada com a funcao ChangeLevelCoop();
---- adaptada para prender os jogadores que entram em posicao valida de changelevel.
+--- Conectada com a funcao ChangeLevelCoop();
+--- Adaptada para prender os jogadores que entram em posicao valida de changelevel.
 -- InTransitionVolume() foi adaptada para usar o trigger_changelevel e validar varios jogadores.
 game/server/gamerules/CGameRules.*:
--- uso vazio e generalizado do changelevel do modo coop.
+-- Uso vazio e generalizado do changelevel do modo coop.
 game/server/gamerules/CHu3LifeCoop.*:
--- guarda as variaveis do modo coop que precisam ser acessadas e modificadas em diversos arquivos.
+-- Guarda as variaveis do modo coop que precisam ser acessadas e modificadas em diversos arquivos.
 game/server/gamerules/GameRules.*:
--- selecao do modo coop modificada para suportar nossos codigos
+-- Selecao do modo coop modificada para suportar nossos codigos.
 game/shared/entities/NPCs/CRoach.cpp:
--- uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada
+-- Uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada.
 game/shared/entities/CWorld.cpp:
--- precache do sprite do changelevel
+-- precache do sprite do changelevel.
+game/server/gamerules/CHalfLifeMultiplay.cpp:
+game/server/gamerules/CHalfLifeTeamplay.cpp:
+-- Adicionada tag "only_in_coop" para o keyvalue "coop".
+game/server/entities/plats/CFuncTrackTrain.cpp:
+game/server/entities/plats/CFuncTrackTrain.h:
+-- Corrigi a posicao de spawn dos trens;
+-- Adicionei deplay no inicio do movimento.
+game/server/CGlobalState.cpp:
+-- Desativei o keyvalue "globalname"
+
+Possibilidades de uso do keyvalue "coop" em entidades:
+
+1) "remove_in_coop" = Remove a entidade no modo cooperativo
+2) "only_in_coop" = So aceita a entidade no modo cooperativo
+3) "disable_physics" = Deixa a entidade com transparencia e efeitos fisicos sem modificar o seu funcionamento
+
+Ajeitando o posicionamento de um trem:
+
+1) O trem deve ter nome "train" e ser um "func_tracktrain"; 
+2) Nessas condicoes, no modo coop, ele tentara se posicionar na entidade de nome indicado via comando "mp_hu3_trainspawnpoint";
+3.1) Se o passo 2 for bem sucedido, os jogadores tambem comecarao a dar spawn dentro do trem;
+3.2) Se o passo 2 nao for bem sucedido, o trem se posicionara em local ruim como de costume do HL1 (apos um changelevel) e os jogadores em grande parte podem dar spawn fora dele.
+Nota1) Um delay de +- 10 segundos eh indicado para garantir que os jadores vao spawnar a tempo de aproveitar o nivel;
+Nota2) A nossa entidade "point_cmd" pode ser usada no final do percurso para trocar de nivel.
 */
 
 
@@ -390,6 +417,41 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 		CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
 		pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
 	}
+
+	// Executo estados especiais nas entidades
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+	CBaseEntity *pEntity;
+
+	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	{
+		if (pEdict->free)	// Not in use
+			continue;
+
+		pEntity = CBaseEntity::Instance(pEdict);
+		if (!pEntity)
+			continue;
+
+		string_t state = pEntity->m_coop;
+
+		if (state)
+		{
+			// Remover a entidade se ela estiver marcada como nao apropriada para o coop
+			if (strcmp(STRING(state), "remove_in_coop") == 0)
+			{
+				pEntity->SUB_Remove();
+			}
+			//  Deixar a entidade com transparencia e efeitos fisicos sem modificar o seu funcionamento
+			else if (strcmp(STRING(state), "disable_physics") == 0)
+			{
+				pEntity->SetSolidType(SOLID_NOT);
+				pEntity->SetRenderMode(kRenderTransAdd);
+				pEntity->SetRenderAmount(230);
+				const Vector vecColor = { 0.6f, 0.8f, 1.0f };
+				pEntity->SetRenderColor(vecColor);
+				pEntity->SetRenderFX(kRenderFxFadeFast);
+			}
+		}
+	}
 }
 
 void CBaseHalfLifeCoop::InitHUD(CBasePlayer *pl)
@@ -545,12 +607,14 @@ void CBaseHalfLifeCoop::PlayerThink(CBasePlayer *pPlayer)
 	if (!CoopPlyData[pPlayer->entindex()].waitingforchangelevel)
 	{
 		if (pPlayer->GetSolidType() == SOLID_NOT)
+		{
 			if (CoopPlyData[pPlayer->entindex()].notSolidWait < gpGlobals->time)
 			{
 				// Esse codigo de detectar colisoes eh meio bosta, nao funciona pra tudo
 				TraceResult trace;
 				edict_t *pPlayer2 = ENT(pPlayer);
 				UTIL_TraceHull(pPlayer2->v.origin, pPlayer2->v.origin, dont_ignore_monsters, Hull::HEAD, pPlayer2, &trace);
+
 				if (trace.fStartSolid)
 				{
 					CoopPlyData[pPlayer->entindex()].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
@@ -561,6 +625,7 @@ void CBaseHalfLifeCoop::PlayerThink(CBasePlayer *pPlayer)
 					pPlayer->SetRenderMode(kRenderNormal);
 				}
 			}
+		}
 	}
 
 }
@@ -607,67 +672,107 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	pPlayer2->SetRenderColor(vecColor);
 	pPlayer2->SetRenderFX(kRenderFxFadeFast);
 
-	// Configuramos o jogador no caso dele ser novo no server ou dele estar fazendo parte de um changelevel
-	if (!CoopPlyData[i].newplayer)
+	// O ponto de spawn
+	CBaseEntity* spawnPoint = nullptr;
+
+	// A posicao correta do jogador no mundo
+	Vector absPos(0,0,0);
+
+	// Tenta pegar o ponto de spawn em relacao a algum trem com spawn consertado para coop
+	char* hu3Train = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+	if (strcmp(hu3Train, "0") != 0)
 	{
-		CBaseEntity* pLandmark = nullptr;
+		CBaseEntity* temp = UTIL_FindEntityByString(NULL, "targetname", "train");
+		if (temp)
+			absPos = Vector (temp->GetAbsOrigin().x, temp->GetAbsOrigin().y, temp->GetAbsOrigin().z + 75);
+	}
 
-		// CARREGAR PROPRIEDADES DIVERSAS DO JOGADOR
-		while ((pLandmark = UTIL_FindEntityByTargetname(pLandmark, Hu3LandmarkName)) != nullptr)
+	// Tenta pegar o ponto de spawn em relacao a algum info_player_coop disponivel
+	if (absPos == Vector(0,0,0))
+	{
+		while ((spawnPoint = UTIL_FindEntityByClassname(spawnPoint, "info_player_coop")) != nullptr)
 		{
-			if (pLandmark->ClassnameIs("info_landmark"))
-			{
-				// Recalculo a posicao no mundo
-				Vector absPos = pLandmark->GetAbsOrigin() + CoopPlyData[i].relPos;
-
-				// Posicionamento geral
-				pPlayer2->pev->origin = absPos;
-				pPlayer2->pev->v_angle = CoopPlyData[i].v_angle;
-				pPlayer2->pev->velocity = CoopPlyData[i].velocity;
-				pPlayer2->pev->angles = CoopPlyData[i].angles;
-				pPlayer2->pev->punchangle = CoopPlyData[i].punchangle;
-				pPlayer2->pev->fixangle = CoopPlyData[i].fixangle;
-				pPlayer2->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
-				if (CoopPlyData[i].bInDuck) // Agachamento. Meio bugado mas funciona...
-				{
-					pPlayer2->pev->flags = FL_DUCKING;
-					pPlayer2->pev->button = IN_DUCK;
-					FixPlayerCrouchStuck(pPlayer2->edict());
-					pPlayer2->pev->view_ofs[2] = 3;
-				}
-
-				// Reparacao de estados gerais
-				pPlayer2->pev->deadflag = CoopPlyData[i].deadflag;
-				pPlayer2->pev->health = CoopPlyData[i].health;
-				pPlayer2->pev->armorvalue = CoopPlyData[i].armorvalue;
-				pPlayer2->pev->team = CoopPlyData[i].team;
-				pPlayer2->pev->frags = CoopPlyData[i].frags;
-				pPlayer2->pev->weapons = CoopPlyData[i].weapons;
-				if (CoopPlyData[i].flashlight)
-					pPlayer->FlashlightTurnOn();
-
-				// Restaurar godmode e notarget
-				if (CoopPlyData[i].notarget || CoopPlyData[i].godmode)
-				{
-					CoopPlyData[i].respawncommands = true;
-					hu3ChangelevelPlyCommands = true;
-				}
-
-				// Restaurar noclip
-				if (CoopPlyData[i].noclip)
-					pPlayer2->SetMoveType(MOVETYPE_NOCLIP);
-
-				// Carregar armas e municoes
-				LoadPlayerItems(pPlayer, &CoopPlyData[i]);
-
-				// Liberar a checagem de changelevel 
-				if (CoopPlyData[i].waitingforchangelevel)
-					CoopPlyData[i].waitingforchangelevel = false;
-
-				break;
-			}
+			absPos = spawnPoint->GetAbsOrigin() + Vector(CoopPlyData[i].relPos.x, CoopPlyData[i].relPos.y, 0);
+			break;
 		}
 	}
+
+	// Configuramos o jogador no caso dele NAO ser novo no server (ja ter passado por changelevel)
+	if (!CoopPlyData[i].newplayer)
+	{
+		// Tentar encontrar o local de spawn em relacao ao landmark
+		if (absPos == Vector(0, 0, 0))
+		{
+			while ((spawnPoint = UTIL_FindEntityByTargetname(spawnPoint, Hu3LandmarkName)) != nullptr)
+			{
+				if (spawnPoint->ClassnameIs("info_landmark"))
+				{
+					absPos = spawnPoint->GetAbsOrigin() + CoopPlyData[i].relPos;
+					break;
+				}
+			}
+		}
+
+		// Carregar as informacoes
+		if (spawnPoint)
+		{
+			// Propriedades de posicionamento
+			pPlayer2->pev->v_angle = CoopPlyData[i].v_angle;
+			pPlayer2->pev->velocity = CoopPlyData[i].velocity;
+			pPlayer2->pev->angles = CoopPlyData[i].angles;
+			pPlayer2->pev->punchangle = CoopPlyData[i].punchangle;
+			pPlayer2->pev->fixangle = CoopPlyData[i].fixangle;
+			pPlayer2->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
+			if (CoopPlyData[i].bInDuck) // Agachamento. Meio bugado mas funciona...
+			{
+				pPlayer2->pev->flags = FL_DUCKING;
+				pPlayer2->pev->button = IN_DUCK;
+				FixPlayerCrouchStuck(pPlayer2->edict());
+				pPlayer2->pev->view_ofs[2] = 3;
+			}
+
+			// Reparacao de estados gerais
+			pPlayer2->pev->deadflag = CoopPlyData[i].deadflag;
+			pPlayer2->pev->health = CoopPlyData[i].health;
+			pPlayer2->pev->armorvalue = CoopPlyData[i].armorvalue;
+			pPlayer2->pev->team = CoopPlyData[i].team;
+			pPlayer2->pev->frags = CoopPlyData[i].frags;
+			pPlayer2->pev->weapons = CoopPlyData[i].weapons;
+			if (CoopPlyData[i].flashlight)
+				pPlayer->FlashlightTurnOn();
+
+			// Restaurar godmode e notarget
+			if (CoopPlyData[i].notarget || CoopPlyData[i].godmode)
+			{
+				CoopPlyData[i].respawncommands = true;
+				hu3ChangelevelPlyCommands = true;
+			}
+
+			// Restaurar noclip
+			if (CoopPlyData[i].noclip)
+					pPlayer2->SetMoveType(MOVETYPE_NOCLIP);
+
+			// Carregar armas e municoes
+			LoadPlayerItems(pPlayer, &CoopPlyData[i]);
+		}
+	}
+
+	// Liberar a checagem de changelevel 
+	if (CoopPlyData[i].waitingforchangelevel)
+		CoopPlyData[i].waitingforchangelevel = false;
+
+	// No ultimo dos casos, pega o ponto de spawn em relacao ao info_player_start
+	if (absPos == Vector(0, 0, 0))
+	{
+		while ((spawnPoint = UTIL_FindEntityByClassname(spawnPoint, "info_player_start")) != nullptr)
+		{
+			absPos = spawnPoint->GetAbsOrigin();
+			break;
+		}
+	}
+
+	// Posicionar jogador no mundo
+	pPlayer2->pev->origin = absPos;
 }
 
 //=========================================================
@@ -877,6 +982,11 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 	CBaseEntity *hu3Player;
 	int i = 1;
 
+	// Reseto o comando mp_hu3_trainspawnpoint
+	char* hTarget = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+	if (strcmp(hTarget, "0") != 0)
+		CVAR_SET_STRING("mp_hu3_trainspawnpoint", "0");
+
 	// Invalido a tabela de players coop atual atribuindo aos campos de nome usados um nome impossivel de existir
 	// No client MAX_PLAYERS eh 64...
 	for (i; i <= 64; i++)
@@ -949,6 +1059,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 		CoopPlyData[i].notarget = notargetState;
 		CoopPlyData[i].noclip = noclipState;
 		CoopPlyData[i].respawncommands = true;
+		CoopPlyData[i].waitingforchangelevel = true;
 
 		// Salvo as infos de municao e armas
 		SavePlayerItems(pPlayer2, &CoopPlyData[i]);
@@ -1093,10 +1204,10 @@ int CBaseHalfLifeCoop::IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKill
 void CBaseHalfLifeCoop::PlayerKilled(CBasePlayer* pVictim, const CTakeDamageInfo& info)
 {
 	auto pKiller = info.GetAttacker();
-	auto pInflictor = info.GetInflictor();
+	//auto pInflictor = info.GetInflictor();
 
 	ASSERT(pKiller);
-	ASSERT(pInflictor);
+	//ASSERT(pInflictor);
 
 	DeathNotice(pVictim, info);
 

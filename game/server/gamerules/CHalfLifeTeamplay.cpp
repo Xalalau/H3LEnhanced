@@ -167,6 +167,34 @@ void CHalfLifeTeamplay :: UpdateGameMode( CBasePlayer *pPlayer )
 	MESSAGE_BEGIN( MSG_ONE, gmsgGameMode, NULL, pPlayer );
 		WRITE_BYTE( 1 );  // game mode teamplay
 	MESSAGE_END();
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Executo estados especiais nas entidades
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+	CBaseEntity *pEntity;
+
+	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	{
+		if (pEdict->free)	// Not in use
+			continue;
+
+		pEntity = CBaseEntity::Instance(pEdict);
+		if (!pEntity)
+			continue;
+
+		string_t state = pEntity->m_coop;
+
+		if (state)
+		{
+			// Remover a entidade se ela for modo coop apenas
+			if (strcmp(STRING(state), "only_in_coop") == 0)
+			{
+				pEntity->SUB_Remove();
+			}
+		}
+	}
+	// ############ //
 }
 
 

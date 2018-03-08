@@ -14,7 +14,7 @@
 #include "CBasePlayer.h"
 #include "Effects.h"
 // Garante que todos os jogadores estao no mesmo trigger_changelevel
-int CChangeLevel::hu3TriggerChangelevelActivated = 0;
+int CChangeLevel::Hu3CorrectChangelevelTrigger = 0;
 // ############ //
 
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity );
@@ -151,7 +151,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	int i = 1;
 	bool releaseChangelevel = true;
 
-	// Obs: nao trocar a ordem das checagens, eh nessa disposicao que o suporte ao multiplayer e ao singleplayer funciona
+	// Obs: nao trocar a ordem das checagens, eh nessa disposicao que o suporte ao multiplayer e ao singleplayer funciona!!
 	while ((pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
 	{
 		if (InTransitionVolume(pPlayer, m_szLandmarkName))
@@ -182,8 +182,12 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 			if (!g_pGameRules->IsCoOp())
 				ALERT(at_aiconsole, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName);
 
-			releaseChangelevel = false; // No singleplayer so passa por aqui uma vez, no multi eu preciso passar varias
+			releaseChangelevel = false; // No singleplayer so passa por aqui no maximo uma vez, no multi eu preciso passar varias
 		}
+
+		if (!g_pGameRules->IsCoOp())
+			break;
+
 		i++;
 	}
 
@@ -228,6 +232,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if (g_pGameRules->IsCoOp())
 	{
 		hu3ChangingLevelWithTrigger = true;
+		Hu3CorrectChangelevelTrigger = 0;
 		g_pGameRules->ChangeLevelCoop(pLandmark, m_szLandmarkName, st_szNextMap);
 	}
 	else
@@ -397,7 +402,6 @@ bool CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 	if (g_pGameRules->IsCoOp())
 	{
 		CBaseEntity* pChangelevel = nullptr;
-		
 		// Temos os valores 0, 1 ou 2 para j:
 		// 1 = o primeiro trigger_changelevel encontrado no mapa;
 		// 2 = o segundo trigger_changelevel encontrado no mapa;
@@ -409,15 +413,15 @@ bool CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 			// Posicao DENTRO de uma area de troca
 			if (pChangelevel->Intersects(pEntity))
 			{
-				if (hu3TriggerChangelevelActivated != 0)
+				if (Hu3CorrectChangelevelTrigger != 0)
 				{
 					// Area DIFERENTE a do primeiro jogador analisado
-					if (hu3TriggerChangelevelActivated != j)
+					if (Hu3CorrectChangelevelTrigger != j)
 						return false;
 				}
 				else
 				{
-					hu3TriggerChangelevelActivated = j;
+					Hu3CorrectChangelevelTrigger = j;
 				}
 				// Area IGUAL a do primeiro jogador analisado
 				return true;

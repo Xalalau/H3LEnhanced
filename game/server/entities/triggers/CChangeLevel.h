@@ -48,7 +48,7 @@ public:
 private:
 	// ############ hu3lifezado ############ //
 	// Garante que todos os jogadores estao no mesmo trigger_changelevel
-	static int hu3TriggerChangelevelActivated;
+	static int Hu3CorrectChangelevelTrigger;
 	// ############ //
 };
 
