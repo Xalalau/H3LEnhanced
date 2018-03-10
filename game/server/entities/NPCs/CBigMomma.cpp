@@ -665,14 +665,15 @@ void CBigMomma::StartTask( const Task_t& task )
 				sequence = GetNodePresequence();
 
 			ALERT( at_aiconsole, "BM: Playing node sequence %s\n", STRING(sequence) );
-			if ( sequence )
+			if ( !FStringNull( sequence ) )
 			{
-				sequence = LookupSequence( STRING( sequence ) );
-				if ( sequence != -1 )
+				auto sequenceIndex = LookupSequence( STRING( sequence ) );
+				if ( sequenceIndex != -1 )
 				{
-					SetSequence( sequence );
+					SetSequence( sequenceIndex );
 					SetFrame( 0 );
 					ResetSequenceInfo( );
+					//TODO: shouldn't this be sequence? - Solokiller
 					ALERT( at_aiconsole, "BM: Sequence %s\n", STRING(GetNodeSequence()) );
 					return;
 				}

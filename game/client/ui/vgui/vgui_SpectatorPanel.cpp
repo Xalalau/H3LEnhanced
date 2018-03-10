@@ -381,7 +381,7 @@ void SpectatorPanel::EnableInsetView(bool isEnabled)
 
 	Update();
 
-	m_CamButton->setText( Localize().BufferedLocaliseTextString( GetSpectatorLabel( g_iUser1 ) ) );
+	m_CamButton->setButtonText( Localize().BufferedLocaliseTextString( GetSpectatorLabel( g_iUser1 ) ) );
 }
 
 

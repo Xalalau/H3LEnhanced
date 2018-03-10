@@ -941,7 +941,7 @@ void CBasePlayer::ImpulseCommands()
 		{// line hit something, so paint a decal
 			m_flNextDecalTime = gpGlobals->time + decalfrequency.value;
 			auto pCan = static_cast<CSprayCan*>( UTIL_CreateNamedEntity( "spray_can" ) );
-			pCan->Spawn( this );
+			pCan->CreateSprayCan( this );
 		}
 
 		break;
@@ -1146,7 +1146,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			if( tr.flFraction != 1.0 )
 			{// line hit something, so paint a decal
 				auto pBlood = static_cast< CBloodSplat* >( UTIL_CreateNamedEntity( "blood_splat" ) );
-				pBlood->Spawn( this );
+				pBlood->CreateSplat( this );
 			}
 			break;
 		}
