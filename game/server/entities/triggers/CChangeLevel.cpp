@@ -8,6 +8,15 @@
 
 #include "CChangeLevel.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/CHu3LifeCoop.h"
+#include "CBasePlayer.h"
+#include "Effects.h"
+// Garante que todos os jogadores estao no mesmo trigger_changelevel
+int CChangeLevel::Hu3CorrectChangelevelTrigger = 0;
+// ############ //
+
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity );
 
 extern DLL_GLOBAL bool		g_fGameOver;
@@ -135,13 +144,56 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 
 	SetDamageTime( gpGlobals->time );
 
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// A verificacao se o jogador esta dentro do changelevel foi adaptada para o modo cooperativo
+	CBaseEntity *pPlayer;
+	int i = 1;
+	bool releaseChangelevel = true;
 
-	CBaseEntity *pPlayer = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
-	if( !InTransitionVolume( pPlayer, m_szLandmarkName ) )
+	// Obs: nao trocar a ordem das checagens, eh nessa disposicao que o suporte ao multiplayer e ao singleplayer funciona!!
+	while ((pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
 	{
-		ALERT( at_aiconsole, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName );
-		return;
+		if (InTransitionVolume(pPlayer, m_szLandmarkName))
+		{
+			if (g_pGameRules->IsCoOp())
+			{
+				// Prendo os jogadores que ja estao em posicao valida, os deixo passaveis e taco efeitos
+				if (!CoopPlyData[pPlayer->entindex()].waitingforchangelevel)
+				{
+					CBasePlayer* pPlayer2 = (CBasePlayer*)pPlayer;
+
+					if (!pPlayer2->GetFlags().Any(FL_FROZEN))
+						pPlayer2->EnableControl(false);
+
+					const Vector vecColor = { 0.6f, 0.8f, 1.0f };
+					pPlayer2->SetSolidType(SOLID_NOT);
+					pPlayer2->SetRenderMode(kRenderTransAdd);
+					pPlayer2->SetRenderAmount(230);
+					pPlayer2->SetRenderColor(vecColor);
+					pPlayer2->SetRenderFX(kRenderFxFadeFast);
+
+					CoopPlyData[pPlayer->entindex()].waitingforchangelevel = true;
+				}
+			}
+		}
+		else
+		{
+			if (!g_pGameRules->IsCoOp())
+				ALERT(at_aiconsole, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName);
+
+			releaseChangelevel = false; // No singleplayer so passa por aqui no maximo uma vez, no multi eu preciso passar varias
+		}
+
+		if (!g_pGameRules->IsCoOp())
+			break;
+
+		i++;
 	}
+
+	if (!releaseChangelevel)
+		return;
+	// ############ //
 
 	// Create an entity to fire the changetarget
 	if( m_changeTarget )
@@ -178,7 +230,11 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// [MODO COOP]
 	// Changelevel do coop eh diferente no final
 	if (g_pGameRules->IsCoOp())
+	{
+		hu3ChangingLevelWithTrigger = true;
+		Hu3CorrectChangelevelTrigger = 0;
 		g_pGameRules->ChangeLevelCoop(pLandmark, m_szLandmarkName, st_szNextMap);
+	}
 	else
 		CHANGE_LEVEL(st_szNextMap, st_szNextSpot);
 	// ############ //
@@ -339,6 +395,44 @@ bool CChangeLevel::InTransitionVolume( CBaseEntity *pEntity, char *pVolumeName )
 	bool inVolume = true;	// Unless we find a trigger_transition, everything is in the volume
 
 	CBaseEntity* pVolume = nullptr;
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Verificamos a area do trigger_changelevel mesmo!!! A ideia eh sempre usar o que temos e evitar ajustes nos mapas
+	if (g_pGameRules->IsCoOp())
+	{
+		CBaseEntity* pChangelevel = nullptr;
+		// Temos os valores 0, 1 ou 2 para j:
+		// 1 = o primeiro trigger_changelevel encontrado no mapa;
+		// 2 = o segundo trigger_changelevel encontrado no mapa;
+		// 0 = ainda nao foi feita nenhuma verificacao nesse mapa.
+		int j = 1;
+
+		while ((pChangelevel = UTIL_FindEntityByClassname(pChangelevel, "trigger_changelevel")) != nullptr)
+		{
+			// Posicao DENTRO de uma area de troca
+			if (pChangelevel->Intersects(pEntity))
+			{
+				if (Hu3CorrectChangelevelTrigger != 0)
+				{
+					// Area DIFERENTE a do primeiro jogador analisado
+					if (Hu3CorrectChangelevelTrigger != j)
+						return false;
+				}
+				else
+				{
+					Hu3CorrectChangelevelTrigger = j;
+				}
+				// Area IGUAL a do primeiro jogador analisado
+				return true;
+			}
+			j++;
+		}
+		// Posicao FORA das duas areas de troca
+		return false;
+	}
+	// ############ //
+
 	while( ( pVolume = UTIL_FindEntityByTargetname( pVolume, pVolumeName ) ) != nullptr )
 	{
 		if( pVolume->ClassnameIs( "trigger_transition" ) )

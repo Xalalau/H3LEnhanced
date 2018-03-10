@@ -50,7 +50,9 @@ cvar_t	defaultteam = {"mp_defaultteam","0" };
 // ############ hu3lifezado ############ //
 // Remover as armas do jogador
 cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
-// [MODO COOP]
+// Corrigir o spawn de trens
+cvar_t	hu3_trainspawnpoint = { "mp_hu3_trainspawnpoint","0", FCVAR_SERVER };
+// [MODO COOP] (tambem)
 // Permitir monstros por padrao no multiplayer
 cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
 // ############ //
@@ -638,6 +640,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &as_mysql_config );
 
 	// ############ hu3lifezado ############ //
+	// Corrigir o spawn de trens
+	CVAR_REGISTER (&hu3_trainspawnpoint);
 	// Remover as armas do jogador
 	CVAR_REGISTER (&hu3_removeallitens);
 	// ############ //

@@ -44,6 +44,12 @@ public:
 	char m_szLandmarkName[ cchMapNameMost ];		// trigger_changelevel only:  landmark on next map
 	string_t m_changeTarget;
 	float	m_changeTargetDelay;
+
+private:
+	// ############ hu3lifezado ############ //
+	// Garante que todos os jogadores estao no mesmo trigger_changelevel
+	static int Hu3CorrectChangelevelTrigger;
+	// ############ //
 };
 
 #endif //GAME_SERVER_ENTITIES_TRIGGERS_CCHANGELEVEL_H

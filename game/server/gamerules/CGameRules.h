@@ -403,7 +403,8 @@ public:
 
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
-	// Novo changelevel gambiarrado
+	// Declaracao do uso vazio e generalizado do changelevel do modo coop
+	// Preciso disso para acessar essa funcao externamente em qualquer arquivo do HL1
 	virtual void ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap);
 	// ############ //
 };

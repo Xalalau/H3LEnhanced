@@ -24,41 +24,11 @@
 #include "Angelscript/ScriptAPI/ASEvents.h"
 #endif
 
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-#include "gamerules/CHu3LifeCoop.h"
-// Remover as armas do jogador. Acesso hu3_removeallitens
-#include "Server.h"
-// ############ //
-
 // 
 // PlayerUse - handles USE keypress
 //
 void CBasePlayer::PlayerUse()
 {
-	// ############ hu3lifezado ############ //
-	// Roubei esse espaco para fazer coisas do hu3!
-	// Remover as armas do jogador
-	if (hu3_removeallitens.value == 1)
-	{
-		RemoveAllItems(true);
-		hu3_removeallitens.value = 0;
-		strcpy(hu3_removeallitens.string, "0");
-	}
-	// [MODO COOP]
-	// Acerto o nome do jogador no modo coop
-	if ( hu3ChangeNetName )
-		// No primeiro join o jogador sempre comeca acima do chao, entao eu aproveito o tempo de queda para rodar o comando sem problemas nessa situacao
-		if (pev->flags & FL_ONGROUND)
-		{
-			CBaseEntity *hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(hu3CoopPlyIndex));
-			char comando[35] = "name ";
-			strcat(strcat(comando, hu3NetNewName), "\n");
-			CLIENT_COMMAND(ENT(hu3Player), comando);
-			hu3ChangeNetName = false;
-		}
-	// ############ //
-
 	if( IsObserver() )
 		return;
 

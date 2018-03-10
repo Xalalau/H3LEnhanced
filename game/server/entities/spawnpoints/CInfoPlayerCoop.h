@@ -12,21 +12,15 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef GAME_SERVER_CPOINTCMD_H
-#define GAME_SERVER_CPOINTCMD_H
+#ifndef GAME_SERVER_ENTITIES_SPAWNPOINTS_CINFOPLAYERCOOP_H
+#define GAME_SERVER_ENTITIES_SPAWNPOINTS_CINFOPLAYERCOOP_H
 
-class CPointCMD : public CPointEntity
+#include "CBaseSpawnPoint.h"
+
+class CInfoPlayerCoop : public CBaseSpawnPoint
 {
 public:
-	DECLARE_CLASS( CPointCMD, CPointEntity );
-
-	void Spawn(void);
-
-	void KeyValue(KeyValueData *pkvd);
-	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-
-	string_t m_command;		// Comando
-	string_t m_target;      // Alvo(s)
+	DECLARE_CLASS( CInfoPlayerCoop, CBaseSpawnPoint );
 };
 
-#endif //GAME_SERVER_CPOINTCMD_H
+#endif //GAME_SERVER_ENTITIES_SPAWNPOINTS_CINFOPLAYERCOOP_H

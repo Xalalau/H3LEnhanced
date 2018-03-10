@@ -80,6 +80,12 @@ public:
 	EHANDLE				m_hGoalEnt;// path corner we are heading towards
 	CBaseEntity			*m_pLink;// used for temporary link-list operations. 
 
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Guardo estados especiais do modo cooperativo
+	string_t m_coop;
+	// ############ //
+
 	/*
 	*	Getters and setters for entvars_t.
 	*/

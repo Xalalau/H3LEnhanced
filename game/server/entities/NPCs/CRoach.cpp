@@ -24,6 +24,11 @@
 #include	"entities/CSoundEnt.h"
 #include	"Decals.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/GameRules.h"
+// ############ //
+
 #include "CRoach.h"
 
 BEGIN_DATADESC( CRoach )
@@ -202,13 +207,21 @@ void CRoach :: MonsterThink( void  )
 					Listen();
 				}
 
-				if ( GetLightLevel() > m_flLastLightLevel )
+				// ############ hu3lifezado ############ //
+				// [MODO COOP]
+				// Essa chamada de GetLightLevel() esta crashando o modo coop
+				if (!g_pGameRules->IsCoOp())
 				{
-					// someone turned on lights!
-					//ALERT ( at_console, "Lights!\n" );
-					PickNewDest( ROACH_SCARED_BY_LIGHT );
-					SetActivity ( ACT_WALK );
+					if (GetLightLevel() > m_flLastLightLevel)
+					{
+						// someone turned on lights!
+						ALERT(at_console, "Lights!\n");
+						PickNewDest(ROACH_SCARED_BY_LIGHT);
+						SetActivity(ACT_WALK);
+					}
 				}
+				// ############ //
+
 				else if ( HasConditions(bits_COND_SMELL_FOOD) )
 				{
 					CSound *pSound;

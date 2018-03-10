@@ -8,6 +8,8 @@
 #include "CGameRules.h"
 #include "CHu3LifeCoop.h"
 
+#define SPAWNPROTECTIONTIME 4;
+
 class CBaseHalfLifeCoop : public CGameRules
 {
 public:
@@ -41,7 +43,7 @@ public:
 // Client spawn/respawn control
 	void FixPlayerCrouchStuck(edict_t *pPlayer);
 	virtual void PlayerSpawn( CBasePlayer *pPlayer ) override;
-	int SetPlayerName(CBaseEntity *pPlayer);
+	bool SetPlayerName(CBaseEntity *pPlayer);
 	void LoadPlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData);
 	virtual void ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap);
 	void SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData);
