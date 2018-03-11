@@ -84,7 +84,7 @@ if [ ! -d "$dependencies_dir_name" ]; then
 	echo "[Dependency] Building XercesC"
 	
 	# Acquire files
-	XERCESC_URL="http://www-us.apache.org/dist//xerces/c/3/sources/xerces-c-$XERCESC_VERSION.tar.gz"
+	XERCESC_URL="http://archive.apache.org/dist/xerces/c/3/sources/xerces-c-$XERCESC_VERSION.tar.gz"
 	mkdir src
 	wget --no-check-certificate --quiet -O - ${XERCESC_URL} | tar --strip-components=1 -xz -C src
   
