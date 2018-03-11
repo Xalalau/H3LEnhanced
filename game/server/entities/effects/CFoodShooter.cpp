@@ -20,7 +20,7 @@ void CFoodShooter::Precache(void)
 CGib *CFoodShooter::CreateGib(void)
 {
 	CGib *pGib = GetClassPtr((CGib *)NULL);
-	pGib->Spawn("models/fgibs.mdl");
+	pGib->GibCreate("models/fgibs.mdl");
 	pGib->m_bloodColor = BLOOD_COLOR_YELLOW;
 
 	if (pev->body <= 1)
