@@ -59,8 +59,6 @@ void CPointCMD::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		return;
 	}
 
-	ALERT(at_console, "MODO ESCOLHIDO: %s\n", STRING(m_target));
-
 	// Rodar comando uma unica vez no servidor
 	if (strcmp(STRING(m_target), "server") == 0)
 	{
@@ -69,7 +67,6 @@ void CPointCMD::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 	// Rodar comando em cada jogador
 	else if (strcmp(STRING(m_target), "clients") == 0)
 	{
-		ALERT(at_console, "MODO CLIENTS\n");
 		for (int i = 1; i <= gpGlobals->maxClients; i++)
 		{
 			edict_t *hu3Player = g_engfuncs.pfnPEntityOfEntIndex(i);
@@ -87,7 +84,6 @@ void CPointCMD::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		edict_t *hu3Player = g_engfuncs.pfnPEntityOfEntIndex(RANDOM_LONG(1, gpGlobals->maxClients));
 		if (hu3Player)
 		{
-			ALERT(at_console, "ENTIDADE ESCOLHIDA = %s\n", STRING(hu3Player));
 			CBaseEntity *pEnt = CBaseEntity::Instance(hu3Player);
 			if (pEnt && pEnt->IsPlayer())
 				CLIENT_COMMAND(hu3Player, "%s\n", STRING(m_command));

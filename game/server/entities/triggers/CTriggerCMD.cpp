@@ -60,8 +60,6 @@ void CTriggerCMD::Touch(CBaseEntity *pOther)
 		return;
 	}
 
-	ALERT(at_console, "MODO ESCOLHIDO: %s\n", STRING(m_target));
-
 	// Rodar comando uma unica vez no servidor
 	if (strcmp(STRING(m_target), "server") == 0)
 	{
@@ -92,7 +90,6 @@ void CTriggerCMD::Touch(CBaseEntity *pOther)
 		edict_t *hu3Player = g_engfuncs.pfnPEntityOfEntIndex(RANDOM_LONG(1, gpGlobals->maxClients));
 		if (hu3Player)
 		{
-			ALERT(at_console, "ENTIDADE ESCOLHIDA = %s\n", STRING(hu3Player));
 			CBaseEntity *pEnt = CBaseEntity::Instance(hu3Player);
 			if (pEnt && pEnt->IsPlayer())
 				CLIENT_COMMAND(hu3Player, "%s\n", STRING(m_command));
