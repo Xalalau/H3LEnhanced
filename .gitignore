@@ -11,5 +11,8 @@ gamerc/mapsrc/*.rmx
 # Ignore OSX junk files
 .DS_Store
 
+# Ignore VSCode files
+.vscode
+
 #Ignore temporary files created by Linux text editors like vim and gedit.
 *~

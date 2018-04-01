@@ -54,7 +54,7 @@ endif()
 
 #Base dir for game outputs
 set( GAME_BIN_PATH "${STEAMCOMMON}/Half-Life" )
-set( GAME_BASE_PATH "${GAME_BIN_PATH}/Hu3-Life_GitHub" )
+set( GAME_BASE_PATH "${GAME_BIN_PATH}/Hu3-Life" )
 
 MESSAGE( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
