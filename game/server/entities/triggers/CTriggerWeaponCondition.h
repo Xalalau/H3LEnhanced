@@ -15,9 +15,9 @@ public:
 		
 	void ProcessConditions();
 
-	string_t m_TargetIfSomePlyHasWpnAndAmmo;
-	string_t m_TargetIfSomePlyHasWpn;
-	string_t m_TargetIfPlysAreDisarmed;
+	string_t m_TargetHasWpnAndAmmo;
+	string_t m_TargetHasWpn;
+	string_t m_TargetDisarmed;
 };
 
 

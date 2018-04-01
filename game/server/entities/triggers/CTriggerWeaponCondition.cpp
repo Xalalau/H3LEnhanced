@@ -18,28 +18,28 @@
 #include "CTriggerWeaponCondition.h"
 
 BEGIN_DATADESC( CWeaponCondition )
-	DEFINE_FIELD(m_TargetIfSomePlyHasWpnAndAmmo, FIELD_STRING),
-	DEFINE_FIELD(m_TargetIfSomePlyHasWpn, FIELD_STRING),
-	DEFINE_FIELD(m_TargetIfPlysAreDisarmed, FIELD_STRING),
+	DEFINE_FIELD(m_TargetHasWpnAndAmmo, FIELD_STRING),
+	DEFINE_FIELD(m_TargetHasWpn, FIELD_STRING),
+	DEFINE_FIELD(m_TargetDisarmed, FIELD_STRING),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS(trigger_weapon_condition, CWeaponCondition);
 
 void CWeaponCondition::KeyValue(KeyValueData *pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "targetifsomeplyhaswpnandammo"))
+	if (FStrEq(pkvd->szKeyName, "haswpnandammo"))
 	{
-		m_TargetIfSomePlyHasWpnAndAmmo = ALLOC_STRING(pkvd->szValue);
+		m_TargetHasWpnAndAmmo = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = true;
 	}
-	else if (FStrEq(pkvd->szKeyName, "targetifsomeplyhaswpn"))
+	else if (FStrEq(pkvd->szKeyName, "haswpn"))
 	{
-		m_TargetIfSomePlyHasWpn = ALLOC_STRING(pkvd->szValue);
+		m_TargetHasWpn = ALLOC_STRING(pkvd->szValue);
 			pkvd->fHandled = true;
 	}
-	else if (FStrEq(pkvd->szKeyName, "targetifplysaredisarmed"))
+	else if (FStrEq(pkvd->szKeyName, "isdisarmed"))
 	{
-		m_TargetIfPlysAreDisarmed = ALLOC_STRING(pkvd->szValue);
+		m_TargetDisarmed = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = true;
 	}
 	else
@@ -101,13 +101,13 @@ void CWeaponCondition::ProcessConditions()
 
 	// Se existirem jogadores armados e com municao, pego a primeira entidade
 	if (plyHasWeapon && plyHasAmmo)
-		entity = m_TargetIfSomePlyHasWpnAndAmmo;
+		entity = m_TargetHasWpnAndAmmo;
 	// Se existirem jogadores armados mas todos sem municao, pego a segunda entidade
 	else if (plyHasWeapon)
-		entity = m_TargetIfSomePlyHasWpn;
+		entity = m_TargetHasWpn;
 	// Se todos os jogadores estiverem desarmados, pego a terceira entidade
 	else
-		entity = m_TargetIfPlysAreDisarmed;
+		entity = m_TargetDisarmed;
 
 	// Chamo a entidade selecionada
 	if (strcmp(STRING(entity), "") != 0)

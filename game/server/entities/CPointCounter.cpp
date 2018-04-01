@@ -37,7 +37,7 @@ void CPointCounter::KeyValue(KeyValueData *pkvd)
 		m_sCountText.x = -1;
 		m_sCountText.y = 0.8;
 		m_sCountText.effect = 2;
-		m_sCountText.channel = 1;
+		m_sCountText.channel = 4;
 
 		// Cores
 		m_sCountText.r1 = 210;
