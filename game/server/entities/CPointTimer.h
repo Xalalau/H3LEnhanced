@@ -40,7 +40,12 @@ public:
 	int m_iDuration;
 	int m_iRepeat;
 	float m_flendTime;
-	CBaseEntity* e_Target;
+
+	string_t m_targetOnTimerStart;
+	string_t m_targetOnTimerInterval;
+	string_t m_targetOnTimerEnd;
+
+	CBaseEntity* m_hTimerActivator;
 };
 
 #endif //GAME_SERVER_CPOINTTIMER_H

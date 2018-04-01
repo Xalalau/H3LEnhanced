@@ -27,6 +27,12 @@ public:
 	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
 	int m_iCount;
+	int m_iCountTotal;
+	string_t m_sMessageTitle;
+	string_t m_sMessageFinished;
+
+private:
+	hudtextparms_t m_sCountText;
 };
 
 #endif //GAME_SERVER_CPOINTCOUNTER_H

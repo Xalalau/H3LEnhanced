@@ -18,7 +18,10 @@ BEGIN_DATADESC(CPointTimer)
 	DEFINE_FIELD(m_iDuration, FIELD_INTEGER),
 	DEFINE_FIELD(m_iRepeat, FIELD_INTEGER),
 	DEFINE_FIELD(m_flendTime, FIELD_TIME),
-	DEFINE_FIELD(e_Target, FIELD_ENTITY),
+
+	DEFINE_FIELD(m_targetOnTimerStart, FIELD_STRING),
+	DEFINE_FIELD(m_targetOnTimerInterval, FIELD_STRING),
+	DEFINE_FIELD(m_targetOnTimerEnd, FIELD_STRING),
 
 	DEFINE_THINKFUNC(TimerThink),
 	DEFINE_USEFUNC(TimerStart),
@@ -37,6 +40,21 @@ void CPointTimer::KeyValue(KeyValueData *pkvd)
 	else if (FStrEq(pkvd->szKeyName, "trepeat"))
 	{
 		m_iRepeat = atof(pkvd->szValue);
+		pkvd->fHandled = true;
+	}
+	else if (FStrEq(pkvd->szKeyName, "tonstart"))
+	{
+		m_targetOnTimerStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = true;
+	}
+	else if (FStrEq(pkvd->szKeyName, "toninterval"))
+	{
+		m_targetOnTimerInterval = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = true;
+	}
+	else if (FStrEq(pkvd->szKeyName, "tonend"))
+	{
+		m_targetOnTimerEnd = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = true;
 	}
 	else
@@ -66,6 +84,9 @@ void CPointTimer::TimerThink(void)
 	// Verifica se o tempo ja ultrapassou o limite, reseta ou executa o target
 	if (gpGlobals->time > m_flendTime)
 	{
+		// Dispara o target OnTimerEnd
+		FireTargets(STRING(m_targetOnTimerEnd), m_hTimerActivator, this, USE_TOGGLE, 0);
+
 		SetThink(NULL);
 		SetUse(&CPointTimer::TimerStart); // Ativa novamente o uso dessa entidade
 		m_flendTime = 0; // Reseta o tempo limite
@@ -75,18 +96,22 @@ void CPointTimer::TimerThink(void)
 		SetUse(NULL); // Desativa o uso da entidade ate que ela termine seu processo
 		SetNextThink(gpGlobals->time + m_iRepeat);
 
-		SUB_UseTargets(e_Target, USE_TOGGLE, 0);
+		// Dispara o target OnTimerInterval
+		FireTargets(STRING(m_targetOnTimerInterval), m_hTimerActivator, this, USE_TOGGLE, 0);
 	}
 }
 
 void CPointTimer::TimerStart(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
 	m_flendTime = gpGlobals->time + m_iDuration;
-	e_Target = pActivator; // Hackzinho maroto para passar o pActivator ao Think para economizar tempo KK --SORRY
+	m_hTimerActivator = pActivator;
 
-	if (m_flendTime > 0 && e_Target != NULL)
+	if (m_flendTime > 0)
 	{
 		// ALERT(at_console, "point_timer iniciou com: Limite: %i, Repeticao: %i, Inicio: %.2f, Final: %.2f\n", m_iDuration, m_iRepeat, m_flstartTime, m_flendTime);
+		// Dispara o target OnTimerStart
+		FireTargets(STRING(m_targetOnTimerStart), m_hTimerActivator, this, USE_TOGGLE, 0);
+
 		SetThink(&CPointTimer::TimerThink);
 		SetNextThink(gpGlobals->time + m_iRepeat);
 	}
