@@ -69,30 +69,30 @@ void CWeaponCondition::Use(CBaseEntity pActivator, CBaseEntity pCaller, USE_TYPE
 void CWeaponCondition::ProcessConditions()
 {
 	int plyHasWeapon = 0, plyHasAmmo = 0;
-	CBaseEntity* hu3Player = nullptr;
-	CBasePlayer* hu3PlayerCBP = nullptr;
 	string_t entity;
 
 	// Vou rodar por todos os jogadores e ver se algum possui arma e municao
-	while ((hu3Player = UTIL_FindEntityByClassname(hu3Player, "player")) != nullptr)
+	for (int i = 0; i < gpGlobals->maxClients; i++)
 	{
-		// Pego o jogador na classe CBasePlayer
-		hu3PlayerCBP = (CBasePlayer *)hu3Player;
+		CBasePlayer *hu3Player = UTIL_PlayerByIndex(i);
 
-		// Verifico se o jogador esta armado
-		if (hu3PlayerCBP->HasWeapons())
+		if (hu3Player && hu3Player->IsConnected())
 		{
-			// Ativamos a variavel plyHasWeapon:
-			plyHasWeapon = 1;
-
-			// Entao vamos verificar se esse jogador eh perigoso: ele possui municao?
-			if (hu3PlayerCBP->HasAnyAmmo())
+			// Verifico se o jogador esta armado
+			if (hu3Player->HasWeapons())
 			{
-				// Ativamos a variavel plyHasAmmo:
-				plyHasAmmo = 1;
+				// Ativamos a variavel plyHasWeapon:
+				plyHasWeapon = 1;
 
-				// Nao temos mais necessidade de checar mais jogadores, ja alcancamos a ativacao maxima
-				break;
+				// Entao vamos verificar se esse jogador eh perigoso: ele possui municao?
+				if (hu3Player->HasAnyAmmo())
+				{
+					// Ativamos a variavel plyHasAmmo:
+					plyHasAmmo = 1;
+
+					// Nao temos mais necessidade de checar mais jogadores, ja alcancamos a ativacao maxima
+					break;
+				}
 			}
 		}
 	}
