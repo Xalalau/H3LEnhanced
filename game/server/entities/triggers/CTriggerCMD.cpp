@@ -87,13 +87,9 @@ void CTriggerCMD::Touch(CBaseEntity *pOther)
 	// Rodar comando em algum jogador qualquer
 	else if (strcmp(STRING(m_target), "randomclient") == 0)
 	{
-		edict_t *hu3Player = g_engfuncs.pfnPEntityOfEntIndex(RANDOM_LONG(1, gpGlobals->maxClients));
+		edict_t *hu3Player = g_engfuncs.pfnPEntityOfEntIndex(UTIL_GetRandomPLayerID());
 		if (hu3Player)
-		{
-			CBaseEntity *pEnt = CBaseEntity::Instance(hu3Player);
-			if (pEnt && pEnt->IsPlayer())
-				CLIENT_COMMAND(hu3Player, "%s\n", STRING(m_command));
-		}
+			CLIENT_COMMAND(hu3Player, "%s\n", STRING(m_command));
 	}
 
 	// Remover a entidade
