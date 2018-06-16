@@ -117,6 +117,34 @@ float CHalfLifeRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 //=========================================================
 void CHalfLifeRules :: PlayerSpawn( CBasePlayer *pPlayer )
 {
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Executo estados especiais nas entidades
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+	CBaseEntity *pEntity;
+
+
+	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	{
+		if (!pEdict)
+			break;
+
+		pEntity = CBaseEntity::Instance(pEdict);
+		if (!pEntity)
+			continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
+
+		string_t state = pEntity->m_coop;
+
+		if (state)
+		{
+			// Remover a entidade se ela for modo coop apenas
+			if (strcmp(STRING(state), "only_in_coop") == 0)
+			{
+				pEntity->SUB_Remove();
+			}
+		}
+	}
+	// ############ //
 }
 
 //=========================================================

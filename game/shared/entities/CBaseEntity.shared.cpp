@@ -30,6 +30,11 @@ BEGIN_DATADESC_NOBASE( CBaseEntity )
 	DEFINE_FIELD( m_pfnTouch, FIELD_FUNCPTR ),
 	DEFINE_FIELD( m_pfnUse, FIELD_FUNCPTR ),
 	DEFINE_FIELD( m_pfnBlocked, FIELD_FUNCPTR ),
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Guardo estados especiais do modo cooperativo
+	DEFINE_FIELD(m_coop, FIELD_STRING),
+	// ############ //
 	DEFINE_THINKFUNC( SUB_Remove ),
 	DEFINE_THINKFUNC( SUB_DoNothing ),
 	DEFINE_THINKFUNC( SUB_StartFadeOut ),

@@ -34,8 +34,7 @@ game/shared/entities/NPCs/CRoach.cpp:
 -- Uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada.
 game/shared/entities/CWorld.cpp:
 -- precache do sprite do changelevel.
-game/server/gamerules/CHalfLifeMultiplay.cpp:
-game/server/gamerules/CHalfLifeTeamplay.cpp:
+game/server/gamerules/CHalfLifeRules.cpp:
 -- Adicionada tag "only_in_coop" para o keyvalue "coop".
 game/server/entities/plats/CFuncTrackTrain.cpp:
 game/server/entities/plats/CFuncTrackTrain.h:
@@ -424,12 +423,12 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 
 	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
 	{
-		if (pEdict->free)	// Not in use
-			continue;
+		if (!pEdict)
+			break;
 
 		pEntity = CBaseEntity::Instance(pEdict);
 		if (!pEntity)
-			continue;
+			continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
 
 		string_t state = pEntity->m_coop;
 
