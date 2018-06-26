@@ -300,7 +300,7 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	}
 
 	// Executo estados especiais nas entidades
-	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(0);
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 	CBaseEntity *pEntity;
 	char * remove_in_coop = (char*)CVAR_GET_STRING("remove_in_coop");
 	char * nophysics_in_coop = (char*)CVAR_GET_STRING("nophysics_in_coop");
@@ -1033,7 +1033,7 @@ void CBaseHalfLifeCoop::SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveR
 void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
 {
 	CBaseEntity *hu3Player;
-	int i = 0;
+	int i = 1;
 
 	// Verifica se todos os jogadores esta dentro de um mesmo changelevel e trava eles
 	bool releaseChangelevel = true;
