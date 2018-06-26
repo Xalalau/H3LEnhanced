@@ -371,39 +371,6 @@ void CBasePlayer::PostThink()
 		hu3_removeallitens.value = 0;
 		strcpy(hu3_removeallitens.string, "0");
 	}
-	// [MODO COOP]
-	// Acerto o nome do jogador no modo coop
-	if (hu3ChangeNetName)
-		// No primeiro join o jogador sempre comeca acima do chao, entao eu aproveito o tempo de queda para rodar o comando sem problemas nessa situacao
-		if (pev->flags & FL_ONGROUND)
-		{
-			CBaseEntity *hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(hu3CoopPlyIndex));
-			char comando[35] = "name ";
-			strcat(strcat(comando, hu3NetNewName), "\n");
-			CLIENT_COMMAND(ENT(hu3Player), comando);
-			hu3ChangeNetName = false;
-		}
-	// Restaurar godmode e notarget depois de um changelevel ou morte
-	if (hu3ChangelevelPlyCommands)
-	{
-		CBaseEntity *hu3Player;
-
-		int i = 1;
-		while ((hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
-		{
-			if (CoopPlyData[hu3Player->entindex()].respawncommands) // So rodo se for a primeira vez no nivel
-			{
-				if (CoopPlyData[hu3Player->entindex()].godmode)
-					CLIENT_COMMAND(hu3Player->edict(), "god\n");
-				if (CoopPlyData[hu3Player->entindex()].notarget)
-					CLIENT_COMMAND(hu3Player->edict(), "notarget\n");
-				CoopPlyData[hu3Player->entindex()].respawncommands = false;
-			}
-			i++;
-		}
-
-		hu3ChangelevelPlyCommands = false;
-	}
 	// ############ //
 
 	// Handle Tank controlling

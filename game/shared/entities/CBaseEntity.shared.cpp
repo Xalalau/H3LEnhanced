@@ -30,11 +30,6 @@ BEGIN_DATADESC_NOBASE( CBaseEntity )
 	DEFINE_FIELD( m_pfnTouch, FIELD_FUNCPTR ),
 	DEFINE_FIELD( m_pfnUse, FIELD_FUNCPTR ),
 	DEFINE_FIELD( m_pfnBlocked, FIELD_FUNCPTR ),
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Guardo estados especiais do modo cooperativo
-	DEFINE_FIELD(m_coop, FIELD_STRING),
-	// ############ //
 	DEFINE_THINKFUNC( SUB_Remove ),
 	DEFINE_THINKFUNC( SUB_DoNothing ),
 	DEFINE_THINKFUNC( SUB_StartFadeOut ),
@@ -266,15 +261,6 @@ void CBaseEntity::KeyValue( KeyValueData* pkvd )
 		SetClassificationOverride( EntityClassifications().GetClassificationId( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Guardo estados especiais do modo cooperativo
-	else if (FStrEq("coop", pkvd->szKeyName))
-	{
-		m_coop = ALLOC_STRING(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	// ############ //
 	else
 		pkvd->fHandled = false;
 }

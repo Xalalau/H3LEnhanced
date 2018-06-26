@@ -46,21 +46,16 @@ struct playerCoopSaveRestore {
 extern struct playerCoopSaveRestore CoopPlyData[64];
 
 // Nome do landmark em uso
-extern char Hu3LandmarkName[32];
+extern char hu3LandmarkName[32];
 
 // Index de um jogador (uso para a troca de nomes. Nao inventar outros usos!)
 extern int hu3CoopPlyIndex;
-
 // Novo nome de um jogador
 extern char hu3NetNewName[32];
-
 // Se um nome precisa ser alterado ou nao
 extern bool hu3ChangeNetName;
 
-// Restaurar godmode e notarget depois de um changelevel ou morte
-extern bool hu3ChangelevelPlyCommands;
-
-// Informa que o jogo esta passando por um changelevel ativado por trigger
-extern bool hu3ChangingLevelWithTrigger;
+// Garante que todos os jogadores estao no mesmo trigger_changelevel
+extern int hu3CorrectChangelevelTrigger;
 
 #endif //GAME_SERVER_GAMERULES_CHU3FLIFECOOP_H

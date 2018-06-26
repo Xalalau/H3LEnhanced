@@ -8,7 +8,7 @@
 #include "CGameRules.h"
 #include "CHu3LifeCoop.h"
 
-#define SPAWNPROTECTIONTIME 4;
+#define SPAWNPROTECTIONTIME 3;
 
 class CBaseHalfLifeCoop : public CGameRules
 {
@@ -109,11 +109,9 @@ public:
 // Monsters
 	virtual bool FAllowMonsters() const override;
 
-	virtual void EndMultiplayerGame() override { GoToIntermission(); }
-
 protected:
-	virtual void ChangeLevel();
-	virtual void GoToIntermission();
+	virtual bool InTransitionVolume(CBaseEntity *pEntity, char *pVolumeName);
+	void DisablePhysics(CBaseEntity *pEntity);
 	float m_flIntermissionEndTime2;
 	bool m_bEndIntermissionButtonHit2 = false;
 	void SendMOTDToClient(CBasePlayer* pPlayer);

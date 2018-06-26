@@ -6,24 +6,8 @@ Este arquivo controla o nosso modo cooperativo quase todo.
 
 Aqui esta uma lista explicada de modificacoes que ficaram espalhadas pelo projeto:
 
-game/shared/entities/CBaseEntity.shared.cpp:
-game/shared/entities/CBaseEntity.shared.h:
--- Adicionado keyvalue "coop" para podermos armazenar estados especiais do modo cooperativo.
-game/server/Server.cpp: 
--- Monstros permitidos por padrao no multiplayer.
-game/server/entities/player/CBasePlayer.frame.cpp:
--- Executo as alteracoes no nome dos jogadores;
--- Restauro estados de godmode e noclip.
-game/server/entities/player/CBasePlayer.weapons.cpp:
--- Processo sangue negativo (devido a bugs);
--- Retorno a entidade criada em GiveNamedItem() para poder lidar com ela.
-game/shared/entities/player/CBasePlayer.h:
--- Declaracao de GiveNamedItem() modificada.
 game/server/entities/triggers/CChangeLevel.cpp:
--- ChangeLevelNow() foi:
---- Conectada com a funcao ChangeLevelCoop();
---- Adaptada para prender os jogadores que entram em posicao valida de changelevel.
--- InTransitionVolume() foi adaptada para usar o trigger_changelevel e validar varios jogadores.
+-- Conectada com a funcao ChangeLevelCoop();
 game/server/gamerules/CGameRules.*:
 -- Uso vazio e generalizado do changelevel do modo coop.
 game/server/gamerules/CHu3LifeCoop.*:
@@ -33,32 +17,28 @@ game/server/gamerules/GameRules.*:
 game/shared/entities/NPCs/CRoach.cpp:
 -- Uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada.
 game/shared/entities/CWorld.cpp:
--- precache do sprite do changelevel.
-game/server/gamerules/CHalfLifeRules.cpp:
--- Adicionada tag "only_in_coop" para o keyvalue "coop".
-game/server/entities/plats/CFuncTrackTrain.cpp:
-game/server/entities/plats/CFuncTrackTrain.h:
--- Corrigi a posicao de spawn dos trens;
--- Adicionei deplay no inicio do movimento.
+-- Precache do sprite do changelevel.
 game/server/CGlobalState.cpp:
--- Desativei o keyvalue "globalname"
+-- Desativei o keyvalue "globalname".
+game/server/gamerules/CHalfLifeRules.cpp:
+-- Adicionado comando remove_in_sp.
 
-Possibilidades de uso do keyvalue "coop" em entidades:
 
-1) "remove_in_coop" = Remove a entidade no modo cooperativo
-2) "only_in_coop" = So aceita a entidade no modo cooperativo
-3) "disable_physics" = Deixa a entidade com transparencia e efeitos fisicos sem modificar o seu funcionamento
+Possibilidades de uso de comandos em entidades (por dentro dos arquivos .cfg dos mapas):
 
-Ajeitando o posicionamento de um trem:
+1) remove_in_coop "entidadeA;EntidadeB;Assimpordiante" = Remove entidades no modo cooperativo
+2) remove_in_sp "entidadeA;EntidadeB;Assimpordiante" = Remove entidades no singleplayer
+3) disable_physics "entidadeA;EntidadeB;Assimpordiante" = Deixa as entidades com transparencia e efeitos fisicos (sem modificar o seu funcionamento)
+4) mp_hu3_trainspawnpoint "nome_de_um_trem" = Faz o modo cooperativo procurar pelo dito func_tracktrain e spawnar os jogadores dentro dele
 
-1) O trem deve ter nome "train" e ser um "func_tracktrain"; 
-2) Nessas condicoes, no modo coop, ele tentara se posicionar na entidade de nome indicado via comando "mp_hu3_trainspawnpoint";
-3.1) Se o passo 2 for bem sucedido, os jogadores tambem comecarao a dar spawn dentro do trem;
-3.2) Se o passo 2 nao for bem sucedido, o trem se posicionara em local ruim como de costume do HL1 (apos um changelevel) e os jogadores em grande parte podem dar spawn fora dele.
-Nota1) Um delay de +- 10 segundos eh indicado para garantir que os jadores vao spawnar a tempo de aproveitar o nivel;
-Nota2) A nossa entidade "point_cmd" pode ser usada no final do percurso para trocar de nivel.
+
+Ordem de (re)spawn dos jogadores:
+
+1) Tenta dar (re)spawn dentro de algum trem que tenha sido ajeitado para o coop;
+2) Tenta dar (re)spawn em um info_player_coop;
+3) Tenta dar respawn em relacao a um landmark (so e possivel para jogadores pos changelevel);
+4) Se nada estiver disponivel, pega o ponto de spawn padrao (info_player_start).
 */
-
 
 #include "extdll.h"
 #include "util.h"
@@ -77,18 +57,17 @@ Nota2) A nossa entidade "point_cmd" pode ser usada no final do percurso para tro
 #include "CWeaponInfoCache.h"
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
-extern DLL_GLOBAL bool	g_fGameOver;
 
 extern int g_teamplay;
 
-float g_flIntermissionStartTime2 = 0;
+extern cvar_t mp_chattime;
 
 CVoiceGameMgr	g_VoiceGameMgr2;
 
 class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
 {
 public:
-	virtual bool		CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker)
+	virtual bool CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker)
 	{
 		if (g_teamplay)
 		{
@@ -110,9 +89,6 @@ static CMultiplayGameMgrHelper g_GameMgrHelper;
 CBaseHalfLifeCoop::CBaseHalfLifeCoop()
 {
 	g_VoiceGameMgr2.Init(&g_GameMgrHelper, gpGlobals->maxClients);
-
-	m_flIntermissionEndTime2 = 0;
-	g_flIntermissionStartTime2 = 0;
 }
 
 void CBaseHalfLifeCoop::OnCreate()
@@ -186,102 +162,12 @@ cvar_t* CBaseHalfLifeCoop::GetSkillCvar(const skilldata_t& skillData, const char
 	return CGameRules::GetSkillCvar(skillData, pszSkillCvarName);
 }
 
-extern cvar_t timeleft, fragsleft;
-
-extern cvar_t mp_chattime;
-
 //=========================================================
 //=========================================================
 void CBaseHalfLifeCoop::Think(void)
 {
 	g_VoiceGameMgr2.Update(gpGlobals->frametime);
-
-	///// Check game rules /////
-	static int last_frags;
-	static int last_time;
-
-	int frags_remaining = 0;
-	int time_remaining = 0;
-
-	if (g_fGameOver)   // someone else quit the game already
-	{
-		// bounds check
-		int time = (int)CVAR_GET_FLOAT("mp_chattime");
-		if (time < 1)
-			CVAR_SET_STRING("mp_chattime", "1");
-		else if (time > MAX_INTERMISSION_TIME)
-			CVAR_SET_STRING("mp_chattime", UTIL_dtos(MAX_INTERMISSION_TIME));
-
-		m_flIntermissionEndTime2 = g_flIntermissionStartTime2 + mp_chattime.value;
-
-		// check to see if we should change levels now
-		if (m_flIntermissionEndTime2 < gpGlobals->time)
-		{
-			if (m_bEndIntermissionButtonHit2  // check that someone has pressed a key, or the max intermission time is over
-				|| ((g_flIntermissionStartTime2 + MAX_INTERMISSION_TIME) < gpGlobals->time))
-				ChangeLevel(); // intermission is over
-		}
-
-		return;
-	}
-
-	float flTimeLimit = timelimit.value * 60;
-	float flFragLimit = fraglimit.value;
-
-	time_remaining = (int)(flTimeLimit ? (flTimeLimit - gpGlobals->time) : 0);
-
-	if (flTimeLimit != 0 && gpGlobals->time >= flTimeLimit)
-	{
-		GoToIntermission();
-		return;
-	}
-
-	if (flFragLimit)
-	{
-		int bestfrags = 9999;
-		int remain;
-
-		// check if any player is over the frag limit
-		for (int i = 1; i <= gpGlobals->maxClients; i++)
-		{
-			CBaseEntity *pPlayer = UTIL_PlayerByIndex(i);
-
-			if (pPlayer && pPlayer->GetFrags() >= flFragLimit)
-			{
-				GoToIntermission();
-				return;
-			}
-
-
-			if (pPlayer)
-			{
-				remain = flFragLimit - pPlayer->GetFrags();
-				if (remain < bestfrags)
-				{
-					bestfrags = remain;
-				}
-			}
-
-		}
-		frags_remaining = bestfrags;
-	}
-
-	// Updates when frags change
-	if (frags_remaining != last_frags)
-	{
-		g_engfuncs.pfnCvar_DirectSet(&fragsleft, UTIL_VarArgs("%i", frags_remaining));
-	}
-
-	// Updates once per second
-	if (timeleft.value != last_time)
-	{
-		g_engfuncs.pfnCvar_DirectSet(&timeleft, UTIL_VarArgs("%i", time_remaining));
-	}
-
-	last_frags = frags_remaining;
-	last_time = time_remaining;
 }
-
 
 //=========================================================
 //=========================================================
@@ -294,7 +180,7 @@ bool CBaseHalfLifeCoop::IsMultiplayer() const
 //=========================================================
 bool CBaseHalfLifeCoop::IsDeathmatch() const
 {
-	return true; // Eu retorno como verdadeiro porque quero aproveitar partes do deathmatch
+	return false;
 }
 
 //=========================================================
@@ -395,10 +281,6 @@ bool CBaseHalfLifeCoop::ClientConnected(edict_t *pEntity, const char *pszName, c
 {
 	g_VoiceGameMgr2.ClientConnected(pEntity);
 	
-	// Se tivermos passado por um changelevel por trigger, ja temos que desativar essa variavel aqui (antes dos jogadores voltarem)
-	if (hu3ChangingLevelWithTrigger)
-		hu3ChangingLevelWithTrigger = false;
-
 	return true;
 }
 
@@ -418,36 +300,64 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	}
 
 	// Executo estados especiais nas entidades
-	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(0);
 	CBaseEntity *pEntity;
+	char * remove_in_coop = (char*)CVAR_GET_STRING("remove_in_coop");
+	char * nophysics_in_coop = (char*)CVAR_GET_STRING("nophysics_in_coop");
+	char* tok1 = strtok(remove_in_coop, ";");
+	char* tok2 = strtok(nophysics_in_coop, ";");
+	int j, count_remove_in_coop = 0, count_nophysics_in_coop = 0;
 
-	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	// Contar a quantidade de entidades a remover
+	while (tok1 != NULL) {
+		count_remove_in_coop++;
+		tok1 = strtok(NULL, ";");
+	}
+
+	// Contar a quantidade de entidades a desativar a fisica
+	while (tok2 != NULL) {
+		count_nophysics_in_coop++;
+		tok2 = strtok(NULL, ";");
+	}
+
+	if (count_remove_in_coop > 0 || count_nophysics_in_coop > 0)
 	{
-		if (!pEdict)
-			break;
-
-		pEntity = CBaseEntity::Instance(pEdict);
-		if (!pEntity)
-			continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
-
-		string_t state = pEntity->m_coop;
-
-		if (state)
+		for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
 		{
+			if (!pEdict)
+				break;
+
+			pEntity = CBaseEntity::Instance(pEdict);
+			if (!pEntity)
+				continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
+
+			bool go_on = true;
+
 			// Remover a entidade se ela estiver marcada como nao apropriada para o coop
-			if (strcmp(STRING(state), "remove_in_coop") == 0)
-			{
-				pEntity->SUB_Remove();
+			tok1 = remove_in_coop;
+			for (j = 0; j < count_remove_in_coop; ++j) {
+				if (strcmp(pEntity->GetTargetname(), tok1) == 0)
+				{
+					pEntity->SUB_Remove();
+					go_on = false;
+
+					break;
+				}
+				tok1 += strlen(tok1) + 1;
+				tok1 += strspn(tok1, ";");
 			}
-			//  Deixar a entidade com transparencia e efeitos fisicos sem modificar o seu funcionamento
-			else if (strcmp(STRING(state), "disable_physics") == 0)
-			{
-				pEntity->SetSolidType(SOLID_NOT);
-				pEntity->SetRenderMode(kRenderTransAdd);
-				pEntity->SetRenderAmount(230);
-				const Vector vecColor = { 0.6f, 0.8f, 1.0f };
-				pEntity->SetRenderColor(vecColor);
-				pEntity->SetRenderFX(kRenderFxFadeFast);
+
+			//  Deixar a entidade com transparencia e sem efeitos fisicos (sendo que ela continua a funcionar)
+			tok2 = nophysics_in_coop;
+			for (j = 0; j < count_nophysics_in_coop; ++j) {
+				if (strcmp(pEntity->GetTargetname(), tok2) == 0)
+				{
+					DisablePhysics(pEntity);
+
+					break;
+				}
+				tok2 += strlen(tok2) + 1;
+				tok2 += strspn(tok2, ";");
 			}
 		}
 	}
@@ -509,10 +419,14 @@ void CBaseHalfLifeCoop::InitHUD(CBasePlayer *pl)
 		}
 	}
 
-	if (g_fGameOver)
+	// Rodo um comando de troca de nome caso seja necessario
+	if (hu3ChangeNetName)
 	{
-		MESSAGE_BEGIN(MSG_ONE, SVC_INTERMISSION, NULL, pl);
-		MESSAGE_END();
+		CBaseEntity *hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(hu3CoopPlyIndex));
+		char comando[35] = "name ";
+		strcat(strcat(comando, hu3NetNewName), "\n");
+		CLIENT_COMMAND(ENT(hu3Player), comando);
+		hu3ChangeNetName = false;
 	}
 }
 
@@ -523,11 +437,6 @@ void CBaseHalfLifeCoop::ClientDisconnected(edict_t *pClient)
 	if (pClient)
 	{
 		CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pClient);
-
-		// Isso evita que o jogador recupere informacoes de spawn caso ele saia do jogo por conta propria e volte depois
-		// Tambem tem o mesmo efeito quando o servidor faz changelevel diretamente pelo console
-		if (!hu3ChangingLevelWithTrigger)
-			CoopPlyData[pPlayer->entindex()].pName = "Player";
 
 		if (pPlayer)
 		{
@@ -579,29 +488,84 @@ float CBaseHalfLifeCoop::FlPlayerFallDamage(CBasePlayer *pPlayer)
 //=========================================================
 bool CBaseHalfLifeCoop::FPlayerCanTakeDamage(CBasePlayer *pPlayer, const CTakeDamageInfo& info)
 {
-	// Nao deixo matarem jogadores que estao aguardando o changelevel kkkk
+	// Nao deixo matarem jogadores que estao aguardando o changelevel
 	if (CoopPlyData[pPlayer->entindex()].waitingforchangelevel)
 		return false;
+
+	// Nao deixo morrerem jogadores que acabem dentro de players dando (re)spawn
+	// OBS: codigo feio! Nao consegui de jeito nenhum usar UTIL_FindEntityInSphere para ver os arredores de players
+	//      que acabam de nascer, simplesmente nao da certo.
+	if (info.GetDamageTypes() == 0)
+	{
+		char* hu3Train = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+		
+		// Em mapas com func_tracktrain configurados, ativo a defesa contra dano generico automaticamente
+		if (strcmp(hu3Train, "0") != 0)
+		{
+			DisablePhysics(pPlayer);
+
+			return false;
+		}
+		else
+		{
+			// Vejo se tem spawnpoints por perto
+			CBaseEntity *ent = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(0));
+
+			while ((ent = UTIL_FindEntityInSphere(ent, pPlayer->GetAbsOrigin(), 128)) != nullptr)
+			{
+				if (strcmp(ent->GetClassname(), "info_player_start") == 0 || strcmp(ent->GetClassname(), "info_coop_start") == 0)
+				{
+					DisablePhysics(pPlayer);
+
+					return false;
+				}
+			}
+		}
+	}
+
+	/*
+	// Se bem proximo desse player tiverem outros players mas em estado de spawn coop, protejo ele
+	// Nota: UTIL_FindEntityInSphere nao consegue encontrar players no momento do primeiro spawn deles
+
+	CBaseEntity *ent = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(0));
+	
+	while ((ent = UTIL_FindEntityInSphere(ent, pPlayer->GetAbsOrigin(), 128)) != nullptr)
+	{
+		if (strcmp(ent->GetClassname(), "player") == 0)
+		{
+			if (CoopPlyData[ent->entindex()].notSolidWait > gpGlobals->time)
+			{
+				DisablePhysics(pPlayer);
+
+				return false;
+			}
+		}
+	}
+	*/
 
 	return true;
 }
 
 //=========================================================
 //=========================================================
+void CBaseHalfLifeCoop::DisablePhysics(CBaseEntity * pEntity)
+{
+	if (pEntity->IsPlayer())
+		CoopPlyData[pEntity->entindex()].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
+
+	pEntity->SetSolidType(SOLID_NOT);
+	pEntity->SetTakeDamageMode(DAMAGE_NO);
+	pEntity->SetRenderMode(kRenderTransAdd);
+	pEntity->SetRenderAmount(230);
+	const Vector vecColor = { 0.6f, 0.8f, 1.0f };
+	pEntity->SetRenderColor(vecColor);
+	pEntity->SetRenderFX(kRenderFxFadeFast);
+}
+
+//=========================================================
+//=========================================================
 void CBaseHalfLifeCoop::PlayerThink(CBasePlayer *pPlayer)
 {
-	if (g_fGameOver)
-	{
-		// check for button presses
-		if (pPlayer->m_afButtonPressed & (IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP))
-			m_bEndIntermissionButtonHit2 = true;
-
-		// clear attack/use commands from player
-		pPlayer->m_afButtonPressed = 0;
-		pPlayer->GetButtons().Set(0);
-		pPlayer->m_afButtonReleased = 0;
-	}
-
 	// Apos respawn e de certo tempo, restaurar solidez de pessoas que nao estejam em area de changelevel
 	if (!CoopPlyData[pPlayer->entindex()].waitingforchangelevel)
 	{
@@ -609,24 +573,27 @@ void CBaseHalfLifeCoop::PlayerThink(CBasePlayer *pPlayer)
 		{
 			if (CoopPlyData[pPlayer->entindex()].notSolidWait < gpGlobals->time)
 			{
-				// Esse codigo de detectar colisoes eh meio bosta, nao funciona pra tudo
-				TraceResult trace;
-				edict_t *pPlayer2 = ENT(pPlayer);
-				UTIL_TraceHull(pPlayer2->v.origin, pPlayer2->v.origin, dont_ignore_monsters, Hull::HEAD, pPlayer2, &trace);
+				CBaseEntity *ent = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(0));
 
-				if (trace.fStartSolid)
+				while ((ent = UTIL_FindEntityInSphere(ent, pPlayer->GetAbsOrigin(), 64)) != nullptr)
 				{
-					CoopPlyData[pPlayer->entindex()].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
+					//if (ent->IsPlayer()) // Sempre retorna falso
+					if (strcmp(ent->GetClassname(), "player") == 0 && ent != pPlayer)
+					{
+						CoopPlyData[pPlayer->entindex()].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
+
+						return;
+					}
 				}
-				else
-				{
-					pPlayer->SetSolidType(SOLID_SLIDEBOX);
-					pPlayer->SetRenderMode(kRenderNormal);
-				}
+
+				pPlayer->SetSolidType(SOLID_SLIDEBOX);
+				pPlayer->SetTakeDamageMode(DAMAGE_YES);
+				pPlayer->SetRenderMode(kRenderNormal);
+				
+				return;
 			}
 		}
 	}
-
 }
 
 //=========================================================
@@ -635,7 +602,7 @@ void CBaseHalfLifeCoop::FixPlayerCrouchStuck(edict_t *pPlayer)
 {
 	TraceResult trace;
 
-	// Move up as many as 18 pixels if the player is stuck.
+	// Mover ate 18 pixels para cima se o jogador estiver preso no chao
 	for (int i = 0; i < 18; i++)
 	{
 		UTIL_TraceHull(pPlayer->v.origin, pPlayer->v.origin, dont_ignore_monsters, Hull::HEAD, pPlayer, &trace);
@@ -663,13 +630,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 		CoopPlyData[i].newplayer = true;
 
 	// Deixar o jogador passavel e com efeitos durante algum tempo
-	CoopPlyData[i].notSolidWait = gpGlobals->time + SPAWNPROTECTIONTIME;
-	pPlayer2->SetSolidType(SOLID_NOT);
-	pPlayer2->SetRenderMode(kRenderTransAdd);
-	pPlayer2->SetRenderAmount(230);
-	const Vector vecColor = { 0.6f, 0.8f, 1.0f };
-	pPlayer2->SetRenderColor(vecColor);
-	pPlayer2->SetRenderFX(kRenderFxFadeFast);
+	DisablePhysics(pPlayer2);
 
 	// O ponto de spawn
 	CBaseEntity* spawnPoint = nullptr;
@@ -681,9 +642,11 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	char* hu3Train = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
 	if (strcmp(hu3Train, "0") != 0)
 	{
-		CBaseEntity* temp = UTIL_FindEntityByString(NULL, "targetname", "train");
+		CBaseEntity* temp = UTIL_FindEntityByString(NULL, "targetname", hu3Train);
 		if (temp)
+		{
 			absPos = Vector (temp->GetAbsOrigin().x, temp->GetAbsOrigin().y, temp->GetAbsOrigin().z + 75);
+		}
 	}
 
 	// Tenta pegar o ponto de spawn em relacao a algum info_player_coop disponivel
@@ -702,7 +665,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 		// Tentar encontrar o local de spawn em relacao ao landmark
 		if (absPos == Vector(0, 0, 0))
 		{
-			while ((spawnPoint = UTIL_FindEntityByTargetname(spawnPoint, Hu3LandmarkName)) != nullptr)
+			while ((spawnPoint = UTIL_FindEntityByTargetname(spawnPoint, hu3LandmarkName)) != nullptr)
 			{
 				if (spawnPoint->ClassnameIs("info_landmark"))
 				{
@@ -741,11 +704,10 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 				pPlayer->FlashlightTurnOn();
 
 			// Restaurar godmode e notarget
-			if (CoopPlyData[i].notarget || CoopPlyData[i].godmode)
-			{
-				CoopPlyData[i].respawncommands = true;
-				hu3ChangelevelPlyCommands = true;
-			}
+			if (CoopPlyData[i].godmode)
+				CoopPlyData[i].godmode ? pPlayer2->pev->flags |= FL_GODMODE : pPlayer2->pev->flags &= ~FL_GODMODE;
+			if (CoopPlyData[i].notarget)
+				CoopPlyData[i].notarget ? pPlayer2->pev->flags |= FL_NOTARGET : pPlayer2->pev->flags &= ~FL_NOTARGET;
 
 			// Restaurar noclip
 			if (CoopPlyData[i].noclip)
@@ -974,108 +936,6 @@ void CBaseHalfLifeCoop::LoadPlayerItems(CBasePlayer *pPlayer, playerCoopSaveRest
 
 //=========================================================
 //=========================================================
-void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
-{
-	// A troca de nivel do coop exige que salvemos separadamente as informacoes dos jogadores para poder carrega-las depois
-
-	CBaseEntity *hu3Player;
-	int i = 1;
-
-	// Reseto o comando mp_hu3_trainspawnpoint
-	char* hTarget = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
-	if (strcmp(hTarget, "0") != 0)
-		CVAR_SET_STRING("mp_hu3_trainspawnpoint", "0");
-
-	// Invalido a tabela de players coop atual atribuindo aos campos de nome usados um nome impossivel de existir
-	// No client MAX_PLAYERS eh 64...
-	for (i; i <= 64; i++)
-		if (CoopPlyData[i].pName)
-			CoopPlyData[i].pName = "Player";
-
-	// Salvo o nome do landmark (sera usado no proximo mapa)
-	strcpy(Hu3LandmarkName, m_szLandmarkName);
-
-	// Preencho a tabela de infos dos players novamente
-	i = 1; // Tem que ser 1 para funcionar na funcao abaixo!
-	while ((hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
-	{
-		// Deixo o hu3Player pronto como pPlayer2 em CBasePlayer, uma classe abaixo
-		CBasePlayer *pPlayer2 = NULL;
-		pPlayer2 = (CBasePlayer *)hu3Player;
-
-		// Calculo a distancia do player ate o landmark
-		Vector absPos = pLandmark->GetAbsOrigin();
-		Vector plyPos = hu3Player->pev->origin;
-		Vector relPos;
-
-		relPos = plyPos - absPos;
-
-		// Vejo se o jogador esta abaixado
-		bool inDuck = false;
-		if (hu3Player->pev->flags & FL_DUCKING)
-			inDuck = true;
-
-		// Vejo se a lanterna esta ligada
-		bool flashlightState = false;
-		if (pPlayer2->FlashlightIsOn())
-			flashlightState = true;
-
-		// Verifico o godmode
-		bool godmodeState = false;
-		if (hu3Player->pev->flags & FL_GODMODE)
-			godmodeState = true;
-
-		// Verifico o notarget
-		bool notargetState = false;
-		if (hu3Player->pev->flags & FL_NOTARGET)
-			notargetState = true;
-
-		// Verifico o noclip
-		bool noclipState = false;
-		if (hu3Player->GetMoveType() == MOVETYPE_NOCLIP)
-			noclipState = true;
-		
-		// Salvo as infos gerais
-		CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
-		CoopPlyData[i].relPos = relPos;
-		CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
-		CoopPlyData[i].velocity = hu3Player->pev->velocity;
-		CoopPlyData[i].angles = hu3Player->pev->angles;
-		CoopPlyData[i].punchangle = hu3Player->pev->punchangle;
-		CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
-		CoopPlyData[i].fixangle = hu3Player->pev->fixangle;
-		CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
-		CoopPlyData[i].bInDuck = inDuck;
-		CoopPlyData[i].flashlight = flashlightState;
-		CoopPlyData[i].team = hu3Player->pev->team;
-		CoopPlyData[i].frags = hu3Player->pev->frags;
-		CoopPlyData[i].health = hu3Player->pev->health;
-		CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
-		CoopPlyData[i].weapons = hu3Player->pev->weapons;
-		CoopPlyData[i].newplayer = false;
-		CoopPlyData[i].changinglevel = true;
-		CoopPlyData[i].godmode = godmodeState;
-		CoopPlyData[i].notarget = notargetState;
-		CoopPlyData[i].noclip = noclipState;
-		CoopPlyData[i].respawncommands = true;
-		CoopPlyData[i].waitingforchangelevel = true;
-
-		// Salvo as infos de municao e armas
-		SavePlayerItems(pPlayer2, &CoopPlyData[i]);
-
-		// Proximo jogador...
-		i++;
-	}
-
-	// Agora comeco o processo de troca de mapa
-	char comando[30] = "changelevel ";
-
-	strcat(strcat(comando, st_szNextMap), ";");
-	SERVER_COMMAND(comando);
-}
-
-//=========================================================
-//=========================================================
 void CBaseHalfLifeCoop::SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyDataIn)
 {
 	// Salvar armas e municao antes de um changelevel
@@ -1170,6 +1030,177 @@ void CBaseHalfLifeCoop::SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveR
 
 //=========================================================
 //=========================================================
+void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
+{
+	CBaseEntity *hu3Player;
+	int i = 0;
+
+	// Verifica se todos os jogadores esta dentro de um mesmo changelevel e trava eles
+	bool releaseChangelevel = true;
+
+	while ((hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
+	{
+		if (InTransitionVolume(hu3Player, m_szLandmarkName))
+		{
+			// Prendo os jogadores que ja estao em posicao valida, os deixo passaveis e taco efeitos
+			if (!CoopPlyData[hu3Player->entindex()].waitingforchangelevel)
+			{
+				CBasePlayer* hu3Player2 = (CBasePlayer*)hu3Player;
+
+				if (!hu3Player2->GetFlags().Any(FL_FROZEN))
+					hu3Player2->EnableControl(false);
+
+				DisablePhysics(hu3Player2);
+
+				CoopPlyData[hu3Player->entindex()].waitingforchangelevel = true;
+			}
+		}
+		else
+		{
+			releaseChangelevel = false;
+		}
+
+		i++;
+	}
+
+	if (!releaseChangelevel)
+		return;
+
+	// Reseto a deteccao do trigger_changelevel
+	hu3CorrectChangelevelTrigger = 0;
+
+	// Reseto o comando mp_hu3_trainspawnpoint
+	char* hTarget = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+	if (strcmp(hTarget, "0") != 0)
+		CVAR_SET_STRING("mp_hu3_trainspawnpoint", "0");
+
+	// Invalido a tabela de players coop atual atribuindo aos campos de nome usados um nome impossivel de existir
+	// No client MAX_PLAYERS eh 64...
+	for (i; i <= 64; i++)
+		if (CoopPlyData[i].pName)
+			CoopPlyData[i].pName = "Player";
+
+	// Salvo o nome do landmark (sera usado no proximo mapa)
+	strcpy(hu3LandmarkName, m_szLandmarkName);
+
+	// Preencho a tabela de infos dos players novamente
+	i = 1; // Tem que ser 1 para funcionar na funcao abaixo!
+	while ((hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i))) != nullptr)
+	{
+		// Deixo o hu3Player pronto como hu3Player2 em CBasePlayer, uma classe abaixo
+		CBasePlayer *hu3Player2 = NULL;
+		hu3Player2 = (CBasePlayer *)hu3Player;
+
+		// Calculo a distancia do player ate o landmark
+		Vector absPos = pLandmark->GetAbsOrigin();
+		Vector plyPos = hu3Player->pev->origin;
+		Vector relPos;
+
+		relPos = plyPos - absPos;
+
+		// Vejo se o jogador esta abaixado
+		bool inDuck = false;
+		if (hu3Player->pev->flags & FL_DUCKING)
+			inDuck = true;
+
+		// Vejo se a lanterna esta ligada
+		bool flashlightState = false;
+		if (hu3Player2->FlashlightIsOn())
+			flashlightState = true;
+
+		// Verifico o godmode
+		bool godmodeState = false;
+		if (hu3Player->pev->flags & FL_GODMODE)
+			godmodeState = true;
+
+		// Verifico o notarget
+		bool notargetState = false;
+		if (hu3Player->pev->flags & FL_NOTARGET)
+			notargetState = true;
+
+		// Verifico o noclip
+		bool noclipState = false;
+		if (hu3Player->GetMoveType() == MOVETYPE_NOCLIP)
+			noclipState = true;
+
+		// Salvo as infos gerais
+		CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
+		CoopPlyData[i].relPos = relPos;
+		CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
+		CoopPlyData[i].velocity = hu3Player->pev->velocity;
+		CoopPlyData[i].angles = hu3Player->pev->angles;
+		CoopPlyData[i].punchangle = hu3Player->pev->punchangle;
+		CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
+		CoopPlyData[i].fixangle = hu3Player->pev->fixangle;
+		CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
+		CoopPlyData[i].bInDuck = inDuck;
+		CoopPlyData[i].flashlight = flashlightState;
+		CoopPlyData[i].team = hu3Player->pev->team;
+		CoopPlyData[i].frags = hu3Player->pev->frags;
+		CoopPlyData[i].health = hu3Player->pev->health;
+		CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
+		CoopPlyData[i].weapons = hu3Player->pev->weapons;
+		CoopPlyData[i].newplayer = false;
+		CoopPlyData[i].changinglevel = true;
+		CoopPlyData[i].godmode = godmodeState;
+		CoopPlyData[i].notarget = notargetState;
+		CoopPlyData[i].noclip = noclipState;
+		CoopPlyData[i].respawncommands = true;
+		CoopPlyData[i].waitingforchangelevel = true;
+
+		// Salvo as infos de municao e armas
+		SavePlayerItems(hu3Player2, &CoopPlyData[i]);
+
+		// Proximo jogador...
+		i++;
+	}
+
+	// Agora comeco o processo de troca de mapa
+	char comando[30] = "changelevel ";
+
+	strcat(strcat(comando, st_szNextMap), ";");
+	SERVER_COMMAND(comando);
+}
+
+//=========================================================
+//=========================================================
+// Verificar se jogador esta dentro da area do trigger_changelevel
+bool CBaseHalfLifeCoop::InTransitionVolume(CBaseEntity *pEntity, char *pVolumeName)
+{
+	CBaseEntity* pChangelevel = nullptr;
+	// Temos os valores 0, 1 ou 2 para j:
+	// 1 = o primeiro trigger_changelevel encontrado no mapa;
+	// 2 = o segundo trigger_changelevel encontrado no mapa;
+	// 0 = ainda nao foi feita nenhuma verificacao nesse mapa.
+	int j = 1;
+
+	while ((pChangelevel = UTIL_FindEntityByClassname(pChangelevel, "trigger_changelevel")) != nullptr)
+	{
+		// Posicao DENTRO de uma area de troca
+		if (pChangelevel->Intersects(pEntity))
+		{
+			if (hu3CorrectChangelevelTrigger != 0)
+			{
+				// Area DIFERENTE a do primeiro jogador analisado
+				if (hu3CorrectChangelevelTrigger != j)
+					return false;
+			}
+			else
+			{
+				hu3CorrectChangelevelTrigger = j;
+			}
+			// Area IGUAL a do primeiro jogador analisado
+			return true;
+		}
+		j++;
+	}
+
+	// Posicao FORA das duas areas de troca
+	return false;
+}
+
+//=========================================================
+//=========================================================
 bool CBaseHalfLifeCoop::FPlayerCanRespawn(CBasePlayer *pPlayer)
 {
 	return true;
@@ -1179,7 +1210,7 @@ bool CBaseHalfLifeCoop::FPlayerCanRespawn(CBasePlayer *pPlayer)
 //=========================================================
 float CBaseHalfLifeCoop::FlPlayerSpawnTime(CBasePlayer *pPlayer)
 {
-	return gpGlobals->time;//now!
+	return gpGlobals->time; // Imediatamente
 }
 
 bool CBaseHalfLifeCoop::AllowAutoTargetCrosshair()
@@ -1195,7 +1226,6 @@ int CBaseHalfLifeCoop::IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKill
 {
 	return 1;
 }
-
 
 //=========================================================
 // PlayerKilled - someone/something killed this player
@@ -1469,7 +1499,7 @@ void CBaseHalfLifeCoop::PlayerGotWeapon(CBasePlayer *pPlayer, CBasePlayerWeapon 
 //=========================================================
 float CBaseHalfLifeCoop::FlWeaponRespawnTime(CBasePlayerWeapon *pWeapon)
 {
-	return gpGlobals->time + 0;
+	return gpGlobals->time; // Imediatamente
 }
 
 //=========================================================
@@ -1477,6 +1507,9 @@ float CBaseHalfLifeCoop::FlWeaponRespawnTime(CBasePlayerWeapon *pWeapon)
 // now,  otherwise it returns the time at which it can try
 // to spawn again.
 //=========================================================
+
+// AJUSTAR ISSO AQUI:
+
 float CBaseHalfLifeCoop::FlWeaponTryRespawn(CBasePlayerWeapon *pWeapon)
 {
 	if (pWeapon && pWeapon->m_iId && (pWeapon->iFlags() & ITEM_FLAG_LIMITINWORLD))
@@ -1570,7 +1603,6 @@ int CBaseHalfLifeCoop::ItemShouldRespawn(CItem *pItem)
 	return GR_ITEM_RESPAWN_YES;
 }
 
-
 //=========================================================
 // At what time in the future may this Item respawn?
 //=========================================================
@@ -1580,10 +1612,10 @@ float CBaseHalfLifeCoop::FlItemRespawnTime(CItem *pItem)
 
 	if ((strcmp(pItem2->GetClassname(), "item_healthkit") == 0) || (strcmp(pItem2->GetClassname(), "item_battery") == 0))
 	{
-		return gpGlobals->time + 20;
+		return gpGlobals->time + 5; // Vida e escudo demoram 5 segundos
 	}
 
-	return gpGlobals->time + 0; // AGORA!
+	return gpGlobals->time; // O resto vem de imediato
 }
 
 //=========================================================
@@ -1605,9 +1637,6 @@ void CBaseHalfLifeCoop::PlayerGotAmmo(CBasePlayer *pPlayer, char *szName, int iC
 //=========================================================
 bool CBaseHalfLifeCoop::IsAllowedToSpawn(CBaseEntity *pEntity)
 {
-	//	if ( pEntity->AnyFlagsSet( FL_MONSTER ) )
-	//		return false;
-
 	return true;
 }
 
@@ -1627,7 +1656,7 @@ int CBaseHalfLifeCoop::AmmoShouldRespawn(CBasePlayerAmmo *pAmmo)
 //=========================================================
 float CBaseHalfLifeCoop::FlAmmoRespawnTime(CBasePlayerAmmo *pAmmo)
 {
-	return gpGlobals->time + 5;
+	return gpGlobals->time + 2; // 2 Segundos para a municao voltar
 }
 
 //=========================================================
@@ -1643,7 +1672,6 @@ float CBaseHalfLifeCoop::FlHealthChargerRechargeTime(void)
 {
 	return 60;
 }
-
 
 float CBaseHalfLifeCoop::FlHEVChargerRechargeTime(void)
 {
@@ -1676,12 +1704,11 @@ CBaseEntity* CBaseHalfLifeCoop::GetPlayerSpawnSpot(CBasePlayer* pPlayer)
 	return pSpawnSpot;
 }
 
-
 //=========================================================
 //=========================================================
 int CBaseHalfLifeCoop::PlayerRelationship(CBaseEntity *pPlayer, CBaseEntity *pTarget)
 {
-	// half life deathmatch has only enemies
+	// Inimigos para todos os lados
 	return GR_NOTTEAMMATE;
 }
 
@@ -1706,43 +1733,6 @@ bool CBaseHalfLifeCoop::FAllowFlashlight() const
 bool CBaseHalfLifeCoop::FAllowMonsters() const
 {
 	return (allowmonsters.value != 0);
-}
-
-//=========================================================
-//======== CBaseHalfLifeCoop private functions ===========
-
-void CBaseHalfLifeCoop::GoToIntermission()
-{
-	if (g_fGameOver)
-		return;  // intermission has already been triggered, so ignore.
-
-	MESSAGE_BEGIN(MSG_ALL, SVC_INTERMISSION);
-	MESSAGE_END();
-
-	// bounds check
-	int time = (int)CVAR_GET_FLOAT("mp_chattime");
-	if (time < 1)
-		CVAR_SET_STRING("mp_chattime", "1");
-	else if (time > MAX_INTERMISSION_TIME)
-		CVAR_SET_STRING("mp_chattime", UTIL_dtos(MAX_INTERMISSION_TIME));
-
-	m_flIntermissionEndTime2 = gpGlobals->time + ((int)mp_chattime.value);
-	g_flIntermissionStartTime2 = gpGlobals->time;
-
-	g_fGameOver = true;
-	m_bEndIntermissionButtonHit2 = false;
-}
-
-/*
-==============
-ChangeLevel
-
-Server is changing to a new level, check mapcycle.txt for map name and setup info
-==============
-*/
-void CBaseHalfLifeCoop::ChangeLevel(void)
-{
-	return;
 }
 
 void CBaseHalfLifeCoop::SendMOTDToClient(CBasePlayer* pPlayer)

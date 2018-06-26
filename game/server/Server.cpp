@@ -52,9 +52,15 @@ cvar_t	defaultteam = {"mp_defaultteam","0" };
 cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
 // Corrigir o spawn de trens
 cvar_t	hu3_trainspawnpoint = { "mp_hu3_trainspawnpoint","0", FCVAR_SERVER };
-// [MODO COOP] (tambem)
 // Permitir monstros por padrao no multiplayer
-cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
+cvar_t	allowmonsters={ "mp_allowmonsters","1", FCVAR_SERVER };
+// [COOP]
+// Remover entidades no coop
+cvar_t	remove_in_coop = { "remove_in_coop","", FCVAR_SERVER };
+// Remover entidades no singleplayer
+cvar_t	remove_in_sp = { "remove_in_sp","", FCVAR_SERVER };
+// Desativar a fisica de entidades no coop
+cvar_t	nophysics_in_coop = { "nophysics_in_coop","", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -644,6 +650,13 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&hu3_trainspawnpoint);
 	// Remover as armas do jogador
 	CVAR_REGISTER (&hu3_removeallitens);
+	// [COOP]
+	// Remover entidades no coop
+	CVAR_REGISTER(&remove_in_coop);
+	// Remover entidades no singleplayer
+	CVAR_REGISTER(&remove_in_sp);
+	// Desativar a fisica de entidades no coop
+	CVAR_REGISTER(&nophysics_in_coop);
 	// ############ //
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF

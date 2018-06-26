@@ -122,25 +122,38 @@ void CHalfLifeRules :: PlayerSpawn( CBasePlayer *pPlayer )
 	// Executo estados especiais nas entidades
 	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 	CBaseEntity *pEntity;
+	char * remove_in_sp = (char*)CVAR_GET_STRING("remove_in_sp");
+	char* tok = strtok(remove_in_sp, ";");
+	int j, count_remove_in_sp = 0;
 
+	// Contar a quantidade de entidades a remover
+	while (tok != NULL) {
+		count_remove_in_sp++;
+		tok = strtok(NULL, ";");
+	}
 
-	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	if (count_remove_in_sp > 0)
 	{
-		if (!pEdict)
-			break;
-
-		pEntity = CBaseEntity::Instance(pEdict);
-		if (!pEntity)
-			continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
-
-		string_t state = pEntity->m_coop;
-
-		if (state)
+		for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
 		{
-			// Remover a entidade se ela for modo coop apenas
-			if (strcmp(STRING(state), "only_in_coop") == 0)
-			{
-				pEntity->SUB_Remove();
+			if (!pEdict)
+				break;
+
+			pEntity = CBaseEntity::Instance(pEdict);
+			if (!pEntity)
+				continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
+
+			 // Remover a entidade se ela estiver marcada como nao apropriada para o sp
+			tok = remove_in_sp;
+			for (j = 0; j < count_remove_in_sp; ++j) {
+				if (strcmp(pEntity->GetTargetname(), tok) == 0)
+				{
+					pEntity->SUB_Remove();
+
+					break;
+				}
+				tok += strlen(tok) + 1;
+				tok += strspn(tok, ";");
 			}
 		}
 	}
