@@ -9,7 +9,6 @@
 
 // ############ hu3lifezado ############ //
 // [MODO COOP]
-#include "gamerules/GameRules.h"
 #include "gamerules/CHu3LifeCoop.h"
 // ############ //
 
@@ -376,12 +375,36 @@ void CFuncTrackTrain::Find(void)
 
 	SetAbsOrigin( nextPos );
 
-	NextThink( GetLastThink() + 0.1, false );
-	SetThink( &CFuncTrackTrain::Next );
-	SetSpeed( m_startSpeed );
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Delay para evitar que o trem se mova antes do jogador entrar no server
+	if (hu3TracktrainDelay)
+	{
+		NextThink(gpGlobals->time + hu3TracktrainDelay, false);
+		SetThink(&CFuncTrackTrain::PreNextHu3);
+	}
+	else
+	{
+		NextThink(GetLastThink() + 0.1, false);
+		SetThink(&CFuncTrackTrain::Next);
+
+		SetSpeed(m_startSpeed);
+
+		UpdateSound();
+	}
+}
+
+// Um pequeno pulo extra
+void CFuncTrackTrain::PreNextHu3(void)
+{
+	NextThink(GetLastThink() + 0.1, false);
+	SetThink(&CFuncTrackTrain::Next);
+
+	SetSpeed(m_startSpeed);
 
 	UpdateSound();
 }
+// ############ //
 
 void CFuncTrackTrain::NearestPath( void )
 {

@@ -24,4 +24,7 @@ bool hu3ChangeNetName = false;
 // Garante que todos os jogadores estao no mesmo trigger_changelevel
 int hu3CorrectChangelevelTrigger = 0;
 
+// Pequeno atraso no inicio de func_tracktrains (segundos)
+int hu3TracktrainDelay = 13;
+
 #endif //GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP

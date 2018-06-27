@@ -58,4 +58,8 @@ extern bool hu3ChangeNetName;
 // Garante que todos os jogadores estao no mesmo trigger_changelevel
 extern int hu3CorrectChangelevelTrigger;
 
+// Pequeno atraso no inicio de func_tracktrains (segundos)
+extern int hu3TracktrainDelay;
+
+
 #endif //GAME_SERVER_GAMERULES_CHU3FLIFECOOP_H
