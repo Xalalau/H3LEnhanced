@@ -290,31 +290,23 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	WRITE_BYTE(0);  // game mode none
 	MESSAGE_END();
 
-	// Adiciono um sprite em cada landmark
-	CBaseEntity* pLandmark = nullptr;
-
-	while ((pLandmark = UTIL_FindEntityByClassname(pLandmark, "info_landmark")) != nullptr)
-	{
-		CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
-		pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
-	}
-
 	// Executo estados especiais nas entidades
+
 	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 	CBaseEntity *pEntity;
 	char * remove_in_coop = (char*)CVAR_GET_STRING("remove_in_coop");
 	char * nophysics_in_coop = (char*)CVAR_GET_STRING("nophysics_in_coop");
-	char* tok1 = strtok(remove_in_coop, ";");
-	char* tok2 = strtok(nophysics_in_coop, ";");
 	int j, count_remove_in_coop = 0, count_nophysics_in_coop = 0;
 
 	// Contar a quantidade de entidades a remover
+	char* tok1 = strtok(remove_in_coop, ";");
 	while (tok1 != NULL) {
 		count_remove_in_coop++;
 		tok1 = strtok(NULL, ";");
 	}
 
 	// Contar a quantidade de entidades a desativar a fisica
+	char* tok2 = strtok(nophysics_in_coop, ";");
 	while (tok2 != NULL) {
 		count_nophysics_in_coop++;
 		tok2 = strtok(NULL, ";");
@@ -360,6 +352,16 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 				tok2 += strspn(tok2, ";");
 			}
 		}
+	}
+
+	// Adiciono um sprite em cada landmark
+
+	CBaseEntity* pLandmark = nullptr;
+
+	while ((pLandmark = UTIL_FindEntityByClassname(pLandmark, "info_landmark")) != nullptr)
+	{
+		CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
+		pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
 	}
 }
 

@@ -99,6 +99,12 @@ public:
 // Teamplay stuff	
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) override { return ""; }
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget ) override;
+
+private:
+	// ############ hu3lifezado ############ //
+	// Delay para executar checagem de comandos preconfigurados
+	float checkCommandsDelay;
+	// ############ //
 };
 
 #endif //GAME_SERVER_GAMERULES_CHALFLIFERULES_H
