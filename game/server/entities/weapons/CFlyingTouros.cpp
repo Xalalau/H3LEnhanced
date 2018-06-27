@@ -139,7 +139,7 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 	// Throw Touros along the normal so it looks kinda
 	// like a ricochet. This would be better if I actually 
 	// calcualted the reflection angle, but I'm lazy. :)
-	pev->velocity = tr.vecPlaneNormal * 300;
+	pev->velocity = tr.vecPlaneNormal * 100;
 
 	pev->nextthink = gpGlobals->time + .1;
 }

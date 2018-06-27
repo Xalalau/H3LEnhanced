@@ -595,10 +595,10 @@ void CDesertEagle::SecondaryAttack()
 		
 		// Give the Touros its velocity, angle, and spin. 
 		// Lower the gravity a bit, so it flys. 
-		pFTouros->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
+		pFTouros->pev->velocity = vecDir * 200 + m_pPlayer->pev->velocity;
 		pFTouros->pev->angles = vecAng;
-		pFTouros->pev->avelocity.x = -1000;
-		pFTouros->pev->gravity = .5;
+		pFTouros->pev->avelocity.x = -500;
+		pFTouros->pev->gravity = .9;
 		pFTouros->m_pPlayer = m_pPlayer;
 
 		// Salvo a qualidade da arma e a quantidade de balas inicial

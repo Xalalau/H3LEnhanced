@@ -170,7 +170,7 @@ void CFlyingTourosSecondary::SpinTouch(CBaseEntity *pOther)
 	// Throw Touros or WB along the normal so it looks kinda
 	// like a ricochet. This would be better if I actually 
 	// calcualted the reflection angle, but I'm lazy. :)
-	pWeaponBox->pev->velocity = tr.vecPlaneNormal * 300;
+	pWeaponBox->pev->velocity = tr.vecPlaneNormal * 100;
 	
 	// Remove this flying_Touros from the world.
 	SetThink(&CBaseEntity::SUB_Remove);
