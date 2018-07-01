@@ -55,8 +55,8 @@ extern char hu3NetNewName[32];
 // Se um nome precisa ser alterado ou nao
 extern bool hu3ChangeNetName;
 
-// Garante que todos os jogadores estao no mesmo trigger_changelevel
-extern int hu3CorrectChangelevelTrigger;
+// Liga o processamento de trigger_changelevel no think do modo coop
+extern bool hu3ChangelevelCheck;
 
 // Pequeno atraso no inicio de func_tracktrains (segundos)
 extern int hu3TracktrainDelay;

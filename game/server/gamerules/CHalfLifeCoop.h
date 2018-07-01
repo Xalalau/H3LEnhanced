@@ -110,8 +110,9 @@ public:
 	virtual bool FAllowMonsters() const override;
 
 protected:
-	virtual bool InTransitionVolume(CBaseEntity *pEntity, char *pVolumeName);
+	int ChangeLevelVolume();
 	void DisablePhysics(CBaseEntity *pEntity);
+	void EnablePhysics(CBaseEntity *pEntity);
 	float m_flIntermissionEndTime2;
 	bool m_bEndIntermissionButtonHit2 = false;
 	void SendMOTDToClient(CBasePlayer* pPlayer);

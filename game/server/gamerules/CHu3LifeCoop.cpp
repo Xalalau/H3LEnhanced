@@ -21,8 +21,8 @@ char hu3NetNewName[32] = "";
 // Se um nome precisa ser alterado ou nao
 bool hu3ChangeNetName = false;
 
-// Garante que todos os jogadores estao no mesmo trigger_changelevel
-int hu3CorrectChangelevelTrigger = 0;
+// Liga o processamento de trigger_changelevel no think do modo coop
+bool hu3ChangelevelCheck = false;
 
 // Pequeno atraso no inicio de func_tracktrains (segundos)
 int hu3TracktrainDelay = 13;
