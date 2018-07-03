@@ -70,6 +70,13 @@ public:
 
 	virtual void	OverrideReset( void ) override;
 
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Um pequeno pulo extra
+	void PreNextHu3(void);
+	// ############ //
+
 	CPathTrack	*m_ppath;
 	float		m_length;
 	float		m_height;
@@ -83,12 +90,6 @@ public:
 	float		m_flVolume;
 	float		m_flBank;
 	float		m_oldSpeed;
-
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Delay para evitar que o trem se mova antes do jogador entrar no server
-	bool hu3_spawn_delay;
-	// ############ //
 
 private:
 	unsigned short m_usAdjustPitch;

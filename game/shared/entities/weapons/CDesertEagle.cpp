@@ -175,7 +175,7 @@ void CDesertEagle::WeaponIdle()
 		{
 			UTIL_Sparks(m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 22 + gpGlobals->v_right * 10);
 #ifndef CLIENT_DLL
-			UTIL_SayText("Sua arma Touros atirou sozinha ou balas sairam voando!|r", m_pPlayer);
+			UTIL_SayText("Sua arma Cornus atirou sozinha ou balas sairam voando!|r", m_pPlayer);
 
 			// 30% de chance de levar dano de 1 a 5 por estilhacos
 			ShrapnelDamage(30, 1, 5);
@@ -233,7 +233,7 @@ bool CDesertEagle::RandomlyJammed()
 	if (print)
 	{
 #ifndef CLIENT_DLL
-		UTIL_SayText("Sua arma Touros travou! Recarregue-a!|r", m_pPlayer);
+		UTIL_SayText("Sua arma Cornus travou! Recarregue-a!|r", m_pPlayer);
 #endif
 		return true;
 	}
@@ -292,7 +292,7 @@ bool CDesertEagle::RandomlyBreak()
 			
 			// Mensagem humilhante pessoal
 #ifndef CLIENT_DLL
-			UTIL_SayText("Sua arma Touros quebrou!|r", m_pPlayer);
+			UTIL_SayText("Sua arma Cornus quebrou!|r", m_pPlayer);
 #endif
 			// Zero a qualidade
 			m_quality = 0;
@@ -312,7 +312,7 @@ bool CDesertEagle::RandomlyLostAllAmmo()
 	{
 		int i;
 #ifndef CLIENT_DLL
-		UTIL_SayText("Infelizmente a sua arma Touros estragou toda a municao dela...|r", m_pPlayer);
+		UTIL_SayText("Infelizmente a sua arma Cornus estragou toda a municao dela...|r", m_pPlayer);
 #endif
 		// Tomar dano de estilhacos
 		ShrapnelDamage(100, 1, 5);
@@ -334,7 +334,7 @@ void CDesertEagle::ShrapnelDamage(int chance, int min_damage, int max_damage)
 #ifndef CLIENT_DLL
 	if (RANDOM_LONG(1, 100) <= chance)
 	{
-		UTIL_SayText("Voce foi ferido por estilhacos de bala da sua arma Touros...|r", m_pPlayer);
+		UTIL_SayText("Voce foi ferido por estilhacos de bala da sua arma Cornus...|r", m_pPlayer);
 
 		float damage = RANDOM_LONG(min_damage, max_damage);
 		TraceResult tr = UTIL_GetGlobalTrace();
@@ -366,7 +366,7 @@ void CDesertEagle::SetQuality()
 #ifndef CLIENT_DLL
 	if (m_firstmessage)
 	{
-		char mensagem_i[70] = "Pelo uso voce percebeu a qualidade dessa Touros:";
+		char mensagem_i[70] = "Pelo uso voce percebeu a qualidade dessa Cornus:";
 		char mensagem_m[15];
 		snprintf(mensagem_m, 9, " %d/10", m_quality);
 		char mensagem_f[5] = "|g";
@@ -595,10 +595,10 @@ void CDesertEagle::SecondaryAttack()
 		
 		// Give the Touros its velocity, angle, and spin. 
 		// Lower the gravity a bit, so it flys. 
-		pFTouros->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
+		pFTouros->pev->velocity = vecDir * 200 + m_pPlayer->pev->velocity;
 		pFTouros->pev->angles = vecAng;
-		pFTouros->pev->avelocity.x = -1000;
-		pFTouros->pev->gravity = .5;
+		pFTouros->pev->avelocity.x = -500;
+		pFTouros->pev->gravity = .9;
 		pFTouros->m_pPlayer = m_pPlayer;
 
 		// Salvo a qualidade da arma e a quantidade de balas inicial
@@ -623,7 +623,7 @@ void CDesertEagle::SecondaryAttack()
 
 		// Mensagem
 #ifndef CLIENT_DLL
-		UTIL_SayText("Voce jogou sua arma Touros fora!|g", m_pPlayer);
+		UTIL_SayText("Voce jogou sua arma Cornus fora!|g", m_pPlayer);
 #endif
 
 		// take item off hud

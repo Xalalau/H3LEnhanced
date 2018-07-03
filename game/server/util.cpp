@@ -1357,3 +1357,21 @@ int UTIL_CountPlayers()
 
 	return num;
 }
+
+// ############ hu3lifezado ############ //
+// Manuseio seguro de jogadores
+
+int UTIL_GetRandomPLayerID()
+{
+	init:
+	int randomPlayerID = RANDOM_LONG(1, gpGlobals->maxClients);
+	CBasePlayer *hu3Player = UTIL_PlayerByIndex(randomPlayerID);
+
+	if (hu3Player && hu3Player->IsConnected())
+		return randomPlayerID;
+	else
+		//ALERT(at_console, "Attempt to Select Player = %i but is not a valid player\n", randomPlayerID);
+		goto init; // Don't judge me for using goto, it gets the job done
+}
+
+// ############ //

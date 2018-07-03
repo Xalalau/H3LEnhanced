@@ -11,5 +11,13 @@ gamerc/mapsrc/*.rmx
 # Ignore OSX junk files
 .DS_Store
 
+# Ignore VSCode files
+.vscode
+
 #Ignore temporary files created by Linux text editors like vim and gedit.
 *~
+.vs/H3LEnhanced/v15/.suo
+.vs/ProjectSettings.json
+.vs/slnx.sqlite
+.vs/H3LEnhanced/v15/Browse.VC.db
+.vs/VSWorkspaceState.json

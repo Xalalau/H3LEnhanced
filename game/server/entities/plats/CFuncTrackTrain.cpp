@@ -9,7 +9,6 @@
 
 // ############ hu3lifezado ############ //
 // [MODO COOP]
-#include "gamerules/GameRules.h"
 #include "gamerules/CHu3LifeCoop.h"
 // ############ //
 
@@ -37,15 +36,6 @@ LINK_ENTITY_TO_CLASS( func_tracktrain, CFuncTrackTrain );
 
 void CFuncTrackTrain::Spawn( void )
 {
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Delay para evitar que o trem se mova antes do jogador entrar no server
-	if (g_pGameRules->IsCoOp())
-		hu3_spawn_delay = true;
-	else
-		hu3_spawn_delay = false;
-	// ############ //
-
 	if( GetSpeed() == 0 )
 		m_speed = 100;
 	else
@@ -356,26 +346,7 @@ void CFuncTrackTrain::Next( void )
 
 void CFuncTrackTrain::Find(void)
 {
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Correcao da posicao de spawn do trem
-	
-	char* hTarget = nullptr;
-
-	// Escolher o target correto usando o comando de console (usar path_tracks, de preferencia)
-	if (g_pGameRules->IsCoOp() && strcmp(GetTargetname(), "train") == 0)
-	{
-		hTarget = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
-		if (strcmp(hTarget, "0") == 0)
-			hTarget = nullptr;
-	}
-	if (!hTarget)
-		hTarget = (char*)GetTarget();
-
-	// Instanciar
-	m_ppath = CPathTrack::Instance(UTIL_FindEntityByTargetname(nullptr, hTarget));
-	// ############ //
-
+	m_ppath = CPathTrack::Instance(UTIL_FindEntityByTargetname(nullptr, GetTarget()));
 	if( !m_ppath )
 		return;
 
@@ -404,24 +375,36 @@ void CFuncTrackTrain::Find(void)
 
 	SetAbsOrigin( nextPos );
 
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Delay para evitar que o trem se mova antes do jogador entrar no server (ele roda a parte de cima do codigo uma vez extra desnecessariamente, mas tanto faz)
-	if (hu3_spawn_delay)
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Delay para evitar que o trem se mova antes do jogador entrar no server
+	if (hu3TracktrainDelay)
 	{
-		NextThink(gpGlobals->time + 20, false);
-		SetThink(&CFuncTrackTrain::Find);
-		hu3_spawn_delay = false;
-		return;
+		NextThink(gpGlobals->time + hu3TracktrainDelay, false);
+		SetThink(&CFuncTrackTrain::PreNextHu3);
 	}
-	// ############ //
+	else
+	{
+		NextThink(GetLastThink() + 0.1, false);
+		SetThink(&CFuncTrackTrain::Next);
 
-	NextThink( GetLastThink() + 0.1, false );
-	SetThink( &CFuncTrackTrain::Next );
-	SetSpeed( m_startSpeed );
+		SetSpeed(m_startSpeed);
+
+		UpdateSound();
+	}
+}
+
+// Um pequeno pulo extra
+void CFuncTrackTrain::PreNextHu3(void)
+{
+	NextThink(GetLastThink() + 0.1, false);
+	SetThink(&CFuncTrackTrain::Next);
+
+	SetSpeed(m_startSpeed);
 
 	UpdateSound();
 }
+// ############ //
 
 void CFuncTrackTrain::NearestPath( void )
 {

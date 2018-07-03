@@ -46,14 +46,17 @@ void CGlobalState::Reset( void )
 	m_listCount = 0;
 }
 
-globalentity_t *CGlobalState::Find( string_t globalname )
+globalentity_t *CGlobalState::Find(string_t globalname)
 {
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
 	// No modo coop nos nao carregamos nenhuma entidade de um mapa para o outro desse jeito
-	if (g_pGameRules->IsCoOp())
+	if (g_pGameRules)
 	{
-		return NULL;
+		if (g_pGameRules->IsCoOp())
+		{
+			return NULL;
+		}
 	}
 	// ############ //
 

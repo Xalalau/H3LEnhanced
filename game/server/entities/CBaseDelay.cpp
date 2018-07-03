@@ -122,7 +122,10 @@ void CBaseDelay::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, floa
 	{
 		// ############ hu3lifezado ############ //
 		// CONSERTO: DelayedUse estava sendo passada ao inves da entidade correta
-		FireTargets( GetTarget(), pActivator, GetChain(), useType, value );
+		if (GetChain())
+			FireTargets(GetTarget(), pActivator, GetChain(), useType, value);
+		else
+			FireTargets(GetTarget(), pActivator, this, useType, value);
 		// ############ //
 	}
 }

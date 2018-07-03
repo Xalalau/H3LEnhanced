@@ -261,15 +261,6 @@ void CBaseEntity::KeyValue( KeyValueData* pkvd )
 		SetClassificationOverride( EntityClassifications().GetClassificationId( pkvd->szValue ) );
 		pkvd->fHandled = true;
 	}
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
-	// Guardo estados especiais do modo cooperativo
-	else if (FStrEq("coop", pkvd->szKeyName))
-	{
-		m_coop = ALLOC_STRING(pkvd->szValue);
-		pkvd->fHandled = true;
-	}
-	// ############ //
 	else
 		pkvd->fHandled = false;
 }

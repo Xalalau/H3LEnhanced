@@ -778,7 +778,10 @@ const char* CServerGameInterface::GetGameDescription() const
 	if( g_pGameRules )
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		// ############ hu3lifezado ############ //
+		// Nome mudado de Half-Life para Hu3-Life
+		return "Hu3-Life";
+		// ############ //
 }
 
 void CServerGameInterface::Sys_Error( const char* error_string )

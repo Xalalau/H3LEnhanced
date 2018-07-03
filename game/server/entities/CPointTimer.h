@@ -13,26 +13,39 @@
 *
 ****/
 
-#ifndef GAME_SERVER_CPOINTCOUNTER_H
-#define GAME_SERVER_CPOINTCOUNTER_H
+/*
+	Hu3-Life Entity System
 
-class CPointCounter : public CPointEntity
+	point_timer
+	Temporizador de disparo de entidades
+
+	by: NickMBR Mar/2018
+*/
+
+#ifndef GAME_SERVER_CPOINTTIMER_H
+#define GAME_SERVER_CPOINTTIMER_H
+
+class CPointTimer : public CPointEntity
 {
 public:
-	DECLARE_CLASS(CPointCounter, CPointEntity);
+	DECLARE_CLASS(CPointTimer, CPointEntity);
 	DECLARE_DATADESC();
 
 	void Spawn(void);
 	void KeyValue(KeyValueData *pkvd) override;
-	virtual void Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
-	int m_iCount;
-	int m_iCountTotal;
-	string_t m_sMessageTitle;
-	string_t m_sMessageFinished;
+	void TimerThink(void);
+	void TimerStart(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 
-private:
-	hudtextparms_t m_sCountText;
+	int m_iDuration;
+	int m_iRepeat;
+	float m_flendTime;
+
+	string_t m_targetOnTimerStart;
+	string_t m_targetOnTimerInterval;
+	string_t m_targetOnTimerEnd;
+
+	CBaseEntity* m_hTimerActivator;
 };
 
-#endif //GAME_SERVER_CPOINTCOUNTER_H
+#endif //GAME_SERVER_CPOINTTIMER_H
