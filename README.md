@@ -3,6 +3,8 @@ H3LEnhanced
 
 ![Logo](http://i.imgur.com/K7b0J4a.png)
 
+[![Build status](https://ci.appveyor.com/api/projects/status/bhciqnomt0ylqf4r?svg=true)](https://ci.appveyor.com/project/xalalau/h3lenhanced)
+
 Este repositório contém os códigos de client.* e hl.* usados no Hu3-Life.
 
 Conheçam mais sobre o mod: [Facebook](https://www.facebook.com/hu3lifeoficial/), [Moddb](http://www.moddb.com/mods/hu3-life), [Steam](https://steamcommunity.com/groups/Hu3-Life) e [Discord](https://discord.gg/aKHc9XQ).
