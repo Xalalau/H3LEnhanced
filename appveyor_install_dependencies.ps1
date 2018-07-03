@@ -75,7 +75,7 @@ if( !( Test-Path dependencies -pathType container ) )
 	Write-Host "[Dependency] Building XercesC" -foregroundcolor green
 	
 	# Acquire files
-	wget "http://www-us.apache.org/dist//xerces/c/3/sources/xerces-c-$XERCESC_VERSION.zip" -OutFile xercesc.zip
+	wget "http://archive.apache.org/dist//xerces/c/3/sources/xerces-c-$XERCESC_VERSION.zip" -OutFile xercesc.zip
 	cmd /c 7z x xercesc.zip -o"." -y
 	Rename-Item "xerces-c-$XERCESC_VERSION" src
   

@@ -4,6 +4,11 @@ os: Visual Studio 2015
 # Only target Windows 32 bits
 platform: Win32
 
+# Branches que serão compiladas pelo TravisCI.
+branches:
+  only:
+  - ultimate
+
 # Build in Release configuration only
 configuration:
   - Release
@@ -26,25 +31,23 @@ environment:
 
 before_build:
   # Use the latest version of CMake
-  - ps: Write-Host "=== (1/5) Downloading CMake 3.9.1 ZIP for Windows 64 bits ===" -foregroundcolor green
-  - ps: wget https://cmake.org/files/v3.9/cmake-3.9.1-win64-x64.zip -OutFile cmake_files.zip
+  - ps: Write-Host "=== (1/5) Downloading CMake 3.11.4 ZIP for Windows 64 bits ===" -foregroundcolor green
+  - ps: wget https://cmake.org/files/v3.11/cmake-3.11.4-win64-x64.zip -OutFile cmake_files.zip
   - ps: Write-Host "=== (2/5) Installing CMake ===" -foregroundcolor green
   - cmd: 7z x cmake_files.zip -o"." -y
   # Rename this so we don't have the version number used everywhere
-  - ps: Rename-Item cmake-3.9.1-win64-x64 cmake_install
-  
+  - ps: Rename-Item cmake-3.11.4-win64-x64 cmake_install
   # Handle dependencies
   - ps: .\appveyor_install_dependencies.ps1
-  
   # Create the build directory and a fake Steam common directory
   - ps: Write-Host "=== (4/5) Creating build and fake Steam common directory ===" -foregroundcolor green
-  - md build_hlenhanced
+  - md build_h3lenhanced
   - md fake_steamcommon
 
 build_script:
-  # Build HLEnhanced
-  - cd build_hlenhanced
-  - ps: Write-Host "=== (5/5) Building HLEnhanced ===" -foregroundcolor green
+  # Build H3LEnhanced
+  - cd build_h3lenhanced
+  - ps: Write-Host "=== (5/5) Building H3LEnhanced ===" -foregroundcolor green
   - ..\cmake_install\bin\cmake.exe -DXercesC_DIR=%APPVEYOR_BUILD_FOLDER%\dependencies\xercesc\install\cmake -DSTEAMCOMMON=..\fake_steamcommon %BUILD_RULES% -G"%COMPILER_VERSION%" -T%COMPILER_TOOLSET% ..
   - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION%
 
@@ -59,6 +62,4 @@ test: off
 deploy: off
 
 notifications:
-
-  - provider: Webhook
-    url: https://webhooks.gitter.im/e/185665791c29d56ea7a1
+  email: false
