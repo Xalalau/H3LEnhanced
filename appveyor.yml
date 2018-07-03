@@ -24,10 +24,7 @@ environment:
   COMPILER_VERSION: Visual Studio 14 2015
   COMPILER_TOOLSET: v140_xp
   matrix:
-    - BUILD_RULES: -DUSE_OPFOR=0 -DUSE_ANGELSCRIPT=0 -DUSE_AS_SQL=0
     - BUILD_RULES: -DUSE_OPFOR=1 -DUSE_ANGELSCRIPT=0 -DUSE_AS_SQL=0
-    - BUILD_RULES: -DUSE_OPFOR=1 -DUSE_ANGELSCRIPT=1 -DUSE_AS_SQL=0
-    - BUILD_RULES: -DUSE_OPFOR=1 -DUSE_ANGELSCRIPT=1 -DUSE_AS_SQL=1
 
 before_build:
   # Use the latest version of CMake
@@ -60,6 +57,3 @@ test: off
 
 # We don't do deploying yet
 deploy: off
-
-notifications:
-  email: false
