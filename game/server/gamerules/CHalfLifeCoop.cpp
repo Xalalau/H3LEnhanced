@@ -1292,10 +1292,15 @@ int CBaseHalfLifeCoop::IPointsForKill(CBasePlayer *pAttacker, CBasePlayer *pKill
 void CBaseHalfLifeCoop::PlayerKilled(CBasePlayer* pVictim, const CTakeDamageInfo& info)
 {
 	auto pKiller = info.GetAttacker();
-	auto pInflictor = info.GetInflictor();
-
 	ASSERT(pKiller);
+
+	// HACK!!
+	// warning C4189: 'pInflictor': local variable is initialized but not referenced
+	// Como isso so me "impede" de compilar no modo release eu decidi isolar o codigo e seguir em frente
+#if _DEBUG
+	auto pInflictor = info.GetInflictor();
 	ASSERT(pInflictor);
+#endif
 
 	DeathNotice(pVictim, info);
 
