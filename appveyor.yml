@@ -1,5 +1,5 @@
-# Use a VM with VS 2015
-os: Visual Studio 2015
+# Use a VM with VS 2017
+os: Visual Studio 2017
 
 # Only target Windows 32 bits
 platform: Win32
@@ -21,8 +21,8 @@ cache:
 
 # Build with all those possible configurations
 environment:
-  COMPILER_VERSION: Visual Studio 14 2015
-  COMPILER_TOOLSET: v140_xp
+  COMPILER_VERSION: Visual Studio 15 2017
+  COMPILER_TOOLSET: v141
   matrix:
     - BUILD_RULES: -DUSE_OPFOR=1 -DUSE_ANGELSCRIPT=0 -DUSE_AS_SQL=0
 
