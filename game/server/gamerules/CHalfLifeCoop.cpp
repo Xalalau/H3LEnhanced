@@ -22,6 +22,9 @@ game/server/CGlobalState.cpp:
 -- Desativei o keyvalue "globalname".
 game/server/gamerules/CHalfLifeRules.cpp:
 -- Adicionado comando remove_in_sp.
+game/shared/entities/plats/CFuncTrackTrain.cpp:
+-- Adicionado delay no inicio dos func_tracktrain ("iguala" com o singleplayer)
+
 
 Possibilidades de uso de comandos em entidades (por dentro dos arquivos .cfg dos mapas):
 
@@ -1090,74 +1093,71 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 	{
 		hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i));
 
-		if (hu3Player)
+		if (hu3Player && hu3Player->IsPlayer())
 		{
-			if (hu3Player->IsPlayer())
-			{
-				// Deixo o hu3Player pronto como hu3Player2 em CBasePlayer, uma classe abaixo
-				CBasePlayer *hu3Player2 = NULL;
-				hu3Player2 = (CBasePlayer *)hu3Player;
+			// Deixo o hu3Player pronto como hu3Player2 em CBasePlayer, uma classe abaixo
+			CBasePlayer *hu3Player2 = NULL;
+			hu3Player2 = (CBasePlayer *)hu3Player;
 
-				// Calculo a distancia do player ate o landmark
-				Vector absPos = pLandmark->GetAbsOrigin();
-				Vector plyPos = hu3Player->pev->origin;
-				Vector relPos;
+			// Calculo a distancia do player ate o landmark
+			Vector absPos = pLandmark->GetAbsOrigin();
+			Vector plyPos = hu3Player->pev->origin;
+			Vector relPos;
 
-				relPos = plyPos - absPos;
+			relPos = plyPos - absPos;
 
-				// Vejo se o jogador esta abaixado
-				bool inDuck = false;
-				if (hu3Player->pev->flags & FL_DUCKING)
-					inDuck = true;
+			// Vejo se o jogador esta abaixado
+			bool inDuck = false;
+			if (hu3Player->pev->flags & FL_DUCKING)
+				inDuck = true;
 
-				// Vejo se a lanterna esta ligada
-				bool flashlightState = false;
-				if (hu3Player2->FlashlightIsOn())
-					flashlightState = true;
+			// Vejo se a lanterna esta ligada
+			bool flashlightState = false;
+			if (hu3Player2->FlashlightIsOn())
+				flashlightState = true;
 
-				// Verifico o godmode
-				bool godmodeState = false;
-				if (hu3Player->pev->flags & FL_GODMODE)
-					godmodeState = true;
+			// Verifico o godmode
+			bool godmodeState = false;
+			if (hu3Player->pev->flags & FL_GODMODE)
+				godmodeState = true;
 
-				// Verifico o notarget
-				bool notargetState = false;
-				if (hu3Player->pev->flags & FL_NOTARGET)
-					notargetState = true;
+			// Verifico o notarget
+			bool notargetState = false;
+			if (hu3Player->pev->flags & FL_NOTARGET)
+				notargetState = true;
 
-				// Verifico o noclip
-				bool noclipState = false;
-				if (hu3Player->GetMoveType() == MOVETYPE_NOCLIP)
-					noclipState = true;
+			// Verifico o noclip
+			bool noclipState = false;
+			if (hu3Player->GetMoveType() == MOVETYPE_NOCLIP)
+				noclipState = true;
 
-				// Salvo as infos gerais
-				CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
-				CoopPlyData[i].relPos = relPos;
-				CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
-				CoopPlyData[i].velocity = hu3Player->pev->velocity;
-				CoopPlyData[i].angles = hu3Player->pev->angles;
-				CoopPlyData[i].punchangle = hu3Player->pev->punchangle;
-				CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
-				CoopPlyData[i].fixangle = hu3Player->pev->fixangle;
-				CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
-				CoopPlyData[i].bInDuck = inDuck;
-				CoopPlyData[i].flashlight = flashlightState;
-				CoopPlyData[i].team = hu3Player->pev->team;
-				CoopPlyData[i].frags = hu3Player->pev->frags;
-				CoopPlyData[i].health = hu3Player->pev->health;
-				CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
-				CoopPlyData[i].weapons = hu3Player->pev->weapons;
-				CoopPlyData[i].newplayer = false;
-				CoopPlyData[i].changinglevel = true;
-				CoopPlyData[i].godmode = godmodeState;
-				CoopPlyData[i].notarget = notargetState;
-				CoopPlyData[i].noclip = noclipState;
-				CoopPlyData[i].respawncommands = true;
-				CoopPlyData[i].waitingforchangelevel = true;
+			// Salvo as infos gerais
+			CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
+			CoopPlyData[i].relPos = relPos;
+			CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
+			CoopPlyData[i].velocity = hu3Player->pev->velocity;
+			CoopPlyData[i].angles = hu3Player->pev->angles;
+			CoopPlyData[i].punchangle = hu3Player->pev->punchangle;
+			CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
+			CoopPlyData[i].fixangle = hu3Player->pev->fixangle;
+			CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
+			CoopPlyData[i].bInDuck = inDuck;
+			CoopPlyData[i].flashlight = flashlightState;
+			CoopPlyData[i].team = hu3Player->pev->team;
+			CoopPlyData[i].frags = hu3Player->pev->frags;
+			CoopPlyData[i].health = hu3Player->pev->health;
+			CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
+			CoopPlyData[i].weapons = hu3Player->pev->weapons;
+			CoopPlyData[i].newplayer = false;
+			CoopPlyData[i].changinglevel = true;
+			CoopPlyData[i].godmode = godmodeState;
+			CoopPlyData[i].notarget = notargetState;
+			CoopPlyData[i].noclip = noclipState;
+			CoopPlyData[i].respawncommands = true;
+			CoopPlyData[i].waitingforchangelevel = true;
 
-				// Salvo as infos de municao e armas
-				SavePlayerItems(hu3Player2, &CoopPlyData[i]);
-			}
+			// Salvo as infos de municao e armas
+			SavePlayerItems(hu3Player2, &CoopPlyData[i]);
 		}
 	}
 
@@ -1190,9 +1190,8 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	{
 		pEntity = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i));
 
-		if (pEntity)
-			if (pEntity->IsPlayer())
-				plyCount++;
+		if (pEntity && pEntity->IsPlayer())
+			plyCount++;
 		else
 			break;
 	}
@@ -1210,47 +1209,42 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	{
 		pEntity = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i));
 
-		if (pEntity)
+		if (pEntity && pEntity->IsPlayer())
 		{
-			if (pEntity->IsPlayer())
+			bool plyInTrigger = false;
+
+			// Conta os jogadores em cada trigger_changelevel
+			if (pChangelevel1 && pChangelevel1->Intersects(pEntity))
 			{
-				bool plyInTrigger = false;
+				trigger0++;
+				plyInTrigger = true;
+			}
+			else if (pChangelevel2 && pChangelevel2->Intersects(pEntity))
+			{
+				trigger1++;
+				plyInTrigger = true;
+			}
 
-				// Conta os jogadores em cada trigger_changelevel
-				if (pChangelevel1->Intersects(pEntity))
+			// Aplica ou remove efeitos nos jogadores e avisa sobre o estado do changelevel
+			if (plyInTrigger)
+			{
+				if (!CoopPlyData[pEntity->entindex()].waitingforchangelevel)
 				{
-					trigger0++;
-					plyInTrigger = true;
+					DisablePhysics(pEntity);
+					CLIENT_COMMAND(ENT(pEntity), "say Changelevel|G;");
+					CoopPlyData[pEntity->entindex()].waitingforchangelevel = true;
 				}
-				else if (pChangelevel2->Intersects(pEntity))
+			}
+			else
+			{
+				if (CoopPlyData[pEntity->entindex()].waitingforchangelevel)
 				{
-					trigger1++;
-					plyInTrigger = true;
-				}
-
-				// Aplica ou remove efeitos nos jogadores e avisa sobre o estado do changelevel
-				if (plyInTrigger)
-				{
-					if (!CoopPlyData[pEntity->entindex()].waitingforchangelevel)
-					{
-						DisablePhysics(pEntity);
-						CLIENT_COMMAND(ENT(pEntity), "say Changelevel|G;");
-						CoopPlyData[pEntity->entindex()].waitingforchangelevel = true;
-					}
-				}
-				else
-				{
-					if (CoopPlyData[pEntity->entindex()].waitingforchangelevel)
-					{
-						EnablePhysics(pEntity);
-						CLIENT_COMMAND(ENT(pEntity), "say Changelevel|R;");
-						CoopPlyData[pEntity->entindex()].waitingforchangelevel = false;
-					}
+					EnablePhysics(pEntity);
+					CLIENT_COMMAND(ENT(pEntity), "say Changelevel|R;");
+					CoopPlyData[pEntity->entindex()].waitingforchangelevel = false;
 				}
 			}
 		}
-		else
-			break;
 	}
 
 	// Todos os jogadores estao no mesmo changelevel
