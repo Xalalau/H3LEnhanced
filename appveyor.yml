@@ -1,59 +1,107 @@
-# Use a VM with VS 2017
-os: Visual Studio 2017
+#   ########   #
+#   Hu3-Life   # O mod da família brasileira.
+#   ########   #
 
-# Only target Windows 32 bits
-platform: Win32
+#----------------#
+#     Geral      #
+#----------------#
 
-# Branches que serão compiladas pelo TravisCI.
+# Branches que serão compiladas pelo AppVeyor.
 branches:
   only:
   - ultimate
 
-# Build in Release configuration only
-configuration:
-  - Release
-  
-cache:
-  # Cache dependencies so we don't rebuild them all the time. The cache should only need to be invalidated if we change versions, which is done in this file as well
-  - dependencies/xercesc/install/cmake -> appveyor.yml
-  - dependencies/xercesc/install/include -> appveyor.yml
-  - dependencies/xercesc/install/lib -> appveyor.yml
+#----------------#
+#    Ambiente    #
+#----------------#
 
-# Build with all those possible configurations
+# VM com VS 2017
+os: Visual Studio 2017
+
+# Configurações de build
 environment:
   COMPILER_VERSION: Visual Studio 15 2017
   COMPILER_TOOLSET: v141
   matrix:
     - BUILD_RULES: -DUSE_OPFOR=1 -DUSE_ANGELSCRIPT=0 -DUSE_AS_SQL=0
 
+# Se algum dos trabalhos falharem, marcar o build como ruim
+matrix:
+  fast_finish: true
+
+# Dar cache em algumas dependências para que elas não deem rebuild o tempo todo.
+# Esse cache só precisa ser invalidado se mudarmos versões, o que é feito nesse arquivo também
+cache:
+  - dependencies/xercesc/install/cmake -> appveyor.yml
+  - dependencies/xercesc/install/include -> appveyor.yml
+  - dependencies/xercesc/install/lib -> appveyor.yml
+
+#----------------#
+#     Build      #
+#----------------#
+
+# Windows, Linux e Mac
+platform: Win32
+
+# Build em modo Release (usamos os builds do site para distruibuir os dlls)
+configuration:
+  - Release
+
+# Criar pacotes de Web Deploy
+build:  
+  publish_wap: true
+
 before_build:
-  # Use the latest version of CMake
+  # Usar a última versão do CMake
   - ps: Write-Host "=== (1/5) Downloading CMake 3.11.4 ZIP for Windows 64 bits ===" -foregroundcolor green
   - ps: wget https://cmake.org/files/v3.11/cmake-3.11.4-win64-x64.zip -OutFile cmake_files.zip
   - ps: Write-Host "=== (2/5) Installing CMake ===" -foregroundcolor green
   - cmd: 7z x cmake_files.zip -o"." -y
-  # Rename this so we don't have the version number used everywhere
+  # Renomear o arquivo para não termo que lidar com números de versão em lugar nenhum
   - ps: Rename-Item cmake-3.11.4-win64-x64 cmake_install
-  # Handle dependencies
+  # Lidar com as dependências
   - ps: .\appveyor_install_dependencies.ps1
-  # Create the build directory and a fake Steam common directory
+  # Criar o diretório de build e falsear a pasta common do Steam
   - ps: Write-Host "=== (4/5) Creating build and fake Steam common directory ===" -foregroundcolor green
   - md build_h3lenhanced
   - md fake_steamcommon
 
+# Dar build no H3LEnhanced
 build_script:
-  # Build H3LEnhanced
   - cd build_h3lenhanced
   - ps: Write-Host "=== (5/5) Building H3LEnhanced ===" -foregroundcolor green
   - ..\cmake_install\bin\cmake.exe -DXercesC_DIR=%APPVEYOR_BUILD_FOLDER%\dependencies\xercesc\install\cmake -DSTEAMCOMMON=..\fake_steamcommon %BUILD_RULES% -G"%COMPILER_VERSION%" -T%COMPILER_TOOLSET% ..
-  - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION%
+  - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION% -- /MP
 
-# If one job fail, mark the build as failed
-matrix:
-  fast_finish: true
+# Voltar para a pasta do projeto
+after_build:
+  - cd ..\
 
-# We don't have unit tests
+#----------------#
+#   Artefatos    #
+#----------------#
+
+# Pegar os arquivos de biblioteca gerados e atribuindo nomes
+artifacts:
+  - path: fake_steamcommon\Half-Life\Hu3-Life\cl_dlls\client.dll
+    name: client.dll
+  - path: fake_steamcommon\Half-Life\Hu3-Life\dlls\hl.dll
+    name: hl.dll
+
+#----------------#
+#   Deployment   #
+#----------------#
+
+# Enviar artefatos direto para o Xalahost!
+deploy:
+ provider: Environment
+ name: Xalahost
+ on:
+   branch: ultimate
+
+#----------------#
+#    Testes      #
+#----------------#
+
+# Nós não temos unidades de testes
 test: off
-
-# We don't do deploying yet
-deploy: off
