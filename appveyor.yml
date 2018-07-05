@@ -71,7 +71,7 @@ build_script:
   - cd build_h3lenhanced
   - ps: Write-Host "=== (5/5) Building H3LEnhanced ===" -foregroundcolor green
   - ..\cmake_install\bin\cmake.exe -DXercesC_DIR=%APPVEYOR_BUILD_FOLDER%\dependencies\xercesc\install\cmake -DSTEAMCOMMON=..\fake_steamcommon %BUILD_RULES% -G"%COMPILER_VERSION%" -T%COMPILER_TOOLSET% ..
-  - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION% -- /MP
+  - ..\cmake_install\bin\cmake.exe --build . --clean-first --config %CONFIGURATION% -- /m /p:CL_MPCount
 
 # Voltar para a pasta do projeto
 after_build:

@@ -47,7 +47,7 @@ CMake_GenerateBuildAndInstall()
 	cmake ${COMPILER_SETTINGS} -DCMAKE_INSTALL_PREFIX="$currentDir/install" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -w -m32" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -w -m32" ${generate_args[@]} $full_src_path
 	
 	echo "[Dependency] [${projectName}] Building"
-	cmake --build . --clean-first --config ${CONFIGURATION}
+	cmake --build . --clean-first --config ${CONFIGURATION} -- -j$(getconf _NPROCESSORS_ONLN)
 	
 	echo "[Dependency] [${projectName}] Installing"
 	cmake --build . --target install --config ${CONFIGURATION}
