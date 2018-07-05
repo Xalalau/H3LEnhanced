@@ -43,7 +43,7 @@ function CMake_GenerateBuildAndInstall( $generate_args, [string] $src_path = "sr
 	& "$ROOT_DIR\cmake_install\bin\cmake.exe" -G"$COMPILER_VERSION" -T"$COMPILER_TOOLSET" -DCMAKE_INSTALL_PREFIX="$currentDir/install" $generate_args $full_src_path
 	
 	Write-Host "[Dependency] [$projectName] Building" -foregroundcolor green
-	& "$ROOT_DIR\cmake_install\bin\cmake.exe" --build . --clean-first --config $CONFIGURATION -- /MP
+	& "$ROOT_DIR\cmake_install\bin\cmake.exe" --build . --clean-first --config $CONFIGURATION
 	
 	Write-Host "[Dependency] [$projectName] Installing" -foregroundcolor green
 	& "$ROOT_DIR\cmake_install\bin\cmake.exe" --build . --target install --config $CONFIGURATION
