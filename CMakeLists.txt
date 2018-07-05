@@ -29,7 +29,13 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
 endif()
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SHARED_COMPILER_FLAGS}" )
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" )
+
+# No Mac OSX, o compilador C não aceita parâmetros do compilador C++
+if( APPLE )
+	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" )
+else()
+	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SHARED_COMPILER_FLAGS}" )
+endif()
 
 unset( SHARED_COMPILER_FLAGS )
 
@@ -139,14 +145,6 @@ elseif( UNIX )
 	set( SHARED_GAME_LINKER_FLAGS
 		${SHARED_GAME_LINKER_FLAGS} "-mfpmath=387 -Werror=return-type -fvisibility=hidden "
 	)
-
-	if( APPLE )
-		set( SHARED_GAME_LINKER_FLAGS
-			${SHARED_GAME_LINKER_FLAGS} "-momit-leaf-frame-pointer -mtune=core2 "
-		)
-	else()
-		#Linux, Cygwin, etc.
-	endif()
 endif()
 
 #Highest warning level and warnings as errors
