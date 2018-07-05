@@ -1,16 +1,32 @@
-# Use the C base
-language: c
+#   ########   #
+#   Hu3-Life   # O mod da família brasileira.
+#   ########   #
 
-# Linux - use Ubuntu 14.04 Trusty Tahr.
-sudo: required
-dist: trusty
+#----------------#
+#     Geral      #
+#----------------#
 
 # Branches que serão compiladas pelo TravisCI.
 branches:
   only:
   - ultimate
 
-# Linux - add the Ubuntu restricted tool chain to install GCC 7 package and the standard C library.
+# Não encher o saco com emails
+notifications:
+  email: false
+
+#----------------#
+#    Ambiente    #
+#----------------#
+
+# Usar C como base
+language: c
+
+# Linux - usar Ubuntu 14.04 Trusty Tahr como base (suporte de sistemas mais antigos até os mais novos - glibc)
+sudo: required
+dist: trusty
+
+# Linux - adicionar o Ubuntu restricted tool chain para instalar o GCC e a biblioteca padrão C
 addons:
   apt:
     sources:
@@ -22,13 +38,17 @@ addons:
     - libcurl4-openssl-dev:i386
     - libpthread-stubs0-dev:i386
 
+# Variáveis de ambiente
 env:
   global:
     - COMPILER_VERSION_C=gcc-7
     - COMPILER_VERSION_CXX=g++-7
     - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
+    - secure: h9D7DPzl7XYRgldmnhfcTLDEXdumXWq1CUSBAXYCZudF/FgPwJoe5REQNsZzXRgp51xXBrqaQJEfzRVHMrTmxGjOMG5vzxtwXVvMem10GOFrJ5kgoJpSI2HSE0pGXnBxZwm/QrYr2jjRkKXY6f0WxI5C/JX/Xy72J4e6HEOcNqI4Ke7/aaGoWMmDGj4yyGtt1kn4wmK7B3ioPVec78aEmnPLZmNrak/oMxazsdiPQN6ooyysOI8Y3Z/oZlndOT+5vxnTLEx7M8vXDFUxjeXokJyIabYdeldGdSeUMUerFEWKCQI9XYZI6wEMHSjSGOO/tlT93ti+0LZVExw9CdndKP/eh+47qHktpzBfrFrnWo0OtLQ7t2FSWUlP5kUlmMqP9Nm5u/8Ibsw/52kyCVuE8VXlufzLff8dU9D5tuiI9oT9jhrS4GSLn+STEj02MYHnxi3+t2TqGDcBs6EOmfPAjPNSzlzhNpfcFxYk3EYuxzWACjDwms4gpzMh4PruanxJhLkgZJeRqIXrsjdp1gvTBme5gUc0l7VCdlpr366h/7bzca5dy56IscImSD/z4pucwQh3RWFQodb6FdaPAlsS5IJCm+OrKytfgKd+SddT/g9aoTEdOUsvvRxu0q7UhCpZJYV4m61u3aKYmf+ZeuQTmMzY69rX+HroGgKBhYk3CNQ=
+    - secure: T5AcnhzZ1vwaKcOCRqBiCDD04uTjk5dAq6VJI8m0f2oPQLQYMizu0yr9Jox281zzFfvxmarvTx+lUmcMox1NTndMRwUFOP61e8azL5GCO3xi7bVm+R/wn52eSR4uzyrgbDArcaynfpp5py3A1qNntUDU8BQPAD2ZiVNS1EcDjj6ry0dYjKEouVWRuF+ox6KgJF8ehob3Z4KNt1pPn0xHfvVE9u+XBYYTEWUuxKmjSxixkPQF8H0Xt/+Iv7V9/d/e8C/72y0Azn4zsQM22ERDTEbRLKhLHCO+6f3SZMVR+Fqa8UQAIlBN9C15eQOOA/GAESDTJd3Je97/VSh0mOn04NCnXxeQDb4LheUckzOyBDvrRiO+ESd05+UxGJsRrk8N2zqskEM46yX7Su6ob7NkVoodvJQ0SW6/lxnkeCobK0Qq9J5QEZWl29nH/d4X0b3W3dMU7muddzEKuIuo1XotDUl2g23Y2gkLwO8GL8h57VyFWQsaUM9OD2nAwcivW4SDdeQTdowAQ8e5XR1y1bQIr64MvI3n6DacgAQGHg5r5vyfr5dAajNwie+AnZTBvfmrh6D/Lp1MfEQerhD8WrXsVfONbE9gDulBQBkHK5I2agcxyyR3sSV8rEWKYbYWMrK/+0wXkI55D3Remd4r+hGxhuTIxprpS1KizFkEr1rQmhA=
 
-# Disable the cache for now; this isn't working quite as expected (and it's in beta)
+# Evitar recompilar o Xerces-c
+# Nota original: Disable the cache for now; this isn't working quite as expected (and it's in beta)
 #cache:
 #  directories:
 #      - ${DEPENDENCIES_DIR}/xercesc/install/include
@@ -36,12 +56,12 @@ env:
     
 matrix:
   allow_failures:
-    # We allow all Mac builds to fail since we don't have a real Mac to test them.
+    # Como nós não temos máquinas com Mac para testar as builds dele, tanto faz se falhar
     - os: osx
   include:
     # Opções de build type disponíveis:
     # Debug, Release, MinSizeRel e RelWithDebInfo
-    # A fazer: Gerar .pdb em modo Release.
+    # A fazer: Gerar .pdb em modo Release
     #
     # Ubuntu 14.04 Trusty Tahr amd64 (Linux) GCC 7
     - os: linux
@@ -50,9 +70,13 @@ matrix:
     - os: osx
       env: BUILD_RULES="-DCMAKE_BUILD_TYPE=Release -DUSE_OPFOR=1 -DUSE_ANGELSCRIPT=0 -DUSE_AS_SQL=0"
 
+#----------------#
+#     Build      #
+#----------------#
+
 before_install:
-  # On Linux, download the 32 bits version of the standard C library.
-  # On Mac, just update Homebrew.
+  # No Linux, baixar a versão 32 bits da biblioteca padrão do C
+  # No Mac, apenas atualizar o Homebrew
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       sudo dpkg --add-architecture i386
@@ -63,11 +87,11 @@ before_install:
     fi
 
 install:
-  # Prepare the dependencies, build and fake Steam common directories for Travis.
+  # Preparar as dependências, dar build e falsear o diretório common do Steam para o Travis
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - STEAMCOMMON_DIR="${TRAVIS_BUILD_DIR}/steam_common"
+  - STEAMCOMMON_DIR="${TRAVIS_BUILD_DIR}/fake_steamcommon"
   - mkdir -p ${DEPS_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR}/Half-Life && cd ${DEPS_DIR}
-  # Get the latest CMake version and Make symlinks so it can use VGUI properly.
+  # Pegar o último CMake e criar symlinks para que ele possa usar o VGUI corretamente
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       CMAKE_URL="http://www.cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz"
@@ -85,12 +109,12 @@ install:
     fi
 
 before_script:
-  # Move to build directory.
+  # Mover o diretório de build
   - cd ${TRAVIS_BUILD_DIR}
     
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      # Use a toolchain file to force a 32 bit environment
+      # Usar o arquivo de toolchain para forçar o ambiente de 32 bits
       COMPILER_SETTINGS="${COMPILER_SETTINGS} -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/cmake/Linux_32bit_toolchain.cmake"
     fi
     
@@ -99,9 +123,9 @@ before_script:
   - mkdir build && cd build
 
 script:
-  # Just execute the cmake and make commands
-  # Use the local vgui library
-  # TODO: SDL should be found by CMake at all times, this needs fixing - Solokiller
+  # Executar os comandos de cmake e make
+  # Usar a biblioteca vgui local
+  # Nota original: TODO: SDL should be found by CMake at all times, this needs fixing - Solokiller
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32 -fno-strict-overflow -w" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -m32 -fno-strict-overflow -w" \
@@ -118,6 +142,10 @@ script:
     fi
   - make -j$(getconf _NPROCESSORS_ONLN)
 
-notifications:
-  email: false
+#----------------#
+#   Deployment   #
+#----------------#
 
+# Enviar para o Xalahost os arquivos de biblioteca gerados
+after_success:
+    curl --upload-file "{fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/client.dll,fake_steamcommon/Half-Life/Hu3-Life/dlls/hl.dll}" -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br/public_html/hu3-life"
