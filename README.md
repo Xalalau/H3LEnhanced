@@ -5,7 +5,7 @@ H3LEnhanced
 
 Windows: [![Build status](https://ci.appveyor.com/api/projects/status/bhciqnomt0ylqf4r?svg=true)](https://ci.appveyor.com/project/xalalau/h3lenhanced)
 
-Linux: [![Build Status](https://travis-ci.org/xalalau/H3LEnhanced.svg?branch=ultimate)](https://travis-ci.org/xalalau/H3LEnhanced)
+Linux & Mac: [![Build Status](https://travis-ci.org/xalalau/H3LEnhanced.svg?branch=ultimate)](https://travis-ci.org/xalalau/H3LEnhanced)
 
 Este repositório contém os códigos de client.* e hl.* usados no Hu3-Life.
 

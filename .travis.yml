@@ -148,4 +148,12 @@ script:
 
 # Enviar para o Xalahost os arquivos de biblioteca gerados
 after_success:
-    curl --upload-file "{fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/client.dll,fake_steamcommon/Half-Life/Hu3-Life/dlls/hl.dll}" -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br/public_html/hu3-life"
+    - cd ../fake_steamcommon/Half-Life/Hu3-Life/
+    - |
+      if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+        curl --ftp-create-dirs -T dlls/hl.so -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
+        curl --ftp-create-dirs -T cl_dlls/client.so -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
+      else
+        curl --ftp-create-dirs -T dlls/hl.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
+        curl --ftp-create-dirs -T cl_dlls/client.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
+      fi
