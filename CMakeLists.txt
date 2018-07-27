@@ -145,6 +145,15 @@ elseif( UNIX )
 	set( SHARED_GAME_LINKER_FLAGS
 		${SHARED_GAME_LINKER_FLAGS} "-mfpmath=387 -Werror=return-type -fvisibility=hidden "
 	)
+	
+	# TODO - Investigate why this fails on Mac (JoelTroch)
+	#if( APPLE )
+	#	set( SHARED_GAME_LINKER_FLAGS
+	#		${SHARED_GAME_LINKER_FLAGS} "-momit-leaf-frame-pointer -mtune=core2 "
+	#	)
+	#else()
+	#	#Linux, Cygwin, etc.
+	#endif()
 endif()
 
 #Highest warning level and warnings as errors
