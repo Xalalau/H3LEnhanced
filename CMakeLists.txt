@@ -19,20 +19,31 @@ include( Ternary )
 
 project( H3LEnhanced )
 
+# Remove caminhos de diretorios no rpath
+# https://cmake.org/cmake/help/latest/variable/CMAKE_SKIP_RPATH.html
+set( CMAKE_SKIP_RPATH true )
+
 #C++14 support
 set( SHARED_COMPILER_FLAGS "-std=c++1y" )
 
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
-	# Always build as 32 bit
-	# Additional debug info for GDB.
-	set( SHARED_COMPILER_FLAGS "${SHARED_COMPILER_FLAGS} -m32 -g" )
+	# Sempre compilar em modo 32 bits (-m32)
+	set( SHARED_COMPILER_FLAGS "${SHARED_COMPILER_FLAGS} -m32" )
+
+	# Não usar -g em modo release
+	# Isso faz com que os binários compilados fiquem com tamanho muito grande!
+	if( CMAKE_BUILD_TYPE MATCHES DEBUG)
+		set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g" )
+		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g" )
+	endif()
 endif()
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SHARED_COMPILER_FLAGS}" )
 
-# No Mac OSX, o compilador C não aceita parâmetros do compilador C++
+# No Mac OSX, o compilador C não aceita o parâmetro -std=c++1y que está no SHARED_COMPILER_FLAGS,
+# então definimos os outros parâmetros manaulmente aqui sem este.
 if( APPLE )
-	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" )
+	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" )
 else()
 	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SHARED_COMPILER_FLAGS}" )
 endif()
