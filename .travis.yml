@@ -140,7 +140,7 @@ script:
       -DXercesC_DIR="${DEPENDENCIES_DIR}/xercesc/install/lib/cmake/XercesC" \
       ..
     fi
-  - make -j$(getconf _NPROCESSORS_ONLN)
+  - make
 
 #----------------#
 #   Deployment   #
