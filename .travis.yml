@@ -9,7 +9,7 @@
 # Branches que serão compiladas pelo TravisCI.
 branches:
   only:
-  - ultimate
+  - master
 
 # Não encher o saco com emails
 notifications:

@@ -9,7 +9,7 @@
 # Branches que serão compiladas pelo AppVeyor.
 branches:
   only:
-  - ultimate
+  - master
 
 #----------------#
 #    Ambiente    #
@@ -97,7 +97,7 @@ deploy:
  provider: Environment
  name: Xalahost
  on:
-   branch: ultimate
+   branch: master
 
 #----------------#
 #    Testes      #
