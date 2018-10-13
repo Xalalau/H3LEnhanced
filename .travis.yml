@@ -44,8 +44,8 @@ env:
     - COMPILER_VERSION_C=gcc-7
     - COMPILER_VERSION_CXX=g++-7
     - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
-    - secure: h9D7DPzl7XYRgldmnhfcTLDEXdumXWq1CUSBAXYCZudF/FgPwJoe5REQNsZzXRgp51xXBrqaQJEfzRVHMrTmxGjOMG5vzxtwXVvMem10GOFrJ5kgoJpSI2HSE0pGXnBxZwm/QrYr2jjRkKXY6f0WxI5C/JX/Xy72J4e6HEOcNqI4Ke7/aaGoWMmDGj4yyGtt1kn4wmK7B3ioPVec78aEmnPLZmNrak/oMxazsdiPQN6ooyysOI8Y3Z/oZlndOT+5vxnTLEx7M8vXDFUxjeXokJyIabYdeldGdSeUMUerFEWKCQI9XYZI6wEMHSjSGOO/tlT93ti+0LZVExw9CdndKP/eh+47qHktpzBfrFrnWo0OtLQ7t2FSWUlP5kUlmMqP9Nm5u/8Ibsw/52kyCVuE8VXlufzLff8dU9D5tuiI9oT9jhrS4GSLn+STEj02MYHnxi3+t2TqGDcBs6EOmfPAjPNSzlzhNpfcFxYk3EYuxzWACjDwms4gpzMh4PruanxJhLkgZJeRqIXrsjdp1gvTBme5gUc0l7VCdlpr366h/7bzca5dy56IscImSD/z4pucwQh3RWFQodb6FdaPAlsS5IJCm+OrKytfgKd+SddT/g9aoTEdOUsvvRxu0q7UhCpZJYV4m61u3aKYmf+ZeuQTmMzY69rX+HroGgKBhYk3CNQ=
-    - secure: T5AcnhzZ1vwaKcOCRqBiCDD04uTjk5dAq6VJI8m0f2oPQLQYMizu0yr9Jox281zzFfvxmarvTx+lUmcMox1NTndMRwUFOP61e8azL5GCO3xi7bVm+R/wn52eSR4uzyrgbDArcaynfpp5py3A1qNntUDU8BQPAD2ZiVNS1EcDjj6ry0dYjKEouVWRuF+ox6KgJF8ehob3Z4KNt1pPn0xHfvVE9u+XBYYTEWUuxKmjSxixkPQF8H0Xt/+Iv7V9/d/e8C/72y0Azn4zsQM22ERDTEbRLKhLHCO+6f3SZMVR+Fqa8UQAIlBN9C15eQOOA/GAESDTJd3Je97/VSh0mOn04NCnXxeQDb4LheUckzOyBDvrRiO+ESd05+UxGJsRrk8N2zqskEM46yX7Su6ob7NkVoodvJQ0SW6/lxnkeCobK0Qq9J5QEZWl29nH/d4X0b3W3dMU7muddzEKuIuo1XotDUl2g23Y2gkLwO8GL8h57VyFWQsaUM9OD2nAwcivW4SDdeQTdowAQ8e5XR1y1bQIr64MvI3n6DacgAQGHg5r5vyfr5dAajNwie+AnZTBvfmrh6D/Lp1MfEQerhD8WrXsVfONbE9gDulBQBkHK5I2agcxyyR3sSV8rEWKYbYWMrK/+0wXkI55D3Remd4r+hGxhuTIxprpS1KizFkEr1rQmhA=
+    - secure: NIiprhJhoWrzcIi2EveFBbXHqa3Z3LY1DezsqVF7uEb82lAY93gl0teaC4prDVa/xxgsvxn6SswNsyf7QGEFQnuzPrG48JPmhsCBf3qTGdHWBEiCdRZT/crUgAFQfmd0+gpzJJ0xysO+1LsTcDW0JwKNoAcmaqmoT5fXQctdn9eN6gMPT7puGCQz7d54D/DMj00PdCdl20oaN7iyGcQh6d+YK5XNWAvzTPSt2YW1yL01YXRrZ75hkFnNvi8qwTOCuSA3uldyowFYSCu81JesQGxohTqSgdIUt5IX6cZfw/yb1Ff22VlHI2nfJnuWRjAQnTXXJv6aOoiLFcT3hA0UDONxRSalCRJGmnnx9uqoLRD3DtB28WPdKv1V+VNBcgDdvfKMCfUAhLBu2r+pqT78ro76KD1wL9y4GT9qZtrGWAoHBjmOcZQSFVUxUppDxKrDFXyBFHP2X05+hM5yS6hhEwR6S9S3+u68ARCQOPRYDNQKAL425DIa4ukYZrI8PaAbBjaSCbvfKDtaJrTOR7Flh+UXozvhXOO5fznCLo++Y17N1ROgxRmsLjujVmGJXgdDaBUNXDZxaDCa34JX1/7pRZxC6nqTeA2WSTEAGp8clQG1zN2fUUh2CiSeIRLySet6Qhh74hsm/tLMFEdRRgrGsVytAEOrRf25Ms/KUZOwhes=
+    - secure: V9Rx+uW8lzTWjFaN9Jpz1K/mnjp4n0lvTJU4CAd6Fy56gddG5VFFz03megTPTS0Xnq+tUXr4VJSwlFdGS5HgKDWTPaxMbgE7NrxXaUESkj1OB5I4SCw80/1e18ec3zxfbulMfQWjDhcKGfljY11vXXQ9oSZM9R7pY1XJpFjoUDxVhC6Qlup7QlYINnLYqGsHGdKMmnVY7tFT8ppgkBk9BaW78W2pa2v8DfLdNWheMxxxDbZVJE1MQouDDJN9JWg6A+iLOfF6Wqa6oAfUCQKMD+rxsrlGEC4Uvm645OuH5JJXw/EYzJKXEzmhCEqoLt7WKGEV13fg+3DhLDL+lpvkNUNzQWlhqahLH1uUqQEdTOPHUesIlsbCciO2CiVv43ZK+xUADFzGGKes4r9M1Uw+MI1u7152HLIUWXXe8m8PwiWlDwmQteJuSVDfZ1FJRphakIA+RgHS1W/BuK9TCuNA+8On+hep40DRA74T5cVN3srKJWmVHwe8jtSm//1ogrzqN3WlMEZyliz+g6YqhnlVPbInBoBxghb751xFIPJaSCb8mpcl91wwH7AHUmetCKG4Kzzo0K2PFVnJac19FM46+6yjSTbosAUyN79JMU+1fkVmVqnXvIjYVwtc/pw6F2du3jDFxdCX9XEkN2z7xHSsjjDeyEsls29oSoJPjnZtu8g=
 
 # Evitar recompilar o Xerces-c
 # Nota original: Disable the cache for now; this isn't working quite as expected (and it's in beta)
@@ -151,9 +151,9 @@ after_success:
     - cd ../fake_steamcommon/Half-Life/Hu3-Life/
     - |
       if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-        curl --ftp-create-dirs -T dlls/hl.so -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
-        curl --ftp-create-dirs -T cl_dlls/client.so -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
+        curl --ftp-create-dirs -T dlls/hl.so -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
+        curl --ftp-create-dirs -T cl_dlls/client.so -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
       else
-        curl --ftp-create-dirs -T dlls/hl.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
-        curl --ftp-create-dirs -T cl_dlls/client.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files33.hostinger.com.br//public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
+        curl --ftp-create-dirs -T dlls/hl.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
+        curl --ftp-create-dirs -T cl_dlls/client.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
       fi
