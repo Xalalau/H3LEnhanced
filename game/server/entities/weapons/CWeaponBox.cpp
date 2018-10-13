@@ -128,6 +128,7 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 					}
 				}
 
+#if USE_OPFOR
 				// ARMA TOUROS
 				CDesertEagle * pItem_hu3 = (CDesertEagle *) pItem;
 				if (pItem_hu3->m_iId == WEAPON_DESERT_EAGLE && pItem_hu3->m_quality != 0)
@@ -160,6 +161,7 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 					CLIENT_COMMAND( ENT( pPlayer ), command);
 				}
 				// ############ //
+#endif //USE_OPFOR
 
 				m_rgpPlayerItems[ i ] = m_rgpPlayerItems[ i ]->m_pNext;// unlink this weapon from the box
 
@@ -369,12 +371,14 @@ bool CWeaponBox::PackWeapon( CBasePlayerWeapon *pWeapon )
 		SET_MODEL(ENT(pev), "models/w_crowbar.mdl");
 	}
 
+#if USE_OPFOR
 	// Modelo para a Touros quebrada:
 	if (pWeapon->m_iId == WEAPON_DESERT_EAGLE)
 	{
 		SET_MODEL(ENT(pev), "models/w_desert_eagle.mdl");
 		pev->body = 1;
 	}
+#endif //USE_OPFOR
 	// ############ //
 
 	return true;

@@ -1,3 +1,4 @@
+#if USE_OPFOR
 // ---------------------------------------------------------------
 // Based on Flying Crowbar Entity. Ver 1.0 as seen in Lambda BubbleMod
 // 
@@ -202,3 +203,4 @@ void CFlyingTourosSecondary::BubbleThink(void)
 	if (pev->waterlevel)
 		UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 1);
 }
+#endif //USE_OPFOR

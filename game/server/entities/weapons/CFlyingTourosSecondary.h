@@ -1,3 +1,4 @@
+#if USE_OPFOR
 // ---------------------------------------------------------------
 // Flying Crowbar Entity. Ver 1.0 as seen in Lambda BubbleMod  
 // 
@@ -55,3 +56,5 @@ private:
 };
 
 #endif
+
+#endif //USE_OPFOR
