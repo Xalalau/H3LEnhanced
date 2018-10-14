@@ -14,6 +14,7 @@
 #include "CBaseTrigger.h"
 #include "CBasePlayer.h"
 #include "Weapons.h"
+#include "gamerules/GameRules.h"
 
 #include "CTriggerWeaponCondition.h"
 
@@ -72,12 +73,17 @@ void CWeaponCondition::ProcessConditions()
 	string_t entity;
 
 	// Vou rodar por todos os jogadores e ver se algum possui arma e municao
-	for (int i = 0; i < gpGlobals->maxClients; i++)
+	for (int i = 1; i < gpGlobals->maxClients; i++)
 	{
 		CBasePlayer *hu3Player = UTIL_PlayerByIndex(i);
 
-		if (hu3Player && hu3Player->IsConnected())
+		if (hu3Player)
 		{
+			// Se estiver em multiplayer, verifico se o jogador está online
+			if (g_pGameRules && g_pGameRules->IsMultiplayer())
+				if ( ! hu3Player->IsConnected())
+					return;		
+
 			// Verifico se o jogador esta armado
 			if (hu3Player->HasWeapons())
 			{
