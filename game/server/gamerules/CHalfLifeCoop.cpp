@@ -359,11 +359,32 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	// Adiciono um sprite em cada landmark
 
 	CBaseEntity* pLandmark = nullptr;
+	CBaseEntity* pTarget = nullptr;
 
 	while ((pLandmark = UTIL_FindEntityByClassname(pLandmark, "info_landmark")) != nullptr)
 	{
-		CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
-		pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
+		bool pTargetFound = false;
+
+		while ((pTarget = UTIL_FindEntityByClassname(pTarget, "info_target")) != nullptr)
+		{
+			if (strcmp(pTarget->GetTargetname(), pLandmark->GetTargetname()) == 0)
+			{
+				CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pTarget->GetAbsOrigin(), false);
+				pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
+
+				pTargetFound = true;
+
+				pTarget = nullptr;
+
+				break;
+			}
+		}
+
+		if (!pTargetFound)
+		{
+			CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
+			pSprite1->SetTransparency(kRenderTransAdd, 255, 255, 255, 150, kRenderFxFadeFast);
+		}
 	}
 }
 
