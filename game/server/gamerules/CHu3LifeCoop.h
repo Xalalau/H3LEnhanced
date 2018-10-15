@@ -39,6 +39,7 @@ struct playerCoopSaveRestore {
 	bool noclip;
 	bool respawncommands; // Uso isso para finalizar changelevels ou mortes do jogador
 	float notSolidWait; // Tempo minimo que o jogador precisa levar no estado nao solido assim que spawna
+	int cam_hu3_crosshair;
 	struct playerCoopWeapons keepweapons[64];
 };
 

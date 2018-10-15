@@ -63,11 +63,11 @@ CHu3XSpot *CHu3XSpot::CreateSpot()
 //=========================================================
 void CHu3XSpot::UpdateSpot(CBasePlayer* m_pPlayer, CHu3XSpot* m_pLaser)
 {
-	if (m_pPlayer->cam_hu3_crosshair != 0)
-	{
-		if (!m_pLaser)
-			return;
+	if (!m_pLaser)
+		return;
 
+	if (m_pPlayer->cam_hu3_crosshair)
+	{
 		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
 
 		Vector vecSrc = m_pPlayer->GetGunPosition();

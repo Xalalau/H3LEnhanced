@@ -747,6 +747,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 			pPlayer2->pev->team = CoopPlyData[i].team;
 			pPlayer2->pev->frags = CoopPlyData[i].frags;
 			pPlayer2->pev->weapons = CoopPlyData[i].weapons;
+			pPlayer->cam_hu3_crosshair = CoopPlyData[i].cam_hu3_crosshair;
 			if (CoopPlyData[i].flashlight)
 				pPlayer->FlashlightTurnOn();
 
@@ -1176,6 +1177,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			CoopPlyData[i].noclip = noclipState;
 			CoopPlyData[i].respawncommands = true;
 			CoopPlyData[i].waitingforchangelevel = true;
+			CoopPlyData[i].cam_hu3_crosshair = hu3Player2->cam_hu3_crosshair;
 
 			// Salvo as infos de municao e armas
 			SavePlayerItems(hu3Player2, &CoopPlyData[i]);
