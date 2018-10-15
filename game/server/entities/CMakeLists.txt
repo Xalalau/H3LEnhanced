@@ -40,6 +40,8 @@ add_sources(
 	CGrenade.cpp
 	CInfoIntermission.h
 	CInfoIntermission.cpp
+	CHu3XSpot.h
+	CHu3XSpot.cpp
 	CLaserSpot.h
 	CLaserSpot.cpp
 	CMomentaryDoor.h

@@ -166,7 +166,20 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 
 	auto* pPlayer = GetClassPtr( ( CBasePlayer* ) &pEntity->v );
 
-	if( FStrEq( pcmd, "say" ) )
+	// ############ hu3lifezado ############ //
+	// Recebo variaveis de CBaseEntity* pPlayer do cliente e sincronizo no servidor
+	if (FStrEq(pcmd, "hu3_sync_ply_var"))
+	{
+		if (CMD_ARGC() == 3)
+		{
+			if (strcmp(CMD_ARGV(1), "cam_hu3_crosshair") == 0)
+				pPlayer->cam_hu3_crosshair = atoi(CMD_ARGV(2));
+			else
+				ALERT(at_console, "Nao foi possivel sincronizar: %s %s\n", CMD_ARGV(1), CMD_ARGV(2));
+		}
+	}
+	// ############ //
+	else if( FStrEq( pcmd, "say" ) )
 	{
 		Host_Say( pPlayer, false );
 	}

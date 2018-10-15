@@ -149,8 +149,10 @@ private:
 	
 public:
 	// ############ hu3lifezado ############ //
-	// Variavel para controlar o icone de recarga na terceira pessoa
-	bool cam_hu3_reload_icon;
+	// Se o jogador esta em terceira pessoa e carregando, esse valor e true
+	bool cam_hu3_reloading_weapon;
+	// Ativacao do sprite de mira em terceira pessoa
+	int cam_hu3_crosshair;
 	// ############
 
 	// Spectator camera

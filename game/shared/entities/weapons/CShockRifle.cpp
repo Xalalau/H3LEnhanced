@@ -26,7 +26,9 @@
 
 // ############ hu3lifezado ############ //
 // Entidade generica da mira em terceira pessoa
-#include "entities/weapons/CHu3XSpot.h"
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
 // ############ //
 
 #include "CShockRifle.h"
@@ -67,50 +69,23 @@ void CShockRifle::Precache()
 // Chamada do ponto de mira da terceira pessoa
 void CShockRifle::ItemPreFrame(void)
 {
-	UpdateSpot();
-}
-
-// Renderiza o ponto de mira da terceira pessoa 
-void CShockRifle::UpdateSpot()
-{
 #ifndef CLIENT_DLL
-	if ((int)CVAR_GET_FLOAT("cam_hu3") != 0)
+	if (m_pPlayer->cam_hu3_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
 	{
 		if (!m_pLaser)
-		{
 			m_pLaser = CHu3XSpot::CreateSpot();
-		}
 
-		UTIL_MakeVectors(m_pPlayer->GetViewAngle());
-
-		Vector vecSrc = m_pPlayer->GetGunPosition();
-
-		Vector vecEnd = vecSrc + gpGlobals->v_forward * 8192.0;
-
-		TraceResult tr;
-
-		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
-
-		m_pLaser->SetAbsOrigin(tr.vecEndPos);
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
 	}
-	else if (m_pLaser)
-	{
-		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
-		m_pLaser = nullptr;
-	}
-#endif
-}
-
-// Remove o ponto de mira da terceira pessoa 
-void CShockRifle::RemoveSpot()
-{
-#ifndef CLIENT_DLL
-	if (m_pLaser)
-	{
-		m_pLaser->Killed(CTakeDamageInfo(nullptr, 0, 0), GIB_NEVER);
-		m_pLaser = nullptr;
-	}
-#endif
+#endif	
 }
 // ############ //
 
@@ -173,7 +148,11 @@ void CShockRifle::Holster()
 	// ############ hu3lifezado ############ //
 	// Remocao da mira em terceira pessoa
 #ifndef CLIENT_DLL
-	RemoveSpot();
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
 #endif
 	// ############ //
 

@@ -65,8 +65,6 @@ public:
 	// ############ hu3lifezado ############ //
 	// Funcoes para renderizar a mira em terceira pessoa
 	void ItemPreFrame(void);
-	void UpdateSpot();
-	void RemoveSpot();
 	// ############ //
 
 private:
@@ -91,7 +89,9 @@ private:
 
 	// ############ hu3lifezado ############ //
 	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
 	CHu3XSpot* m_pLaser;
+#endif
 	// ############ //
 };
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CM249_H

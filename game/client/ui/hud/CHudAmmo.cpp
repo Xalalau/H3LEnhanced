@@ -957,7 +957,7 @@ bool CHudAmmo::Draw(float flTime)
 	}
 
 	// Icone de recarga na terceira pessoa
-	if (pPlayer->cam_hu3_reload_icon == true)
+	if (pPlayer->cam_hu3_reloading_weapon == true)
 	{
 		x = ScreenWidth / 2 - 5;
 		y -= 467;

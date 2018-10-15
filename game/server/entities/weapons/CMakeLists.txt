@@ -12,8 +12,6 @@ add_sources(
 	CFlyingTouros.cpp
 	CFlyingTourosSecondary.h
 	CFlyingTourosSecondary.cpp
-	CHu3XSpot.h
-	CHu3XSpot.cpp
 	CShockBeam.h
 	CShockBeam.cpp
 	CSpore.h

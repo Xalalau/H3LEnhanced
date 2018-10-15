@@ -46,11 +46,6 @@ static int g_TracerCount[ MAX_CLIENTS ];
 #include "cbase.h"
 #include "Weapons.h"
 
-// ############ hu3lifezado ############ //
-// Entidade generica da mira em terceira pessoa
-#include "entities/weapons/CHu3XSpot.h"
-// ############ //
-
 #include "entities/weapons/CCrowbar.h"
 #include "entities/weapons/CCrossbow.h"
 #include "entities/weapons/CEgon.h"

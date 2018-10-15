@@ -67,8 +67,6 @@ public:
 	// ############ hu3lifezado ############ //
 	// Funcoes para renderizar a mira em terceira pessoa
 	void ItemPreFrame(void);
-	void UpdateSpot();
-	void RemoveSpot();
 	// ############ //
 
 private:

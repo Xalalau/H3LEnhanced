@@ -15,15 +15,21 @@
 #ifndef GAME_SERVER_ENTITIES_WEAPONS_CHU3XSPOT_H
 #define GAME_SERVER_ENTITIES_WEAPONS_CHU3XSPOT_H
 
-#include "entities/CLaserSpot.h"
-
-class CHu3XSpot : public CLaserSpot
+class CHu3XSpot : public CBaseEntity
 {
 public:
-	static CHu3XSpot* CreateSpot();
+	DECLARE_CLASS(CHu3XSpot, CBaseEntity);
+	DECLARE_DATADESC();
+
 	void Spawn() override;
 	void Precache() override;
-};
 
+	int	ObjectCaps() const override { return FCAP_DONT_SAVE; }
+
+	void UpdateSpot(CBasePlayer* m_pPlayer, CHu3XSpot* m_pLaser);
+	void RemoveSpot(CHu3XSpot* m_pLaser);
+
+	static CHu3XSpot* CreateSpot();
+};
 
 #endif //GAME_SERVER_ENTITIES_WEAPONS_CHU3XSPOT_H

@@ -475,7 +475,7 @@ void IN_RightDown(void) { KeyDown(&in_right); }
 void IN_RightUp(void) { KeyUp(&in_right); }
 
 // ############ hu3lifezado ############ //
-// Essa parte interage com a nossa funcao hu3_AjustarCamera(true)
+// Essa parte interage com a nossa funcao hu3_AjustarCamera()
 void IN_ForwardDown(void)
 {
 	KeyDown(&in_forward);
@@ -581,13 +581,9 @@ void IN_UseDown(void)
 void IN_UseUp(void) { KeyUp(&in_use); }
 void IN_JumpDown(void)
 {
-	// ############ hu3lifezado ############ //
 	// Nao pular caso o jogador esteja travado! (Isso e importante no nosso gameplay)
 	if (CVAR_GET_FLOAT("sv_maxspeed") == 0)
-	{
 		return;
-	}
-	// ############ //
 	KeyDown(&in_jump);
 
 	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )

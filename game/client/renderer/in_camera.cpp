@@ -184,12 +184,10 @@ void CAM_ToggleHu3(void)
 // Funcao para escolher e aplicar um dos modos de camera entre 0 e 3
 void CAM_SetHu3()
 {
-	// ############ hu3lifezado ############ //
 	// Pego o CHudAmmo em uso
 	auto pAmmoMenu = GETHUDCLASS(CHudAmmo);
 	// Pego o CHudTextMessage em uso
 	auto pMessages = GETHUDCLASS(CHudTextMessage);
-	// ############ //
 
 	// Primeira pessoa = 0
 	if (cam_hu3->value > 3 || cam_hu3->value <= 0)
@@ -216,6 +214,9 @@ void CAM_SetHu3()
 		else if (cam_hu3->value == 3)
 			pMessages->hu3_mensagem("Terceira pessoa com jogador solto", HUD_PRINTCENTER);
 	}
+
+	// Informo para o server o valor de hu3_cam desse player
+	gEngfuncs.pfnServerCmd(UTIL_VarArgs("hu3_sync_ply_var cam_hu3_crosshair %f\n", cam_hu3->value));
 }
 // ############ //
 
@@ -254,7 +255,6 @@ void DLLEXPORT CAM_Think( void )
 			break;
 	}
 
-
 	// ############ hu3lifezado ############ //
 	// Checa se a camera de terceira pessoa foi alterada pelo comando can_hu3 e age
 	if (cam_hu3_valor == NULL)
@@ -264,9 +264,7 @@ void DLLEXPORT CAM_Think( void )
 		cam_hu3_valor = cam_hu3->value;
 		CAM_SetHu3();
 	}
-	// ############ //
 
-	// ############ hu3lifezado ############ //
 	// O player morre apenas em primeira pessoa
 	if (pAmmoMenu->isPlayerDead())
 	{
