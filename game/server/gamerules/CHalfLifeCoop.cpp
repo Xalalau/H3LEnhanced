@@ -2,44 +2,7 @@
 // HU3-LIFE REGRAS DO COOP
 // ##############################
 /*
-Este arquivo controla o nosso modo cooperativo quase todo.
-
-Aqui esta uma lista explicada de modificacoes que ficaram espalhadas pelo projeto:
-
-game/server/entities/triggers/CChangeLevel.cpp:
--- Conectada com a funcao ChangeLevelCoop();
-game/server/gamerules/CGameRules.*:
--- Uso vazio e generalizado do changelevel do modo coop.
-game/server/gamerules/CHu3LifeCoop.*:
--- Guarda as variaveis do modo coop que precisam ser acessadas e modificadas em diversos arquivos.
-game/server/gamerules/GameRules.*:
--- Selecao do modo coop modificada para suportar nossos codigos.
-game/shared/entities/NPCs/CRoach.cpp:
--- Uma chamada de GetLightLevel() estava crashando o modo coop e foi bloqueada.
-game/shared/entities/CWorld.cpp:
--- Precache do sprite do changelevel.
-game/server/CGlobalState.cpp:
--- Desativei o keyvalue "globalname".
-game/server/gamerules/CHalfLifeRules.cpp:
--- Adicionado comando remove_in_sp.
-game/shared/entities/plats/CFuncTrackTrain.cpp:
--- Adicionado delay no inicio dos func_tracktrain ("iguala" com o singleplayer)
-
-
-Possibilidades de uso de comandos em entidades (por dentro dos arquivos .cfg dos mapas):
-
-1) remove_in_coop "entidadeA;EntidadeB;Assimpordiante" = Remove entidades no modo cooperativo
-2) remove_in_sp "entidadeA;EntidadeB;Assimpordiante" = Remove entidades no singleplayer
-3) disable_physics "entidadeA;EntidadeB;Assimpordiante" = Deixa as entidades com transparencia e efeitos fisicos (sem modificar o seu funcionamento)
-4) mp_hu3_trainspawnpoint "nome_de_um_trem" = Faz o modo cooperativo procurar pelo dito func_tracktrain e spawnar os jogadores dentro dele
-
-
-Ordem de (re)spawn dos jogadores:
-
-1) Tenta dar (re)spawn dentro de algum trem que tenha sido ajeitado para o coop;
-2) Tenta dar (re)spawn em um info_player_coop;
-3) Tenta dar respawn em relacao a um landmark (so e possivel para jogadores pos changelevel);
-4) Se nada estiver disponivel, pega o ponto de spawn padrao (info_player_start).
+Para entender melhor o funcionamento deste modo, veja a nossa documentação no GitHub - parte de Wiki.
 */
 
 #include "extdll.h"
