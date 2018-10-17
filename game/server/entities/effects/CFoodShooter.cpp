@@ -19,16 +19,15 @@ void CFoodShooter::Precache(void)
 
 CGib *CFoodShooter::CreateGib(void)
 {
-	CGib *pGib = GetClassPtr((CGib *)NULL);
-	pGib->GibCreate("models/fgibs.mdl");
+	auto pGib = CGib::GibCreate("models/fgibs.mdl");
 	pGib->m_bloodColor = BLOOD_COLOR_YELLOW;
 
-	if (pev->body <= 1)
+	if (GetBody() <= 1)
 	{
 		ALERT(at_aiconsole, "FoodShooter Body is <= 1!\n");
 	}
 
-	pGib->pev->body = RANDOM_LONG(0, pev->body - 1);
+	pGib->SetBody(RANDOM_LONG(0, GetBody() - 1));
 
 	return pGib;
 }

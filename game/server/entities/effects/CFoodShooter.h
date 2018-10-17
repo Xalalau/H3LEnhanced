@@ -18,7 +18,7 @@
 class CFoodShooter : public CGibShooter
 {
 public:
-	void	Precache(void);
+	void	Precache(void) override;
 	virtual CGib *CreateGib(void);
 };
 
