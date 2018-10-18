@@ -148,4 +148,10 @@ void CGameRules::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName,
 {
 	return;
 }
+// [MODO COOP]
+// Desativar a fisica dos jogadores em qualquer lugar
+void CGameRules::DisablePhysics(CBaseEntity * pEntity)
+{
+	return;
+}
 // ############ //
