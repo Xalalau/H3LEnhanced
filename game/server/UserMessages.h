@@ -57,6 +57,11 @@ extern int gmsgHudColors;
 
 extern int gmsgWpnBody;
 
+// ############ hu3lifezado ############ //
+// Cores da Latinha de Pichacao no HUD
+extern int gmsgHu3PicheColors;
+// ############ //
+
 void LinkUserMessages();
 
 /**

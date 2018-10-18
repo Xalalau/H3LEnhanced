@@ -26,7 +26,14 @@
 #include "CKnife.h"
 
 // ############ hu3lifezado ############ //
-// DATADESC() removida
+#ifdef SERVER_DLL
+BEGIN_DATADESC( CKnife )
+	DEFINE_FIELD( hu3_spray_color[1], FIELD_BOOLEAN ),
+END_DATADESC()
+#endif
+
+// Acesso ao networking
+#include "UserMessages.h"
 // ############ //
 
 LINK_ENTITY_TO_CLASS( weapon_knife, CKnife );
@@ -80,6 +87,16 @@ void CKnife::Spawn()
 	m_nextfirsthit = 0;
 	// Tempo para o proximo som de spray aplicado em parede
 	m_nextsprayonwallsound = 0;
+	// ############ hu3lifezado ############ //
+	// Inicializo a selecao de cores na primeira cor
+#ifdef SERVER_DLL
+	for (int i = 0; i <= 64; i++)
+		hu3_spray_color[i] = 1;
+#else
+	hu3_spray_color[1] = 1;
+#endif
+	// [COOP] Resetar a selecao no HUD
+	reset_hud = true;
 	// ############ //
 
 	FallInit();
@@ -89,11 +106,9 @@ bool CKnife::Deploy()
 {
 	// ############ hu3lifezado ############ //
 	// Tempo entre chamadas DamageAnimationAndSound()
-#ifndef CLIENT_DLL
+#ifdef SERVER_DLL
 	m_nextthink = gpGlobals->time + 0.1;
 #endif
-	// ############ //
-
 	return DefaultDeploy( "models/v_knife.mdl", "models/p_knife.mdl", KNIFE_DRAW, "crowbar" );
 }
 
@@ -137,7 +152,14 @@ void CKnife::PrimaryAttack()
 	}
 
 	// Delay caso o player esteja utilizando os decals de fundo ou de assinatura
-	if (CVAR_GET_FLOAT("hu3_spray_color") > 10)
+	int index;
+#ifdef SERVER_DLL
+	CBaseEntity *hu3Player = (CBaseEntity *)m_pPlayer;
+	index = hu3Player->entindex();
+#else
+	index = 1;
+#endif
+	if (hu3_spray_color[index] > 10)
 		m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
 
 	// Tempo minimo entre chamadas do PrimaryAttack()
@@ -147,21 +169,36 @@ void CKnife::PrimaryAttack()
 // Trocar as cores
 void CKnife::SecondaryAttack()
 {
-#ifndef CLIENT_DLL
 	// Verifica o tempo para sabermos se eh possivel mudar a cor
 	if (m_nextcolorchange > gpGlobals->time)
 		return;
 
-	// 10 cores + 2 fundos + 1 Carlos Adao no Decals.cpp
-	if (CVAR_GET_FLOAT("hu3_spray_color") < 13)
-		CVAR_SET_FLOAT("hu3_spray_color", CVAR_GET_FLOAT("hu3_spray_color") + 1);
-	else
-		CVAR_SET_FLOAT("hu3_spray_color", 1);
+	// Pego o index que guarda a selecao de cores
+	int index;
+#ifdef SERVER_DLL
+	CBaseEntity *hu3Player = (CBaseEntity *)m_pPlayer;
+	index = hu3Player->entindex();
+#else
+	index = 1;
+#endif
 
-    EMIT_SOUND_DYN( m_pPlayer, CHAN_ITEM, RANDOM_SOUND_ARRAY(pSelectionSounds), 1, ATTN_IDLE, 0, PITCH_NORM );
+	// 10 cores + 2 fundos + 1 Carlos Adao no Decals.cpp
+	if (hu3_spray_color[index] < 13)
+		hu3_spray_color[index] = hu3_spray_color[index] + 1;
+	else
+		hu3_spray_color[index] = 1;
+
+	// Atualizo a selecao no HUD
+#ifdef SERVER_DLL
+	MESSAGE_BEGIN( MSG_ONE, gmsgHu3PicheColors, NULL, hu3Player);
+		WRITE_BYTE(hu3_spray_color[index]);
+	MESSAGE_END();
+#endif
+
+	// Som de balancar a latinha
+	EMIT_SOUND_DYN( m_pPlayer, CHAN_ITEM, RANDOM_SOUND_ARRAY(pSelectionSounds), 1, ATTN_IDLE, 0, PITCH_NORM );
     
 	// Animacao e seu tempo:
-
     SendWeaponAnim(KNIFE_SELECTION);
 
 	// Faz a mudanca de cor ficar desativada durante tempo da animacao
@@ -170,7 +207,7 @@ void CKnife::SecondaryAttack()
 
 	// Idle tambem so volta depois desse tempo
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.35;
-#endif
+
 	return;
 }
 // ############ //
@@ -204,7 +241,7 @@ void CKnife::DamageAnimationAndSound()
 
 	if ( tr.flFraction < 1.0 )
 	{
-#ifndef CLIENT_DLL
+#ifdef SERVER_DLL
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
 		if( pEntity )
@@ -323,7 +360,7 @@ bool CKnife::TraceSomeShit()
 
 	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &m_trHit);
 
-#ifndef CLIENT_DLL
+#ifdef SERVER_DLL
 	if (m_trHit.flFraction >= 1.0)
 	{
 		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, Hull::HEAD, ENT(m_pPlayer->pev), &m_trHit);
@@ -355,24 +392,23 @@ void CKnife::PlaceColor()
 	if (!pTrace->pHit)
 		return;
 
+#ifdef SERVER_DLL
 	// Pega a entidade, a superficie acertada
 	CBaseEntity* pHit = CBaseEntity::Instance(pTrace->pHit);
 
-#ifndef CLIENT_DLL
 	// A entidade eh valida?
 	if (!UTIL_IsValidEntity(pHit))
 		return;
-#endif
 
 	// A entidade eh mapa ou objeto puxavel?
 	if (pHit->GetSolidType() == SOLID_BSP || pHit->GetMoveType() == MOVETYPE_PUSHSTEP)
 	{
-#ifndef CLIENT_DLL
 		// Desenhar decal sobre essa entidade
 		// Os decals estao dentro do arquivo decals.wad e sao listados em Decals.cpp
-		UTIL_DecalTrace(pTrace, 50 + CVAR_GET_FLOAT("hu3_spray_color"));
-#endif
+		CBaseEntity *hu3Player = (CBaseEntity *)m_pPlayer;
+		UTIL_DecalTrace(pTrace, 50 + hu3_spray_color[hu3Player->entindex()]);
 	}
+#endif
 }
 
 // Animacoes e sons de idle
@@ -384,6 +420,21 @@ void CKnife::WeaponIdle()
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
+	// [COOP] Consertar o icone de cor no HUD depois de um changelevel
+	// Isso eh necessario porque eu nao salvo a selecao nesse caso
+#ifdef SERVER_DLL
+	if (g_pGameRules->IsCoOp() && reset_hud)
+	{
+		CBaseEntity *hu3Player = (CBaseEntity *)m_pPlayer;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgHu3PicheColors, NULL, hu3Player);
+			WRITE_BYTE(1);
+		MESSAGE_END();
+	
+		reset_hud = false;
+	}
+#endif
+
 	// 3% de chance de tocar EU PICHAVA SIM E CURTIA MUITO!
 	if (RANDOM_LONG(0, 99) >= 97)
 	{
@@ -392,7 +443,7 @@ void CKnife::WeaponIdle()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 8;
 
 		// Impedir a arma de funcionar por pouco tempo para evitar que o jogador corte bruscamente a animacao
-		m_nextcolorchange = gpGlobals->time + 3;
+		m_nextcolorchange = gpGlobals->time + 4;
 		m_flNextPrimaryAttack = GetNextAttackDelay(2.0);
 	}
 	// 97% de chance de executar essa parte

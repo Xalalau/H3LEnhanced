@@ -82,6 +82,10 @@ void CHudAmmo::Init()
 	HOOK_MESSAGE( ItemPickup );
 	HOOK_MESSAGE( HideWeapon );		// hides the weapon, ammo, and crosshair displays temporarily
 	HOOK_MESSAGE( AmmoX );			// update known ammo type's count
+	// ############ hu3lifezado ############ //
+	// Cores da Latinha de Pichacao no HUD
+	HOOK_MESSAGE(Graffiti);
+	// ############ //
 
 	HOOK_COMMAND("slot1", Slot1);
 	HOOK_COMMAND("slot2", Slot2);
@@ -107,9 +111,9 @@ void CHudAmmo::Init()
 
 	// ############ hu3lifezado ############ //
 	// Cores da Latinha de Pichacao no HUD
-	m_pCvarLColor = gEngfuncs.pfnRegisterVariable("hu3_spray_color", "1", FCVAR_ARCHIVE);
+	m_pCvarLColor = 1;
 	// ############ //
-
+	
 	GetFlags() |= HUD_ACTIVE; //!!!
 
 	if( CBasePlayer* pPlayer = g_Prediction.GetLocalPlayer() )
@@ -383,6 +387,16 @@ void CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 		}
 	}
 }
+
+// ############ hu3lifezado ############ //
+// Cores da Latinha de Pichacao no HUD
+void CHudAmmo::MsgFunc_Graffiti(const char *pszName, int iSize, void *pbuf)
+{
+	CBufferReader reader(pbuf, iSize);
+
+	m_pCvarLColor = reader.ReadByte();
+}
+// ############ //
 
 // 
 //  CurWeapon: Update hud state with the current weapon and clip count. Ammo
@@ -863,71 +877,63 @@ bool CHudAmmo::Draw(float flTime)
 		char text[20];
 		int sprite_index = -1;
 
-		// Insira novos decals no final! Nao mexa na ordem! kkkk
-		if (m_pCvarLColor->value == 1)
+		switch (m_pCvarLColor)
 		{
-			sprite_index = gHUD.GetSpriteIndex("p_preto");
-			strcpy(text, "PRETO");
-		}
-		else if (m_pCvarLColor->value == 2)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_branco");
-			strcpy(text, "BRANCO");
-		}
-		else if (m_pCvarLColor->value == 3)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_vermelho");
-			strcpy(text, "VERMELHO");
-		}
-		else if (m_pCvarLColor->value == 4)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_rosa");
-			strcpy(text, "ROSA");
-		}
-		else if (m_pCvarLColor->value == 5)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_roxo");
-			strcpy(text, "ROXO");
-		}
-		else if (m_pCvarLColor->value == 6)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_azul_forte");
-			strcpy(text, "AZUL 1");
-		}
-		else if (m_pCvarLColor->value == 7)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_azul_fraco");
-			strcpy(text, "AZUL 2");
-		}
-		else if (m_pCvarLColor->value == 8)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_verde");
-			strcpy(text, "VERDE");
-		}
-		else if (m_pCvarLColor->value == 9)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_amarelo");
-			strcpy(text, "AMARELO");
-		}
-		else if (m_pCvarLColor->value == 10)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_laranja");
-			strcpy(text, "LARANJA");
-		}
-		else if (m_pCvarLColor->value == 11)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_fundo_branco");
-			strcpy(text, "FUNDO 1");
-		}
-		else if (m_pCvarLColor->value == 12)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_fundo_preto");
-			strcpy(text, "FUNDO 2");
-		}
-		else if (m_pCvarLColor->value == 13)
-		{
-			sprite_index = gHUD.GetSpriteIndex("p_carlos_adao");
-			strcpy(text, "ADAO, C.");
+			// Insira novos decals no final! Nao mexa na ordem! kkkk
+			case 1:
+				sprite_index = gHUD.GetSpriteIndex("p_preto");
+				strcpy(text, "PRETO");
+				break;
+			case 2:
+				sprite_index = gHUD.GetSpriteIndex("p_branco");
+				strcpy(text, "BRANCO");
+				break;
+			case 3:
+				sprite_index = gHUD.GetSpriteIndex("p_vermelho");
+				strcpy(text, "VERMELHO");
+				break;
+			case 4:
+				sprite_index = gHUD.GetSpriteIndex("p_rosa");
+				strcpy(text, "ROSA");
+				break;
+			case 5:
+				sprite_index = gHUD.GetSpriteIndex("p_roxo");
+				strcpy(text, "ROXO");
+				break;
+			case 6:
+				sprite_index = gHUD.GetSpriteIndex("p_azul_forte");
+				strcpy(text, "AZUL 1");
+				break;
+			case 7:
+				sprite_index = gHUD.GetSpriteIndex("p_azul_fraco");
+				strcpy(text, "AZUL 2");
+				break;
+			case 8:
+				sprite_index = gHUD.GetSpriteIndex("p_verde");
+				strcpy(text, "VERDE");
+				break;
+			case 9:
+				sprite_index = gHUD.GetSpriteIndex("p_amarelo");
+				strcpy(text, "AMARELO");
+				break;
+			case 10:
+				sprite_index = gHUD.GetSpriteIndex("p_laranja");
+				strcpy(text, "LARANJA");
+				break;
+			case 11:
+				sprite_index = gHUD.GetSpriteIndex("p_fundo_branco");
+				strcpy(text, "FUNDO 1");
+				break;
+			case 12:
+				sprite_index = gHUD.GetSpriteIndex("p_fundo_preto");
+				strcpy(text, "FUNDO 2");
+				break;
+			case 13:
+				sprite_index = gHUD.GetSpriteIndex("p_carlos_adao");
+				strcpy(text, "ADAO, C.");
+				break;
+			default:
+				break;
 		}
 
 		HSPRITE sprite_itself = gHUD.GetSprite(sprite_index);
@@ -939,7 +945,7 @@ bool CHudAmmo::Draw(float flTime)
 		// Desenhar icone indicativo de cor
 		SPR_Set(sprite_itself, r, g, b);
 		int iOffset = (gHUD.GetSpriteRect(sprite_index).bottom - gHUD.GetSpriteRect(sprite_index).top) / 8;
-		if (m_pCvarLColor->value == 1 || m_pCvarLColor->value == 12) // Cort preta so sai com indexalpha (aditivo), entao desenhamos com "SPR_DrawHoles"
+		if (m_pCvarLColor == 1 || m_pCvarLColor == 12) // Cort preta so sai com indexalpha (aditivo), entao desenhamos com "SPR_DrawHoles"
 			SPR_DrawHoles(0, x2, y2 - iOffset, &gHUD.GetSpriteRect(sprite_index));
 		else
 			SPR_DrawAdditive(0, x2, y2 - iOffset, &gHUD.GetSpriteRect(sprite_index));

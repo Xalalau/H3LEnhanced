@@ -39,9 +39,9 @@ class CKnife : public CBasePlayerWeapon
 {
 public:
 	DECLARE_CLASS( CKnife, CBasePlayerWeapon );
-	// ############ hu3lifezado ############ //
-	// DECLARE_DATADESC(); removido
-	// ############ //
+#ifdef SERVER_DLL
+	DECLARE_DATADESC();
+#endif
 
 	CKnife();
 
@@ -85,6 +85,14 @@ private:
 	float m_nextfirsthit;
 	// Tempo para o proximo som de spray aplicado em parede
 	float m_nextsprayonwallsound;
+	// Cor selecionada (64 clientes)
+#ifdef SERVER_DLL
+	int hu3_spray_color[64];
+#else
+	int hu3_spray_color[2];
+#endif
+	// [COOP] Resetar a selecao no HUD
+	bool reset_hud;
 	// ############ //
 };
 
