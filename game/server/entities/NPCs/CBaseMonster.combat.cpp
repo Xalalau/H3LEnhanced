@@ -96,13 +96,15 @@ void CBaseMonster :: GibMonster( void )
 		{
 			CGib::SpawnHeadGib( this );
 			// ############ hu3lifezado ############ //
-			// Mais tripas (this,4,1)
 			// [MODO COOP]
-			// Menos tripas
+			// Mais tripas com gore e menos no modo coop
 			if (!g_pGameRules->IsCoOp())
-				CGib::SpawnRandomGibs(this, 5, 1); // throw some human gibs.
+				if (CVAR_GET_FLOAT("hu3_gore"))
+					CGib::SpawnRandomGibs(this, 5, 1); 
+				else
+					CGib::SpawnRandomGibs(this, 2, 1); // throw some human gibs.
 			else
-				CGib::SpawnRandomGibs(this, 2, 1);
+				CGib::SpawnRandomGibs(this, 1, 1);
 			// ############ //
 		}
 		gibbed = true;
@@ -112,13 +114,15 @@ void CBaseMonster :: GibMonster( void )
 		if ( CVAR_GET_FLOAT("violence_agibs") != 0 )	// Should never get here, but someone might call it directly
 		{
 			// ############ hu3lifezado ############ //
-			// Mais tripas (this,4,1)
 			// [MODO COOP]
-			// Menos tripas
+			// Mais tripas com gore e menos no modo coop
 			if (!g_pGameRules->IsCoOp())
-				CGib::SpawnRandomGibs(this, 5, 1);	// throw alien gibs.
+				if (CVAR_GET_FLOAT("hu3_gore"))
+					CGib::SpawnRandomGibs(this, 5, 1);
+				else
+					CGib::SpawnRandomGibs(this, 2, 1);	// throw alien gibs.
 			else
-				CGib::SpawnRandomGibs(this, 2, 1);
+				CGib::SpawnRandomGibs(this, 1, 1);
 			// ############ //
 		}
 		gibbed = true;
@@ -318,8 +322,11 @@ void CBaseMonster::BecomeDead( void )
 	// give the corpse half of the monster's original maximum health. 
 	SetHealth(GetMaxHealth() / 2);
 	// ############ hu3lifezado ############ //
-	// Mais sangue por corpo (5)
-	SetMaxHealth(GetHealth()); // max_health now becomes a counter for how many blood decals the corpse can place.
+	// Mais sangue por corpo
+	if (CVAR_GET_FLOAT("hu3_gore"))
+		SetMaxHealth(GetHealth());
+	else
+		SetMaxHealth(5); // max_health now becomes a counter for how many blood decals the corpse can place.
 	// ############ //
 
 	// make the corpse fly away from the attack vector
@@ -424,10 +431,13 @@ void CBaseMonster::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 
 	// ############ hu3lifezado ############ //
 	// Os npcs ao serem mortos sao arremessados
-	pev->flags &= ~FL_ONGROUND;
-	pev->origin.z += RANDOM_LONG(0, 45);
-	pev->velocity = g_vecAttackDir * -1;
-	pev->velocity = pev->velocity * RANDOM_FLOAT(0, 800);
+	if (CVAR_GET_FLOAT("hu3_gore"))
+	{
+		pev->flags &= ~FL_ONGROUND;
+		pev->origin.z += RANDOM_LONG(0, 45);
+		pev->velocity = g_vecAttackDir * -1;
+		pev->velocity = pev->velocity * RANDOM_FLOAT(0, 800);
+	}
 	// ############ //
 
 	// don't let the status bar glitch for players.with <0 health.
@@ -911,7 +921,8 @@ void CBaseMonster :: MakeDamageBloodDecal ( int cCount, float flNoise, TraceResu
 
 	// ############ hu3lifezado ############ //
 	// Alien solta mais sangue (nao tem padrao, eu adicionei, apenas delete)
-	cCount += 5;
+	if (CVAR_GET_FLOAT("hu3_gore"))
+		cCount += 5;
 	// ############ //
 
 	for ( i = 0 ; i < cCount ; i++ )

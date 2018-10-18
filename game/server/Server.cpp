@@ -61,6 +61,8 @@ cvar_t	remove_in_coop = { "remove_in_coop","", FCVAR_SERVER };
 cvar_t	remove_in_sp = { "remove_in_sp","", FCVAR_SERVER };
 // Desativar a fisica de entidades no coop
 cvar_t	nophysics_in_coop = { "nophysics_in_coop","", FCVAR_SERVER };
+// Tripas cagarrentas
+cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -657,6 +659,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&remove_in_sp);
 	// Desativar a fisica de entidades no coop
 	CVAR_REGISTER(&nophysics_in_coop);
+	// Tripas cagarrentas
+	CVAR_REGISTER(&hu3_gore);
 	// ############ //
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
