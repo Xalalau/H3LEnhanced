@@ -290,6 +290,19 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 
 			bool go_on = true;
 
+			//  Deixar a entidade com transparencia e sem efeitos fisicos (sendo que ela continua a funcionar)
+			tok2 = nophysics_in_coop;
+			for (j = 0; j < count_nophysics_in_coop; ++j) {
+				if (pEntity->pev && strcmp(pEntity->GetTargetname(), tok2) == 0)
+				{
+					DisablePhysics(pEntity);
+
+					break;
+				}
+				tok2 += strlen(tok2) + 1;
+				tok2 += strspn(tok2, ";");
+			}
+
 			// Remover a entidade se ela estiver marcada como nao apropriada para o coop
 			tok1 = remove_in_coop;
 			for (j = 0; j < count_remove_in_coop; ++j) {
@@ -302,19 +315,6 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 				}
 				tok1 += strlen(tok1) + 1;
 				tok1 += strspn(tok1, ";");
-			}
-
-			//  Deixar a entidade com transparencia e sem efeitos fisicos (sendo que ela continua a funcionar)
-			tok2 = nophysics_in_coop;
-			for (j = 0; j < count_nophysics_in_coop; ++j) {
-				if (strcmp(pEntity->GetTargetname(), tok2) == 0)
-				{
-					DisablePhysics(pEntity);
-
-					break;
-				}
-				tok2 += strlen(tok2) + 1;
-				tok2 += strspn(tok2, ";");
 			}
 		}
 	}
