@@ -51,6 +51,12 @@ public:
 	void InitTrigger();
 
 	virtual int	ObjectCaps() const override { return CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Se for true, esse teletransporte deve funcionar com todos os jogadores de uma vez
+	bool teleport_all_coop;
+	// ############ //
 };
 
 #endif //GAME_SERVER_ENTITIES_TRIGGERS_CBASETRIGGER_H

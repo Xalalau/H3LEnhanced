@@ -54,15 +54,19 @@ cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
 cvar_t	hu3_trainspawnpoint = { "mp_hu3_trainspawnpoint","0", FCVAR_SERVER };
 // Permitir monstros por padrao no multiplayer
 cvar_t	allowmonsters={ "mp_allowmonsters","1", FCVAR_SERVER };
-// [COOP]
+// Tripas cagarrentas
+cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
+
+// [Modo COOP] :
+
 // Remover entidades no coop
 cvar_t	remove_in_coop = { "remove_in_coop","", FCVAR_SERVER };
 // Remover entidades no singleplayer
 cvar_t	remove_in_sp = { "remove_in_sp","", FCVAR_SERVER };
 // Desativar a fisica de entidades no coop
 cvar_t	nophysics_in_coop = { "nophysics_in_coop","", FCVAR_SERVER };
-// Tripas cagarrentas
-cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
+// Teletransporte que deve funcionar em todos os players no coop
+cvar_t teleport_all_in_coop = { "teleport_all_in_coop","", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -652,15 +656,19 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&hu3_trainspawnpoint);
 	// Remover as armas do jogador
 	CVAR_REGISTER (&hu3_removeallitens);
-	// [COOP]
+	// Tripas cagarrentas
+	CVAR_REGISTER(&hu3_gore);
+
+	// [Modo COOP] :
+
 	// Remover entidades no coop
 	CVAR_REGISTER(&remove_in_coop);
 	// Remover entidades no singleplayer
 	CVAR_REGISTER(&remove_in_sp);
 	// Desativar a fisica de entidades no coop
 	CVAR_REGISTER(&nophysics_in_coop);
-	// Tripas cagarrentas
-	CVAR_REGISTER(&hu3_gore);
+	// Teletransporte que deve funcionar em todos os players no coop
+	CVAR_REGISTER(&teleport_all_in_coop);
 	// ############ //
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF

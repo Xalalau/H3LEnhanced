@@ -10,6 +10,7 @@ Para entender melhor o funcionamento deste modo, veja a nossa documentação no Gi
 #include "cbase.h"
 #include "CBasePlayer.h"
 #include "Weapons.h"
+#include "../entities/triggers/CBaseTrigger.h"
 #include "CHalfLifeCoop.h"
 
 #include "Skill.h"
@@ -261,23 +262,31 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	CBaseEntity *pEntity;
 	char * remove_in_coop = (char*)CVAR_GET_STRING("remove_in_coop");
 	char * nophysics_in_coop = (char*)CVAR_GET_STRING("nophysics_in_coop");
-	int j, count_remove_in_coop = 0, count_nophysics_in_coop = 0;
+	char * teleport_all_in_coop = (char*)CVAR_GET_STRING("teleport_all_in_coop");
+	int j, count_remove_in_coop = 0, count_nophysics_in_coop = 0, count_teleport_all_in_coop = 0;
 
-	// Contar a quantidade de entidades a remover
-	char* tok1 = strtok(remove_in_coop, ";");
+	// Contar a quantidade de entidades a desativar a fisica
+	char* tok1 = strtok(nophysics_in_coop, ";");
 	while (tok1 != NULL) {
-		count_remove_in_coop++;
+		count_nophysics_in_coop++;
 		tok1 = strtok(NULL, ";");
 	}
 
-	// Contar a quantidade de entidades a desativar a fisica
-	char* tok2 = strtok(nophysics_in_coop, ";");
+	// Contar a quantidade de entidades de teletransporte generalizado
+	char* tok2 = strtok(teleport_all_in_coop, ";");
 	while (tok2 != NULL) {
-		count_nophysics_in_coop++;
+		count_teleport_all_in_coop++;
 		tok2 = strtok(NULL, ";");
 	}
 
-	if (count_remove_in_coop > 0 || count_nophysics_in_coop > 0)
+	// Contar a quantidade de entidades a remover
+	char* tok3 = strtok(remove_in_coop, ";");
+	while (tok3 != NULL) {
+		count_remove_in_coop++;
+		tok3 = strtok(NULL, ";");
+	}
+
+	if (count_remove_in_coop > 0 || count_nophysics_in_coop > 0 || count_teleport_all_in_coop > 0)
 	{
 		for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
 		{
@@ -288,31 +297,60 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 			if (!pEntity)
 				continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
 
+			bool next = false;
+
 			//  Deixar a entidade com transparencia e sem efeitos fisicos (sendo que ela continua a funcionar)
-			tok2 = nophysics_in_coop;
+			tok1 = nophysics_in_coop;
 			for (j = 0; j < count_nophysics_in_coop; ++j) {
-				if (pEntity->pev && strcmp(pEntity->GetTargetname(), tok2) == 0)
+				if (pEntity->pev && strcmp(pEntity->GetTargetname(), tok1) == 0)
 				{
 					DisablePhysics(pEntity);
-
-					break;
-				}
-				tok2 += strlen(tok2) + 1;
-				tok2 += strspn(tok2, ";");
-			}
-
-			// Remover a entidade se ela estiver marcada como nao apropriada para o coop
-			tok1 = remove_in_coop;
-			for (j = 0; j < count_remove_in_coop; ++j) {
-				if (strcmp(pEntity->GetTargetname(), tok1) == 0)
-				{
-					pEntity->SUB_Remove();
+					next = true;
 
 					break;
 				}
 				tok1 += strlen(tok1) + 1;
 				tok1 += strspn(tok1, ";");
 			}
+
+			if (next)
+				continue;
+
+			// Marcar a entidade de teletransporte par uso generalizado em todos os players
+			if (strcmp(pEntity->GetClassname(), "trigger_teleport") == 0)
+			{
+				CBaseTrigger *pEntity2 = (CBaseTrigger *)pEntity;
+
+				tok2 = teleport_all_in_coop;
+				for (j = 0; j < count_teleport_all_in_coop; ++j) {
+					if (strcmp(pEntity2->GetTargetname(), tok2) == 0)
+					{
+						pEntity2->teleport_all_coop = true;
+						next = true;
+
+						break;
+					}
+					tok2 += strlen(tok2) + 1;
+					tok2 += strspn(tok2, ";");
+				}
+			}
+
+			if (next)
+				continue;
+
+			// Remover a entidade se ela estiver marcada como nao apropriada para o coop
+			tok3 = remove_in_coop;
+			for (j = 0; j < count_remove_in_coop; ++j) {
+				if (strcmp(pEntity->GetTargetname(), tok3) == 0)
+				{
+					pEntity->SUB_Remove();
+
+					break;
+				}
+				tok3 += strlen(tok3) + 1;
+				tok3 += strspn(tok3, ";");
+			}
+
 		}
 	}
 

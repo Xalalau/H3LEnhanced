@@ -2,6 +2,11 @@
 #include "util.h"
 #include "cbase.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/GameRules.h"
+// ############ //
+
 #include "CBaseTrigger.h"
 
 BEGIN_DATADESC( CBaseTrigger )
@@ -54,18 +59,56 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 
 	pOther->GetFlags().ClearFlags( FL_ONGROUND );
 
-	pOther->SetAbsOrigin( tmp );
+	pOther->SetAbsOrigin(tmp);
 
-	pOther->SetAbsAngles( pTarget->GetAbsAngles() );
+	pOther->SetAbsAngles(pTarget->GetAbsAngles());
 
-	if( pOther->IsPlayer() )
+	if (pOther->IsPlayer())
 	{
-		pOther->SetViewAngle( pTarget->GetAbsAngles() );
+		pOther->SetViewAngle(pTarget->GetAbsAngles());
 	}
 
-	pOther->SetFixAngleMode( FIXANGLE_SET );
-	pOther->SetAbsVelocity( g_vecZero );
-	pOther->SetBaseVelocity( g_vecZero );
+	pOther->SetFixAngleMode(FIXANGLE_SET);
+	pOther->SetAbsVelocity(g_vecZero);
+	pOther->SetBaseVelocity(g_vecZero);
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Teletransportes de cutscenes precisam de um tratamento especial
+	// Obs: pOther->IsPlayer() garante que nao vamos mandar as pessoas para locais bizarros de NPCs
+	if (g_pGameRules->IsCoOp() && pOther->IsPlayer() && teleport_all_coop)
+
+		// ADD CHECAGEM DE NOME AQUI
+		// Se for um teleport para 1 pessoa, sair do loop
+
+	{
+		CBaseEntity * hu3Player;
+
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i));
+
+			if (hu3Player && hu3Player->IsPlayer())
+			{
+				// Se o jogador ja tiver sido processado, pulamos ele, caso contrario desativamos a fisica e seguimos
+				// !!ATENCAO!! Eh proposital que um player nao desative a sua fisica como todos os outros!
+				// Precisamos de pelo menos 1 pessoa em estado normal para que tudo funcione bem
+				if (hu3Player == pOther)
+					continue;
+				else
+					g_pGameRules->DisablePhysics(hu3Player);
+
+				// Aplicar o teletransporte
+				hu3Player->SetAbsOrigin(tmp);
+				hu3Player->SetAbsAngles(pTarget->GetAbsAngles());
+				hu3Player->SetViewAngle(pTarget->GetAbsAngles());
+				hu3Player->SetFixAngleMode(FIXANGLE_SET);
+				hu3Player->SetAbsVelocity(g_vecZero);
+				hu3Player->SetBaseVelocity(g_vecZero);
+			}
+		}
+	}
+	// ############ //
 }
 
 void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
@@ -248,4 +291,10 @@ void CBaseTrigger::InitTrigger()
 	SetModel( GetModelName() );    // set size and link into world
 	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		GetEffects() |= EF_NODRAW;
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Se for true, esse teletransporte deve funcionar com todos os jogadores de uma vez
+	teleport_all_coop = false;
+	// ############ //
 }

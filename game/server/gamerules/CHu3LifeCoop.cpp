@@ -1,6 +1,8 @@
 // ##############################
 // HU3-LIFE VARIAVEIS DO COOP
 // ##############################
+// Colocamos as variaveis do modo cooperativo em um arquivo separado
+// para deixa-las acessiveis em outras partes do codigo mais facilmente
 
 #ifndef GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP
 #define GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP
