@@ -288,8 +288,6 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 			if (!pEntity)
 				continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
 
-			bool go_on = true;
-
 			//  Deixar a entidade com transparencia e sem efeitos fisicos (sendo que ela continua a funcionar)
 			tok2 = nophysics_in_coop;
 			for (j = 0; j < count_nophysics_in_coop; ++j) {
@@ -309,7 +307,6 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 				if (strcmp(pEntity->GetTargetname(), tok1) == 0)
 				{
 					pEntity->SUB_Remove();
-					go_on = false;
 
 					break;
 				}
@@ -1072,8 +1069,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			CoopPlyData[i].pName = "Player";
 
 	// Preencho a tabela de infos dos players novamente
-	i = 1; // Tem que ser 1 para funcionar na funcao abaixo!
-
+	// Tem que ser i=1 para funcionar na funcao abaixo!
 	for (i = 1; i <= gpGlobals->maxClients; i++)
 	{
 		hu3Player = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(i));
