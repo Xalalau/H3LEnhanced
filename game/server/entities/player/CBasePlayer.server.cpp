@@ -184,14 +184,6 @@ void CBasePlayer::Spawn()
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
 
-	// ############ hu3lifezado ############ //
-	// [COOP] Subi a chamada do cooperativo para ca para dar tempo de eu rodar DisablePhysics() e evitar mortes de no spawn.
-	if (g_pGameRules->IsCoOp())
-		g_pGameRules->PlayerSpawn(this);
-	// ############ //
-
-	g_pGameRules->GetPlayerSpawnSpot( this );
-
 	SetModel( "models/player.mdl" );
 	g_ulModelIndexPlayer = GetModelIndex();
 	SetSequence( LookupActivity( ACT_IDLE ) );
@@ -231,9 +223,11 @@ void CBasePlayer::Spawn()
 	m_flNextChatTime = gpGlobals->time;
 
 	// ############ hu3lifezado ############ //
-	// [COOP] A chamada normal de regras fica aqui embaixo. Ela só não vale para o modo cooperativo.
-	if ( ! g_pGameRules->IsCoOp())
+	// [COOP] Eu entro nas configuracoes do coop ou simplesmente posiciono o jogador
+	if (g_pGameRules->IsCoOp())
 		g_pGameRules->PlayerSpawn(this);
+	else
+		g_pGameRules->GetPlayerSpawnSpot(this);
 	// ############ //
 }
 
