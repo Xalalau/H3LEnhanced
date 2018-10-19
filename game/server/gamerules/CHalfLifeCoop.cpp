@@ -714,7 +714,9 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 			{
 				if (spawnPoint->ClassnameIs("info_landmark"))
 				{
-					absPos = spawnPoint->GetAbsOrigin() + CoopPlyData[i].relPos;
+					// Se eu tiver um landmark valido guardado, uso ele
+					if (CoopPlyData[i].relPos != Vector(0, 0, 0))
+						absPos = spawnPoint->GetAbsOrigin() + CoopPlyData[i].relPos;
 					break;
 				}
 			}
@@ -1119,11 +1121,21 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			hu3Player2 = (CBasePlayer *)hu3Player;
 
 			// Calculo a distancia do player ate o landmark
-			Vector absPos = pLandmark->GetAbsOrigin();
+			Vector absPos;
 			Vector plyPos = hu3Player->pev->origin;
 			Vector relPos;
-
-			relPos = plyPos - absPos;
+			if (pLandmark)
+			{
+				absPos = pLandmark->GetAbsOrigin();
+				plyPos = hu3Player->pev->origin;
+				relPos = plyPos - absPos;
+			}
+			else
+			{ 
+				absPos = Vector(0,0,0);
+				plyPos = Vector(0,0,0);
+				relPos = Vector(0,0,0);
+			}
 
 			// Vejo se o jogador esta abaixado
 			bool inDuck = false;
