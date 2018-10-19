@@ -1205,6 +1205,13 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	CBaseEntity* temp = nullptr;
 	int trigger0 = 0, trigger1 = 0, i, plyCount = 0;
 
+	// Forcar o changelevel se o mapa estiver configurado para isso
+	if (CVAR_GET_FLOAT("coop_force_changelevel") == 1)
+	{
+		CVAR_SET_FLOAT("coop_force_changelevel", 0);
+		return 1;
+	}
+
 	// Conta o total de jogadores
 	for (i = 1; i <= gpGlobals->maxClients; i++)
 	{

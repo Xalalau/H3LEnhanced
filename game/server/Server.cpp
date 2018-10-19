@@ -67,6 +67,8 @@ cvar_t	sp_remove = { "sp_remove","", FCVAR_SERVER };
 cvar_t	coop_nophysics = { "coop_nophysics","", FCVAR_SERVER };
 // Teletransporte que deve funcionar em todos os players no coop
 cvar_t coop_teleport_plys = { "coop_teleport_plys","", FCVAR_SERVER };
+// Muda de mapa instantaneamente quando algum jogador toca no changelevel
+cvar_t coop_force_changelevel = { "coop_force_changelevel","", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -669,6 +671,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&coop_nophysics);
 	// Teletransporte que deve funcionar em todos os players no coop
 	CVAR_REGISTER(&coop_teleport_plys);
+	// Muda de mapa instantaneamente quando algum jogador toca no changelevel
+	CVAR_REGISTER(&coop_force_changelevel);
 	// ############ //
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
