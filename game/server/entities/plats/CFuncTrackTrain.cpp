@@ -10,6 +10,7 @@
 // ############ hu3lifezado ############ //
 // [MODO COOP]
 #include "gamerules/CHu3LifeCoop.h"
+#include "gamerules/GameRules.h"
 // ############ //
 
 BEGIN_DATADESC(CFuncTrackTrain)
@@ -215,7 +216,8 @@ void CFuncTrackTrain::Next(void)
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
 	// Adicionada possibilidade de delay para evitar que o trem se mova antes do jogador entrar no server
-	if (strcmp(CVAR_GET_STRING("coop_train_delay"), "0") != 0 &&
+	if (g_pGameRules->IsCoOp() &&
+		strcmp(CVAR_GET_STRING("coop_train_delay"), "0") != 0 &&
 		strcmp(GetTargetname(), "") != 0 &&
 		strcmp(CVAR_GET_STRING("coop_train_spawnpoint"), GetTargetname()) == 0)
 	{
@@ -401,7 +403,20 @@ void CFuncTrackTrain::Find(void)
 	// ############ hu3lifezado ############ //
 	// [MODO COOP]
 	// Adicionada possibilidade de delay para evitar que o trem se mova antes do jogador entrar no server
-	PreNextHu3();
+	if (g_pGameRules->IsCoOp())
+	{
+		PreNextHu3();
+		
+		return;
+	}
+	else
+	{
+		NextThink(GetLastThink() + 0.1, false);
+		SetThink(&CFuncTrackTrain::Next);
+		SetSpeed(m_startSpeed);
+
+		UpdateSound();
+	}
 	// ############ //
 }
 
@@ -440,7 +455,18 @@ void CFuncTrackTrain::PreNextHu3(void)
 	NextThink(GetLastThink() + 0.1, false);
 	SetThink(&CFuncTrackTrain::Next);
 
-	SetSpeed(m_startSpeed);
+	// Obs: forcar a velocidade (resolve bugs as vezes)
+	if (strcmp(CVAR_GET_STRING("coop_train_startspeed"), "0") != 0)
+	{
+		float force_startspeed;
+
+		sscanf(CVAR_GET_STRING("coop_train_startspeed"), "%f", &force_startspeed);
+		SetSpeed(force_startspeed);
+
+		CVAR_SET_STRING("coop_train_startspeed", "0");
+	}
+	else
+		SetSpeed(m_startSpeed);
 
 	UpdateSound();
 }
@@ -490,8 +516,6 @@ void CFuncTrackTrain::NearestPath(void)
 	{
 		NextThink(GetLastThink() + 0.1, false);
 		SetThink(&CFuncTrackTrain::Next);
-
-		UpdateSound();
 	}
 }
 
