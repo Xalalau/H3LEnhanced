@@ -520,7 +520,7 @@ bool CBaseHalfLifeCoop::FPlayerCanTakeDamage(CBasePlayer *pPlayer, const CTakeDa
 	//      que acabam de nascer, simplesmente nao da certo.
 	if (info.GetDamageTypes() == 0)
 	{
-		char* hu3Train = (char*)CVAR_GET_STRING("coop_trainspawnpoint");
+		char* hu3Train = (char*)CVAR_GET_STRING("coop_train_spawnpoint");
 		
 		// Em mapas com func_tracktrain configurados, ativo a defesa contra dano generico automaticamente
 		if (strcmp(hu3Train, "0") != 0)
@@ -684,7 +684,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	Vector absPos(0,0,0);
 
 	// Tenta pegar o ponto de spawn em relacao a algum trem com spawn consertado para coop
-	char* hu3Train = (char*)CVAR_GET_STRING("coop_trainspawnpoint");
+	char* hu3Train = (char*)CVAR_GET_STRING("coop_train_spawnpoint");
 	if (strcmp(hu3Train, "0") != 0)
 	{
 		CBaseEntity* temp = UTIL_FindEntityByString(NULL, "targetname", hu3Train);
@@ -1096,9 +1096,9 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 	strcpy(hu3LandmarkName, m_szLandmarkName);
 
 	// Reseto o comando mp_hu3_trainspawnpoint
-	char* hTarget = (char*)CVAR_GET_STRING("coop_trainspawnpoint");
+	char* hTarget = (char*)CVAR_GET_STRING("coop_train_spawnpoint");
 	if (strcmp(hTarget, "0") != 0)
-		CVAR_SET_STRING("coop_trainspawnpoint", "0");
+		CVAR_SET_STRING("coop_train_spawnpoint", "0");
 
 	// Invalido a tabela de players coop atual atribuindo aos campos de nome usados um nome impossivel de existir
 	// No client MAX_PLAYERS eh 64...
