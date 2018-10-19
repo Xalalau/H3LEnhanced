@@ -1206,9 +1206,9 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	int trigger0 = 0, trigger1 = 0, i, plyCount = 0;
 
 	// Forcar o changelevel se o mapa estiver configurado para isso
-	if (CVAR_GET_FLOAT("coop_force_changelevel") == 1)
+	if (strcmp(CVAR_GET_STRING("coop_force_changelevel"), "1") == 0)
 	{
-		CVAR_SET_FLOAT("coop_force_changelevel", 0);
+		CVAR_SET_STRING("coop_force_changelevel", "1");
 		return 1;
 	}
 
