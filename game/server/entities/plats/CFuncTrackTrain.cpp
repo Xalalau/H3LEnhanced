@@ -30,6 +30,12 @@ BEGIN_DATADESC( CFuncTrackTrain )
 	DEFINE_THINKFUNC( Find ),
 	DEFINE_THINKFUNC( NearestPath ),
 	DEFINE_THINKFUNC( DeadEnd ),
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Adicionada possibilidade de delay para evitar que o trem se mova antes do jogador entrar no server
+	DEFINE_THINKFUNC( PreNextHu3 ),
+	// ############ //
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( func_tracktrain, CFuncTrackTrain );
@@ -375,28 +381,37 @@ void CFuncTrackTrain::Find(void)
 
 	SetAbsOrigin( nextPos );
 
-// ############ hu3lifezado ############ //
-// [MODO COOP]
-// Delay para evitar que o trem se mova antes do jogador entrar no server
-	if (hu3TracktrainDelay)
-	{
-		NextThink(gpGlobals->time + hu3TracktrainDelay, false);
-		SetThink(&CFuncTrackTrain::PreNextHu3);
-	}
-	else
-	{
-		NextThink(GetLastThink() + 0.1, false);
-		SetThink(&CFuncTrackTrain::Next);
-
-		SetSpeed(m_startSpeed);
-
-		UpdateSound();
-	}
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Adicionada possibilidade de delay para evitar que o trem se mova antes do jogador entrar no server
+	PreNextHu3();
+	// ############ //
 }
 
-// Um pequeno pulo extra
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Adicionada possibilidade de delay para evitar que o trem se mova antes do jogador entrar no server
 void CFuncTrackTrain::PreNextHu3(void)
 {
+	// Se for necessario atrasar o trem...
+	if (strcmp(CVAR_GET_STRING("coop_train_delay"), "0") != 0)
+	{
+		// Parar qualquer trem chamado via OverrideReset()
+		if (GetSpeed() != 0)
+			SetSpeed(0);
+
+		// Adicao de atrasos
+		NextThink(gpGlobals->time + CVAR_GET_FLOAT("coop_train_delay"), false);
+		SetThink(&CFuncTrackTrain::PreNextHu3);
+
+		// Desativar comando de delay
+		CVAR_SET_FLOAT("coop_train_delay", 0);
+
+		return;
+	}
+
+	// Aplicando funcionamento normal:
+
 	NextThink(GetLastThink() + 0.1, false);
 	SetThink(&CFuncTrackTrain::Next);
 
@@ -448,8 +463,11 @@ void CFuncTrackTrain::NearestPath( void )
 
 	if( GetSpeed() != 0 )
 	{
-		NextThink( GetLastThink() + 0.1, false );
-		SetThink( &CFuncTrackTrain::Next );
+		// ############ hu3lifezado ############ //
+		// [MODO COOP]
+		// Adicionada possibilidade de delay para evitar que o trem se mova antes do jogador entrar no server
+		PreNextHu3();
+		// ############ //
 	}
 }
 

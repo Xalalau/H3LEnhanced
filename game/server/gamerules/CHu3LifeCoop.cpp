@@ -26,7 +26,4 @@ bool hu3ChangeNetName = false;
 // Liga o processamento de trigger_changelevel no think do modo coop
 bool hu3ChangelevelCheck = false;
 
-// Pequeno atraso no inicio de func_tracktrains (segundos)
-int hu3TracktrainDelay = 13;
-
 #endif //GAME_SERVER_GAMERULES_CHU3LIFECOOP_CPP

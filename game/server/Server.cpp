@@ -59,6 +59,8 @@ cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
 
 // Corrigir o spawn de trens
 cvar_t	coop_train_spawnpoint = { "coop_train_spawnpoint","0", FCVAR_SERVER };
+// Adicionar delay no inicio do movimento de trens
+cvar_t	coop_train_delay = { "coop_train_delay","0", FCVAR_SERVER };
 // Remover entidades no coop
 cvar_t	coop_remove = { "coop_remove","", FCVAR_SERVER };
 // Remover entidades no singleplayer
@@ -663,6 +665,8 @@ void GameDLLInit( void )
 
 	// Corrigir o spawn de trens
 	CVAR_REGISTER(&coop_train_spawnpoint);
+	// Adicionar delay no inicio do movimento de trens
+	CVAR_REGISTER(&coop_train_delay);
 	// Remover entidades no coop
 	CVAR_REGISTER(&coop_remove);
 	// Remover entidades no singleplayer

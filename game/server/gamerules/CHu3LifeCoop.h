@@ -59,8 +59,4 @@ extern bool hu3ChangeNetName;
 // Liga o processamento de trigger_changelevel no think do modo coop
 extern bool hu3ChangelevelCheck;
 
-// Pequeno atraso no inicio de func_tracktrains (segundos)
-extern int hu3TracktrainDelay;
-
-
 #endif //GAME_SERVER_GAMERULES_CHU3FLIFECOOP_H
