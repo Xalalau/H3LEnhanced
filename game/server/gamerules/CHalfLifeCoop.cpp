@@ -260,33 +260,33 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 
 	edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 	CBaseEntity *pEntity;
-	char * remove_in_coop = (char*)CVAR_GET_STRING("remove_in_coop");
-	char * nophysics_in_coop = (char*)CVAR_GET_STRING("nophysics_in_coop");
-	char * teleport_all_in_coop = (char*)CVAR_GET_STRING("teleport_all_in_coop");
-	int j, count_remove_in_coop = 0, count_nophysics_in_coop = 0, count_teleport_all_in_coop = 0;
+	char * coop_remove = (char*)CVAR_GET_STRING("coop_remove");
+	char * coop_nophysics = (char*)CVAR_GET_STRING("coop_nophysics");
+	char * coop_teleport_plys = (char*)CVAR_GET_STRING("coop_teleport_plys");
+	int j, count_coop_remove = 0, count_coop_nophysics = 0, count_coop_teleport_plys = 0;
 
 	// Contar a quantidade de entidades a desativar a fisica
-	char* tok1 = strtok(nophysics_in_coop, ";");
+	char* tok1 = strtok(coop_nophysics, ";");
 	while (tok1 != NULL) {
-		count_nophysics_in_coop++;
+		count_coop_nophysics++;
 		tok1 = strtok(NULL, ";");
 	}
 
 	// Contar a quantidade de entidades de teletransporte generalizado
-	char* tok2 = strtok(teleport_all_in_coop, ";");
+	char* tok2 = strtok(coop_teleport_plys, ";");
 	while (tok2 != NULL) {
-		count_teleport_all_in_coop++;
+		count_coop_teleport_plys++;
 		tok2 = strtok(NULL, ";");
 	}
 
 	// Contar a quantidade de entidades a remover
-	char* tok3 = strtok(remove_in_coop, ";");
+	char* tok3 = strtok(coop_remove, ";");
 	while (tok3 != NULL) {
-		count_remove_in_coop++;
+		count_coop_remove++;
 		tok3 = strtok(NULL, ";");
 	}
 
-	if (count_remove_in_coop > 0 || count_nophysics_in_coop > 0 || count_teleport_all_in_coop > 0)
+	if (count_coop_remove > 0 || count_coop_nophysics > 0 || count_coop_teleport_plys > 0)
 	{
 		for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
 		{
@@ -300,8 +300,8 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 			bool next = false;
 
 			//  Deixar a entidade com transparencia e sem efeitos fisicos (sendo que ela continua a funcionar)
-			tok1 = nophysics_in_coop;
-			for (j = 0; j < count_nophysics_in_coop; ++j) {
+			tok1 = coop_nophysics;
+			for (j = 0; j < count_coop_nophysics; ++j) {
 				if (pEntity->pev && strcmp(pEntity->GetTargetname(), tok1) == 0)
 				{
 					DisablePhysics(pEntity);
@@ -321,8 +321,8 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 			{
 				CBaseTrigger *pEntity2 = (CBaseTrigger *)pEntity;
 
-				tok2 = teleport_all_in_coop;
-				for (j = 0; j < count_teleport_all_in_coop; ++j) {
+				tok2 = coop_teleport_plys;
+				for (j = 0; j < count_coop_teleport_plys; ++j) {
 					if (strcmp(pEntity2->GetTargetname(), tok2) == 0)
 					{
 						pEntity2->teleport_all_coop = true;
@@ -339,8 +339,8 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 				continue;
 
 			// Remover a entidade se ela estiver marcada como nao apropriada para o coop
-			tok3 = remove_in_coop;
-			for (j = 0; j < count_remove_in_coop; ++j) {
+			tok3 = coop_remove;
+			for (j = 0; j < count_coop_remove; ++j) {
 				if (strcmp(pEntity->GetTargetname(), tok3) == 0)
 				{
 					pEntity->SUB_Remove();
@@ -520,7 +520,7 @@ bool CBaseHalfLifeCoop::FPlayerCanTakeDamage(CBasePlayer *pPlayer, const CTakeDa
 	//      que acabam de nascer, simplesmente nao da certo.
 	if (info.GetDamageTypes() == 0)
 	{
-		char* hu3Train = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+		char* hu3Train = (char*)CVAR_GET_STRING("coop_trainspawnpoint");
 		
 		// Em mapas com func_tracktrain configurados, ativo a defesa contra dano generico automaticamente
 		if (strcmp(hu3Train, "0") != 0)
@@ -684,7 +684,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	Vector absPos(0,0,0);
 
 	// Tenta pegar o ponto de spawn em relacao a algum trem com spawn consertado para coop
-	char* hu3Train = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+	char* hu3Train = (char*)CVAR_GET_STRING("coop_trainspawnpoint");
 	if (strcmp(hu3Train, "0") != 0)
 	{
 		CBaseEntity* temp = UTIL_FindEntityByString(NULL, "targetname", hu3Train);
@@ -745,7 +745,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 			pPlayer2->pev->team = CoopPlyData[i].team;
 			pPlayer2->pev->frags = CoopPlyData[i].frags;
 			pPlayer2->pev->weapons = CoopPlyData[i].weapons;
-			pPlayer->cam_hu3_crosshair = CoopPlyData[i].cam_hu3_crosshair;
+			pPlayer->hu3_cam_crosshair = CoopPlyData[i].hu3_cam_crosshair;
 			if (CoopPlyData[i].flashlight)
 				pPlayer->FlashlightTurnOn();
 
@@ -1096,9 +1096,9 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 	strcpy(hu3LandmarkName, m_szLandmarkName);
 
 	// Reseto o comando mp_hu3_trainspawnpoint
-	char* hTarget = (char*)CVAR_GET_STRING("mp_hu3_trainspawnpoint");
+	char* hTarget = (char*)CVAR_GET_STRING("coop_trainspawnpoint");
 	if (strcmp(hTarget, "0") != 0)
-		CVAR_SET_STRING("mp_hu3_trainspawnpoint", "0");
+		CVAR_SET_STRING("coop_trainspawnpoint", "0");
 
 	// Invalido a tabela de players coop atual atribuindo aos campos de nome usados um nome impossivel de existir
 	// No client MAX_PLAYERS eh 64...
@@ -1174,7 +1174,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			CoopPlyData[i].noclip = noclipState;
 			CoopPlyData[i].respawncommands = true;
 			CoopPlyData[i].waitingforchangelevel = true;
-			CoopPlyData[i].cam_hu3_crosshair = hu3Player2->cam_hu3_crosshair;
+			CoopPlyData[i].hu3_cam_crosshair = hu3Player2->hu3_cam_crosshair;
 
 			// Salvo as infos de municao e armas
 			SavePlayerItems(hu3Player2, &CoopPlyData[i]);

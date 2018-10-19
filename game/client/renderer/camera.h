@@ -25,9 +25,9 @@ void CAM_EndMouseMove(void);
 // Variavel usada para remover o sprite do crosshair
 static wrect_t nullrc;
 // Variavel que controla os modos de camera. 0 = primeira pessoa; 1, 2 e 3 = terceiras pessoas
-extern int cam_hu3_valor;
+extern int hu3_cam_valor;
 // Variavel para dizer se a camera deve seguir o jogador por tras nos modos 2 e 3 da terceira pessoa
-extern bool cam_hu3_seguir_ply;
+extern bool hu3_cam_seguir_ply;
 // ############ //
 
 #endif		// _CAMERA_H_

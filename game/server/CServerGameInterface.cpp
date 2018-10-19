@@ -172,8 +172,8 @@ void CServerGameInterface::ClientCommand( edict_t* pEntity )
 	{
 		if (CMD_ARGC() == 3)
 		{
-			if (strcmp(CMD_ARGV(1), "cam_hu3_crosshair") == 0)
-				pPlayer->cam_hu3_crosshair = atoi(CMD_ARGV(2));
+			if (strcmp(CMD_ARGV(1), "hu3_cam_crosshair") == 0)
+				pPlayer->hu3_cam_crosshair = atoi(CMD_ARGV(2));
 			else
 				ALERT(at_console, "Nao foi possivel sincronizar: %s %s\n", CMD_ARGV(1), CMD_ARGV(2));
 		}

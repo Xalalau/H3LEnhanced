@@ -62,8 +62,8 @@ cvar_t	*cam_contain;
 
 // ############ hu3lifezado ############ //
 // Variaveis para controlar a terceira pessoa
-cvar_t	*cam_hu3;
-cvar_t	*cam_hu3_alternar;
+cvar_t	*hu3_cam;
+cvar_t	*hu3_cam_alternar;
 // ############ //
 
 cvar_t	*c_maxpitch;
@@ -174,11 +174,11 @@ extern trace_t SV_ClipMoveToEntity (edict_t *ent, const Vector& start, const Vec
 // Funcao para trocar os modos de camera 1 a 1
 void CAM_ToggleHu3(void)
 {
-	gEngfuncs.Cvar_SetValue("cam_hu3", cam_hu3->value + 1);
+	gEngfuncs.Cvar_SetValue("hu3_cam", hu3_cam->value + 1);
 
 	// Primeira pessoa = 0 / 3 modos de camera na terceira pessoa = 1, 2 e 3
-	if (cam_hu3->value > 3)
-		gEngfuncs.Cvar_SetValue("cam_hu3", 0);
+	if (hu3_cam->value > 3)
+		gEngfuncs.Cvar_SetValue("hu3_cam", 0);
 }
 
 // Funcao para escolher e aplicar um dos modos de camera entre 0 e 3
@@ -190,15 +190,15 @@ void CAM_SetHu3()
 	auto pMessages = GETHUDCLASS(CHudTextMessage);
 
 	// Primeira pessoa = 0
-	if (cam_hu3->value > 3 || cam_hu3->value <= 0)
+	if (hu3_cam->value > 3 || hu3_cam->value <= 0)
 	{
 		pAmmoMenu->hu3ReativarCrosshair();
 		gEngfuncs.Cvar_SetValue("cam_command", 2);
 		if (!pAmmoMenu->isPlayerDead())
 			pMessages->hu3_mensagem("Primeira pessoa", HUD_PRINTCENTER);
-		if (cam_hu3->value != 0)
+		if (hu3_cam->value != 0)
 		{
-			gEngfuncs.Cvar_SetValue("cam_hu3", 0);
+			gEngfuncs.Cvar_SetValue("hu3_cam", 0);
 		}
 	}
 	// 3 modos de camera na terceira pessoa = 1, 2 e 3
@@ -207,16 +207,16 @@ void CAM_SetHu3()
 		SetCrosshair(0, nullrc, 0, 0, 0);
 		gEngfuncs.Cvar_SetValue("cam_command", 1);
 
-		if (cam_hu3->value == 1)
+		if (hu3_cam->value == 1)
 			pMessages->hu3_mensagem("Terceira pessoa", HUD_PRINTCENTER);
-		else if (cam_hu3->value == 2)
+		else if (hu3_cam->value == 2)
 			pMessages->hu3_mensagem("Terceira pessoa com camera solta", HUD_PRINTCENTER);
-		else if (cam_hu3->value == 3)
+		else if (hu3_cam->value == 3)
 			pMessages->hu3_mensagem("Terceira pessoa com jogador solto", HUD_PRINTCENTER);
 	}
 
 	// Informo para o server o valor de hu3_cam desse player
-	gEngfuncs.pfnServerCmd(UTIL_VarArgs("hu3_sync_ply_var cam_hu3_crosshair %f\n", cam_hu3->value));
+	gEngfuncs.pfnServerCmd(UTIL_VarArgs("hu3_sync_ply_var hu3_cam_crosshair %f\n", hu3_cam->value));
 }
 // ############ //
 
@@ -257,11 +257,11 @@ void DLLEXPORT CAM_Think( void )
 
 	// ############ hu3lifezado ############ //
 	// Checa se a camera de terceira pessoa foi alterada pelo comando can_hu3 e age
-	if (cam_hu3_valor == NULL)
-		cam_hu3_valor = 0;
-	if (cam_hu3_valor != cam_hu3->value)
+	if (hu3_cam_valor == NULL)
+		hu3_cam_valor = 0;
+	if (hu3_cam_valor != hu3_cam->value)
 	{
-		cam_hu3_valor = cam_hu3->value;
+		hu3_cam_valor = hu3_cam->value;
 		CAM_SetHu3();
 	}
 
@@ -272,9 +272,9 @@ void DLLEXPORT CAM_Think( void )
 		{
 			pAmmoMenu->hu3ReativarCrosshair();
 			gEngfuncs.Cvar_SetValue("cam_command", 2);
-			if (cam_hu3->value != 0)
+			if (hu3_cam->value != 0)
 			{
-				gEngfuncs.Cvar_SetValue("cam_hu3", 0);
+				gEngfuncs.Cvar_SetValue("hu3_cam", 0);
 			}
 		}
 	}
@@ -476,7 +476,7 @@ void DLLEXPORT CAM_Think( void )
 	{
 		// ############ hu3lifezado ############ //
 		// A camera da terceira pessoa agora so se ajeita caso o jogador execute certas acoes (definidas em input.cpp)
-		if (!(cam_hu3->value == 3) || ((cam_hu3->value == 3) && cam_hu3_seguir_ply == 1))
+		if (!(hu3_cam->value == 3) || ((hu3_cam->value == 3) && hu3_cam_seguir_ply == 1))
 		{
 			if (camAngles[YAW] - viewangles[YAW] != cam_idealyaw->value)
 				camAngles[YAW] = MoveToward(camAngles[YAW], cam_idealyaw->value + viewangles[YAW], CAM_ANGLE_SPEED);
@@ -597,7 +597,7 @@ void CAM_Init( void )
 	gEngfuncs.pfnAddCommand( "-camdistance", CAM_EndDistance );
 	gEngfuncs.pfnAddCommand( "snapto", CAM_ToggleSnapto );
 	// ############ hu3lifezado ############ //
-	gEngfuncs.pfnAddCommand("cam_hu3_alternar", CAM_ToggleHu3);
+	gEngfuncs.pfnAddCommand("hu3_cam_alternar", CAM_ToggleHu3);
 	// ############ //
 
 	cam_command				= gEngfuncs.pfnRegisterVariable ( "cam_command", "0", 0 );	 // tells camera to go to thirdperson
@@ -607,8 +607,8 @@ void CAM_Init( void )
 	cam_idealdist			= gEngfuncs.pfnRegisterVariable ( "cam_idealdist", "64", 0 );	 // thirdperson distance
 	cam_contain				= gEngfuncs.pfnRegisterVariable ( "cam_contain", "0", 0 );	// contain camera to world
 	// ############ hu3lifezado ############ //
-	cam_hu3					= gEngfuncs.pfnRegisterVariable ( "cam_hu3", "0", 0 ); // Primeira pessoa = 0; terceiras pessoas = 1, 2 e 3
-	cam_hu3_alternar		= gEngfuncs.pfnRegisterVariable ( "cam_hu3_alternar", "0", 0 ); // Incrementa o valor do comando cam_hu3. Em 3 volta para 0
+	hu3_cam					= gEngfuncs.pfnRegisterVariable ( "hu3_cam", "0", 0 ); // Primeira pessoa = 0; terceiras pessoas = 1, 2 e 3
+	hu3_cam_alternar		= gEngfuncs.pfnRegisterVariable ( "hu3_cam_alternar", "0", 0 ); // Incrementa o valor do comando hu3_cam. Em 3 volta para 0
 	// ############ //
 
 	c_maxpitch				= gEngfuncs.pfnRegisterVariable ( "c_maxpitch", "90.0", 0 );

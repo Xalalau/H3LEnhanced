@@ -63,9 +63,9 @@ cvar_t	*cl_vsmoothing;
 // Variavel usada para fazer a transicao entre os modos de terceira pessoa 2 e 3. Guarda o ultimo angulo de visao valido
 Vector hu3_viewangles_backup;
 // Variavel para dizer se a camera deve seguir o jogador por tras nos modos 2 e 3 da terceira pessoa (external em camera.h)
-bool cam_hu3_seguir_ply = false;
+bool hu3_cam_seguir_ply = false;
 // Variavel que controla os modos de camera. 0 = primeira pessoa; 1, 2 e 3 = terceiras pessoas (external em camera.h)
-int cam_hu3_valor;
+int hu3_cam_valor;
 // ############ //
 
 
@@ -423,21 +423,21 @@ float CL_KeyState(kbutton_t *key)
 void hu3_AjustarCamera()
 {
 	// Jogador esta na terceira pessoa? O modo de camera do hu3 esta corretamente configurado para terceira pessoa?
-	if (cam_thirdperson && cam_hu3_valor)
+	if (cam_thirdperson && hu3_cam_valor)
 	{
 		// Esta sendo executada uma acao onde a camera deva automaticamente seguir o jogador?
 		// Nota: devemos checar aqui esses varios CL_KeyState()! Precisamos conferir tudo ao mesmo tempo! Checar tecla por tecla causa conflitos.
 		if (CL_KeyState(&in_forward) || CL_KeyState(&in_back) || CL_KeyState(&in_moveleft) || CL_KeyState(&in_moveright) || CL_KeyState(&in_use) || CL_KeyState(&in_duck) || CL_KeyState(&in_attack))
 		{
-			if (cam_hu3_valor != 2 && CL_KeyState(&in_attack)) // E o modo 2 na terceira pessoa? Infelizmente temos que forcar a camera para atras em eventos de tiro. Ha bugs da engine aqui.
+			if (hu3_cam_valor != 2 && CL_KeyState(&in_attack)) // E o modo 2 na terceira pessoa? Infelizmente temos que forcar a camera para atras em eventos de tiro. Ha bugs da engine aqui.
 				return;
-			if (cam_hu3_seguir_ply == 0)
-				cam_hu3_seguir_ply = 1;
+			if (hu3_cam_seguir_ply == 0)
+				hu3_cam_seguir_ply = 1;
 		}
 		else // Nao. Modo com movimento livre.
 		{
-			if (cam_hu3_seguir_ply == 1)
-				cam_hu3_seguir_ply = 0;
+			if (hu3_cam_seguir_ply == 1)
+				hu3_cam_seguir_ply = 0;
 		}
 	}
 }
@@ -820,7 +820,7 @@ void DLLEXPORT CL_CreateMove ( float frametime, usercmd_t *cmd, int active )
 	{
 		// ############ hu3lifezado ############ //
 		// Adaptacoes para fazer pegar o modo 2 da terceira pessoa (cmd->viewangles = viewangles;)
-		if (cam_hu3_valor == 2 && cam_hu3_seguir_ply == 0)
+		if (hu3_cam_valor == 2 && hu3_cam_seguir_ply == 0)
 		{
 			cmd->viewangles = hu3_viewangles_backup;
 		}

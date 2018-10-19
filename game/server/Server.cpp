@@ -49,9 +49,7 @@ cvar_t	teamoverride = {"mp_teamoverride","1" };
 cvar_t	defaultteam = {"mp_defaultteam","0" };
 // ############ hu3lifezado ############ //
 // Remover as armas do jogador
-cvar_t	hu3_removeallitens = { "mp_hu3_strip","0", FCVAR_SERVER };
-// Corrigir o spawn de trens
-cvar_t	hu3_trainspawnpoint = { "mp_hu3_trainspawnpoint","0", FCVAR_SERVER };
+cvar_t	hu3_mp_strip = { "hu3_mp_strip","0", FCVAR_SERVER };
 // Permitir monstros por padrao no multiplayer
 cvar_t	allowmonsters={ "mp_allowmonsters","1", FCVAR_SERVER };
 // Tripas cagarrentas
@@ -59,14 +57,16 @@ cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
 
 // [Modo COOP] :
 
+// Corrigir o spawn de trens
+cvar_t	coop_trainspawnpoint = { "coop_trainspawnpoint","0", FCVAR_SERVER };
 // Remover entidades no coop
-cvar_t	remove_in_coop = { "remove_in_coop","", FCVAR_SERVER };
+cvar_t	coop_remove = { "coop_remove","", FCVAR_SERVER };
 // Remover entidades no singleplayer
-cvar_t	remove_in_sp = { "remove_in_sp","", FCVAR_SERVER };
+cvar_t	sp_remove = { "sp_remove","", FCVAR_SERVER };
 // Desativar a fisica de entidades no coop
-cvar_t	nophysics_in_coop = { "nophysics_in_coop","", FCVAR_SERVER };
+cvar_t	coop_nophysics = { "coop_nophysics","", FCVAR_SERVER };
 // Teletransporte que deve funcionar em todos os players no coop
-cvar_t teleport_all_in_coop = { "teleport_all_in_coop","", FCVAR_SERVER };
+cvar_t coop_teleport_plys = { "coop_teleport_plys","", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -652,23 +652,23 @@ void GameDLLInit( void )
 	CVAR_REGISTER( &as_mysql_config );
 
 	// ############ hu3lifezado ############ //
-	// Corrigir o spawn de trens
-	CVAR_REGISTER (&hu3_trainspawnpoint);
 	// Remover as armas do jogador
-	CVAR_REGISTER (&hu3_removeallitens);
+	CVAR_REGISTER(&hu3_mp_strip);
 	// Tripas cagarrentas
 	CVAR_REGISTER(&hu3_gore);
 
 	// [Modo COOP] :
 
+	// Corrigir o spawn de trens
+	CVAR_REGISTER(&coop_trainspawnpoint);
 	// Remover entidades no coop
-	CVAR_REGISTER(&remove_in_coop);
+	CVAR_REGISTER(&coop_remove);
 	// Remover entidades no singleplayer
-	CVAR_REGISTER(&remove_in_sp);
+	CVAR_REGISTER(&sp_remove);
 	// Desativar a fisica de entidades no coop
-	CVAR_REGISTER(&nophysics_in_coop);
+	CVAR_REGISTER(&coop_nophysics);
 	// Teletransporte que deve funcionar em todos os players no coop
-	CVAR_REGISTER(&teleport_all_in_coop);
+	CVAR_REGISTER(&coop_teleport_plys);
 	// ############ //
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF

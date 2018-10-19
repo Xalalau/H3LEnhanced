@@ -365,11 +365,10 @@ void CBasePlayer::PostThink()
 	// ############ hu3lifezado ############ //
 	// Roubei esse espaco para fazer coisas do hu3!
 	// Remover as armas do jogador
-	if (hu3_removeallitens.value == 1)
+	if (CVAR_GET_FLOAT("hu3_mp_strip") == 1)
 	{
 		RemoveAllItems(true);
-		hu3_removeallitens.value = 0;
-		strcpy(hu3_removeallitens.string, "0");
+		CVAR_SET_FLOAT("hu3_mp_strip", 0);
 	}
 	// ############ //
 

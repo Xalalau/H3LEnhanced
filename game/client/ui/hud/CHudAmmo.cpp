@@ -472,7 +472,7 @@ void CHudAmmo::UpdateWeaponHUD( CBasePlayerWeapon* pWeapon, bool bOnTarget )
 	// So mostra o crosshair na primeira pessoa
 	wrect_t nullrc = {};
 
-	if (gEngfuncs.pfnGetCvarFloat("cam_hu3") == 0)
+	if (gEngfuncs.pfnGetCvarFloat("hu3_cam") == 0)
 	{
 		//TODO: define 90 constant - Solokiller
 		if (Hud().GetFOV() >= 90)
@@ -954,7 +954,7 @@ bool CHudAmmo::Draw(float flTime)
 		gHUD.DrawHudString(x2, y2 + gHUD.GetSpriteRect(sprite_index).right, iFlags | DHN_3DIGITS, text, r, g, b);
 
 		// Desenhar crosshair pirata gambiarrado (Isso aih! Aqui mesmo! Tudo errado! Caguei!) na primeira pessoa
-		if (gEngfuncs.pfnGetCvarFloat("cam_hu3") == 0)
+		if (gEngfuncs.pfnGetCvarFloat("hu3_cam") == 0)
 		{
 			HSPRITE gamb_crosshair = gHUD.GetSprite(gHUD.GetSpriteIndex("p_crosshair"));
 			SPR_Set(gamb_crosshair, r, g, b);
@@ -963,7 +963,7 @@ bool CHudAmmo::Draw(float flTime)
 	}
 
 	// Icone de recarga na terceira pessoa
-	if (pPlayer->cam_hu3_reloading_weapon == true)
+	if (pPlayer->hu3_cam_reloading_weapon == true)
 	{
 		x = ScreenWidth / 2 - 5;
 		y -= 467;

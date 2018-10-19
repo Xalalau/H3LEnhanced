@@ -150,9 +150,9 @@ private:
 public:
 	// ############ hu3lifezado ############ //
 	// Se o jogador esta em terceira pessoa e carregando, esse valor e true
-	bool cam_hu3_reloading_weapon;
+	bool hu3_cam_reloading_weapon;
 	// Ativacao do sprite de mira em terceira pessoa
-	int cam_hu3_crosshair;
+	int hu3_cam_crosshair;
 	// ############
 
 	// Spectator camera

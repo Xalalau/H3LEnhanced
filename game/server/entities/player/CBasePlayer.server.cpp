@@ -135,7 +135,7 @@ void CBasePlayer::Spawn()
 	// Era 100
 	SetHealth(169);
 	// Ativacao do sprite de mira em terceira pessoa
-	cam_hu3_crosshair = 0;
+	hu3_cam_crosshair = 0;
 	// ############ //
 	SetArmorAmount( 0 );
 	SetTakeDamageMode( DAMAGE_AIM );

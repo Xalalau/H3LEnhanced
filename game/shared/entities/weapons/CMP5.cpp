@@ -88,7 +88,7 @@ void CMP5::Precache( void )
 void CMP5::ItemPreFrame(void)
 {
 #ifndef CLIENT_DLL
-	if (m_pPlayer->cam_hu3_crosshair == 0)
+	if (m_pPlayer->hu3_cam_crosshair == 0)
 	{
 		if (m_pLaser)
 		{

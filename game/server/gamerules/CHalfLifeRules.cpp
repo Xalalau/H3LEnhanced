@@ -144,17 +144,17 @@ void CHalfLifeRules :: PlayerThink( CBasePlayer *pPlayer )
 	{
 		edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
 		CBaseEntity *pEntity;
-		char * remove_in_sp = (char*)CVAR_GET_STRING("remove_in_sp");
-		int j, count_remove_in_sp = 0;
+		char * sp_remove = (char*)CVAR_GET_STRING("sp_remove");
+		int j, count_sp_remove = 0;
 
 		// Contar a quantidade de entidades a remover
-		char* tok = strtok(remove_in_sp, ";");
+		char* tok = strtok(sp_remove, ";");
 		while (tok != NULL) {
-			count_remove_in_sp++;
+			count_sp_remove++;
 			tok = strtok(NULL, ";");
 		}
 
-		if (count_remove_in_sp > 0)
+		if (count_sp_remove > 0)
 		{
 			for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
 			{
@@ -166,8 +166,8 @@ void CHalfLifeRules :: PlayerThink( CBasePlayer *pPlayer )
 					continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
 
 				// Remover a entidade se ela estiver marcada como nao apropriada para o sp
-				tok = remove_in_sp;
-				for (j = 0; j < count_remove_in_sp; ++j) {
+				tok = sp_remove;
+				for (j = 0; j < count_sp_remove; ++j) {
 					if (strcmp(pEntity->GetTargetname(), tok) == 0)
 					{
 						pEntity->SUB_Remove();

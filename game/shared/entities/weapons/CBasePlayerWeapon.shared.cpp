@@ -68,9 +68,9 @@ bool CBasePlayerWeapon::CanDeploy() const
 {
 	// ############ hu3lifezado ############ //
 	// Icone de recarga na terceira pessoa
-	if (m_pPlayer->cam_hu3_reloading_weapon)
+	if (m_pPlayer->hu3_cam_reloading_weapon)
 	{
-		m_pPlayer->cam_hu3_reloading_weapon = false;
+		m_pPlayer->hu3_cam_reloading_weapon = false;
 	}
 	// ############
 
@@ -115,9 +115,9 @@ bool CBasePlayerWeapon::DefaultReload( int iAnim, float fDelay, int body )
 #ifdef CLIENT_DLL
 	// ############ hu3lifezado ############ //
 	// Icone de recarga na terceira pessoa
-	if (gEngfuncs.pfnGetCvarFloat("cam_hu3") != 0)
+	if (gEngfuncs.pfnGetCvarFloat("hu3_cam") != 0)
 	{
-		m_pPlayer->cam_hu3_reloading_weapon = true;
+		m_pPlayer->hu3_cam_reloading_weapon = true;
 	}
 	// ############
 #endif
@@ -188,9 +188,9 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 	{
 		// ############ hu3lifezado ############ //
 		// Icone de recarga na terceira pessoa
-		if (m_pPlayer->cam_hu3_reloading_weapon)
+		if (m_pPlayer->hu3_cam_reloading_weapon)
 		{
-			m_pPlayer->cam_hu3_reloading_weapon = false;
+			m_pPlayer->hu3_cam_reloading_weapon = false;
 		}
 		// ############
 #ifdef SERVER_DLL // FIXME, need ammo on client to make this work right
