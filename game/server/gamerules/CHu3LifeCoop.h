@@ -18,8 +18,6 @@ struct playerCoopSaveRestore {
 	Vector relPos;
 	Vector v_angle;
 	Vector velocity;
-	Vector angles;
-	Vector punchangle;
 	bool newplayer; // Controle do respawn
 	bool changinglevel; // Serve para o hack de acerto das municoes
 	bool waitingforchangelevel; // Serve para prender os jogadores numa posicao valida de changelevel
@@ -29,7 +27,6 @@ struct playerCoopSaveRestore {
 	bool bInDuck;
 	bool flashlight;
 	int deadflag;
-	int fixangle;
 	float health;
 	float frags;
 	float flFallVelocity;
