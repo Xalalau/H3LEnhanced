@@ -694,27 +694,16 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 		}
 	}
 
-	// Tenta pegar o ponto de spawn em relacao a algum info_player_coop disponivel
-	if (absPos == Vector(0,0,0))
-	{
-		while ((spawnPoint = UTIL_FindEntityByClassname(spawnPoint, "info_player_coop")) != nullptr)
-		{
-			absPos = spawnPoint->GetAbsOrigin() + Vector(CoopPlyData[i].relPos.x, CoopPlyData[i].relPos.y, 0);
-			break;
-		}
-	}
-
 	// Configuramos o jogador no caso dele NAO ser novo no server (ja ter passado por changelevel)
 	if (!CoopPlyData[i].newplayer)
 	{
-		// Tentar encontrar o local de spawn em relacao ao landmark
+		// Tentar encontrar o local de spawn em relacao a um landmark valido
 		if (absPos == Vector(0, 0, 0))
 		{
 			while ((spawnPoint = UTIL_FindEntityByTargetname(spawnPoint, hu3LandmarkName)) != nullptr)
 			{
 				if (spawnPoint->ClassnameIs("info_landmark"))
 				{
-					// Se eu tiver um landmark valido guardado, uso ele
 					if (CoopPlyData[i].relPos != Vector(0, 0, 0))
 						absPos = spawnPoint->GetAbsOrigin() + CoopPlyData[i].relPos;
 					break;
@@ -769,6 +758,16 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	// Liberar a checagem de changelevel 
 	if (CoopPlyData[i].waitingforchangelevel)
 		CoopPlyData[i].waitingforchangelevel = false;
+
+	// Tenta pegar o ponto de spawn em relacao a algum info_player_coop disponivel
+	if (absPos == Vector(0, 0, 0))
+	{
+		while ((spawnPoint = UTIL_FindEntityByClassname(spawnPoint, "info_player_coop")) != nullptr)
+		{
+			absPos = spawnPoint->GetAbsOrigin() + Vector(CoopPlyData[i].relPos.x, CoopPlyData[i].relPos.y, 0);
+			break;
+		}
+	}
 
 	// No ultimo dos casos, pega o ponto de spawn em relacao ao info_player_start
 	if (absPos == Vector(0, 0, 0))
