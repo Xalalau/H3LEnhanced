@@ -111,6 +111,7 @@ public:
 
 protected:
 	int ChangeLevelVolume();
+	Vector GetPlySpawnPos(int i);
 	void DisablePhysics(CBaseEntity *pEntity);
 	void EnablePhysics(CBaseEntity *pEntity);
 	float m_flIntermissionEndTime2;

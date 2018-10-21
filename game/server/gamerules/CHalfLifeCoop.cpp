@@ -677,21 +677,73 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	// Deixar o jogador passavel e com efeitos durante algum tempo
 	DisablePhysics(pPlayer2);
 
+	// Posicionar jogador no mundo
+	pPlayer2->pev->origin = GetPlySpawnPos(i);
+
+	// Configuramos o jogador no caso dele NAO ser novo no server (ja ter passado por changelevel)
+	if (!CoopPlyData[i].newplayer)
+	{
+		// Propriedades de posicionamento
+		pPlayer2->pev->v_angle = CoopPlyData[i].v_angle;
+		pPlayer2->pev->velocity = CoopPlyData[i].velocity;
+		pPlayer2->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
+		if (CoopPlyData[i].bInDuck) /* Agachamento. Meio bugado, mas funciona... */
+		{
+			pPlayer2->pev->flags = FL_DUCKING;
+			pPlayer2->pev->button = IN_DUCK;
+			FixPlayerCrouchStuck(pPlayer2->edict());
+			pPlayer2->pev->view_ofs[2] = 3;
+		}
+
+		// Reparacao de estados gerais
+		pPlayer2->pev->deadflag = CoopPlyData[i].deadflag;
+		pPlayer2->pev->health = CoopPlyData[i].health;
+		pPlayer2->pev->armorvalue = CoopPlyData[i].armorvalue;
+		pPlayer2->pev->team = CoopPlyData[i].team;
+		pPlayer2->pev->frags = CoopPlyData[i].frags;
+		pPlayer2->pev->weapons = CoopPlyData[i].weapons;
+		pPlayer->hu3_cam_crosshair = CoopPlyData[i].hu3_cam_crosshair;
+		if (CoopPlyData[i].flashlight)
+			pPlayer->FlashlightTurnOn();
+
+		// Restaurar godmode e notarget
+		if (CoopPlyData[i].godmode)
+			CoopPlyData[i].godmode ? pPlayer2->pev->flags |= FL_GODMODE : pPlayer2->pev->flags &= ~FL_GODMODE;
+		if (CoopPlyData[i].notarget)
+			CoopPlyData[i].notarget ? pPlayer2->pev->flags |= FL_NOTARGET : pPlayer2->pev->flags &= ~FL_NOTARGET;
+
+		// Restaurar noclip
+		if (CoopPlyData[i].noclip)
+			pPlayer2->SetMoveType(MOVETYPE_NOCLIP);
+		
+		// Carregar armas e municoes
+		LoadPlayerItems(pPlayer, &CoopPlyData[i]);
+	}
+
+	// Liberar a checagem de changelevel 
+	if (CoopPlyData[i].waitingforchangelevel)
+		CoopPlyData[i].waitingforchangelevel = false;
+}
+
+//=========================================================
+//=========================================================
+Vector CBaseHalfLifeCoop::GetPlySpawnPos(int i)
+{
+	// A posicao correta do jogador no mundo
+	Vector absPos(0, 0, 0);
+
 	// O ponto de spawn
 	CBaseEntity* spawnPoint = nullptr;
-
-	// A posicao correta do jogador no mundo
-	Vector absPos(0,0,0);
 
 	// Tenta pegar o ponto de spawn em relacao a algum trem com spawn consertado para coop
 	char* hu3Train = (char*)CVAR_GET_STRING("coop_train_spawnpoint");
 	if (strcmp(hu3Train, "0") != 0)
 	{
-		CBaseEntity* temp = UTIL_FindEntityByString(NULL, "targetname", hu3Train);
-		if (temp)
-		{
-			absPos = Vector (temp->GetAbsOrigin().x, temp->GetAbsOrigin().y, temp->GetAbsOrigin().z + 75);
-		}
+		spawnPoint = UTIL_FindEntityByString(NULL, "targetname", hu3Train);
+
+		if (spawnPoint)
+			// Esse 75 garante que o jogador nao prenda no chao do trem do inicio do HL
+			absPos = Vector(spawnPoint->GetAbsOrigin().x, spawnPoint->GetAbsOrigin().y, spawnPoint->GetAbsOrigin().z + 75);
 	}
 
 	// Configuramos o jogador no caso dele NAO ser novo no server (ja ter passado por changelevel)
@@ -706,55 +758,12 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 				{
 					if (CoopPlyData[i].relPos != Vector(0, 0, 0))
 						absPos = spawnPoint->GetAbsOrigin() + CoopPlyData[i].relPos;
+
 					break;
 				}
 			}
 		}
-
-		// Carregar as informacoes
-		if (spawnPoint)
-		{
-			// Propriedades de posicionamento
-			pPlayer2->pev->v_angle = CoopPlyData[i].v_angle;
-			pPlayer2->pev->velocity = CoopPlyData[i].velocity;
-			pPlayer2->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
-			if (CoopPlyData[i].bInDuck) // Agachamento. Meio bugado mas funciona...
-			{
-				pPlayer2->pev->flags = FL_DUCKING;
-				pPlayer2->pev->button = IN_DUCK;
-				FixPlayerCrouchStuck(pPlayer2->edict());
-				pPlayer2->pev->view_ofs[2] = 3;
-			}
-
-			// Reparacao de estados gerais
-			pPlayer2->pev->deadflag = CoopPlyData[i].deadflag;
-			pPlayer2->pev->health = CoopPlyData[i].health;
-			pPlayer2->pev->armorvalue = CoopPlyData[i].armorvalue;
-			pPlayer2->pev->team = CoopPlyData[i].team;
-			pPlayer2->pev->frags = CoopPlyData[i].frags;
-			pPlayer2->pev->weapons = CoopPlyData[i].weapons;
-			pPlayer->hu3_cam_crosshair = CoopPlyData[i].hu3_cam_crosshair;
-			if (CoopPlyData[i].flashlight)
-				pPlayer->FlashlightTurnOn();
-
-			// Restaurar godmode e notarget
-			if (CoopPlyData[i].godmode)
-				CoopPlyData[i].godmode ? pPlayer2->pev->flags |= FL_GODMODE : pPlayer2->pev->flags &= ~FL_GODMODE;
-			if (CoopPlyData[i].notarget)
-				CoopPlyData[i].notarget ? pPlayer2->pev->flags |= FL_NOTARGET : pPlayer2->pev->flags &= ~FL_NOTARGET;
-
-			// Restaurar noclip
-			if (CoopPlyData[i].noclip)
-					pPlayer2->SetMoveType(MOVETYPE_NOCLIP);
-
-			// Carregar armas e municoes
-			LoadPlayerItems(pPlayer, &CoopPlyData[i]);
-		}
 	}
-
-	// Liberar a checagem de changelevel 
-	if (CoopPlyData[i].waitingforchangelevel)
-		CoopPlyData[i].waitingforchangelevel = false;
 
 	// Tenta pegar o ponto de spawn em relacao a algum info_player_coop disponivel
 	if (absPos == Vector(0, 0, 0))
@@ -762,6 +771,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 		while ((spawnPoint = UTIL_FindEntityByClassname(spawnPoint, "info_player_coop")) != nullptr)
 		{
 			absPos = spawnPoint->GetAbsOrigin() + Vector(CoopPlyData[i].relPos.x, CoopPlyData[i].relPos.y, 0);
+
 			break;
 		}
 	}
@@ -772,12 +782,12 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 		while ((spawnPoint = UTIL_FindEntityByClassname(spawnPoint, "info_player_start")) != nullptr)
 		{
 			absPos = spawnPoint->GetAbsOrigin();
+
 			break;
 		}
 	}
 
-	// Posicionar jogador no mundo
-	pPlayer2->pev->origin = absPos;
+	return absPos;
 }
 
 //=========================================================
