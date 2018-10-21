@@ -685,6 +685,7 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	{
 		// Propriedades de posicionamento
 		pPlayer2->pev->v_angle = CoopPlyData[i].v_angle;
+		pPlayer2->pev->angles = CoopPlyData[i].angles;
 		pPlayer2->pev->velocity = CoopPlyData[i].velocity;
 		pPlayer2->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
 		if (CoopPlyData[i].bInDuck) /* Agachamento. Meio bugado, mas funciona... */
@@ -1172,6 +1173,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
 			CoopPlyData[i].relPos = relPos;
 			CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
+			CoopPlyData[i].angles = hu3Player->pev->angles;
 			CoopPlyData[i].velocity = hu3Player->pev->velocity;
 			CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
 			CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
