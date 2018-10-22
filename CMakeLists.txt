@@ -48,6 +48,9 @@ set( GAME_BASE_PATH "${GAME_BIN_PATH}/hlenhanced" )
 
 message( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
+#Workaround to let the compiler find vgui.so and others without embedding absolute paths as library dependencies
+link_directories( ${GAME_BIN_PATH} )
+
 set( EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external )
 
 option( USE_ANGELSCRIPT "Whether to include Angelscript" )
@@ -204,11 +207,14 @@ add_library( spdlog INTERFACE IMPORTED )
 
 set_property( TARGET spdlog PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${EXTERNAL_DIR}/spdlog/include )
 
-set( tier0_DIR ${GAME_BIN_PATH} CACHE PATH "tier0 library location" )
-find_package( tier0 MODULE REQUIRED )
+if( WIN32 )
+	#Only do this for Windows builds, for Linux we need to rely on a symlink so the compiler can find it without embedding an absolute path
+	set( tier0_DIR ${GAME_BIN_PATH} CACHE PATH "tier0 library location" )
+	find_package( tier0 MODULE REQUIRED )
 
-set( vstdlib_DIR ${GAME_BIN_PATH} CACHE PATH "vstdlib library location" )
-find_package( vstdlib MODULE REQUIRED )
+	set( vstdlib_DIR ${GAME_BIN_PATH} CACHE PATH "vstdlib library location" )
+	find_package( vstdlib MODULE REQUIRED )
+endif()
 
 set( THREADS_PREFER_PTHREAD_FLAG ON )
 find_package( Threads REQUIRED )
@@ -270,6 +276,7 @@ target_include_directories( client PRIVATE
 	game/client/ui
 	game/client/ui/hud
 	game/client/ui/vgui
+	${CMAKE_SOURCE_DIR}/utils/vgui/include
 	${SHARED_INCLUDE_PATHS}
 	${SHARED_EXTERNAL_INCLUDE_PATHS}
 )
@@ -282,8 +289,20 @@ target_compile_definitions( client PRIVATE
 )
 
 #Find client dependencies
-set( vgui_DIR ${GAME_BIN_PATH} CACHE PATH "VGUI1 shared library location" )
-find_package( vgui MODULE REQUIRED )
+if( WIN32 )
+	#Only do this for Windows builds, for Linux we need to rely on a symlink so the compiler can find it without embedding an absolute path
+	set( vgui_DIR ${GAME_BIN_PATH} CACHE PATH "VGUI1 shared library location" )
+	find_package( vgui MODULE REQUIRED )
+endif()
+
+#Create a symlink so vgui can be found using -lvgui
+if( CMAKE_HOST_UNIX )
+	if( NOT EXISTS ${GAME_BIN_PATH}/libvgui.so )
+		EXECUTE_PROCESS(COMMAND ln -s vgui.so libvgui.so
+			WORKING_DIRECTORY ${GAME_BIN_PATH}
+		)
+	endif()
+endif()
 
 if( NOT CLANG_DB_BUILD )
 	set( SDL2_DIR ${GAME_BIN_PATH} CACHE PATH "SDL2 shared library location" )
