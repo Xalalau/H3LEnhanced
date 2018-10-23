@@ -3,6 +3,7 @@
 
 class CBaseEntity;
 class CSprite;
+enum DeadFlag;
 
 //Guardar as informacoes dos players
 struct playerCoopWeapons {
@@ -17,6 +18,7 @@ struct playerCoopWeapons {
 struct playerCoopSaveRestore {
 	Vector relPos;
 	Vector v_angle;
+	Vector punchangle;
 	Vector velocity;
 	Vector angles;
 	bool newplayer; // Controle do respawn
@@ -27,7 +29,6 @@ struct playerCoopSaveRestore {
 	float armorvalue;
 	bool bInDuck;
 	bool flashlight;
-	int deadflag;
 	float health;
 	float frags;
 	float flFallVelocity;

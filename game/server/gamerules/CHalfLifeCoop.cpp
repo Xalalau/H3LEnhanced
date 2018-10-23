@@ -678,30 +678,32 @@ void CBaseHalfLifeCoop::PlayerSpawn(CBasePlayer *pPlayer)
 	DisablePhysics(pPlayer2);
 
 	// Posicionar jogador no mundo
-	pPlayer2->pev->origin = GetPlySpawnPos(i);
+	pPlayer2->SetAbsOrigin(GetPlySpawnPos(i));
 
 	// Configuramos o jogador no caso dele NAO ser novo no server (ja ter passado por changelevel)
 	if (!CoopPlyData[i].newplayer)
 	{
 		// Propriedades de posicionamento
-		pPlayer2->pev->v_angle = CoopPlyData[i].v_angle;
-		pPlayer2->pev->angles = CoopPlyData[i].angles;
-		pPlayer2->pev->velocity = CoopPlyData[i].velocity;
-		pPlayer2->pev->flFallVelocity = CoopPlyData[i].flFallVelocity;
-		if (CoopPlyData[i].bInDuck) /* Agachamento. Meio bugado, mas funciona... */
+		// Nota: angles, v_angle, punchangle e FIXANGLE_NO juntos restauram a visao do jogador. Isso foi bem testado
+		pPlayer2->SetAbsAngles(CoopPlyData[i].angles);
+		pPlayer2->SetViewAngle(CoopPlyData[i].v_angle);
+		pPlayer2->SetPunchAngle(CoopPlyData[i].punchangle);
+		pPlayer2->SetFixAngleMode(FIXANGLE_NO);
+		pPlayer2->SetAbsVelocity(CoopPlyData[i].velocity);
+		pPlayer2->SetFallVelocity(CoopPlyData[i].flFallVelocity);
+		if (CoopPlyData[i].bInDuck) /* Ajeita o agachamento. Eh meio bugado, mas funciona... */
 		{
 			pPlayer2->pev->flags = FL_DUCKING;
-			pPlayer2->pev->button = IN_DUCK;
+			pPlayer2->GetButtons() = IN_DUCK;
 			FixPlayerCrouchStuck(pPlayer2->edict());
 			pPlayer2->pev->view_ofs[2] = 3;
 		}
 
 		// Reparacao de estados gerais
-		pPlayer2->pev->deadflag = CoopPlyData[i].deadflag;
-		pPlayer2->pev->health = CoopPlyData[i].health;
-		pPlayer2->pev->armorvalue = CoopPlyData[i].armorvalue;
-		pPlayer2->pev->team = CoopPlyData[i].team;
-		pPlayer2->pev->frags = CoopPlyData[i].frags;
+		pPlayer2->SetHealth(CoopPlyData[i].health);
+		pPlayer2->SetArmorAmount(CoopPlyData[i].armorvalue);
+		pPlayer2->SetTeamID(CoopPlyData[i].team);
+		pPlayer2->SetFrags(CoopPlyData[i].frags);
 		pPlayer2->pev->weapons = CoopPlyData[i].weapons;
 		pPlayer->hu3_cam_crosshair = CoopPlyData[i].hu3_cam_crosshair;
 		if (CoopPlyData[i].flashlight)
@@ -1128,25 +1130,20 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			hu3Player2 = (CBasePlayer *)hu3Player;
 
 			// Calculo a distancia do player ate o landmark
-			Vector absPos;
-			Vector plyPos = hu3Player->pev->origin;
-			Vector relPos;
+			Vector absPos = Vector(0, 0, 0);
+			Vector plyPos = Vector(0, 0, 0);
+			Vector relPos = Vector(0, 0, 0);
+
 			if (pLandmark)
 			{
 				absPos = pLandmark->GetAbsOrigin();
-				plyPos = hu3Player->pev->origin;
+				plyPos = hu3Player->GetAbsOrigin();
 				relPos = plyPos - absPos;
-			}
-			else
-			{ 
-				absPos = Vector(0,0,0);
-				plyPos = Vector(0,0,0);
-				relPos = Vector(0,0,0);
 			}
 
 			// Vejo se o jogador esta abaixado
 			bool inDuck = false;
-			if (hu3Player->pev->flags & FL_DUCKING)
+			if (hu3Player->GetFlags() & FL_DUCKING)
 				inDuck = true;
 
 			// Vejo se a lanterna esta ligada
@@ -1156,12 +1153,12 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 
 			// Verifico o godmode
 			bool godmodeState = false;
-			if (hu3Player->pev->flags & FL_GODMODE)
+			if (hu3Player->GetFlags() & FL_GODMODE)
 				godmodeState = true;
 
 			// Verifico o notarget
 			bool notargetState = false;
-			if (hu3Player->pev->flags & FL_NOTARGET)
+			if (hu3Player->GetFlags() & FL_NOTARGET)
 				notargetState = true;
 
 			// Verifico o noclip
@@ -1172,18 +1169,18 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 			// Salvo as infos gerais
 			CoopPlyData[i].pName = (char*)hu3Player->GetNetName();
 			CoopPlyData[i].relPos = relPos;
-			CoopPlyData[i].v_angle = hu3Player->pev->v_angle;
-			CoopPlyData[i].angles = hu3Player->pev->angles;
-			CoopPlyData[i].velocity = hu3Player->pev->velocity;
-			CoopPlyData[i].deadflag = hu3Player->pev->deadflag;
-			CoopPlyData[i].flFallVelocity = hu3Player->pev->flFallVelocity;
+			CoopPlyData[i].v_angle = hu3Player->GetViewAngle();
+			CoopPlyData[i].punchangle = hu3Player->GetPunchAngle();
+			CoopPlyData[i].angles = hu3Player->GetAbsAngles();
+			CoopPlyData[i].velocity = hu3Player->GetAbsVelocity();
+			CoopPlyData[i].flFallVelocity = hu3Player->GetFallVelocity();
 			CoopPlyData[i].bInDuck = inDuck;
 			CoopPlyData[i].flashlight = flashlightState;
-			CoopPlyData[i].team = hu3Player->pev->team;
-			CoopPlyData[i].frags = hu3Player->pev->frags;
-			CoopPlyData[i].health = hu3Player->pev->health;
-			CoopPlyData[i].armorvalue = hu3Player->pev->armorvalue;
-			CoopPlyData[i].weapons = hu3Player->pev->weapons;
+			CoopPlyData[i].team = hu3Player->GetTeamID();
+			CoopPlyData[i].frags = hu3Player->GetFrags();
+			CoopPlyData[i].health = hu3Player->GetHealth();
+			CoopPlyData[i].armorvalue = hu3Player->GetArmorAmount();
+			CoopPlyData[i].weapons = hu3Player->GetWeapons();
 			CoopPlyData[i].newplayer = false;
 			CoopPlyData[i].changinglevel = true;
 			CoopPlyData[i].godmode = godmodeState;
