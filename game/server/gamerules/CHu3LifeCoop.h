@@ -3,7 +3,6 @@
 
 class CBaseEntity;
 class CSprite;
-enum DeadFlag;
 
 //Guardar as informacoes dos players
 struct playerCoopWeapons {
