@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
+#include <string>
+
 #include "CHudMessage.h"
 
 CHudMessage::CHudMessage( const char* const pszName, CHLHud& hud )
@@ -237,9 +239,10 @@ void CHudMessage::MessageScanStart()
 
 void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 {
-	int i, j, length, width;
+	int i, length, width;
 	const char *pText;
-	unsigned char line[80];
+	
+	std::string line;
 
 	pText = pMessage->pMessage;
 	// Count lines
@@ -276,24 +279,24 @@ void CHudMessage::MessageDrawScan( client_textmessage_t *pMessage, float time )
 
 	for ( i = 0; i < m_parms.lines; i++ )
 	{
-		m_parms.lineLength = 0;
+		line.clear();
+
 		m_parms.width = 0;
 		while ( *pText && *pText != '\n' )
 		{
+			//This is unsigned to avoid negative indices into charWidths
 			unsigned char c = *pText;
-			line[m_parms.lineLength] = c;
+			line += static_cast<char>( c );
 			m_parms.width += Hud().ScreenInfo().charWidths[c];
-			m_parms.lineLength++;
 			pText++;
 		}
 		pText++;		// Skip LF
-		line[m_parms.lineLength] = 0;
 
 		m_parms.x = XPosition( pMessage->x, m_parms.width, m_parms.totalWidth );
 
-		for ( j = 0; j < m_parms.lineLength; j++ )
+		for (const auto text : line)
 		{
-			m_parms.text = line[j];
+			m_parms.text = text;
 			int next = m_parms.x + Hud().ScreenInfo().charWidths[ m_parms.text ];
 			MessageScanNextChar();
 			
