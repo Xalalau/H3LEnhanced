@@ -47,8 +47,8 @@ public:
 
 extern ICvar *cvar;
 
-DLL_EXPORT void SetCVarIF( ICvar *pCVarIF );
-DLL_EXPORT ICvar *GetCVarIF( void );
+PLAT_DLL_EXPORT void SetCVarIF( ICvar *pCVarIF );
+PLAT_DLL_EXPORT ICvar *GetCVarIF( void );
 
 
 #endif // ICVAR_H

@@ -18,7 +18,7 @@
 #if !defined(STATIC_TIER0) && !defined(_STATIC_LINKED)
 
 #ifdef TIER0_DLL_EXPORT
-#  define MEM_INTERFACE DLL_EXPORT
+#  define MEM_INTERFACE PLAT_DLL_EXPORT
 #else
 #  define MEM_INTERFACE DLL_IMPORT
 #endif

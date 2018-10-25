@@ -19,7 +19,7 @@
 // dll export stuff
 //-----------------------------------------------------------------------------
 #ifdef VSTDLIB_DLL_EXPORT
-#define VSTDLIB_INTERFACE	DLL_EXPORT
+#define VSTDLIB_INTERFACE	PLAT_DLL_EXPORT
 #define VSTDLIB_OVERLOAD	DLL_GLOBAL_EXPORT
 #define VSTDLIB_CLASS		DLL_CLASS_EXPORT
 #define VSTDLIB_GLOBAL		DLL_GLOBAL_EXPORT
