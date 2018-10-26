@@ -27,6 +27,8 @@ public:
 	float		m_flDelay;
 	string_t	m_iszKillTarget;
 
+	EHANDLE m_hOriginalCaller;
+
 	virtual void	KeyValue( KeyValueData* pkvd ) override;
 	// common member functions
 	void SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, float value );

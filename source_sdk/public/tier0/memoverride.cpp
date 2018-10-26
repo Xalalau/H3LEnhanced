@@ -26,7 +26,7 @@
 
 // Tags this DLL as debug
 #if _DEBUG
-DLL_EXPORT void BuiltDebug() {}
+PLAT_DLL_EXPORT void BuiltDebug() {}
 #endif
 
 #if defined(_WIN32) && !defined(_STATIC_LINKED)

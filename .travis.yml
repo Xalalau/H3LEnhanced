@@ -90,7 +90,12 @@ install:
   # Preparar as dependências, dar build e falsear o diretório common do Steam para o Travis
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - STEAMCOMMON_DIR="${TRAVIS_BUILD_DIR}/fake_steamcommon"
-  - mkdir -p ${DEPS_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR}/Half-Life && cd ${DEPS_DIR}
+  - mkdir -p ${DEPS_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR}/Half-Life && cd ${STEAMCOMMON_DIR}/Half-Life
+  # Make symlinks to required libraries located in the Half-Life directory
+  - ln -s ${TRAVIS_BUILD_DIR}/lib/public/vgui.so libvgui.so
+  - ln -s ${TRAVIS_BUILD_DIR}/lib/public/libtier0.so libtier0.so
+  - ln -s ${TRAVIS_BUILD_DIR}/lib/public/libvstdlib.so libvstdlib.so
+  - cd ${DEPS_DIR}
   # Pegar o último CMake e criar symlinks para que ele possa usar o VGUI corretamente
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then

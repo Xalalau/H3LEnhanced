@@ -297,7 +297,7 @@ typedef void * HINSTANCE;
 #if defined( _WIN32 ) && !defined(_XBOX)
 
 // Used for dll exporting and importing
-#define DLL_EXPORT				extern "C" __declspec( dllexport )
+#define PLAT_DLL_EXPORT				extern "C" __declspec( dllexport )
 #define DLL_IMPORT				extern "C" __declspec( dllimport )
 
 // Can't use extern "C" when DLL exporting a class
@@ -312,7 +312,7 @@ typedef void * HINSTANCE;
 
 #elif defined GNUC
 // Used for dll exporting and importing
-#define  DLL_EXPORT   extern "C" __attribute__ ((visibility("default")))
+#define  PLAT_DLL_EXPORT   extern "C" __attribute__ ((visibility("default")))
 #define  DLL_IMPORT   extern "C"
 
 // Can't use extern "C" when DLL exporting a class
@@ -327,7 +327,7 @@ typedef void * HINSTANCE;
 
 #elif defined(_XBOX)
 
-#define  DLL_EXPORT				extern   
+#define  PLAT_DLL_EXPORT				extern   
 #define  DLL_IMPORT				extern
 #define  DLL_CLASS_EXPORT  
 #define  DLL_CLASS_IMPORT   
@@ -629,7 +629,7 @@ inline float LittleFloat( float val )	{ int test = 1; return ( *(char *)&test ==
 #ifndef STATIC_TIER0
 
 #ifdef TIER0_DLL_EXPORT
-	#define PLATFORM_INTERFACE	DLL_EXPORT
+	#define PLATFORM_INTERFACE	PLAT_DLL_EXPORT
 	#define PLATFORM_OVERLOAD	DLL_GLOBAL_EXPORT
 #else
 	#define PLATFORM_INTERFACE	DLL_IMPORT
