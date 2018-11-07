@@ -372,12 +372,11 @@ void CPipewrench::BigSwing()
 				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage / 2, DMG_CLUB ), gpGlobals->v_forward, tr ); 
 			}	
 			g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
-		}
 
-		// ############ hu3lifezado ############ //
-		// Inimigo eh sinistramente arremessado
-		pEntity->pev->velocity = pEntity->pev->velocity + gpGlobals->v_forward * 1500 + gpGlobals->v_up * 1050;
-		// ############ //
+			// ############ hu3lifezado ############ //
+			// Inimigo eh sinistramente arremessado
+			pEntity->pev->velocity = pEntity->pev->velocity + gpGlobals->v_forward * 1500 + gpGlobals->v_up * 1050;
+		}
 
 		// 15% de chance de reproduzir "Varre varre vassourinha!!"
 		if (RANDOM_LONG(0, 99) >= 85)
