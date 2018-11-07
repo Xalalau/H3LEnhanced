@@ -36,7 +36,7 @@ float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
 
 	float flNewHealth = flOldHealth + flHealth;
 
-	if( flOldHealth >= GetMaxHealth() && flNewHealth > flOldHealth)
+	if( flOldHealth >= GetMaxHealth() && flNewHealth >= flOldHealth)
 		return 0;
 
 	if( flNewHealth > GetMaxHealth() )
