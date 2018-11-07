@@ -24,6 +24,8 @@ extern DLL_GLOBAL Vector		g_vecAttackDir;
 
 void SetObjectCollisionBox( entvars_t *pev );
 
+// ############ hu3lifezado ############ //
+// Capacidade do jogo processar sangue negativo
 // give health
 float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
 {
@@ -32,49 +34,24 @@ float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
 
 	const float flOldHealth = GetHealth();
 
-	// ############ hu3lifezado ############ //
-	// Mudei o limite de sangue de pev->max_health
+	float flNewHealth = flOldHealth + flHealth;
 
-// heal
-	SetHealth(GetHealth() + flHealth);
-
-	// Nao pode sangue acima do maximo
-	if (GetHealth() > GetMaxHealth())
-		SetHealth(GetMaxHealth());
-
-	// Nao pode sangue baixo de 0
-	if (GetHealth() < 0)
-		SetHealth(1);
-
-	// Calculamos o sangue atual
-	float currentHeath = GetHealth() - flOldHealth;
-
-	// Corrigimos o valor caso o SUS esteja nos matando
-	if (currentHeath < 0 )
-		currentHeath = currentHeath * -1;
-
-	return currentHeath;
-
-	// Original:
-	/*
-	// heal
-	if( GetHealth() >= GetMaxHealth() )
+	if( flOldHealth >= GetMaxHealth() && flNewHealth > flOldHealth)
 		return 0;
-
-	const float flOldHealth = GetHealth();
-
-	float flNewHealth = GetHealth() + flHealth;
-
-	//TODO: if the entity's health drops below 1, kill it. - Solokiller
 
 	if( flNewHealth > GetMaxHealth() )
 		flNewHealth = GetMaxHealth();
 
+	else if (flNewHealth <= 0 && flOldHealth == 1)
+		return 0;
+	else if (flNewHealth <= 0)
+		flNewHealth = 1;
+
 	SetHealth( flNewHealth );
-	*/
+	
 	return GetHealth() - flOldHealth;
-	// ############ //
 }
+// ############ //
 
 // inflict damage on this entity.  bitsDamageType indicates type of damage inflicted, ie: DMG_CRUSH
 
