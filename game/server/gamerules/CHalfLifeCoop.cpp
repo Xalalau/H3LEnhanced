@@ -354,7 +354,7 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 		}
 	}
 
-	// Adiciono um sprite em cada landmark
+	// Adiciono um sprite em cada landmark ou info_target de mesmo targetname de um landmark
 
 	CBaseEntity* pLandmark = nullptr;
 	CBaseEntity* pTarget = nullptr;
@@ -363,6 +363,7 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 	{
 		bool pTargetFound = false;
 
+		// Busco por um info_target de mesmo targetname do landmark
 		while ((pTarget = UTIL_FindEntityByClassname(pTarget, "info_target")) != nullptr)
 		{
 			if (strcmp(pTarget->GetTargetname(), pLandmark->GetTargetname()) == 0)
@@ -378,6 +379,7 @@ void CBaseHalfLifeCoop::UpdateGameMode(CBasePlayer *pPlayer)
 			}
 		}
 
+		// Se eu nao encontrar o info_target acima, ponto o sprite no landmark
 		if (!pTargetFound)
 		{
 			CSprite* pSprite1 = CSprite::SpriteCreate("sprites/changelevel.spr", pLandmark->GetAbsOrigin(), false);
