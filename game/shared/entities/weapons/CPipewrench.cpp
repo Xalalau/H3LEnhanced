@@ -388,9 +388,9 @@ void CPipewrench::BigSwing()
 			if ( pEntity->Classify() != EntityClassifications().GetNoneId() && pEntity->Classify() != EntityClassifications().GetClassificationId( classify::MACHINE ) )
 			{
 				// ############ hu3lifezado ############ //
-				// 10% de chance de reproduzir "Varre varre vassourinha!!"
-				if (RANDOM_LONG(0, 99) >= 90)
-					EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/pwrench_vassourinha.wav", 1, ATTN_NORM);
+				// 15% de chance de reproduzir "Varre varre vassourinha!!"
+				if (RANDOM_LONG(0, 99) >= 85)
+					EMIT_SOUND(m_pPlayer, CHAN_ITEM, "weapons/pwrench_vassourinha.wav", 1, ATTN_NORM);
 				// ############ //
 
 				// play thwack or smack sound
