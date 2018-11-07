@@ -134,7 +134,10 @@ bool CPipewrench::Swing( const bool bFirst )
 
 	UTIL_MakeVectors( m_pPlayer->GetViewAngle() );
 	Vector vecSrc	= m_pPlayer->GetGunPosition( );
-	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 32;
+	// ############ hu3lifezado ############ //
+	// Aumentei o alcance (32)
+	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 64;
+	// ############ //
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
@@ -305,7 +308,7 @@ void CPipewrench::BigSwing()
 	Vector vecSrc	= m_pPlayer->GetGunPosition( );
 	// ############ hu3lifezado ############ //
 	// Aumentei o alcance (32)
-	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 64;
+	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 128;
 	// ############ //
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
