@@ -380,7 +380,7 @@ void CPipewrench::BigSwing()
 
 		// 15% de chance de reproduzir "Varre varre vassourinha!!"
 		if (RANDOM_LONG(0, 99) >= 85)
-			EMIT_SOUND(m_pPlayer, CHAN_ITEM, "weapons/pwrench_vassourinha.wav", 1, ATTN_NORM);
+			EMIT_SOUND(m_pPlayer, CHAN_STREAM, "weapons/pwrench_vassourinha.wav", 1, ATTN_NORM);
 		// ############ //
 
 		// play thwack, smack, or dong sound
