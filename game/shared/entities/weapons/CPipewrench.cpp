@@ -372,12 +372,9 @@ void CPipewrench::BigSwing()
 				pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage / 2, DMG_CLUB ), gpGlobals->v_forward, tr ); 
 			}	
 			g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
-
-			// ############ hu3lifezado ############ //
-			// Inimigo eh sinistramente arremessado
-			pEntity->pev->velocity = pEntity->pev->velocity + gpGlobals->v_forward * 1500 + gpGlobals->v_up * 1050;
 		}
 
+		// ############ hu3lifezado ############ //
 		// 15% de chance de reproduzir "Varre varre vassourinha!!"
 		if (RANDOM_LONG(0, 99) >= 85)
 			EMIT_SOUND(m_pPlayer, CHAN_STREAM, "weapons/pwrench_vassourinha.wav", 1, ATTN_NORM);
@@ -391,6 +388,11 @@ void CPipewrench::BigSwing()
 		{
 			if ( pEntity->Classify() != EntityClassifications().GetNoneId() && pEntity->Classify() != EntityClassifications().GetClassificationId( classify::MACHINE ) )
 			{
+				// ############ hu3lifezado ############ //
+				// Inimigo eh sinistramente arremessado
+				pEntity->pev->velocity = pEntity->pev->velocity + gpGlobals->v_forward * 1500 + gpGlobals->v_up * 1050;
+				// ############ //
+
 				// play thwack or smack sound
 				switch (RANDOM_LONG(0, 1))
 				{
