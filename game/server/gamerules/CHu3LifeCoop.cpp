@@ -13,8 +13,11 @@
 // Guardar as infos dos jogadores
 struct playerCoopSaveRestore CoopPlyData[64];
 
-// Nome do landmark em uso
+
+// Nome do landmark no changelevel ativado
 char hu3LandmarkName[32] = "";
+// Nome do proximo mapa
+char hu3NextMap[32] = "";
 
 // Index de um jogador
 int hu3CoopPlyIndex = 1;

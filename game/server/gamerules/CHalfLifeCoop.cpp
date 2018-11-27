@@ -11,6 +11,7 @@ Para entender melhor o funcionamento deste modo, veja a nossa documentação no Gi
 #include "CBasePlayer.h"
 #include "Weapons.h"
 #include "../entities/triggers/CBaseTrigger.h"
+#include "../entities/triggers/CChangeLevel.h"
 #include "CHalfLifeCoop.h"
 
 #include "Skill.h"
@@ -606,12 +607,11 @@ void CBaseHalfLifeCoop::PlayerThink(CBasePlayer *pPlayer)
 		// Sempre no primeiro jogador (para evitar rodar o codigo desnecessariamente)
 		if (pPlayer->entindex() == 1)
 		{
-			int i;
-
-			if ((i = ChangeLevelVolume()) == 3)
-			{
+			int i = ChangeLevelVolume();
+			if (i == 1)
+				ChangeLevelCoop();
+			if (i == 3)
 				hu3ChangelevelCheck = false;
-			}
 		}
 	}
 
@@ -1089,24 +1089,40 @@ void CBaseHalfLifeCoop::SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveR
 
 //=========================================================
 //=========================================================
-void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
+void CBaseHalfLifeCoop::ChangeLevelCoopToogle()
+{
+	int state = ChangeLevelVolume();
+
+	// Verifica se todos os jogadores estao dentro de um mesmo changelevel e segue adiante
+	if (state == 1)
+		ChangeLevelCoop();
+		// Se nao estiverem mas existir pelo menos um, ligo a verificacao de changelevel no think
+	else if (state == 2)
+		hu3ChangelevelCheck = true;
+}
+
+//=========================================================
+//=========================================================
+void CBaseHalfLifeCoop::ChangeLevelCoop()
 {
 	CBaseEntity *hu3Player;
 	int i = 0;
-	int state = ChangeLevelVolume();
 
-	// Verifica se todos os jogadores esta dentro de um mesmo changelevel
-	if (state != 1)
+	// Tento pegar um Landmark valido
+	CBaseEntity* pLandmark = nullptr;
+	if (strcmp(hu3LandmarkName, "") != 0)
 	{
-		// Nao estao mas existe pelo menos um. Ligo o processamento de changelevel no think
-		if (state == 2)
-			hu3ChangelevelCheck = true;
-	
-		return;
-	}
+		CBaseEntity* pLandmarkAux = nullptr;
 
-	// Copio o nome do landmark (sera usado no proximo mapa)
-	strcpy(hu3LandmarkName, m_szLandmarkName);
+		while ((pLandmarkAux = UTIL_FindEntityByTargetname(pLandmarkAux, hu3LandmarkName)) != nullptr)
+		{
+			if (pLandmarkAux->ClassnameIs("info_landmark"))
+			{
+				pLandmark = pLandmarkAux;
+				break;
+			}
+		}
+	}
 
 	// Reseto o comando mp_hu3_trainspawnpoint
 	char* hTarget = (char*)CVAR_GET_STRING("coop_train_spawnpoint");
@@ -1200,7 +1216,7 @@ void CBaseHalfLifeCoop::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandma
 	// Agora comeco o processo de troca de mapa
 	char comando[30] = "changelevel ";
 
-	strcat(strcat(comando, st_szNextMap), ";");
+	strcat(strcat(comando, hu3NextMap), ";");
 	SERVER_COMMAND(comando);
 }
 
@@ -1291,12 +1307,27 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	}
 
 	// Todos os jogadores estao no mesmo changelevel
-	if (plyCount == trigger0 || plyCount == trigger1)
+	if (plyCount == trigger0)
+	{
+		CChangeLevel* activatedChangelevel = (CChangeLevel*) pChangelevel1;
+
+		strcpy(hu3LandmarkName, activatedChangelevel->m_szLandmarkName);
+		strcpy(hu3NextMap, activatedChangelevel->m_szMapName);
+
 		return 1;
+	} 
+	else if (plyCount == trigger1)
+	{
+		CChangeLevel* activatedChangelevel = (CChangeLevel*)pChangelevel2;
+
+		strcpy(hu3LandmarkName, activatedChangelevel->m_szLandmarkName);
+		strcpy(hu3NextMap, activatedChangelevel->m_szMapName);
+
+		return 1;
+	}
 	// Existem jogadores em changelevel, mas nao todos no mesmo
 	else if (trigger0 > 0 || trigger1 > 0)
 		return 2;
-
 	// Nao ha nenhum jogador em changelevel
 	return 3;
 }

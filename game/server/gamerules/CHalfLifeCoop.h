@@ -45,7 +45,8 @@ public:
 	virtual void PlayerSpawn( CBasePlayer *pPlayer ) override;
 	bool SetPlayerName(CBaseEntity *pPlayer);
 	void LoadPlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData);
-	virtual void ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap);
+	virtual void ChangeLevelCoopToogle();
+	virtual void ChangeLevelCoop();
 	void SavePlayerItems(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData);
 	void SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveRestore* CoopPlyData, CBasePlayerWeapon *pWeapon, int j);
 	virtual void PlayerThink( CBasePlayer *pPlayer ) override;

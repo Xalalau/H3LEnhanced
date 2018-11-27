@@ -144,7 +144,7 @@ void CGameRules::PlayerRespawn( CBasePlayer* pPlayer, const bool bCopyCorpse )
 // [MODO COOP]
 // Uso vazio e generalizado do changelevel do modo coop
 // Preciso disso para acessar essa funcao externamente em qualquer arquivo do HL1
-void CGameRules::ChangeLevelCoop(CBaseEntity* pLandmark, char* m_szLandmarkName, char* st_szNextMap)
+void CGameRules::ChangeLevelCoopToogle()
 {
 	return;
 }

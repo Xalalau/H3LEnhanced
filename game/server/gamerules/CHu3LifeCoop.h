@@ -44,8 +44,10 @@ struct playerCoopSaveRestore {
 // Guardar as infos dos jogadores
 extern struct playerCoopSaveRestore CoopPlyData[64];
 
-// Nome do landmark em uso
+// Nome do landmark no changelevel ativado
 extern char hu3LandmarkName[32];
+// Nome do proximo mapa
+extern char hu3NextMap[32];
 
 // Index de um jogador (uso para a troca de nomes. Nao inventar outros usos!)
 extern int hu3CoopPlyIndex;

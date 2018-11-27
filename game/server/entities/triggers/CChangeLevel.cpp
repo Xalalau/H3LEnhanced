@@ -130,7 +130,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	// Changelevel do coop eh diferente no final
 	if (g_pGameRules->IsCoOp())
 	{
-		g_pGameRules->ChangeLevelCoop(FindLandmark(m_szLandmarkName), m_szLandmarkName, m_szMapName);
+		g_pGameRules->ChangeLevelCoopToogle();
 
 		return;
 	}
