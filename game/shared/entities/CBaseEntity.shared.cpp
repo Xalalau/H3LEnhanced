@@ -18,10 +18,6 @@
 #include "Weapons.h"
 #include "CBasePlayer.h"
 
-#if USE_ANGELSCRIPT && defined( SERVER_DLL )
-#include "Angelscript/CHLASServerManager.h"
-#endif
-
 // Global Savedata for Delay
 BEGIN_DATADESC_NOBASE( CBaseEntity )
 	DEFINE_FIELD( m_hGoalEnt, FIELD_EHANDLE ),
@@ -281,22 +277,3 @@ void CBaseEntity::TakeDamage( CBaseEntity* pInflictor, CBaseEntity* pAttacker, f
 void CBaseEntity::SUB_DoNothing( void )
 {
 }
-
-#if USE_ANGELSCRIPT && defined( SERVER_DLL )
-CScriptDictionary* CBaseEntity::GetUserData() const
-{
-	if( !m_UserData )
-	{
-		m_UserData = CScriptDictionary::Create( g_ASManager.GetASManager().GetEngine() );
-
-		//Create added a reference for us, as did operator=. Release the one added by Create. - Solokiller
-		m_UserData->Release();
-	}
-
-	auto pUserData = m_UserData;
-
-	pUserData->AddRef();
-
-	return pUserData;
-}
-#endif

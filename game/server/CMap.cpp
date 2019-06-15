@@ -6,8 +6,11 @@
 #include "config/CServerConfig.h"
 
 #include "CMap.h"
+#include "const.h"
+#include "DefaultClassifications.h"
+#include "strtools.h"
 
-BEGIN_DATADESC_NOBASE( CMap )
+BEGIN_DATADESC_NOBASE(CMap)
 	DEFINE_FIELD( m_flPrevFrameTime, FIELD_TIME ),
 	DEFINE_FIELD( m_bUseCustomHudColors, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_flLastHudColorChangeTime, FIELD_TIME ),
@@ -73,13 +76,23 @@ CMap::~CMap()
 void CMap::LoadMapConfig()
 {
 	m_MapConfig = std::make_unique<CServerConfig>();
-	char szConfigName[ MAX_PATH ];
 
-	V_sprintf_safe( szConfigName, "maps/%s.xml", STRING( gpGlobals->mapname ) );
+	char szGameDir[MAX_PATH];
+	char szConfigName[MAX_PATH];
 
-	if( !m_MapConfig->Parse( szConfigName, nullptr, true ) )
+	if (UTIL_GetGameDir(szGameDir, sizeof(szGameDir)))
 	{
-		m_MapConfig.reset();
+		V_sprintf_safe(szConfigName, "%s/maps/%s.txt", szGameDir, STRING(gpGlobals->mapname));
+
+		if (!m_MapConfig->Parse(szConfigName, nullptr, true))
+		{
+			m_MapConfig.reset();
+		}
+	}
+	else
+	{
+		//TODO: should just cache the dir once and use a library-local global to track it. - Solokiller
+		Alert(at_error, "Couldn't get game directory\n");
 	}
 }
 
@@ -101,9 +114,7 @@ void CMap::WorldInit()
 {
 	if( m_MapConfig )
 	{
-		//TODO: invoke Angelscript pre classification parse - Solokiller
 		m_MapConfig->ProcessEntityClassifications();
-		//TODO: invoke Angelscript post classification parse - Solokiller
 	}
 }
 

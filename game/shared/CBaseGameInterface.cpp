@@ -12,7 +12,6 @@
 #include "FileSystem.h"
 
 #include "logging/CLogSystem.h"
-#include "xml/CXMLManager.h"
 
 #include "CBaseGameInterface.h"
 
@@ -64,18 +63,11 @@ bool CBaseGameInterface::InitializeCommon()
 		return false;
 	}
 
-	if( !xml::XMLManager().Initialize() )
-	{
-		return false;
-	}
-
 	return true;
 }
 
 void CBaseGameInterface::ShutdownCommon()
 {
-	xml::XMLManager().Shutdown();
-
 	logging::LogSystem().Shutdown();
 
 	g_pDeveloper = nullptr;

@@ -16,11 +16,6 @@
 #include "nodes/Nodes.h"
 #include "nodes/CTestHull.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/CHLASServerManager.h"
-#include "Angelscript/ScriptAPI/ASEvents.h"
-#endif
-
 #include "entities/CEntityDictionary.h"
 #include "entities/CEntityRegistry.h"
 
@@ -44,13 +39,6 @@ bool CServerGameInterface::Initialize()
 
 	EntityClassifications().Initialize();
 
-#if USE_ANGELSCRIPT
-	if( !g_ASManager.Initialize() )
-	{
-		return false;
-	}
-#endif
-
 	//Await first entity creation to start up. - Solokiller
 	m_bMapStartedLoading = true;
 
@@ -59,10 +47,6 @@ bool CServerGameInterface::Initialize()
 
 void CServerGameInterface::Shutdown()
 {
-#if USE_ANGELSCRIPT
-	g_ASManager.Shutdown();
-#endif
-
 	ShutdownCommon();
 }
 
@@ -144,10 +128,6 @@ void CServerGameInterface::ClientPutInServer( edict_t* pEntity )
 	auto pPlayer = GetClassPtr( ( CBasePlayer* ) &pEntity->v );
 
 	pPlayer->InitialSpawn();
-
-#if USE_ANGELSCRIPT
-	CallGlobalEvent( g_ClientPutInServerEvent, CallFlag::NONE, pPlayer );
-#endif
 }
 
 void CServerGameInterface::ClientCommand( edict_t* pEntity )
@@ -569,10 +549,6 @@ void CServerGameInterface::Activate( edict_t* pEdictList, const int edictCount, 
 	}
 	CMap::GetInstance()->WorldActivated();
 
-#if USE_ANGELSCRIPT
-	g_ASManager.WorldActivated();
-#endif
-
 	//If no graph is present, build it.
 	if( !WorldGraph.m_fGraphPresent )
 	{
@@ -630,10 +606,6 @@ void CServerGameInterface::StartFrame()
 	++g_ulFrameCount;
 
 	CMap::GetInstance()->Think();
-
-#if USE_ANGELSCRIPT
-	g_ASManager.Think();
-#endif
 }
 
 void CServerGameInterface::ParmsNewLevel()

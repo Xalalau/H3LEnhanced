@@ -50,11 +50,6 @@
 
 #include "client.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/ScriptAPI/ASEvents.h"
-#include "Angelscript/ScriptAPI/CASSayArgs.h"
-#endif
-
 extern CVoiceGameMgr g_VoiceGameMgr;
 
 //TODO: split this file into pieces - Solokiller
@@ -146,21 +141,6 @@ void Host_Say( CBasePlayer* pPlayer, const bool bTeamOnly )
 
 	if ( !p || !p[0] || !Q_UnicodeValidate ( p ) )
 		return;  // no character found, so say nothing
-
-#if USE_ANGELSCRIPT
-	{
-		CASSayArgs* pArgs = new CASSayArgs( pPlayer, bTeamOnly ? SayType::SAY_TEAM : SayType::SAY, p );
-
-		CallGlobalEvent( g_PlayerSayEvent, CallFlag::NONE, pArgs );
-
-		const bool bShouldHide = pArgs->ShouldHide();
-
-		pArgs->Release();
-
-		if( bShouldHide )
-			return;
-	}
-#endif
 
 // turn on color set 2  (color on,  no sound)
 	// turn on color set 2  (color on,  no sound)

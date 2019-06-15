@@ -9,7 +9,6 @@
 #define VOICE_STATUS_H
 #pragma once
 
-
 #include "VGUI_Label.h"
 #include "VGUI_LineBorder.h"
 #include "VGUI_ImagePanel.h"

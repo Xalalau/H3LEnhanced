@@ -1,21 +1,13 @@
 #include <cassert>
 
-#include <xercesc/dom/DOMDocument.hpp>
-#include <xercesc/dom/DOMElement.hpp>
-#include <xercesc/dom/DOMNodeList.hpp>
-#include <xercesc/util/XMLUniDefs.hpp>
-
 #include "extdll.h"
 #include "util.h"
+
+#include "CFile.h"
 
 #include "CReplacementMap.h"
 
 #include "CReplacementCache.h"
-
-#include "xml/CStrX.h"
-#include "xml/CXMLManager.h"
-#include "xml/XMLUtils.h"
-#include "xml/CXStr.h"
 
 CReplacementMap* CReplacementCache::GetMap( const char* const pszFileName ) const
 {
@@ -64,62 +56,59 @@ CReplacementMap* CReplacementCache::AcquireMap( const char* const pszFileName )
 	return pMap;
 }
 
-std::unique_ptr<CReplacementMap> CReplacementCache::LoadMap( const char* const pszFileName, const char* const pszAbsFileName ) const
+std::unique_ptr<CReplacementMap> CReplacementCache::LoadMap(const char* const pszFileName, const char* const pszAbsFileName) const
 {
-	assert( pszAbsFileName );
+	assert(pszAbsFileName);
 
-	auto document = xml::XMLManager().ParseFile( pszFileName );
+	CFile file(pszFileName, "r");
 
-	if( !document )
+	if (!file.IsOpen())
 	{
+		Alert(at_error, "CReplacementCache::LoadMap: Couldn't open \"%s\"!\n", pszFileName);
 		return nullptr;
 	}
 
-	auto pRootElement = document->getDocumentElement();
+	//TODO: should define these constants - Solokiller
+	char szLine[1024];
 
-	if( !pRootElement || xercesc::XMLString::compareString( pRootElement->getNodeName(), xml::AsciiToXMLCh( "replacement_map" ).data() ) != 0 )
+	char szOriginal[1024];
+	char szReplacement[1024];
+
+	const char* pszData;
+
+	size_t uiLine = 1;
+
+	auto map = std::make_unique<CReplacementMap>(pszAbsFileName);
+
+	while (file.IsOk() && file.ReadLine(szLine, sizeof(szLine)))
 	{
-		Alert( at_console, "CReplacementCache::LoadMap: File \"%s\": no replacement keyvalues found, ignoring\n", pszFileName );
-		return nullptr;
+		if (!(*szLine))
+			continue;
+
+		pszData = COM_Parse(szLine, szOriginal, sizeof(szOriginal));
+
+		if (!pszData)
+		{
+			Alert(at_error, "CReplacementCache::LoadMap: In file \"%s\" on line %u:\nError parsing original filename near \"%s\"\n", pszFileName, uiLine, szLine);
+			return nullptr;
+		}
+
+
+		pszData = COM_Parse(pszData, szReplacement, sizeof(szReplacement));
+
+		if (!pszData)
+		{
+			Alert(at_error, "CReplacementCache::LoadMap: In file \"%s\" on line %u:\nError parsing replacement filename near \"%s\"\n", pszFileName, uiLine, szLine);
+			return nullptr;
+		}
+
+		if (!map->AddReplacement(szOriginal, szReplacement))
+		{
+			Alert(at_warning, "CReplacementCache::LoadMap: In file \"%s\" on line %u:\nDuplicate original filename \"%s\", ignoring\n", pszFileName, uiLine, szOriginal);
+		}
+
+		++uiLine;
 	}
 
-	auto pChildren = xml::GetElementsByTagName( *pRootElement, "keyvalue" );
-
-	const auto count = pChildren->getLength();
-
-	auto map = std::make_unique<CReplacementMap>( pszAbsFileName );
-
-	std::string szKey, szValue;
-
-	for( decltype( pChildren->getLength() ) index = 0; index < count; ++index )
-	{
-		auto pChild = pChildren->item( index );
-
-		if( !pChild->hasAttributes() )
-		{
-			Alert( at_console, "CReplacementCache::LoadMap: File \"%s\": encountered keyvalue with no attributes, ignoring\n", pszFileName );
-			continue;
-		}
-
-		auto& attrs = *pChild->getAttributes();
-
-		if( !xml::GetKeyValue( attrs, szKey, szValue ) )
-		{
-			Alert( at_console, "CReplacementCache::LoadMap: File \"%s\": encountered keyvalue with one or more missing parameters, ignoring\n", pszFileName );
-			continue;
-		}
-
-		if( szKey.empty() )
-		{
-			Alert( at_console, "CReplacementCache::LoadMap: File \"%s\": encountered keyvalue with empty key, ignoring\n", pszFileName );
-			continue;
-		}
-
-		if( !map->AddReplacement( szKey.c_str(), szValue.c_str() ) )
-		{
-			Alert( at_warning, "CReplacementCache::LoadMap: File \"%s\": Duplicate original filename \"%s\", ignoring\n", pszFileName, szKey.c_str() );
-		}
-	}
-
-	return map;
+	return std::move(map);
 }

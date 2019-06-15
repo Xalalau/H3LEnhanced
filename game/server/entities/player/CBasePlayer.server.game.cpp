@@ -20,10 +20,6 @@
 
 #include "gamerules/GameRules.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/ScriptAPI/ASEvents.h"
-#endif
-
 // 
 // PlayerUse - handles USE keypress
 //
@@ -35,15 +31,6 @@ void CBasePlayer::PlayerUse()
 	// Was use pressed or released?
 	if( !( ( GetButtons().Get() | m_afButtonPressed | m_afButtonReleased ) & IN_USE ) )
 		return;
-
-#if USE_ANGELSCRIPT
-	uint32_t uiFlags = UseFlag::NONE;
-
-	CallGlobalEvent( g_PlayerUseEvent, CallFlag::NONE, this, &uiFlags );
-
-	if( uiFlags & UseFlag::SKIP_USE )
-		return;
-#endif
 
 	// Hit Use on a train?
 	if( m_afButtonPressed & IN_USE )

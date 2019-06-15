@@ -31,10 +31,6 @@
 
 #include "com_model.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/ScriptAPI/ASEvents.h"
-#endif
-
 extern DLL_GLOBAL bool			g_fGameOver;
 extern DLL_GLOBAL unsigned int	g_ulModelIndexPlayer;
 extern DLL_GLOBAL bool			gEvilImpulse101;
@@ -70,14 +66,6 @@ void CBasePlayer::PreThink()
 	g_pGameRules->PlayerThink( this );
 
 	bool bCheckVehicles = true;
-
-#if USE_ANGELSCRIPT
-	uint32_t uiFlags = PreThinkFlag::NONE;
-
-	CallGlobalEvent( g_PlayerPreThinkEvent, CallFlag::NONE, this, &uiFlags );
-
-	bCheckVehicles = !( uiFlags & PreThinkFlag::SKIP_VEHICLES );
-#endif
 
 	if( g_fGameOver )
 		return;         // intermission or finale

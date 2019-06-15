@@ -10,10 +10,6 @@
 #include "CHalfLifeRules.h"
 #include "CHalfLifeTeamplay.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/CHLASServerManager.h"
-#endif
-
 DLL_GLOBAL CGameRules* g_pGameRules = nullptr;
 
 int g_teamplay = 0;
@@ -36,14 +32,6 @@ Coop::Coop DetermineCoopMode()
 
 static CGameRules* CreateGameRules()
 {
-#if USE_ANGELSCRIPT
-	//Use the one provided by the script if it exists. - Solokiller
-	if( auto pGameRules = g_ASManager.CreateGameRules() )
-	{
-		return pGameRules;
-	}
-#endif
-
 	g_teamplay = 0;
 
 	//Determine whether co-op mode is enabled, and which rules should be used.

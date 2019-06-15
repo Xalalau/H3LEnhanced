@@ -1,15 +1,10 @@
-HLEnhanced
+Spirit of Half-Life Enhanced SDK repository ( SOHL-E )
+
+This repository based on Half-Life Enhanced by SamVanheer
+[https://github.com/SamVanheer/HLEnhanced]
+
 ======================
 
-[![Join the chat at https://gitter.im/HLEnhanced-Project/Lobby](https://badges.gitter.im/HLEnhanced-Project/Lobby.svg)](https://gitter.im/HLEnhanced-Project/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-For more information, read the [wiki](https://github.com/SamVanheer/HLEnhanced/wiki).
-
-Build status
-
-|             | Windows | Linux/OSX |
-|-------------|---------|-----------|
-| **master**  | [![AppVeyor](https://ci.appveyor.com/api/projects/status/h4cwesn12o16p07j/branch/master?svg=true)](https://ci.appveyor.com/project/SamVanheer/hlenhanced/branch/master) | [![Build Status](https://travis-ci.org/SamVanheer/HLEnhanced.svg?branch=master)](https://travis-ci.org/SamVanheer/HLEnhanced) |
 
 Half Life 1 SDK LICENSE
 ======================

@@ -26,7 +26,7 @@ class CSentenceGroups
 {
 public:
 	/**
-	*	Used to indicate that a sentence could not be found. Defined in the source file to allow it to be exposed to Angelscript.
+	*	Used to indicate that a sentence could not be found.
 	*/
 	static const int INVALID_SENTENCE_INDEX;
 

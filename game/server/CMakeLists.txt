@@ -42,9 +42,6 @@ add_sources(
 	Weapons.cpp
 )
 
-if( USE_ANGELSCRIPT )
-	add_subdirectory( Angelscript )
-endif()
 add_subdirectory( config )
 add_subdirectory( engine )
 add_subdirectory( entities )

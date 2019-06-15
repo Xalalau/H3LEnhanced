@@ -53,8 +53,6 @@ link_directories( ${GAME_BIN_PATH} )
 
 set( EXTERNAL_DIR ${CMAKE_SOURCE_DIR}/external )
 
-option( USE_ANGELSCRIPT "Whether to include Angelscript" )
-option( USE_AS_SQL "Whether to include Angelscript SQL APIs" )
 option( USE_OPFOR "Whether to include Opposing Force related stuff" )
 option( USE_VGUI2 "Whether to include VGUI2 features" )
 
@@ -63,13 +61,6 @@ option( USE_VGUI2 "Whether to include VGUI2 features" )
 #Should we choose to support Cygwin we will need the import libraries though.
 option( CLANG_DB_BUILD "Whether this is a Clang database build. If enabled, some settings are disabled in order to function on Windows" )
 
-if( NOT USE_ANGELSCRIPT AND USE_AS_SQL )
-	message( STATUS "Forcing USE_AS_SQL to off due to no Angelscript usage" )
-	set( USE_AS_SQL OFF )
-endif()
-
-ternary( USE_ANGELSCRIPT_DEFINE USE_ANGELSCRIPT 1 0 )
-ternary( USE_AS_SQL_DEFINE USE_AS_SQL 1 0 )
 ternary( USE_OPFOR_DEFINE USE_OPFOR 1 0 )
 ternary( USE_VGUI2_DEFINE USE_VGUI2 1 0 )
 
@@ -121,7 +112,6 @@ endif()
 set( SHARED_GAME_DEFS
 	CLIENT_WEAPONS
 	NO_MALLOC_OVERRIDE
-	USE_ANGELSCRIPT=${USE_ANGELSCRIPT_DEFINE}
 	USE_OPFOR=${USE_OPFOR_DEFINE}
 )
 
@@ -164,13 +154,6 @@ endif()
 set( SHARED_EXTERNAL_INCLUDE_PATHS
 )
 
-if( USE_ANGELSCRIPT )
-	set( SHARED_EXTERNAL_INCLUDE_PATHS
-		${SHARED_EXTERNAL_INCLUDE_PATHS}
-		${EXTERNAL_DIR}/Angelscript/include
-	)
-endif()
-
 set( SHARED_INCLUDE_PATHS
 	common
 	public
@@ -201,7 +184,6 @@ get_sources( SHARED_SRCS )
 clear_sources()
 
 #Find shared dependencies
-find_package( XercesC CONFIG 3.2.0 REQUIRED )
 
 add_library( spdlog INTERFACE IMPORTED )
 
@@ -223,23 +205,10 @@ if( UNIX AND NOT APPLE )
 	set( UNIX_FS_LIB stdc++fs )
 endif()
 
-if( USE_ANGELSCRIPT )
-	find_library( ANGELSCRIPTLIB Angelscript PATHS external/Angelscript/lib/ )
-	find_library( ANGELSCRIPTUTILS AngelscriptUtils PATHS external/Angelscript/lib/ )
-	find_library( ANGELSCRIPTLIBD Angelscriptd PATHS external/Angelscript/lib/ )
-	find_library( ANGELSCRIPTUTILSD AngelscriptUtilsd PATHS external/Angelscript/lib/ )
-else()
-	set( ANGELSCRIPTLIB )
-	set( ANGELSCRIPTUTILS )
-	set( ANGELSCRIPTLIBD )
-	set( ANGELSCRIPTUTILSD )
-endif()
-
 set( SHARED_DEPENDENCIES
 	tier0
 	vstdlib
 	tier1
-	XercesC::XercesC
 	spdlog
 )
 
@@ -324,16 +293,6 @@ if( WIN32 )
 	set( CLIENT_PLAT_LIBS "wsock32" )
 else()
 	set( CLIENT_PLAT_LIBS "dl" )
-endif()
-
-#Link with client dependencies
-if( USE_ANGELSCRIPT )
-	target_link_libraries( client 
-		optimized ${ANGELSCRIPTUTILS}
-		debug ${ANGELSCRIPTUTILSD}
-		optimized ${ANGELSCRIPTLIB}
-		debug ${ANGELSCRIPTLIBD}
-	)
 endif()
 
 target_link_libraries( client 
@@ -475,31 +434,6 @@ if( WIN32 )
 	set( SERVER_PLAT_LIBS Ws2_32 Shlwapi )
 else()
 	set( SERVER_PLAT_LIBS dl )
-endif()
-
-#Link with server dependencies
-if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
-	target_link_libraries( hl 
-		optimized ${ASSQL}
-		debug ${ASSQLD}
-	)
-endif()
-
-if( USE_ANGELSCRIPT )
-	target_link_libraries( hl 
-		optimized ${ANGELSCRIPTUTILS}
-		debug ${ANGELSCRIPTUTILSD}
-		optimized ${ANGELSCRIPTLIB}
-		debug ${ANGELSCRIPTLIBD}
-	)
-endif()
-
-if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
-	target_link_libraries( hl 
-		${SQLITE3}
-		optimized ${MARIADB}
-		debug ${MARIADBD}
-	)
 endif()
 
 target_link_libraries( hl 

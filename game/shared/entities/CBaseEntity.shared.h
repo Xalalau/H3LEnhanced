@@ -53,12 +53,6 @@ CBaseEntity
 
 #include "EntityClasses.h"
 
-#if USE_ANGELSCRIPT && defined( SERVER_DLL )
-#include <Angelscript/util/CASRefPtr.h>
-
-#include <Angelscript/add_on/scriptdictionary.h>
-#endif
-
 #undef GetMessage
 
 using CEntBitSet = CBitSet<int>;
@@ -2473,17 +2467,6 @@ public:
 	}
 
 	//New classification system end. - Solokiller
-
-#if USE_ANGELSCRIPT && defined( SERVER_DLL )
-public:
-	//Angelscript specific extensions. - Solokiller
-	CScriptDictionary* GetUserData() const;
-
-private:
-	mutable CASRefPtr<CScriptDictionary> m_UserData;
-
-public:
-#endif
 };
 
 // Ugly technique to override base member functions

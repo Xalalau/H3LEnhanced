@@ -34,10 +34,6 @@ precaches and defs for entities and other data that must always be available.
 
 #include "CMap.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/CHLASServerManager.h"
-#endif
-
 extern DLL_GLOBAL bool g_fGameOver;
 extern CBaseEntity				*g_pLastSpawn;
 extern CGraph WorldGraph;
@@ -82,10 +78,6 @@ void CWorld::OnDestroy()
 		g_pGameRules = nullptr;
 	}
 
-#if USE_ANGELSCRIPT
-	g_ASManager.WorldEnded();
-#endif
-
 	//Should be the only place where this is called. - Solokiller
 	//TODO: move to after entities are destroyed - Solokiller
 	CMap::DestroyInstance();
@@ -110,13 +102,6 @@ void CWorld::Spawn()
 
 void CWorld::Precache()
 {
-#if USE_ANGELSCRIPT
-	//TODO: due to save/restore's wonky restore order, this will be invoked in the wrong order.
-	//Perhaps find a way to save map script names in a block that's loaded before the rest? - Solokiller
-	//Must be in Precache to restore!
-	g_ASManager.WorldCreated( STRING( m_iszMapScript ) );
-#endif
-
 	g_pLastSpawn = NULL;
 
 #if 1

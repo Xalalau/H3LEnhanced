@@ -16,10 +16,6 @@
 
 #include "BSPIO.h"
 
-#if USE_ANGELSCRIPT
-#include "Angelscript/CHLASClientManager.h"
-#endif
-
 #include "hl/CClientPrediction.h"
 
 #include "CClientGameInterface.h"
@@ -61,13 +57,6 @@ const char* ParseMapDataCallback( const char* pszBuffer, bool& bError )
 		}
 	}
 
-	if( bIsWorldspawn && *szMapScript )
-	{
-#if USE_ANGELSCRIPT
-		g_ASManager.WorldCreated( szMapScript );
-#endif
-	}
-
 	return pszBuffer;
 }
 
@@ -79,20 +68,11 @@ bool CClientGameInterface::Initialize()
 	//Init ASAP so functions like AlertMessage get set up.
 	CL_SetupServerSupport();
 
-#if USE_ANGELSCRIPT
-	if( !g_ASManager.Initialize() )
-		return false;
-#endif
-
 	return true;
 }
 
 void CClientGameInterface::Shutdown()
 {
-#if USE_ANGELSCRIPT
-	g_ASManager.Shutdown();
-#endif
-
 	Hud().GameShutdown();
 
 	ShutdownCommon();

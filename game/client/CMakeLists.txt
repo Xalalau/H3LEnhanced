@@ -30,9 +30,6 @@ add_sources(
 	voice_status.cpp
 )
 
-if( USE_ANGELSCRIPT )
-	add_subdirectory( Angelscript )
-endif()
 add_subdirectory( effects )
 add_subdirectory( entities )
 add_subdirectory( hl )
