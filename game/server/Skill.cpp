@@ -58,6 +58,8 @@ cvar_t* skilldata_t::GetSkillCvar( const char* pszName ) const
 
 void skilldata_t::RefreshSkillData()
 {
+	//TODO: Add vars for multiplayer
+
 	int	iSkill = ( int ) CVAR_GET_FLOAT( "skill" );
 
 	if( iSkill < SKILL_FIRST )

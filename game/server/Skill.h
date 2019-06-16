@@ -29,6 +29,8 @@ enum SkillLevel
 	SKILL_LAST		= SKILL_HARD
 };
 
+//TODO: Add vars for multiplayer
+
 struct skilldata_t
 {
 	/**
