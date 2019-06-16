@@ -87,6 +87,7 @@ BEGIN_DATADESC( CBaseMonster )
 	DEFINE_FIELD( m_flFieldOfView, FIELD_FLOAT ),
 	DEFINE_FIELD( m_flWaitFinished, FIELD_TIME ),
 	DEFINE_FIELD( m_flMoveWaitFinished, FIELD_TIME ),
+	DEFINE_FIELD( m_flLastYawTime, FIELD_TIME),
 	
 	DEFINE_FIELD( m_Activity, FIELD_INTEGER ),
 	DEFINE_FIELD( m_IdealActivity, FIELD_INTEGER ),
@@ -94,7 +95,7 @@ BEGIN_DATADESC( CBaseMonster )
 	DEFINE_FIELD( m_MonsterState, FIELD_INTEGER ),
 	DEFINE_FIELD( m_IdealMonsterState, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iTaskStatus, FIELD_INTEGER ),
-	
+
 	//Schedule_t			*m_pSchedule;
 	
 	DEFINE_FIELD( m_iScheduleIndex, FIELD_INTEGER ),
