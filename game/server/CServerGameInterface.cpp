@@ -747,7 +747,7 @@ const char* CServerGameInterface::GetGameDescription() const
 	if( g_pGameRules )
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Spirit of Half-Life";
 }
 
 void CServerGameInterface::Sys_Error( const char* error_string )

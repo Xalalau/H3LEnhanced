@@ -58,173 +58,74 @@ cvar_t	sv_new_impulse_check = { "sv_new_impulse_check", "0", FCVAR_SERVER };
 
 cvar_t	server_cfg = { "server_cfg", "server/default_server_config.txt", FCVAR_SERVER | FCVAR_UNLOGGED };
 
-cvar_t	as_plugin_list_file = { "as_plugin_list_file", "default_plugins.txt", FCVAR_SERVER | FCVAR_UNLOGGED };
-
-//Config file that contains the MySQL settings to use for default connections.
-cvar_t	as_mysql_config = { "as_mysql_config", "server/default_mysql_config.txt", FCVAR_SERVER | FCVAR_UNLOGGED };
-
 // Engine Cvars
 cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
 cvar_t	*g_footsteps = NULL;
 
 //CVARS FOR SKILL LEVEL SETTINGS
-// Agrunt
-cvar_t	sk_agrunt_health1 = {"sk_agrunt_health1","0"};
-cvar_t	sk_agrunt_health2 = {"sk_agrunt_health2","0"};
-cvar_t	sk_agrunt_health3 = {"sk_agrunt_health3","0"};
 
-cvar_t	sk_agrunt_dmg_punch1 = {"sk_agrunt_dmg_punch1","0"};
-cvar_t	sk_agrunt_dmg_punch2 = {"sk_agrunt_dmg_punch2","0"};
-cvar_t	sk_agrunt_dmg_punch3 = {"sk_agrunt_dmg_punch3","0"};
+// Agrunt
+DECLARE_SKILL_CVARS(agrunt_health);
+DECLARE_SKILL_CVARS(agrunt_dmg_punch);
 
 // Apache
-cvar_t	sk_apache_health1	= {"sk_apache_health1","0"};
-cvar_t	sk_apache_health2	= {"sk_apache_health2","0"};
-cvar_t	sk_apache_health3	= {"sk_apache_health3","0"};
+DECLARE_SKILL_CVARS(apache_health);
 
 // Barney
-cvar_t	sk_barney_health1	= {"sk_barney_health1","0"};
-cvar_t	sk_barney_health2	= {"sk_barney_health2","0"};
-cvar_t	sk_barney_health3	= {"sk_barney_health3","0"};
+DECLARE_SKILL_CVARS(barney_health);
 
 // Bullsquid
-cvar_t	sk_bullsquid_health1 = {"sk_bullsquid_health1","0"};
-cvar_t	sk_bullsquid_health2 = {"sk_bullsquid_health2","0"};
-cvar_t	sk_bullsquid_health3 = {"sk_bullsquid_health3","0"};
-
-cvar_t	sk_bullsquid_dmg_bite1 = {"sk_bullsquid_dmg_bite1","0"};
-cvar_t	sk_bullsquid_dmg_bite2 = {"sk_bullsquid_dmg_bite2","0"};
-cvar_t	sk_bullsquid_dmg_bite3 = {"sk_bullsquid_dmg_bite3","0"};
-
-cvar_t	sk_bullsquid_dmg_whip1 = {"sk_bullsquid_dmg_whip1","0"};
-cvar_t	sk_bullsquid_dmg_whip2 = {"sk_bullsquid_dmg_whip2","0"};
-cvar_t	sk_bullsquid_dmg_whip3 = {"sk_bullsquid_dmg_whip3","0"};
-
-cvar_t	sk_bullsquid_dmg_spit1 = {"sk_bullsquid_dmg_spit1","0"};
-cvar_t	sk_bullsquid_dmg_spit2 = {"sk_bullsquid_dmg_spit2","0"};
-cvar_t	sk_bullsquid_dmg_spit3 = {"sk_bullsquid_dmg_spit3","0"};
-
+DECLARE_SKILL_CVARS(bullsquid_health);
+DECLARE_SKILL_CVARS(bullsquid_dmg_bite);
+DECLARE_SKILL_CVARS(bullsquid_dmg_whip);
+DECLARE_SKILL_CVARS(bullsquid_dmg_spit);
 
 // Big Momma
-cvar_t	sk_bigmomma_health_factor1 = {"sk_bigmomma_health_factor1","1.0"};
-cvar_t	sk_bigmomma_health_factor2 = {"sk_bigmomma_health_factor2","1.0"};
-cvar_t	sk_bigmomma_health_factor3 = {"sk_bigmomma_health_factor3","1.0"};
-
-cvar_t	sk_bigmomma_dmg_slash1 = {"sk_bigmomma_dmg_slash1","50"};
-cvar_t	sk_bigmomma_dmg_slash2 = {"sk_bigmomma_dmg_slash2","50"};
-cvar_t	sk_bigmomma_dmg_slash3 = {"sk_bigmomma_dmg_slash3","50"};
-
-cvar_t	sk_bigmomma_dmg_blast1 = {"sk_bigmomma_dmg_blast1","100"};
-cvar_t	sk_bigmomma_dmg_blast2 = {"sk_bigmomma_dmg_blast2","100"};
-cvar_t	sk_bigmomma_dmg_blast3 = {"sk_bigmomma_dmg_blast3","100"};
-
-cvar_t	sk_bigmomma_radius_blast1 = {"sk_bigmomma_radius_blast1","250"};
-cvar_t	sk_bigmomma_radius_blast2 = {"sk_bigmomma_radius_blast2","250"};
-cvar_t	sk_bigmomma_radius_blast3 = {"sk_bigmomma_radius_blast3","250"};
+DECLARE_SKILL_CVARS(bigmomma_health_factor);
+DECLARE_SKILL_CVARS(bigmomma_dmg_slash);
+DECLARE_SKILL_CVARS(bigmomma_dmg_blast);
+DECLARE_SKILL_CVARS(bigmomma_radius_blast);
 
 // Gargantua
-cvar_t	sk_gargantua_health1 = {"sk_gargantua_health1","0"};
-cvar_t	sk_gargantua_health2 = {"sk_gargantua_health2","0"};
-cvar_t	sk_gargantua_health3 = {"sk_gargantua_health3","0"};
-
-cvar_t	sk_gargantua_dmg_slash1	= {"sk_gargantua_dmg_slash1","0"};
-cvar_t	sk_gargantua_dmg_slash2	= {"sk_gargantua_dmg_slash2","0"};
-cvar_t	sk_gargantua_dmg_slash3	= {"sk_gargantua_dmg_slash3","0"};
-
-cvar_t	sk_gargantua_dmg_fire1 = {"sk_gargantua_dmg_fire1","0"};
-cvar_t	sk_gargantua_dmg_fire2 = {"sk_gargantua_dmg_fire2","0"};
-cvar_t	sk_gargantua_dmg_fire3 = {"sk_gargantua_dmg_fire3","0"};
-
-cvar_t	sk_gargantua_dmg_stomp1	= {"sk_gargantua_dmg_stomp1","0"};
-cvar_t	sk_gargantua_dmg_stomp2	= {"sk_gargantua_dmg_stomp2","0"};
-cvar_t	sk_gargantua_dmg_stomp3	= {"sk_gargantua_dmg_stomp3","0"};
-
+DECLARE_SKILL_CVARS(gargantua_health);
+DECLARE_SKILL_CVARS(gargantua_dmg_slash);
+DECLARE_SKILL_CVARS(gargantua_dmg_fire);
+DECLARE_SKILL_CVARS(gargantua_dmg_stomp);
 
 // Hassassin
-cvar_t	sk_hassassin_health1 = {"sk_hassassin_health1","0"};
-cvar_t	sk_hassassin_health2 = {"sk_hassassin_health2","0"};
-cvar_t	sk_hassassin_health3 = {"sk_hassassin_health3","0"};
-
+DECLARE_SKILL_CVARS(hassassin_health);
 
 // Headcrab
-cvar_t	sk_headcrab_health1 = {"sk_headcrab_health1","0"};
-cvar_t	sk_headcrab_health2 = {"sk_headcrab_health2","0"};
-cvar_t	sk_headcrab_health3 = {"sk_headcrab_health3","0"};
-
-cvar_t	sk_headcrab_dmg_bite1 = {"sk_headcrab_dmg_bite1","0"};
-cvar_t	sk_headcrab_dmg_bite2 = {"sk_headcrab_dmg_bite2","0"};
-cvar_t	sk_headcrab_dmg_bite3 = {"sk_headcrab_dmg_bite3","0"};
-
+DECLARE_SKILL_CVARS(headcrab_health);
+DECLARE_SKILL_CVARS(headcrab_dmg_bite);
 
 // Hgrunt 
-cvar_t	sk_hgrunt_health1 = {"sk_hgrunt_health1","0"};
-cvar_t	sk_hgrunt_health2 = {"sk_hgrunt_health2","0"};
-cvar_t	sk_hgrunt_health3 = {"sk_hgrunt_health3","0"};
-
-cvar_t	sk_hgrunt_kick1 = {"sk_hgrunt_kick1","0"};
-cvar_t	sk_hgrunt_kick2 = {"sk_hgrunt_kick2","0"};
-cvar_t	sk_hgrunt_kick3 = {"sk_hgrunt_kick3","0"};
-
-cvar_t	sk_hgrunt_pellets1 = {"sk_hgrunt_pellets1","0"};
-cvar_t	sk_hgrunt_pellets2 = {"sk_hgrunt_pellets2","0"};
-cvar_t	sk_hgrunt_pellets3 = {"sk_hgrunt_pellets3","0"};
-
-cvar_t	sk_hgrunt_gspeed1 = {"sk_hgrunt_gspeed1","0"};
-cvar_t	sk_hgrunt_gspeed2 = {"sk_hgrunt_gspeed2","0"};
-cvar_t	sk_hgrunt_gspeed3 = {"sk_hgrunt_gspeed3","0"};
+DECLARE_SKILL_CVARS(hgrunt_health);
+DECLARE_SKILL_CVARS(hgrunt_kick);
+DECLARE_SKILL_CVARS(hgrunt_pellets);
+DECLARE_SKILL_CVARS(hgrunt_gspeed);
 
 // HORNET
-cvar_t	sk_hornet_dmg1 = { "sk_hornet_dmg1","0" };
-cvar_t	sk_hornet_dmg2 = { "sk_hornet_dmg2","0" };
-cvar_t	sk_hornet_dmg3 = { "sk_hornet_dmg3","0" };
+DECLARE_SKILL_CVARS(hornet_dmg);
 
 // Houndeye
-cvar_t	sk_houndeye_health1 = {"sk_houndeye_health1","0"};
-cvar_t	sk_houndeye_health2 = {"sk_houndeye_health2","0"};
-cvar_t	sk_houndeye_health3 = {"sk_houndeye_health3","0"};
-
-cvar_t	sk_houndeye_dmg_blast1 = {"sk_houndeye_dmg_blast1","0"};
-cvar_t	sk_houndeye_dmg_blast2 = {"sk_houndeye_dmg_blast2","0"};
-cvar_t	sk_houndeye_dmg_blast3 = {"sk_houndeye_dmg_blast3","0"};
-
+DECLARE_SKILL_CVARS(houndeye_health);
+DECLARE_SKILL_CVARS(houndeye_dmg_blast);
 
 // ISlave
-cvar_t	sk_islave_health1 = {"sk_islave_health1","0"};
-cvar_t	sk_islave_health2 = {"sk_islave_health2","0"};
-cvar_t	sk_islave_health3 = {"sk_islave_health3","0"};
-
-cvar_t	sk_islave_dmg_claw1 = {"sk_islave_dmg_claw1","0"};
-cvar_t	sk_islave_dmg_claw2 = {"sk_islave_dmg_claw2","0"};
-cvar_t	sk_islave_dmg_claw3 = {"sk_islave_dmg_claw3","0"};
-
-cvar_t	sk_islave_dmg_clawrake1	= {"sk_islave_dmg_clawrake1","0"};
-cvar_t	sk_islave_dmg_clawrake2	= {"sk_islave_dmg_clawrake2","0"};
-cvar_t	sk_islave_dmg_clawrake3	= {"sk_islave_dmg_clawrake3","0"};
-	
-cvar_t	sk_islave_dmg_zap1 = {"sk_islave_dmg_zap1","0"};
-cvar_t	sk_islave_dmg_zap2 = {"sk_islave_dmg_zap2","0"};
-cvar_t	sk_islave_dmg_zap3 = {"sk_islave_dmg_zap3","0"};
-
+DECLARE_SKILL_CVARS(islave_health);
+DECLARE_SKILL_CVARS(islave_dmg_claw);
+DECLARE_SKILL_CVARS(islave_dmg_clawrake);
+DECLARE_SKILL_CVARS(islave_dmg_zap);
 
 // Icthyosaur
-cvar_t	sk_ichthyosaur_health1	= {"sk_ichthyosaur_health1","0"};
-cvar_t	sk_ichthyosaur_health2	= {"sk_ichthyosaur_health2","0"};
-cvar_t	sk_ichthyosaur_health3	= {"sk_ichthyosaur_health3","0"};
-
-cvar_t	sk_ichthyosaur_shake1	= {"sk_ichthyosaur_shake1","0"};
-cvar_t	sk_ichthyosaur_shake2	= {"sk_ichthyosaur_shake2","0"};
-cvar_t	sk_ichthyosaur_shake3	= {"sk_ichthyosaur_shake3","0"};
-
+DECLARE_SKILL_CVARS(ichthyosaur_health);
+DECLARE_SKILL_CVARS(ichthyosaur_shake);
 
 // Leech
-cvar_t	sk_leech_health1 = {"sk_leech_health1","0"};
-cvar_t	sk_leech_health2 = {"sk_leech_health2","0"};
-cvar_t	sk_leech_health3 = {"sk_leech_health3","0"};
-
-cvar_t	sk_leech_dmg_bite1 = {"sk_leech_dmg_bite1","0"};
-cvar_t	sk_leech_dmg_bite2 = {"sk_leech_dmg_bite2","0"};
-cvar_t	sk_leech_dmg_bite3 = {"sk_leech_dmg_bite3","0"};
+DECLARE_SKILL_CVARS(leech_health);
+DECLARE_SKILL_CVARS(leech_dmg_bite);
 
 // Controller
 cvar_t	sk_controller_health1 = {"sk_controller_health1","0"};
@@ -626,10 +527,6 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &sv_new_impulse_check );
 	CVAR_REGISTER( &server_cfg );
-
-	CVAR_REGISTER( &as_plugin_list_file );
-
-	CVAR_REGISTER( &as_mysql_config );
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt

@@ -1,7 +1,7 @@
 ###################################################
 #                                                 #
 #                                                 #
-#	Half-Life Enhanced CMake build file           #
+#  Spirit of Half-Life Enhanced CMake build file  #
 #                                                 #
 #                                                 #
 ###################################################
@@ -17,7 +17,7 @@ include( MSVCRuntime )
 include( WinXPSupport )
 include( Ternary )
 
-project( HLEnhanced )
+project( SOHLEnhanced )
 
 #C++14 support
 set( SHARED_COMPILER_FLAGS "-std=c++1y" )
@@ -44,7 +44,7 @@ endif()
 
 #Base dir for game outputs
 set( GAME_BIN_PATH "${STEAMCOMMON}/Half-Life" )
-set( GAME_BASE_PATH "${GAME_BIN_PATH}/hlenhanced" )
+set( GAME_BASE_PATH "${GAME_BIN_PATH}/sohlenhanced" )
 
 message( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
@@ -278,8 +278,6 @@ if( NOT CLANG_DB_BUILD )
 	find_package( SDL2 MODULE REQUIRED )
 endif()
 
-
-
 if( USE_VGUI2 )
 	set( VGUI2_LIBS
 		vgui2_controls
@@ -358,76 +356,31 @@ add_subdirectory( game/server )
 
 preprocess_sources()
 
-add_library( hl SHARED ${PREP_SRCS} )
+add_library( spirit SHARED ${PREP_SRCS} )
 
 #Needs static CRT to avoid alloc issues.
-configure_msvc_runtime( hl STATIC )
+configure_msvc_runtime( spirit STATIC )
 
-check_winxp_support( hl )
+check_winxp_support( spirit )
 
-target_include_directories( hl PRIVATE
+target_include_directories( spirit PRIVATE
 	${SHARED_INCLUDE_PATHS}
 	${SHARED_EXTERNAL_INCLUDE_PATHS}
 )
 
-if( USE_AS_SQL )
-	target_include_directories( hl PRIVATE
-		${EXTERNAL_DIR}/CTPL/include
-		${EXTERNAL_DIR}/SQLite/include
-		${EXTERNAL_DIR}/MariaDB/include
-		${EXTERNAL_DIR}/ASSQL/include
-	)
-endif()
-
-target_compile_definitions( hl PRIVATE
+target_compile_definitions( spirit PRIVATE
 	${SHARED_DEFS}
 	${SHARED_GAME_DEFS}
 	SERVER_DLL
-	USE_AS_SQL=${USE_AS_SQL_DEFINE}
 )
 
 #Copy the libraries first so they can be found by the code below.
 set( LIBS_TO_COPY )
 
-if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
-	if( WIN32 )
-		#Copy the sqlite3 dll so the exe can get to it
-		set( LIBS_TO_COPY ${LIBS_TO_COPY} "${EXTERNAL_DIR}/SQLite/lib/sqlite3.dll" )
-	else()
-		#Copy the sqlite3 library so the exe can get to it
-		#Copy the mariadb library so the exe can get to it		
-		set( LIBS_TO_COPY ${LIBS_TO_COPY} "${EXTERNAL_DIR}/SQLite/lib/libsqlite3.so" "${EXTERNAL_DIR}/MariaDB/lib/libmariadb.so.2" )
-	endif()
-endif()
-
 foreach( lib IN LISTS LIBS_TO_COPY )
 	message( STATUS "Copying library \"${lib}\"" )
 	file( COPY ${lib} DESTINATION ${GAME_BASE_PATH} )
 endforeach()
-
-#Find server dependencies
-if( USE_AS_SQL AND NOT CLANG_DB_BUILD )
-	find_library( ASSQL AngelscriptSQL PATHS external/ASSQL/lib/ )
-	find_library( ASSQLD AngelscriptSQLd PATHS external/ASSQL/lib/ )
-
-	if( WIN32 )
-		#Never use the default install for these (we need our builds with PDBs).
-		find_library( SQLITE3 "sqlite3${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/SQLite/lib NO_DEFAULT_PATH )
-		find_library( MARIADB "mariadbclient${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/MariaDB/lib/release NO_DEFAULT_PATH )
-		find_library( MARIADBD "mariadbclient${CMAKE_STATIC_LIBRARY_SUFFIX}" PATHS external/MariaDB/lib/debug NO_DEFAULT_PATH )
-	else()
-		#Never use the default install for these (could try to use 64 bit versions, which don't work for 32 bit builds).
-		find_library( SQLITE3 "${CMAKE_SHARED_LIBRARY_PREFIX}sqlite3${CMAKE_SHARED_LIBRARY_SUFFIX}" PATHS "${GAME_BASE_PATH}" NO_DEFAULT_PATH )
-		find_library( MARIADB "${CMAKE_SHARED_LIBRARY_PREFIX}mariadb.so.2" PATHS "${GAME_BASE_PATH}" NO_DEFAULT_PATH )
-		set( MARIADBD ${MARIADB} )
-	endif()
-else()
-	set( ASSQL )
-	set( ASSQLD )
-	set( SQLITE3 )
-	set( MARIADB )
-	set( MARIADBD )
-endif()
 
 #Set the list of platform specific libraries
 if( WIN32 )
@@ -436,7 +389,7 @@ else()
 	set( SERVER_PLAT_LIBS dl )
 endif()
 
-target_link_libraries( hl 
+target_link_libraries( spirit 
 	${DELAYIMP}
 	Threads::Threads
 	${SERVER_PLAT_LIBS}
@@ -446,7 +399,7 @@ target_link_libraries( hl
 
 #CMake places libraries in /Debug or /Release on Windows, so explicitly set the paths for both.
 #On Linux, it uses LIBRARY_OUTPUT_DIRECTORY
-set_target_properties( hl PROPERTIES
+set_target_properties( spirit PROPERTIES
 	LIBRARY_OUTPUT_DIRECTORY "${GAME_BASE_PATH}/dlls"
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG "${GAME_BASE_PATH}/dlls"
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE "${GAME_BASE_PATH}/dlls"
@@ -455,18 +408,12 @@ set_target_properties( hl PROPERTIES
 set( SERVER_LINK_FLAGS )
 
 if( MSVC )
-	if( USE_AS_SQL )
-		set( SQL_DLL_DELAYLOAD "/DELAYLOAD:sqlite3.dll" )
-	else()
-		set( SQL_DLL_DELAYLOAD )
-	endif()
-	
 	#Copy the def file so it's local to the binary directory
-	file( COPY ${CMAKE_SOURCE_DIR}/hl.def DESTINATION ${CMAKE_BINARY_DIR} )
+	file( COPY ${CMAKE_SOURCE_DIR}/spirit.def DESTINATION ${CMAKE_BINARY_DIR} )
 
 	#Add the module definition file. Needed for GiveFnptrsToDll function export.
 	#Add delay loaded libraries.
-	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD}" )
+	set( SERVER_LINK_FLAGS "/DEF:spirit.def ${SQL_DLL_DELAYLOAD}" )
 else()
 	if( NOT APPLE )
 		#Generate a map file that provides information about the linking stage.
@@ -477,13 +424,13 @@ else()
 endif()
 
 #SQL libraries are delay loaded to keep them in the game directory.
-set_target_properties( hl PROPERTIES
+set_target_properties( spirit PROPERTIES
 	COMPILE_FLAGS "${WARNING_LEVEL_STRICTEST}" 
 	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
 )
 
 #No lib prefix
-set_target_properties( hl PROPERTIES PREFIX "" )
+set_target_properties( spirit PROPERTIES PREFIX "" )
 
 #Create filters
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
@@ -493,7 +440,3 @@ clear_sources()
 #
 #End server library
 #
-
-#TODO: add utility exes here
-
-#project( HLEnhanced_Utils )

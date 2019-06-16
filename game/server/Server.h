@@ -20,6 +20,17 @@ void GameDLLInit();
 
 void GameDLLShutdown();
 
+//Macros to make skill cvars easier to define
+#define DECLARE_SKILL_CVARS( name )					\
+cvar_t	sk_##name##1 = { "sk_" #name "1", "0" };	\
+cvar_t	sk_##name##2 = { "sk_" #name "2", "0" };	\
+cvar_t	sk_##name##3 = { "sk_" #name "3", "0" }
+
+#define REGISTER_SKILL_CVARS( name )	\
+CVAR_REGISTER( &sk_##name##1 );			\
+CVAR_REGISTER( &sk_##name##2 );			\
+CVAR_REGISTER( &sk_##name##3 )
+
 extern cvar_t g_DummyCvar;
 
 extern cvar_t	displaysoundlist;
@@ -42,8 +53,6 @@ extern cvar_t	defaultteam;
 extern cvar_t	allowmonsters;
 extern cvar_t	sv_new_impulse_check;
 extern cvar_t	server_cfg;
-extern cvar_t	as_plugin_list_file;
-extern cvar_t	as_mysql_config;
 
 // Engine Cvars
 extern cvar_t	*g_psv_gravity;

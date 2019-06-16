@@ -141,7 +141,7 @@ public:
 	/**
 	*	This is the game name that gets seen in the server browser
 	*/
-	virtual const char *GetGameDescription() const { return "Half-Life"; }
+	virtual const char *GetGameDescription() const { return "Spirit of Half-Life"; }
 	
 // Client connection/disconnection
 
