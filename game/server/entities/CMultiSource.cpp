@@ -65,30 +65,23 @@ void CMultiSource::Spawn()
 
 void CMultiSource::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	int i;
-
-	bool bFound = false;
+	int i = 0;
 
 	// Find the entity in our list
-	for( i = 0; i < m_iTotal; ++i )
-	{
-		if( m_rgEntities[ i ] == pCaller )
-		{
-			bFound = true;
+	while (i < m_iTotal)
+		if (m_rgEntities[i++] == pCaller)
 			break;
-		}
-	}
 
 	// if we didn't find it, report error and leave
-	if( !bFound )
+	if (i > m_iTotal)
 	{
-		ALERT( at_console, "MultiSrc:Used by non member %s.\n", pCaller->GetClassname() );
+		ALERT(at_console, "MultiSrc:Used by non member %s.\n", STRING(pCaller->pev->classname));
 		return;
 	}
 
 	// CONSIDER: a Use input to the multisource always toggles.  Could check useType for ON/OFF/TOGGLE
 
-	m_rgTriggered[ i ] ^= 1;
+	m_rgTriggered[i - 1] ^= 1;
 
 	// 
 	if( IsTriggered( pActivator ) )
