@@ -156,9 +156,9 @@ after_success:
     - cd ../fake_steamcommon/Half-Life/Hu3-Life/
     - |
       if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-        curl --ftp-create-dirs -T dlls/hl.so -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
-        curl --ftp-create-dirs -T cl_dlls/client.so -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
+        curl --ftp-create-dirs -T dlls/hl.so -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/modulos/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
+        curl --ftp-create-dirs -T cl_dlls/client.so -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/modulos/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
       else
-        curl --ftp-create-dirs -T dlls/hl.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
-        curl --ftp-create-dirs -T cl_dlls/client.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
+        curl --ftp-create-dirs -T dlls/hl.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/modulos/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/dlls/
+        curl --ftp-create-dirs -T cl_dlls/client.dylib -u $FTP_USER:$FTP_PASSWORD ftp://files.000webhost.com/public_html/modulos/hu3-life/fake_steamcommon/Half-Life/Hu3-Life/cl_dlls/
       fi
