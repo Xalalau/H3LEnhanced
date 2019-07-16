@@ -1,7 +1,7 @@
 ###################################################
 #                                                 #
 #                                                 #
-#  Spirit of Half-Life Enhanced CMake build file  #
+#           HLEnhanced CMake build file           #
 #                                                 #
 #                                                 #
 ###################################################
@@ -17,7 +17,7 @@ include( MSVCRuntime )
 include( WinXPSupport )
 include( Ternary )
 
-project( SOHLEnhanced )
+project( HLEnhanced )
 
 #C++14 support
 set( SHARED_COMPILER_FLAGS "-std=c++1y" )
@@ -44,7 +44,7 @@ endif()
 
 #Base dir for game outputs
 set( GAME_BIN_PATH "${STEAMCOMMON}/Half-Life" )
-set( GAME_BASE_PATH "${GAME_BIN_PATH}/sohlenhanced" )
+set( GAME_BASE_PATH "${GAME_BIN_PATH}/HLEnhanced" )
 
 message( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
@@ -356,19 +356,19 @@ add_subdirectory( game/server )
 
 preprocess_sources()
 
-add_library( spirit SHARED ${PREP_SRCS} )
+add_library( hl SHARED ${PREP_SRCS} )
 
 #Needs static CRT to avoid alloc issues.
-configure_msvc_runtime( spirit STATIC )
+configure_msvc_runtime( hl STATIC )
 
-check_winxp_support( spirit )
+check_winxp_support( hl )
 
-target_include_directories( spirit PRIVATE
+target_include_directories( hl PRIVATE
 	${SHARED_INCLUDE_PATHS}
 	${SHARED_EXTERNAL_INCLUDE_PATHS}
 )
 
-target_compile_definitions( spirit PRIVATE
+target_compile_definitions( hl PRIVATE
 	${SHARED_DEFS}
 	${SHARED_GAME_DEFS}
 	SERVER_DLL
@@ -389,7 +389,7 @@ else()
 	set( SERVER_PLAT_LIBS dl )
 endif()
 
-target_link_libraries( spirit 
+target_link_libraries( hl 
 	${DELAYIMP}
 	Threads::Threads
 	${SERVER_PLAT_LIBS}
@@ -399,7 +399,7 @@ target_link_libraries( spirit
 
 #CMake places libraries in /Debug or /Release on Windows, so explicitly set the paths for both.
 #On Linux, it uses LIBRARY_OUTPUT_DIRECTORY
-set_target_properties( spirit PROPERTIES
+set_target_properties( hl PROPERTIES
 	LIBRARY_OUTPUT_DIRECTORY "${GAME_BASE_PATH}/dlls"
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG "${GAME_BASE_PATH}/dlls"
 	RUNTIME_OUTPUT_DIRECTORY_RELEASE "${GAME_BASE_PATH}/dlls"
@@ -409,11 +409,11 @@ set( SERVER_LINK_FLAGS )
 
 if( MSVC )
 	#Copy the def file so it's local to the binary directory
-	file( COPY ${CMAKE_SOURCE_DIR}/spirit.def DESTINATION ${CMAKE_BINARY_DIR} )
+	file( COPY ${CMAKE_SOURCE_DIR}/hl.def DESTINATION ${CMAKE_BINARY_DIR} )
 
 	#Add the module definition file. Needed for GiveFnptrsToDll function export.
 	#Add delay loaded libraries.
-	set( SERVER_LINK_FLAGS "/DEF:spirit.def ${SQL_DLL_DELAYLOAD}" )
+	set( SERVER_LINK_FLAGS "/DEF:hl.def ${SQL_DLL_DELAYLOAD}" )
 else()
 	if( NOT APPLE )
 		#Generate a map file that provides information about the linking stage.
@@ -424,13 +424,13 @@ else()
 endif()
 
 #SQL libraries are delay loaded to keep them in the game directory.
-set_target_properties( spirit PROPERTIES
+set_target_properties( hl PROPERTIES
 	COMPILE_FLAGS "${WARNING_LEVEL_STRICTEST}" 
 	LINK_FLAGS "${SHARED_GAME_LINKER_FLAGS} ${SERVER_LINK_FLAGS}"
 )
 
 #No lib prefix
-set_target_properties( spirit PROPERTIES PREFIX "" )
+set_target_properties( hl PROPERTIES PREFIX "" )
 
 #Create filters
 create_source_groups( "${CMAKE_SOURCE_DIR}" )
