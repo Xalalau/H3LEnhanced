@@ -3,7 +3,11 @@
 #
 
 # Prefer game install directory (for shared libs)
-find_library( SDL2_LIB NAMES SDL2.lib libSDL2-2.0.so.0 libSDL2-2.0.0.dylib PATHS ${SDL2_DIR} ${CMAKE_SOURCE_DIR}/external/SDL2/lib NO_DEFAULT_PATH )
+############ hu3lifezado ############
+# (R4to0)
+# Invertido a ordem de busca das bibliotecas SDL. Corrige o linker do mesmo no Mac OSX e continua compilando corretamente no Linux.
+find_library( SDL2_LIB NAMES SDL2.lib libSDL2-2.0.0.dylib libSDL2-2.0.so.0 PATHS ${SDL2_DIR} ${CMAKE_SOURCE_DIR}/external/SDL2/lib NO_DEFAULT_PATH )
+############
 
 include( FindPackageHandleStandardArgs )
 find_package_handle_standard_args( SDL2 DEFAULT_MSG SDL2_LIB )

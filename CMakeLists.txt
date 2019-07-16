@@ -1,8 +1,8 @@
 ###################################################
 #                                                 #
-#                                                 #
-#           HLEnhanced CMake build file           #
-#                                                 #
+#   // ############ hu3lifezado ############ //   #
+#            Hu3-Life CMake build file            #
+#                // ############ //               #
 #                                                 #
 ###################################################
 cmake_minimum_required( VERSION 3.6 )
@@ -16,20 +16,50 @@ include( InputFilesList )
 include( MSVCRuntime )
 include( WinXPSupport )
 include( Ternary )
+############ hu3lifezado ############
+# (Xalalau)
+# Adicionado: pastas do Hu3-Life
+#
+# (R4to0)
+# Removido parâmetro do C++ que estava sendo usado no compilador C. Corrige "invalid argument '-std=c++1y' not allowed with 'C/ObjC'" no Mac OSX.
+# Removido a flag -g do compilador em modo release. Isso estava deixando as bibiliotecas com tamanho superior a 200MB!!!
+# A flag -g agora é usada apenas quando compilado em modo DEBUG.
+# Adicionado -m32 na exceção do Mac OSX por questões de segurança (este estava definido no SHARED_COMPILER_FLAGS que não é usado aqui por causa do -std=c++1y.
+# Habilitado o CMAKE_SKIP_RPATH para que nãp grave caminhos fixos no linker (procura bibliotecas linkadas no $LD_LIBRARY_PATH).
+# Melhorias nos comentários.
+#
+# Agradecimentos ao Duggles (Sven Co-op Team) por apontar o problema com o parâmetro -g, que fazia os .so ficarem com tamanho absurdo (Thanks a lot Duggles!).
+project( Hu3-Life )
 
-project( HLEnhanced )
+# Remove caminhos de diretorios no rpath
+# https://cmake.org/cmake/help/latest/variable/CMAKE_SKIP_RPATH.html
+set( CMAKE_SKIP_RPATH true )
 
 #C++14 support
 set( SHARED_COMPILER_FLAGS "-std=c++1y" )
 
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
-	# Always build as 32 bit
-	# Additional debug info for GDB.
-	set( SHARED_COMPILER_FLAGS "${SHARED_COMPILER_FLAGS} -m32 -g" )
+	# Sempre compilar em modo 32 bits (-m32)
+	set( SHARED_COMPILER_FLAGS "${SHARED_COMPILER_FLAGS} -m32" )
+
+	# Não usar -g em modo release
+	# Isso faz com que os binários compilados fiquem com tamanho muito grande!
+	if( CMAKE_BUILD_TYPE MATCHES DEBUG)
+		set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g" )
+		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g" )
+	endif()
 endif()
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SHARED_COMPILER_FLAGS}" )
-set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SHARED_COMPILER_FLAGS}" )
+
+# No Mac OSX, o compilador C não aceita o parâmetro -std=c++1y que está no SHARED_COMPILER_FLAGS,
+# então definimos os outros parâmetros manaulmente aqui sem este.
+if( APPLE )
+	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" )
+else()
+	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SHARED_COMPILER_FLAGS}" )
+endif()
+############
 
 unset( SHARED_COMPILER_FLAGS )
 
@@ -44,7 +74,9 @@ endif()
 
 #Base dir for game outputs
 set( GAME_BIN_PATH "${STEAMCOMMON}/Half-Life" )
-set( GAME_BASE_PATH "${GAME_BIN_PATH}/HLEnhanced" )
+############ hu3lifezado ############
+set( GAME_BASE_PATH "${GAME_BIN_PATH}/Hu3-Life" )
+############
 
 message( STATUS "Base Game Path: ${GAME_BASE_PATH}" )
 
@@ -133,13 +165,18 @@ elseif( UNIX )
 		${SHARED_GAME_LINKER_FLAGS} "-mfpmath=387 -Werror=return-type -fvisibility=hidden "
 	)
 
-	if( APPLE )
-		set( SHARED_GAME_LINKER_FLAGS
-			${SHARED_GAME_LINKER_FLAGS} "-momit-leaf-frame-pointer -mtune=core2 "
-		)
-	else()
-		#Linux, Cygwin, etc.
-	endif()
+	############ hu3lifezado ############
+	# (R4to0)
+	# Removido parâmetros "-momit-leaf-frame-pointer" e "-mtune=core2" no Mac OSX. Corrige "clang: error: no such file or directory: ';<nome do parametro>'"
+	# TODO - Investigate why this fails on Mac (JoelTroch)
+	#if( APPLE )
+	#	set( SHARED_GAME_LINKER_FLAGS
+	#		${SHARED_GAME_LINKER_FLAGS} "-momit-leaf-frame-pointer -mtune=core2 "
+	#	)
+	#else()
+	#	#Linux, Cygwin, etc.
+	#endif()
+	############
 endif()
 
 #Highest warning level and warnings as errors
