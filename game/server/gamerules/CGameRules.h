@@ -141,7 +141,10 @@ public:
 	/**
 	*	This is the game name that gets seen in the server browser
 	*/
-	virtual const char *GetGameDescription() const { return "HLEnhanced"; }
+	// ############ hu3lifezado ############ //
+	// Nome mudado de Half-Life para Hu3-Life
+	virtual const char *GetGameDescription() const { return "Hu3-Life"; }
+	// ############ //
 	
 // Client connection/disconnection
 
