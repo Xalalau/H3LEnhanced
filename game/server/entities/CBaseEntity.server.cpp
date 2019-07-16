@@ -24,29 +24,34 @@ extern DLL_GLOBAL Vector		g_vecAttackDir;
 
 void SetObjectCollisionBox( entvars_t *pev );
 
+// ############ hu3lifezado ############ //
+// Capacidade do jogo processar sangue negativo
 // give health
-float CBaseEntity::GiveHealth( float flHealth, int bitsDamageType )
+float CBaseEntity::GiveHealth(float flHealth, int bitsDamageType)
 {
-	if( GetTakeDamageMode() == DAMAGE_NO )
-		return 0;
-
-	// heal
-	if( GetHealth() >= GetMaxHealth() )
+	if (GetTakeDamageMode() == DAMAGE_NO)
 		return 0;
 
 	const float flOldHealth = GetHealth();
 
-	float flNewHealth = GetHealth() + flHealth;
+	float flNewHealth = flOldHealth + flHealth;
 
-	//TODO: if the entity's health drops below 1, kill it. - Solokiller
+	if (flOldHealth >= GetMaxHealth() && flNewHealth >= flOldHealth)
+		return 0;
 
-	if( flNewHealth > GetMaxHealth() )
+	if (flNewHealth > GetMaxHealth())
 		flNewHealth = GetMaxHealth();
 
-	SetHealth( flNewHealth );
+	else if (flNewHealth <= 0 && flOldHealth == 1)
+		return 0;
+	else if (flNewHealth <= 0)
+		flNewHealth = 1;
+
+	SetHealth(flNewHealth);
 
 	return GetHealth() - flOldHealth;
 }
+// ############ //
 
 // inflict damage on this entity.  bitsDamageType indicates type of damage inflicted, ie: DMG_CRUSH
 
