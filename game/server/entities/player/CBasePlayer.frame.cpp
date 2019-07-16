@@ -345,6 +345,16 @@ void CBasePlayer::PostThink()
 	if( !IsAlive() )
 		goto pt_end;
 
+	// ############ hu3lifezado ############ //
+	// Roubei esse espaco para fazer coisas do hu3!
+	// Remover as armas do jogador
+	if (CVAR_GET_FLOAT("hu3_mp_strip") == 1)
+	{
+		RemoveAllItems(true);
+		CVAR_SET_FLOAT("hu3_mp_strip", 0);
+	}
+	// ############ //
+
 	// Handle Tank controlling
 	if( m_pTank != NULL )
 	{
