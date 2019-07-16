@@ -416,6 +416,11 @@ public:
 	*/
 	bool HasAmmo( CBasePlayerWeapon* pWeapon ) const;
 
+	// ############ hu3lifezado ############ //
+	// Informa se o jogador possui alguma municao no geral
+	bool HasAnyAmmo();
+	// ############ //
+
 	/**
 	*	Gets the first weapon in a given bucket, searching by position set in the weapon info file.
 	*/
