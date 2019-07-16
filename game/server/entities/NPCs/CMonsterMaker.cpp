@@ -271,6 +271,16 @@ void CMonsterMaker :: MakerThink ( void )
 //=========================================================
 void CMonsterMaker::DeathNotice( CBaseEntity* pChild )
 {
+	// ############ hu3lifezado ############ //
+	// HACKHACK!!
+	// Zombies e suas classes derivadas sao contados errados pelo DeathNotice (3 avisos por morte)...
+	// Contornei o problema fazendo essa checagem. Ela ajeita qualquer erro de contagem de mortes repetidas. -Xala
+	if (strcmp(pChild->GetClassname(), "super_dead") == 0)
+		return;
+	else
+		pChild->SetClassname("super_dead");
+	// ############ //
+
 	// ok, we've gotten the deathnotice from our child, now clear out its owner if we don't want it to fade.
 	--m_cLiveChildren;
 
