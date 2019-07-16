@@ -79,3 +79,18 @@ void CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbu
 
 	UTIL_TextMsg( static_cast<ClientPrintDest>( msg_dest ), msg_text, sstr1, sstr2, sstr3, sstr4 );
 }
+
+// ############ hu3lifezado ############ //
+// Nova funcao para facilitar a escrita de mensagens
+void CHudTextMessage::hu3_mensagem(char string[], int opcao)
+{
+	char string_aux[MSG_BUF_SIZE];
+
+	sprintf(string_aux, "%c%s", opcao, string);
+
+	int iSize = strlen(string_aux) + 1;
+	void *pbuf = string_aux;
+
+	MsgFunc_TextMsg(NULL, iSize, pbuf);
+}
+// ############ //
