@@ -71,6 +71,34 @@ void CBaseEntity::TraceBleed( const CTakeDamageInfo& info, Vector vecDir, TraceR
 	}
 	*/
 
+	// ############ hu3lifezado ############ //
+	// Mais sangue na parede!!
+	if (info.GetDamage() < 10)
+	{
+		flNoise = 0.1;
+		if (CVAR_GET_FLOAT("hu3_gore"))
+			cCount = 3;
+		else
+			cCount = 1;
+	}
+	else if (info.GetDamage() < 25)
+	{
+		flNoise = 0.2;
+		if (CVAR_GET_FLOAT("hu3_gore"))
+			cCount = 7;
+		else
+			cCount = 2;
+	}
+	else
+	{
+		flNoise = 0.3;
+		if (CVAR_GET_FLOAT("hu3_gore"))
+			cCount = 12;
+		else
+			cCount = 3;
+	}
+	// ############ //
+
 	if( info.GetDamage() < 10 )
 	{
 		flNoise = 0.1;

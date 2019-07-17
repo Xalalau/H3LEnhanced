@@ -51,6 +51,8 @@ cvar_t	allowmonsters={"mp_allowmonsters","0", FCVAR_SERVER };
 // ############ hu3lifezado ############ //
 // Remover as armas do jogador
 cvar_t	hu3_mp_strip = { "hu3_mp_strip","0", FCVAR_SERVER };
+// Tripas cagarrentas
+cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -343,6 +345,11 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &sv_new_impulse_check );
 	CVAR_REGISTER( &server_cfg );
+
+	// ############ hu3lifezado ############ //
+	// Tripas cagarrentas
+	CVAR_REGISTER(&hu3_gore);
+	// ############ //
 
 	// REGISTER CVARS FOR SKILL LEVEL STUFF
 

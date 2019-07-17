@@ -90,7 +90,13 @@ void CBaseMonster :: GibMonster( void )
 		if ( CVAR_GET_FLOAT("violence_hgibs") != 0 )	// Only the player will ever get here
 		{
 			CGib::SpawnHeadGib( this );
-			CGib::SpawnRandomGibs( this, 4, 1 );	// throw some human gibs.
+			// ############ hu3lifezado ############ //
+			// Mais tripas com gore e menos no modo coop
+			if (CVAR_GET_FLOAT("hu3_gore"))
+				CGib::SpawnRandomGibs(this, 5, 1);
+			else
+				CGib::SpawnRandomGibs(this, 2, 1); // throw some human gibs.
+			// ############ //
 		}
 		gibbed = true;
 	}
@@ -98,7 +104,13 @@ void CBaseMonster :: GibMonster( void )
 	{
 		if ( CVAR_GET_FLOAT("violence_agibs") != 0 )	// Should never get here, but someone might call it directly
 		{
-			CGib::SpawnRandomGibs( this, 4, 0 );	// Throw alien gibs
+			// ############ hu3lifezado ############ //
+			// Mais tripas com gore e menos no modo coop
+			if (CVAR_GET_FLOAT("hu3_gore"))
+				CGib::SpawnRandomGibs(this, 5, 1);
+			else
+				CGib::SpawnRandomGibs(this, 2, 1);	// throw alien gibs.
+			// ############ //
 		}
 		gibbed = true;
 	}
@@ -296,7 +308,14 @@ void CBaseMonster::BecomeDead( void )
 	
 	// give the corpse half of the monster's original maximum health. 
 	SetHealth( GetMaxHealth() / 2 );
-	SetMaxHealth( 5 ); // max_health now becomes a counter for how many blood decals the corpse can place.
+
+	// ############ hu3lifezado ############ //
+	// Mais sangue por corpo
+	if (CVAR_GET_FLOAT("hu3_gore"))
+		SetMaxHealth(GetHealth());
+	else
+		SetMaxHealth(5); // max_health now becomes a counter for how many blood decals the corpse can place.
+	// ############ //
 
 	// make the corpse fly away from the attack vector
 	SetMoveType( MOVETYPE_TOSS );
@@ -876,6 +895,12 @@ void CBaseMonster :: MakeDamageBloodDecal ( int cCount, float flNoise, TraceResu
 			SetMaxHealth( GetMaxHealth() - 1 );
 		}
 	}
+
+	// ############ hu3lifezado ############ //
+	// Alien solta mais sangue (nao tem padrao, eu adicionei, apenas delete)
+	if (CVAR_GET_FLOAT("hu3_gore"))
+		cCount += 5;
+	// ############ //
 
 	for ( i = 0 ; i < cCount ; i++ )
 	{

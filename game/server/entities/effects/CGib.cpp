@@ -48,12 +48,24 @@ void CGib::CreateGib( const char *szGibModel )
 	SetSize( Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
 	SetNextThink( gpGlobals->time + 4 );
-	m_lifeTime = 25;
+	// ############ hu3lifezado ############ //
+	// Diminui o tempo de vida dos gibs
+	if (CVAR_GET_FLOAT("hu3_gore"))
+		m_lifeTime = 5;
+	else
+		m_lifeTime = 25;
+	// ############ //
 	SetThink( &CGib::WaitTillLand );
 	SetTouch( &CGib::BounceGibTouch );
 
 	m_material = matNone;
-	m_cBloodDecals = 5;// how many blood decals this gib can place (1 per bounce until none remain). 
+	// ############ hu3lifezado ############ //
+	// Mais capacidade de cada tripa cagar tudo de sangue
+	if (CVAR_GET_FLOAT("hu3_gore"))
+		m_cBloodDecals = 9;
+	else
+		m_cBloodDecals = 3;// how many blood decals this gib can place (1 per bounce until none remain). 
+	// ############ //
 }
 
 //
@@ -69,16 +81,24 @@ void CGib::BounceGibTouch( CBaseEntity *pOther )
 
 	if( GetFlags().Any( FL_ONGROUND ) )
 	{
-		SetAbsVelocity( GetAbsVelocity() * 0.9 );
-		SetAbsAngles( Vector( 0, GetAbsAngles().y, 0 ) );
-		Vector vecAngles = GetAbsAngles();
-		vecAngles.x = 0;
-		vecAngles.z = 0;
-		SetAbsAngles( vecAngles );
-		Vector vecAVelocity = GetAngularVelocity();
-		vecAVelocity.x = 0;
-		vecAVelocity.z = 0;
-		SetAngularVelocity( vecAVelocity );
+		// ############ hu3lifezado ############ //
+		// Tripas saem voando feito loucas. Aceleram ao inves de desacelerar.
+		if (CVAR_GET_FLOAT("hu3_gore"))
+			SetAbsVelocity(GetAbsVelocity() * 3);
+		else
+			SetAbsVelocity(GetAbsVelocity() * 0.9);
+		// As seguintes foram comentadas para que o gib rode:
+
+		//SetAbsAngles( Vector( 0, GetAbsAngles().y, 0 ) );
+		//Vector vecAngles = GetAbsAngles();
+		//vecAngles.x = 0;
+		//vecAngles.z = 0;
+		//SetAbsAngles( vecAngles );
+		//Vector vecAVelocity = GetAngularVelocity();
+		//vecAVelocity.x = 0;
+		//vecAVelocity.z = 0;
+		//SetAngularVelocity( vecAVelocity );
+		// ############ //
 	}
 	else
 	{
@@ -139,13 +159,36 @@ void CGib::StickyGibTouch( CBaseEntity *pOther )
 //=========================================================
 void CGib::WaitTillLand( void )
 {
+	// ############ hu3lifezado ############ //
+	// Copiei esse fix da Valve que limita a velocidade do gib
+	if (CVAR_GET_FLOAT("hu3_gore"))
+	{
+		float length = pev->velocity.Length();
+
+		// ceiling at 1500.  The gib velocity equation is not bounded properly.  Rather than tune it
+		// in 3 separate places again, I'll just limit it here.
+		if (length > 1500.0)
+			pev->velocity = pev->velocity.Normalize() * 1500;		// This should really be sv_maxvelocity * 0.75 or something
+	}
+	// ############ //
+
 	if( !IsInWorld() )
 	{
 		UTIL_Remove( this );
 		return;
 	}
 
-	if( GetAbsVelocity() == g_vecZero )
+	// ############ hu3lifezado ############ //
+	// Alterei para iniciar o fade dos gibs na velocidade maxima ao inves de na minima (if ( pev->velocity == g_vecZero ))
+	bool unlock = false;
+
+	if (CVAR_GET_FLOAT("hu3_gore") && GetAbsVelocity() == GetAbsVelocity().Normalize() * 1500)
+		unlock = true;
+	else if (pev->velocity == g_vecZero)
+		unlock = true;
+
+	if (unlock)
+	// ############ //
 	{
 		SetThink( &CGib::SUB_StartFadeOut );
 		SetNextThink( gpGlobals->time + m_lifeTime );
