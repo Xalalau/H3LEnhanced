@@ -246,8 +246,14 @@ void CCrossbow::FireBolt()
 	}
 	else
 	{
-		pBolt->SetAbsVelocity( vecDir * BOLT_AIR_VELOCITY );
-		pBolt->SetSpeed( BOLT_AIR_VELOCITY );
+		// ############ hu3lifezado ############ //
+		// Aplico uma velocidade aleatoria no projetil
+		//pBolt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
+		//pBolt->pev->speed = BOLT_AIR_VELOCITY;
+		int auxiliar = RANDOM_FLOAT(10, 2500);
+		pBolt->SetAbsVelocity(vecDir * auxiliar);
+		pBolt->SetSpeed(auxiliar);
+		// ############ //
 	}
 
 	Vector vecAVelocity = pBolt->GetAngularVelocity();
