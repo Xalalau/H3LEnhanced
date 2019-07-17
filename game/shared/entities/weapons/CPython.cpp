@@ -16,6 +16,15 @@
 #include "util.h"
 #include "cbase.h"
 #include "Weapons.h"
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
+// ############ //
+
 #include "CPython.h"
 #include "entities/NPCs/Monsters.h"
 #include "CBasePlayer.h"
@@ -70,6 +79,31 @@ void CPython::Precache( void )
 	m_usFirePython = PRECACHE_EVENT( 1, "events/python.sc" );
 }
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Chamada do ponto de mira da terceira pessoa
+void CPython::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+// ############ //
+
 bool CPython::Deploy()
 {
 	if ( bIsMultiplayer() )
@@ -88,6 +122,18 @@ bool CPython::Deploy()
 
 void CPython::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+	// ############ //
+
 	m_fInReload = false;// cancel any reload in progress.
 
 	if ( m_fInZoom )
@@ -187,6 +233,18 @@ void CPython::Reload( void )
 {
 	if ( m_pPlayer->GetAmmoCountByID( PrimaryAmmoIndex() ) <= 0 )
 		return;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+	// ############ //
 
 	if ( m_pPlayer->GetFOV() != 0 )
 	{

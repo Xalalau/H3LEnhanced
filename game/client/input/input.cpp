@@ -58,6 +58,17 @@ cvar_t	*cl_yawspeed;
 cvar_t	*cl_pitchspeed;
 cvar_t	*cl_anglespeedkey;
 cvar_t	*cl_vsmoothing;
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Variavel usada para fazer a transicao entre os modos de terceira pessoa 2 e 3. Guarda o ultimo angulo de visao valido
+Vector hu3_viewangles_backup;
+// Variavel para dizer se a camera deve seguir o jogador por tras nos modos 2 e 3 da terceira pessoa (external em camera.h)
+bool hu3_cam_seguir_ply = false;
+// Variavel que controla os modos de camera. 0 = primeira pessoa; 1, 2 e 3 = terceiras pessoas (external em camera.h)
+int hu3_cam_valor;
+// ############ //
+
 /*
 ===============================================================================
 
@@ -350,6 +361,88 @@ void KeyUp (kbutton_t *b)
 	b->state |= 4; 		// impulse up
 }
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Movi essa funcao aqui para cima (para usar na terceira pessoa)
+/*
+===============
+CL_KeyState
+Returns 0.25 if a key was pressed and released during the frame,
+0.5 if it was pressed and held
+0 if held then released, and
+1.0 if held for the entire time
+===============
+*/
+float CL_KeyState(kbutton_t *key)
+{
+	float		val = 0.0;
+
+	//TODO: define these constants. - Solokiller
+	const int impulsedown = key->state & 2;
+	const int impulseup = key->state & 4;
+	const int down = key->state & 1;
+
+	if (impulsedown && !impulseup)
+	{
+		// pressed and held this frame?
+		val = down ? 0.5 : 0.0;
+	}
+
+	if (impulseup && !impulsedown)
+	{
+		// released this frame?
+		val = 0.0;//down ? 0.0 : 0.0;
+	}
+
+	if (!impulsedown && !impulseup)
+	{
+		// held the entire frame?
+		val = down ? 1.0 : 0.0;
+	}
+
+	if (impulsedown && impulseup)
+	{
+		if (down)
+		{
+			// released and re-pressed this frame
+			val = 0.75;
+		}
+		else
+		{
+			// pressed and released this frame
+			val = 0.25;
+		}
+	}
+
+	// clear impulses
+	key->state &= 1;
+	return val;
+}
+
+// Essa funcao diz se as cameras de terceira pessoa nos modos 2 e 3 devem automaticamente seguir o jogador por tras
+void hu3_AjustarCamera()
+{
+	// Jogador esta na terceira pessoa? O modo de camera do hu3 esta corretamente configurado para terceira pessoa?
+	if (cam_thirdperson && hu3_cam_valor)
+	{
+		// Esta sendo executada uma acao onde a camera deva automaticamente seguir o jogador?
+		// Nota: devemos checar aqui esses varios CL_KeyState()! Precisamos conferir tudo ao mesmo tempo! Checar tecla por tecla causa conflitos.
+		if (CL_KeyState(&in_forward) || CL_KeyState(&in_back) || CL_KeyState(&in_moveleft) || CL_KeyState(&in_moveright) || CL_KeyState(&in_use) || CL_KeyState(&in_duck) || CL_KeyState(&in_attack))
+		{
+			if (hu3_cam_valor != 2 && CL_KeyState(&in_attack)) // E o modo 2 na terceira pessoa? Infelizmente temos que forcar a camera para atras em eventos de tiro. Ha bugs da engine aqui.
+				return;
+			if (hu3_cam_seguir_ply == 0)
+				hu3_cam_seguir_ply = 1;
+		}
+		else // Nao. Modo com movimento livre.
+		{
+			if (hu3_cam_seguir_ply == 1)
+				hu3_cam_seguir_ply = 0;
+		}
+	}
+}
+// ############ //
+
 /*
 ============
 HUD_Key_Event
@@ -381,81 +474,92 @@ void IN_LeftUp(void) {KeyUp(&in_left);}
 void IN_RightDown(void) {KeyDown(&in_right);}
 void IN_RightUp(void) {KeyUp(&in_right);}
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Essa parte interage com a nossa funcao hu3_AjustarCamera()
 void IN_ForwardDown(void)
 {
 	KeyDown(&in_forward);
+	hu3_AjustarCamera();
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_FORWARD );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_FORWARD);
 }
 
 void IN_ForwardUp(void)
 {
 	KeyUp(&in_forward);
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsUp( IN_FORWARD );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsUp(IN_FORWARD);
+	hu3_AjustarCamera();
 }
 
 void IN_BackDown(void)
 {
 	KeyDown(&in_back);
-	
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_BACK );
+
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_BACK);
+	hu3_AjustarCamera();
 }
 
 void IN_BackUp(void)
 {
 	KeyUp(&in_back);
-	
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsUp( IN_BACK );
+
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsUp(IN_BACK);
+	hu3_AjustarCamera();
 }
-void IN_LookupDown(void) {KeyDown(&in_lookup);}
-void IN_LookupUp(void) {KeyUp(&in_lookup);}
-void IN_LookdownDown(void) {KeyDown(&in_lookdown);}
-void IN_LookdownUp(void) {KeyUp(&in_lookdown);}
+void IN_LookupDown(void) { KeyDown(&in_lookup); }
+void IN_LookupUp(void) { KeyUp(&in_lookup); }
+void IN_LookdownDown(void) { KeyDown(&in_lookdown); }
+void IN_LookdownUp(void) { KeyUp(&in_lookdown); }
 void IN_MoveleftDown(void)
 {
 	KeyDown(&in_moveleft);
-	
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_MOVELEFT );
+
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_MOVELEFT);
+	hu3_AjustarCamera();
 }
 
 void IN_MoveleftUp(void)
 {
 	KeyUp(&in_moveleft);
-	
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsUp( IN_MOVELEFT );
+
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsUp(IN_MOVELEFT);
+	hu3_AjustarCamera();
 }
 
 void IN_MoverightDown(void)
 {
 	KeyDown(&in_moveright);
-	
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_MOVERIGHT );
+
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_MOVERIGHT);
+	hu3_AjustarCamera();
 }
 
 void IN_MoverightUp(void)
 {
 	KeyUp(&in_moveright);
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsUp( IN_MOVERIGHT );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsUp(IN_MOVERIGHT);
+	hu3_AjustarCamera();
 }
-void IN_SpeedDown(void) {KeyDown(&in_speed);}
-void IN_SpeedUp(void) {KeyUp(&in_speed);}
-void IN_StrafeDown(void) {KeyDown(&in_strafe);}
-void IN_StrafeUp(void) {KeyUp(&in_strafe);}
+void IN_SpeedDown(void) { KeyDown(&in_speed); }
+void IN_SpeedUp(void) { KeyUp(&in_speed); }
+void IN_StrafeDown(void) { KeyDown(&in_strafe); }
+void IN_StrafeUp(void) { KeyUp(&in_strafe); }
 
 // needs capture by hud/vgui also
 extern void __CmdFunc_InputPlayerSpecial(void);
 
-void IN_Attack2Down(void) 
+void IN_Attack2Down(void)
 {
 	KeyDown(&in_attack2);
 
@@ -463,55 +567,59 @@ void IN_Attack2Down(void)
 	__CmdFunc_InputPlayerSpecial();
 #endif
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_ATTACK2 );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_ATTACK2);
 }
 
-void IN_Attack2Up(void) {KeyUp(&in_attack2);}
-void IN_UseDown (void)
+void IN_Attack2Up(void) { KeyUp(&in_attack2); }
+void IN_UseDown(void)
 {
 	KeyDown(&in_use);
-	
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_USE );
+
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_USE);
 }
-void IN_UseUp (void) {KeyUp(&in_use);}
-void IN_JumpDown (void)
+void IN_UseUp(void) { KeyUp(&in_use); }
+void IN_JumpDown(void)
 {
 	KeyDown(&in_jump);
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_JUMP );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_JUMP);
 }
-void IN_JumpUp (void) {KeyUp(&in_jump);}
+void IN_JumpUp(void) { KeyUp(&in_jump); }
 void IN_DuckDown(void)
 {
+	hu3_AjustarCamera();
 	KeyDown(&in_duck);
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_DUCK );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_DUCK);
 }
-void IN_DuckUp(void) {KeyUp(&in_duck);}
-void IN_ReloadDown(void) {KeyDown(&in_reload);}
-void IN_ReloadUp(void) {KeyUp(&in_reload);}
-void IN_Alt1Down(void) {KeyDown(&in_alt1);}
-void IN_Alt1Up(void) {KeyUp(&in_alt1);}
-void IN_GraphDown(void) {KeyDown(&in_graph);}
-void IN_GraphUp(void) {KeyUp(&in_graph);}
+void IN_DuckUp(void) { KeyUp(&in_duck); hu3_AjustarCamera(); }
+void IN_ReloadDown(void) { KeyDown(&in_reload); }
+void IN_ReloadUp(void) { KeyUp(&in_reload); }
+void IN_Alt1Down(void) { KeyDown(&in_alt1); }
+void IN_Alt1Up(void) { KeyUp(&in_alt1); }
+void IN_GraphDown(void) { KeyDown(&in_graph); }
+void IN_GraphUp(void) { KeyUp(&in_graph); }
 
 void IN_AttackDown(void)
 {
-	KeyDown( &in_attack );
+	KeyDown(&in_attack);
 
-	if( auto pSpectator = GETHUDCLASS( CHudSpectator ) )
-		pSpectator->HandleButtonsDown( IN_ATTACK );
+	if (auto pSpectator = GETHUDCLASS(CHudSpectator))
+		pSpectator->HandleButtonsDown(IN_ATTACK);
+	hu3_AjustarCamera();
 }
 
 void IN_AttackUp(void)
 {
-	KeyUp( &in_attack );
+	KeyUp(&in_attack);
+	hu3_AjustarCamera();
 	in_cancel = 0;
 }
+// ############ //
 
 // Special handling
 void IN_Cancel(void)
@@ -549,62 +657,6 @@ void IN_MLookUp (void)
 	{
 		V_StartPitchDrift();
 	}
-}
-
-/*
-===============
-CL_KeyState
-
-Returns 0.25 if a key was pressed and released during the frame,
-0.5 if it was pressed and held
-0 if held then released, and
-1.0 if held for the entire time
-===============
-*/
-float CL_KeyState (kbutton_t *key)
-{
-	float		val = 0.0;
-
-	//TODO: define these constants. - Solokiller
-	const int impulsedown	= key->state & 2;
-	const int impulseup		= key->state & 4;
-	const int down			= key->state & 1;
-	
-	if ( impulsedown && !impulseup )
-	{
-		// pressed and held this frame?
-		val = down ? 0.5 : 0.0;
-	}
-
-	if ( impulseup && !impulsedown )
-	{
-		// released this frame?
-		val = 0.0;//down ? 0.0 : 0.0;
-	}
-
-	if ( !impulsedown && !impulseup )
-	{
-		// held the entire frame?
-		val = down ? 1.0 : 0.0;
-	}
-
-	if ( impulsedown && impulseup )
-	{
-		if ( down )
-		{
-			// released and re-pressed this frame
-			val = 0.75;	
-		}
-		else
-		{
-			// pressed and released this frame
-			val = 0.25;	
-		}
-	}
-
-	// clear impulses
-	key->state &= 1;		
-	return val;
 }
 
 /*
@@ -766,7 +818,19 @@ void DLLEXPORT CL_CreateMove ( float frametime, usercmd_t *cmd, int active )
 
 	if ( g_iAlive )
 	{
-		cmd->viewangles = viewangles;
+		// ############ hu3lifezado ############ //
+		// [Terceira Pessoa]
+		// Adaptacoes para fazer pegar o modo 2 da terceira pessoa (cmd->viewangles = viewangles;)
+		if (hu3_cam_valor == 2 && hu3_cam_seguir_ply == 0)
+		{
+			cmd->viewangles = hu3_viewangles_backup;
+		}
+		else
+		{
+			cmd->viewangles = viewangles;
+			hu3_viewangles_backup = viewangles;
+		}
+		// ############ //
 		oldangles = viewangles;
 	}
 	else

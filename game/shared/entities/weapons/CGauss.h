@@ -98,9 +98,23 @@ public:
 					   // we need to know so we can pick the right set of effects. 
 	bool m_fPrimaryFire;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	unsigned short m_usGaussFire;
 	unsigned short m_usGaussSpin;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 
 	AttackState m_InAttack;
 };

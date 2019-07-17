@@ -66,6 +66,15 @@ void CBasePlayerWeapon::ResetEmptySound()
 
 bool CBasePlayerWeapon::CanDeploy() const
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Icone de recarga na terceira pessoa
+	if (m_pPlayer->hu3_cam_reloading_weapon)
+	{
+		m_pPlayer->hu3_cam_reloading_weapon = false;
+	}
+	// ############
+
 	bool bHasAmmo = false;
 
 	if( !pszAmmo1() )
@@ -103,6 +112,19 @@ bool CBasePlayerWeapon::DefaultReload( int iAnim, float fDelay, int body )
 
 	if( j == 0 )
 		return false;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+#ifdef CLIENT_DLL
+	
+	// Icone de recarga na terceira pessoa
+	if (gEngfuncs.pfnGetCvarFloat("hu3_cam") != 0)
+	{
+		m_pPlayer->hu3_cam_reloading_weapon = true;
+	}
+	
+#endif
+	// ############ //
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + fDelay;
 
@@ -168,6 +190,14 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 	if( ( m_fInReload ) && ( m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase() ) )
 	{
+		// ############ hu3lifezado ############ //
+		// [Terceira Pessoa]
+		// Icone de recarga na terceira pessoa
+		if (m_pPlayer->hu3_cam_reloading_weapon)
+		{
+			m_pPlayer->hu3_cam_reloading_weapon = false;
+}
+		// ############
 #ifdef SERVER_DLL // FIXME, need ammo on client to make this work right
 		// complete the reload. 
 		int j = min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] );

@@ -61,6 +61,12 @@ public:
 
 	void DecrementTimers( float flTime ) override;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	static int RecalculateBody( int iClip );
 
@@ -80,6 +86,14 @@ private:
 	float m_flNextAnimTime;
 
 	unsigned short m_usFireM249;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CM249_H
 

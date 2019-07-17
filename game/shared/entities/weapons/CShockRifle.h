@@ -57,6 +57,12 @@ public:
 
 	void ItemPostFrame() override;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	void RechargeAmmo( bool bLoud );
 
@@ -67,6 +73,14 @@ private:
 
 	float m_flRechargeTime;
 	float m_flSoundDelay;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CSHOCKRIFLE_H

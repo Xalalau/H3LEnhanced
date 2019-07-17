@@ -83,6 +83,12 @@ public:
 
 	void SetCrosshair( HSPRITE hCrosshair, const wrect_t& rect, int r, int g, int b );
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcao para religar o crosshair na primeira pessoa
+	void hu3ReativarCrosshair(void);
+	bool isPlayerDead(void);
+	// ############ //
 private:
 	int DrawBar( int x, int y, int width, int height, float f );
 	void DrawAmmoBar( CBasePlayerWeapon *p, int x, int y, int width, int height );

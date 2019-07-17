@@ -71,6 +71,12 @@ public:
 
 	void AltFireThink();
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	int m_iSpriteTexture;
 
@@ -83,6 +89,14 @@ private:
 	int m_iSoundState;
 
 	unsigned short m_usFireDisplacer;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CDISPLACER_H

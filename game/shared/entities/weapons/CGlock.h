@@ -46,9 +46,23 @@ public:
 	void Reload( void ) override;
 	void WeaponIdle( void ) override;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	void Holster() override;
+	// ############ //
+
 private:
 	int m_iShell;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;

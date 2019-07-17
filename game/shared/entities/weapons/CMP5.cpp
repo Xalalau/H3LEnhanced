@@ -18,6 +18,13 @@
 #include "cbase.h"
 #include "entities/NPCs/Monsters.h"
 #include "Weapons.h"
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
+// ############ //
 #include "CMP5.h"
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
@@ -74,6 +81,43 @@ void CMP5::Precache( void )
 	m_usMP5 = PRECACHE_EVENT( 1, "events/mp5.sc" );
 	m_usMP52 = PRECACHE_EVENT( 1, "events/mp52.sc" );
 }
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Criacao e modificacao do ponto de mira de terceira pessoa
+void CMP5::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+
+// Recolha da arma
+void CMP5::Holster()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+}
+// ############ //
 
 bool CMP5::AddToPlayer( CBasePlayer *pPlayer )
 {
@@ -214,6 +258,15 @@ void CMP5::Reload( void )
 {
 	if ( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] <= 0 )
 		return;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	m_pLaser->RemoveSpot(m_pLaser);
+	m_pLaser = nullptr;
+#endif
+	// ############ //
 
 	DefaultReload( MP5_RELOAD, 1.5 );
 }

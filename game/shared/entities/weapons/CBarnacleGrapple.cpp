@@ -27,6 +27,12 @@
 #include "gamerules/GameRules.h"
 #endif
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#include "entities/CHu3XSpot.h"
+// ############ //
+
 #include "CBarnacleGrapple.h"
 
 BEGIN_DATADESC( CBarnacleGrapple )
@@ -66,6 +72,31 @@ void CBarnacleGrapple::Precache()
 	UTIL_PrecacheOther( "grapple_tip" );
 }
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Chamada do ponto de mira da terceira pessoa
+void CBarnacleGrapple::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+// ############ //
+
 void CBarnacleGrapple::Spawn()
 {
 	Precache();
@@ -104,6 +135,18 @@ bool CBarnacleGrapple::Deploy()
 
 void CBarnacleGrapple::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+	// ############ //
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	SendWeaponAnim( BGRAPPLE_DOWN );

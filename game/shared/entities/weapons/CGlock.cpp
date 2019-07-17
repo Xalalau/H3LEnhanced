@@ -18,6 +18,15 @@
 #include "cbase.h"
 #include "entities/NPCs/Monsters.h"
 #include "Weapons.h"
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
+// ############ //
+
 #include "CGlock.h"
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
@@ -61,6 +70,43 @@ void CGlock::Precache( void )
 	m_usFireGlock1 = PRECACHE_EVENT( 1, "events/glock1.sc" );
 	m_usFireGlock2 = PRECACHE_EVENT( 1, "events/glock2.sc" );
 }
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Chamada do ponto de mira da terceira pessoa
+void CGlock::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+
+// Recolha da arma
+void CGlock::Holster()
+{
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif	
+}
+// ############ //
 
 bool CGlock::Deploy()
 {
@@ -152,6 +198,23 @@ void CGlock::Reload( void )
 		 return;
 
 	bool bResult;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira na terceira pessoa removida
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif	
+	// Tempo de recarga aumentado para acertar com a nova animacao. (1.5)
+	if (m_iClip == 0)
+		bResult = DefaultReload(GLOCK_RELOAD, 2.2);
+	else
+		bResult = DefaultReload(GLOCK_RELOAD_NOT_EMPTY, 2.2);
+	// ############ //
 
 	if (m_iClip == 0)
 		bResult = DefaultReload( GLOCK_RELOAD, 1.5 );

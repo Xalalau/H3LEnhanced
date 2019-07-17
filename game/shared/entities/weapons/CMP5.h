@@ -44,6 +44,13 @@ public:
 	void Reload( void ) override;
 	void WeaponIdle( void ) override;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	void Holster() override;
+	// ############ //
+
 	bool IsUseable() override;
 
 	float m_flNextAnimTime;
@@ -52,6 +59,14 @@ public:
 private:
 	unsigned short m_usMP5;
 	unsigned short m_usMP52;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CMP5_H

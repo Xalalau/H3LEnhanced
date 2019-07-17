@@ -47,12 +47,26 @@ public:
 
 	void ToggleZoom();
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	unsigned short m_usSniper;
 
 	bool m_bInZoom;
 	bool m_bReloading;
 	float m_flReloadStart;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CSNIPERRIFLE_H

@@ -115,6 +115,24 @@ void CHudAmmo::Init()
 	gHR.Init();
 }
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Funcao para religar o crosshair na primeira pessoa
+void CHudAmmo::hu3ReativarCrosshair()
+{
+	if (m_pCrosshair != NULL && m_pWeapon != NULL)
+	{
+		auto pHUDInfo = m_pWeapon->GetWeaponInfo()->GetHUDInfo();
+		SetCrosshair(pHUDInfo->GetAutoAim().hSprite, pHUDInfo->GetAutoAim().rect, 255, 255, 255);
+	}
+}
+
+bool CHudAmmo::isPlayerDead()
+{
+	return m_bPlayerDead;
+}
+// ############ //
+
 void CHudAmmo::Reset()
 {
 	m_fFade = 0;
@@ -431,22 +449,34 @@ void CHudAmmo::UpdateWeaponHUD( CBasePlayerWeapon* pWeapon, bool bOnTarget )
 {
 	auto pHUDInfo = pWeapon->GetWeaponInfo()->GetHUDInfo();
 
-	//TODO: define 90 constant - Solokiller
-	if( Hud().GetFOV() >= 90 )
-	{ // normal crosshairs
-		if( bOnTarget && pHUDInfo->GetAutoAim().hSprite )
-			SetCrosshair( pHUDInfo->GetAutoAim().hSprite, pHUDInfo->GetAutoAim().rect, 255, 255, 255 );
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// So mostra o crosshair na primeira pessoa
+	wrect_t nullrc = {};
+
+	if (gEngfuncs.pfnGetCvarFloat("hu3_cam") == 0)
+	{
+		//TODO: define 90 constant - Solokiller
+		if (Hud().GetFOV() >= 90)
+		{ // normal crosshairs
+			if (bOnTarget && pHUDInfo->GetAutoAim().hSprite)
+				SetCrosshair(pHUDInfo->GetAutoAim().hSprite, pHUDInfo->GetAutoAim().rect, 255, 255, 255);
+			else
+				SetCrosshair(pHUDInfo->GetCrosshair().hSprite, pHUDInfo->GetCrosshair().rect, 255, 255, 255);
+		}
 		else
-			SetCrosshair( pHUDInfo->GetCrosshair().hSprite, pHUDInfo->GetCrosshair().rect, 255, 255, 255 );
+		{ // zoomed crosshairs
+			if (bOnTarget && pHUDInfo->GetZoomedAutoAim().hSprite)
+				SetCrosshair(pHUDInfo->GetZoomedAutoAim().hSprite, pHUDInfo->GetZoomedAutoAim().rect, 255, 255, 255);
+			else
+				SetCrosshair(pHUDInfo->GetZoomedCrosshair().hSprite, pHUDInfo->GetZoomedCrosshair().rect, 255, 255, 255);
+		}
 	}
 	else
-	{ // zoomed crosshairs
-		if( bOnTarget && pHUDInfo->GetZoomedAutoAim().hSprite )
-			SetCrosshair( pHUDInfo->GetZoomedAutoAim().hSprite, pHUDInfo->GetZoomedAutoAim().rect, 255, 255, 255 );
-		else
-			SetCrosshair( pHUDInfo->GetZoomedCrosshair().hSprite, pHUDInfo->GetZoomedCrosshair().rect, 255, 255, 255 );
-
+	{
+		SetCrosshair(0, nullrc, 0, 0, 0);
 	}
+	// ############ //
 
 	m_fFade = 200.0f; //!!!
 	GetFlags() |= HUD_ACTIVE;

@@ -69,12 +69,26 @@ public:
 
 	void SetWeaponData( const weapon_data_t& data ) override;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	unsigned short m_usFireSpore;
 
 	ReloadState m_ReloadState;
 
 	float m_flNextReload;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CSPORELAUNCHER_H

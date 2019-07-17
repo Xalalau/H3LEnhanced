@@ -18,6 +18,15 @@
 #include "CBasePlayer.h"
 #include "entities/NPCs/Monsters.h"
 #include "Weapons.h"
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
+// ############ //
+
 #include "CEgon.h"
 #include "nodes/Nodes.h"
 #include "Effects.h"
@@ -87,6 +96,30 @@ void CEgon::Precache( void )
 	m_usEgonStop = PRECACHE_EVENT ( 1, "events/egon_stop.sc" );
 }
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Chamada do ponto de mira da terceira pessoa
+void CEgon::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+// ############ //
 
 bool CEgon::Deploy()
 {
@@ -107,10 +140,20 @@ bool CEgon::AddToPlayer( CBasePlayer *pPlayer )
 	return false;
 }
 
-
-
 void CEgon::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+	// ############ //
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( EGON_HOLSTER );
 

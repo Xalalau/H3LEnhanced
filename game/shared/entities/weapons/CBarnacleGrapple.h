@@ -64,6 +64,12 @@ public:
 
 	void SecondaryAttack() override;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 private:
 	void Fire( const Vector& vecOrigin, const Vector& vecDir );
 	void EndAttack();
@@ -87,6 +93,12 @@ private:
 	bool m_bMissed;
 
 	bool m_bMomentaryStuck;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+	CHu3XSpot* m_pLaser;
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CBARNACLEGRAPPLE_H

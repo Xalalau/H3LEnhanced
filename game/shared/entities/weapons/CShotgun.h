@@ -63,6 +63,13 @@ public:
 	float m_flNextReload;
 	int m_iShell;
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	void Holster() override;
+	// ############ //
+
 	void GetWeaponData( weapon_data_t& data ) override
 	{
 		BaseClass::GetWeaponData( data );
@@ -86,6 +93,13 @@ private:
 
 	ReloadState m_InSpecialReload;		// Are we in the middle of a reload for the shotguns
 	float m_flPumpTime;
+
+	// ############ hu3lifezado ############ //
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CSHOTGUN_H

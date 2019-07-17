@@ -148,6 +148,14 @@ private:
 	bool m_bSentInitData = false;
 	
 public:
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Se o jogador esta em terceira pessoa e carregando, esse valor e true
+	bool hu3_cam_reloading_weapon;
+	// Ativacao do sprite de mira em terceira pessoa
+	int hu3_cam_crosshair;
+	// ############
+
 	// Spectator camera
 	void	Observer_FindNextPlayer( bool bReverse );
 	void	Observer_HandleButtons();

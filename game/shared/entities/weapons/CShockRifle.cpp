@@ -24,6 +24,14 @@
 #include "gamerules/GameRules.h"
 #endif
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
+// ############ //
+
 #include "CShockRifle.h"
 
 BEGIN_DATADESC( CShockRifle )
@@ -57,6 +65,31 @@ void CShockRifle::Precache()
 
 	m_usShockRifle = PRECACHE_EVENT( 1, "events/shock.sc" );
 }
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Chamada do ponto de mira da terceira pessoa
+void CShockRifle::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+// ############ //
 
 void CShockRifle::Spawn()
 {
@@ -114,6 +147,18 @@ bool CShockRifle::Deploy()
 
 void CShockRifle::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+	// ############ //
+
 	m_fInReload = false;
 
 	SetThink( nullptr );

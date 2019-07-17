@@ -23,6 +23,14 @@
 #include "entities/weapons/CSpore.h"
 #endif
 
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Entidade generica da mira em terceira pessoa
+#ifndef CLIENT_DLL
+#include "entities/CHu3XSpot.h"
+#endif
+// ############ //
+
 #include "CSporeLauncher.h"
 
 BEGIN_DATADESC( CSporeLauncher )
@@ -54,6 +62,31 @@ void CSporeLauncher::Precache()
 
 	m_usFireSpore = PRECACHE_EVENT( 1, "events/spore.sc" );
 }
+
+// ############ hu3lifezado ############ //
+// [Terceira Pessoa]
+// Chamada do ponto de mira da terceira pessoa
+void CSporeLauncher::ItemPreFrame(void)
+{
+#ifndef CLIENT_DLL
+	if (m_pPlayer->hu3_cam_crosshair == 0)
+	{
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pLaser)
+			m_pLaser = CHu3XSpot::CreateSpot();
+
+		m_pLaser->UpdateSpot(m_pPlayer, m_pLaser);
+	}
+#endif	
+}
+// ############ //
 
 void CSporeLauncher::Spawn()
 {
@@ -91,6 +124,18 @@ bool CSporeLauncher::Deploy()
 
 void CSporeLauncher::Holster()
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+	if (m_pLaser)
+	{
+		m_pLaser->RemoveSpot(m_pLaser);
+		m_pLaser = nullptr;
+	}
+#endif
+	// ############ //
+
 	m_ReloadState = ReloadState::NOT_RELOADING;
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;

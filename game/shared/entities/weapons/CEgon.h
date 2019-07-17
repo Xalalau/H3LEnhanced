@@ -95,6 +95,12 @@ public:
 		m_fireState = data.iuser3;
 	}
 
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Funcoes para renderizar a mira em terceira pessoa
+	void ItemPreFrame(void);
+	// ############ //
+
 	CBeam				*m_pBeam;
 	CBeam				*m_pNoise;
 	CSprite				*m_pSprite;
@@ -106,6 +112,14 @@ private:
 	int					m_fireState;
 	float				m_shakeTime;
 	bool				m_deployed;
+
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Mira em terceira pessoa
+#ifndef CLIENT_DLL
+	CHu3XSpot* m_pLaser;
+#endif
+	// ############ //
 
 	unsigned short m_usEgonFire;
 };
