@@ -100,6 +100,30 @@ void CWeaponBox::Touch( CBaseEntity *pOther )
 				//ALERT ( at_console, "trying to give %s\n", m_rgpPlayerItems[ i ]->GetClassname() );
 
 				pItem = m_rgpPlayerItems[ i ];
+
+				// ############ hu3lifezado ############ //
+				// Tiro secundario, adaptado de:
+				// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+				// Hack for flying_crowbar. Dont pickup if player already has crowbar. 
+				if (pItem->m_iId == WEAPON_CROWBAR)
+				{
+					int j;
+					// check if the player already has this weapon
+					for (j = 0; j < MAX_WEAPON_SLOTS; j++)
+					{
+						CBasePlayerWeapon *it = pPlayer->m_rgpPlayerItems[j];
+
+						while (it != NULL)
+						{
+							if (it->m_iId == WEAPON_CROWBAR)
+								return;
+
+							it = it->m_pNext;
+						}
+					}
+				}
+				// ############ //
+
 				m_rgpPlayerItems[ i ] = m_rgpPlayerItems[ i ]->m_pNext;// unlink this weapon from the box
 
 				if( pPlayer->AddPlayerItem( pItem ) )
@@ -298,6 +322,16 @@ bool CWeaponBox::PackWeapon( CBasePlayerWeapon *pWeapon )
 	pWeapon->m_pPlayer = NULL;
 
 	//ALERT ( at_console, "packed %s\n", pWeapon->GetClassname() );
+
+	// ############ hulifezado ############ //
+	// Tiro secundario, adaptado de:
+	// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+	// If we are packing a crowbar, change the model to the world crowbar. 
+	if (pWeapon->m_iId == WEAPON_CROWBAR)
+	{
+		SET_MODEL(ENT(pev), "models/w_crowbar.mdl");
+	}
+	// ############ //
 
 	return true;
 }

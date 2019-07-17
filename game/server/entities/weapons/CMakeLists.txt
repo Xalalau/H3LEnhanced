@@ -6,6 +6,8 @@ add_sources(
 	CDesertEagleLaser.cpp
 	CDisplacerBall.h
 	CDisplacerBall.cpp
+	CFlyingCrowbar.h
+	CFlyingCrowbar.cpp
 	CShockBeam.h
 	CShockBeam.cpp
 	CSpore.h
