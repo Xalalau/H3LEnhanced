@@ -101,8 +101,11 @@ void Host_Say( CBasePlayer* pPlayer, const bool bTeamOnly )
 		return;
 
 	//Not yet.
-	if ( pPlayer->m_flNextChatTime > gpGlobals->time )
-		 return;
+	// ############ hu3lifezado ############ //
+	// "Not yet" o cacete. O player pode escrever o quando ele quiser!
+	//if ( pPlayer->m_flNextChatTime > gpGlobals->time )
+	//	 return;
+	// ############ //
 
 	if ( !stricmp( pcmd, cpSay) || !stricmp( pcmd, cpSayTeam ) )
 	{
@@ -167,7 +170,21 @@ void Host_Say( CBasePlayer* pPlayer, const bool bTeamOnly )
 	// so check it, or it will infinite loop
 
 	client = NULL;
-	while ( ((client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" )) != NULL) && (!FNullEnt(client->edict())) ) 
+
+	// ############ hu3lifezado ############ //
+	// Faz as mensagens coloridas do tipo Funcao serem exibidas apenas para o jogador 
+	bool loop_plys = true;
+
+	if (text[(int)strlen(text) - 3] == '|')
+	{
+		char test_it = text[(int)strlen(text) - 2];
+
+		if ((test_it == 'B') || (test_it == 'R') || (test_it == 'G') || (test_it == 'Y'))
+			loop_plys = false;
+	}
+
+	while (((client = (CBasePlayer*)UTIL_FindEntityByClassname(client, "player")) != NULL) && (!FNullEnt(client->edict())) && loop_plys)
+	// ############ //
 	{
 		if ( !client->pev )
 			continue;

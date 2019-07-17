@@ -29,6 +29,14 @@
 
 #include "CHudSayText.h"
 
+// ############ hu3lifezado ############ //
+// Suporte para impressao com mais cores
+const Vector g_ColorBlue = { 0.6f, 0.8f, 1.0f };
+const Vector g_ColorRed = { 1.00f, 0.3f, 0.3f };
+const Vector g_ColorGreen = { 0.6f, 1.0f, 0.6f };
+const Vector g_ColorGrey = { 0.8f, 0.8f, 0.8f };
+// ############ //
+
 // allow 20 pixels on either side of the text
 #define MAX_LINE_WIDTH  ( ScreenWidth - 40 )
 #define LINE_START  10
@@ -115,7 +123,78 @@ bool CHudSayText::Draw( float flTime )
 	{
 		if ( *m_szLineBuffer[i] )
 		{
-			if ( *m_szLineBuffer[i] == 2 && m_pvecNameColors[i] )
+			// ############ hu3lifezado ############ //
+			// Suporte para impressao com mais cores
+			//
+			// 2 modos estao disponiveis:
+			//
+			// -- Mensagens de funcao:
+			// ---- Aparecem apenas para o jogador atual e nao mostram o nome deste;
+			// ---- Sao geradas por funcoes dentro do codigo do jogo.
+			// -- Mensagens de chat:
+			// ---- Aparecem para todos os jogadores e exibem o nome do jogador que escreveu a mensagem;
+			// ---- Podem se comportar como mensagens de funcao (isso eh util para uso em certos comandos do Hu3);
+			// ---- Sao geradas pela escrita dos jogadores no chat do jogo.
+			//
+			// A cor eh controlada pela adicao de caracteres especiais no final das mensagens:
+			// -- |b
+			// ---- Deixa a mensagem azul (Blue)
+			// -- |r
+			// ---- Deixa a mensagem vermelha (Red)
+			// -- |g
+			// ---- Deixa a mensagem verde (Green)
+			// -- |y
+			// ---- Deixa a mensagem cinza (graY) (foda-se)
+			//
+			// ** Se esses caracteres forem omitidos, a cor fica amarela;
+			// ** Se a letra apos o "|" estiver maiuscula, a mensagem de chat sai no modo funcao.
+
+			Vector color = g_ColorYellow;
+			int force_normal = 0; // 0 = Mensagem de chat; 1 = Mensagem de chat se comportando como de funcao; -1 = Mensagem de funcao
+			int saytext_name_length = 0; // Usado para guardar o tamanho do nome do jogador
+			int saytext_fix = 0; // Necessario para que eu possa usar o mesmo codigo com chamadas por funcao e via chat
+
+			// Mensagem de chat
+			if (*m_szLineBuffer[i] == 2 && m_pvecNameColors[i])
+			{
+				saytext_fix = 1;
+				saytext_name_length = m_iNameLengths[i];
+				strncpy(szBuffer, m_szLineBuffer[i] + saytext_name_length, strlen(m_szLineBuffer[i]));
+			}
+			else
+			// Mensagem de funcao
+			{
+				strncpy(szBuffer, m_szLineBuffer[i], strlen(m_szLineBuffer[i]) + 1);
+				force_normal = -1;
+			}
+
+			// Caracter especial
+			if (szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 2 - saytext_fix] == '|')
+			{
+				// Caracter da cor
+				char ch = szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 1 - saytext_fix];
+
+				// Atribuicao de cores
+				if (( ch == 'b') || (ch == 'B'))
+					color = g_ColorBlue;
+				else if ((ch == 'r') || (ch == 'R'))
+					color = g_ColorRed;
+				else if ((ch == 'g') || (ch == 'G'))
+					color = g_ColorGreen;
+				else if ((ch == 'y') || (ch == 'Y'))
+					color = g_ColorGrey;
+
+				// Se a cor estiver com letra maiuscula, ponho a mensagem no modo funcao
+				if ((ch >= 65 && ch <= 90) && force_normal != -1)
+				{
+					force_normal = 1;
+					strncpy(szBuffer, m_szLineBuffer[i] + saytext_name_length + 2, strlen(m_szLineBuffer[i]));
+				}
+			}
+			
+			// Impressao apenas para mensagens no modo Chat
+			if ( ( *m_szLineBuffer[i] == 2 && m_pvecNameColors[i] ) && ! force_normal )
+			// ############ //
 			{
 				// it's a saytext string
 
@@ -126,16 +205,37 @@ bool CHudSayText::Draw( float flTime )
 
 				int x = DrawConsoleString( LINE_START, y, szBuffer + 1 ); // don't draw the control code at the start
 				strncpy( szBuffer, m_szLineBuffer[i] + m_iNameLengths[i], strlen( m_szLineBuffer[i] ));
-				szBuffer[ strlen( m_szLineBuffer[i] + m_iNameLengths[i] ) - 1 ] = '\0';
-				// color is reset after each string draw
-				gEngfuncs.pfnDrawSetTextColor( g_ColorYellow[ 0 ], g_ColorYellow[ 1 ], g_ColorYellow[ 2 ] );
+				// ############ hu3lifezado ############ //
+				// Suporte para impressao com mais cores
+				// Remocao dos caracteres especiais caso estejam presentes, se nao so preciso fechar a string
+				if (szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 3] == '|')
+					szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 3] = '\0';
+				else
+					szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 1] = '\0';
+				// Aplicacao da cor
+				gEngfuncs.pfnDrawSetTextColor(color[0], color[1], color[2]);
+				// ############ //
 				DrawConsoleString( x, y, szBuffer );
 			}
 			else
 			{
-				// normal draw
-				gEngfuncs.pfnDrawSetTextColor( g_ColorYellow[ 0 ], g_ColorYellow[ 1 ], g_ColorYellow[ 2 ] );
-				DrawConsoleString( LINE_START, y, m_szLineBuffer[i] );
+				// ############ hu3lifezado ############ //
+				// Suporte para impressao com mais cores
+
+				// Impressao apenas para mensagens no modo Funcao
+
+				// Remocao dos caracteres especiais caso estejam presentes
+				if (szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 5] == '|') // Mensagem de chat no modo Funcao
+					szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 5] = '\0';
+				else if (szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 2] == '|') // Mensagem de Funcao
+					szBuffer[strlen(m_szLineBuffer[i] + saytext_name_length) - 2] = '\0';
+
+				// Aplicacao da cor
+				gEngfuncs.pfnDrawSetTextColor(color[0], color[1], color[2]);
+
+				// Impressao
+				DrawConsoleString(LINE_START, y, szBuffer);
+				// ############ //
 			}
 		}
 
@@ -217,7 +317,10 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, size_t uiBufSize, int clie
 	GetFlags() |= HUD_ACTIVE;
 	PlaySound( "misc/talk.wav", 1 );
 
-	m_iYStart = ScreenHeight - 60 - ( m_iLineHeight * (MAX_LINES+2) );
+	// ############ hu3lifezado ############ //
+	// Mensagens de chat agoram aparecem 40 unidades acima do normal
+	m_iYStart = ScreenHeight - 60 - 40 - (m_iLineHeight * (MAX_LINES + 2));
+	// ############ //
 }
 
 void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( size_t line )
