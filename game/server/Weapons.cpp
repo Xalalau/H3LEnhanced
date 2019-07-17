@@ -52,7 +52,7 @@ void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage)
 {
 	// ############ hu3lifezado ############ //
 	// Aliens espirram sangue (jogadores nao porque sai bugado)
-	if (bloodColor != BLOOD_COLOR_RED) {
+	if (CVAR_GET_FLOAT("hu3_gore") && bloodColor != BLOOD_COLOR_RED) {
 		Vector random = UTIL_RandomBloodVector();
 
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecSpot);
