@@ -732,7 +732,11 @@ bool CHudAmmo::Draw(float flTime)
 	if (m_fFade > 0)
 		m_fFade -= ( Hud().GetTimeDelta() * 20 );
 
-	GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+	// ############ hu3lifezado ############ //
+	// Mudei a cor do HUD (RGB_YELLOWISH)
+	//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+	UnpackRGB(r, g, b, RGB_WHITEISH);
+	// ############ //
 
 	ScaleColors(r, g, b, a );
 
@@ -759,7 +763,11 @@ bool CHudAmmo::Draw(float flTime)
 
 			x += AmmoWidth/2;
 
-			GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+			// ############ hu3lifezado ############ //
+			// Mudei a cor do HUD (RGB_YELLOWISH)
+			//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+			UnpackRGB(r, g, b, RGB_WHITEISH);
+			// ############ //
 
 			// draw the | bar
 			FillRGBA(x, y, iBarWidth, GetHud().GetFontHeight(), r, g, b, a);
@@ -834,7 +842,11 @@ int CHudAmmo::DrawBar(int x, int y, int width, int height, float f)
 		width -= w;
 	}
 
-	GetHud().GetPrimaryColor().UnpackRGB(r, g, b);
+	// ############ hu3lifezado ############ //
+	// Mudei a cor do HUD (RGB_YELLOWISH)
+	//GetHud().GetPrimaryColor().UnpackRGB(r, g, b);
+	UnpackRGB(r, g, b, RGB_WHITEISH);
+	// ############ //
 
 	FillRGBA(x, y, width, height, r, g, b, 128);
 
@@ -893,6 +905,26 @@ int CHudAmmo::DrawWList(float flTime)
 	
 	CBasePlayer* pPlayer = g_Prediction.GetLocalPlayer();
 
+	// ############ hu3lifezado ############ //
+	// Variaveis para fazer calculos
+	int sprite_da_arma;
+	if (m_pActiveSel == (CBasePlayerWeapon *)1)
+		sprite_da_arma = 0;
+	else
+		sprite_da_arma = m_pActiveSel->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.right - m_pActiveSel->GetWeaponInfo()->GetHUDInfo()->GetActive().rect.left;
+	int quadrado_das_armas = m_iBucketWidth;
+	int numero_de_quadrados = 7;
+
+	// Opcoes para mover o menu de armas
+	//int vai_pra_esquerda = 10;
+	//int vai_pra_direita = ScreenWidth - quadrado_das_armas * numero_de_quadrados - sprite_da_arma - 15;
+	int vai_pro_meio = ScreenWidth / 2 - (quadrado_das_armas * numero_de_quadrados + sprite_da_arma) / 2;
+
+	int mover = vai_pro_meio;
+
+	x = mover;
+	// ############ //
+
 	// Ensure that there are available choices in the active slot
 	if ( iActiveSlot > 0 )
 	{
@@ -921,7 +953,11 @@ int CHudAmmo::DrawWList(float flTime)
 	{
 		int iWidth;
 
-		GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+		// ############ hu3lifezado ############ //
+		// Mudei a cor do HUD (RGB_YELLOWISH)
+		//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+		UnpackRGB(r, g, b, RGB_WHITEISH);
+		// ############ //
 	
 		if ( iActiveSlot == i )
 			a = 255;
@@ -950,7 +986,10 @@ int CHudAmmo::DrawWList(float flTime)
 
 
 	a = 128; //!!!
-	x = 10;
+	// ############ hu3lifezado ############ //
+	// x = 10;
+	x = mover;
+	// ############ //
 
 	// Draw all of the buckets
 	for (i = 0; i < iBucketsToDraw; i++)
@@ -973,7 +1012,11 @@ int CHudAmmo::DrawWList(float flTime)
 
 				auto pHUDInfo = p->GetWeaponInfo()->GetHUDInfo();
 
-				GetHud().GetPrimaryColor().UnpackRGB( r,g,b );
+				// ############ hu3lifezado ############ //
+				// Mudei a cor do HUD (RGB_YELLOWISH)
+				//GetHud().GetPrimaryColor().UnpackRGB( r,g,b );
+				UnpackRGB(r, g, b, RGB_WHITEISH);
+				// ############ 
 			
 				// if active, then we must have ammo.
 
@@ -1024,7 +1067,11 @@ int CHudAmmo::DrawWList(float flTime)
 
 				if ( pPlayer->HasAmmo(p) )
 				{
-					GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+					// ############ hu3lifezado ############ //
+					// Mudei a cor do HUD (RGB_YELLOWISH)
+					//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+					UnpackRGB(r, g, b, RGB_GREENISH);
+					// ############ //
 					a = 128;
 				}
 				else

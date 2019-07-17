@@ -131,4 +131,11 @@ struct Color final
 */
 #define RGB_GREENISH MakeRGB( 0, 160, 0 )
 
+// ############ hu3lifezado ############ //
+// Novas cores
+#define RGB_WHITE MakeRGB( 255, 255, 255 )
+#define RGB_WHITEISH MakeRGB( 220, 220, 220 )
+#define RGB_GRAYISH MakeRGB( 169, 169, 169 )
+// ############ //
+
 #endif //COMMON_COLOR_H

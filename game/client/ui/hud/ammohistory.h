@@ -51,7 +51,10 @@ public:
 
 	int GetAmmoPickupGap() const { return iHistoryGap + 5; }
 
-	int GetAmmoPickupPickHeight() const { return 32 + ( iHistoryGap * 2 ); }
+	// ############ hu3lifezado ############ //
+	// Nova altura ( 32 + ( iHistoryGap * 2 )) )
+	int GetAmmoPickupPickHeight() const { return 5; }
+	// ############ //
 
 	int GetAmmoPickupHeightMax() const { return ScreenHeight - 100; }
 

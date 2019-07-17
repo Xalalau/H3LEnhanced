@@ -149,7 +149,11 @@ void CHudHealth::GetPainColor( int &r, int &g, int &b )
 #else
 	if (m_iHealth > 25)
 	{
-		GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+		// ############ hu3lifezado ############ //
+		// Mudei a cor do HUD (RGB_YELLOWISH)
+		//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+		UnpackRGB(r, g, b, RGB_WHITEISH);
+		// ############ //
 	}
 	else
 	{
@@ -201,24 +205,34 @@ bool CHudHealth::Draw(float flTime)
 		HealthWidth = GetHud().GetSpriteRect( GetHud().GetHudNumber0Index() ).right - GetHud().GetSpriteRect( GetHud().GetHudNumber0Index() ).left;
 		int CrossWidth = GetHud().GetSpriteRect(m_HUD_cross).right - GetHud().GetSpriteRect(m_HUD_cross).left;
 
-		y = ScreenHeight - GetHud().GetFontHeight() - GetHud().GetFontHeight() / 2;
-		x = CrossWidth /2;
+		// ############ hu3lifezado ############ //
+		// Movi o icone de sangue
+		// y = ScreenHeight - GetHud().GetFontHeight() - GetHud().GetFontHeight() / 2;
+		// x = CrossWidth /2;
+		y = ScreenHeight - 3 * GetHud().GetFontHeight() - GetHud().GetFontHeight() / 2 - 4;
+		x = CrossWidth / 2 + 5;
+		// ############ //
 
 		SPR_Set( GetHud().GetSprite(m_HUD_cross), r, g, b);
 		SPR_DrawAdditive(0, x, y, &GetHud().GetSpriteRect(m_HUD_cross));
 
-		x = CrossWidth + HealthWidth / 2;
+		// ############ hu3lifezado ############ //
+		// Movi os numeros da quantidade de sangue do jogador
+		//x = CrossWidth + HealthWidth / 2;
+		x = CrossWidth + HealthWidth / 2 + 12;
+		// ############ //
 
 		x = GetHud().DrawHudNumber(x, y, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b);
 
 		x += HealthWidth/2;
 
-		int iHeight = GetHud().GetFontHeight();
-		int iWidth = HealthWidth/10;
-
-		const auto& color = GetHud().GetPrimaryColor();
-
-		FillRGBA(x, y, iWidth, iHeight, color.r(), color.g(), color.b(), a);
+		// ############ hu3lifezado ############ //
+		// Nao preciso mais desenhar o traco que separa o sangue da armadura
+		//int iHeight = GetHud().GetFontHeight();
+		//int iWidth = HealthWidth/10;
+		//const auto& color = GetHud().GetPrimaryColor();		
+		//FillRGBA(x, y, iWidth, iHeight, color.r(), color.g(), color.b(), a);
+		// ############ //
 	}
 
 	DrawDamage(flTime);
@@ -378,7 +392,11 @@ bool CHudHealth::DrawDamage(float flTime)
 		{
 			pdmg = &m_dmg[i];
 			SPR_Set( GetHud().GetSprite(m_HUD_dmg_bio + i), r, g, b );
-			SPR_DrawAdditive(0, pdmg->x, pdmg->y, &GetHud().GetSpriteRect(m_HUD_dmg_bio + i));
+			// ############ hu3lifezado ############ //
+			// Icondes de dano foram reposicionados acima do sangue.
+			//SPR_DrawAdditive(0, pdmg->x, pdmg->y, &gHUD.GetSpriteRect(m_HUD_dmg_bio + i));
+			SPR_DrawAdditive(0, pdmg->x + 10, pdmg->y - 35, &GetHud().GetSpriteRect(m_HUD_dmg_bio + i));
+			// ############ //
 		}
 	}
 
