@@ -417,6 +417,17 @@ void CBaseMonster::Killed( const CTakeDamageInfo& info, GibAction gibAction )
 		BecomeDead();
 	}
 	
+	// ############ hu3lifezado ############ //
+	// NPCs podem ser arremessados ao morrerem
+	if (CVAR_GET_FLOAT("hu3_gore"))
+	{
+		pev->flags &= ~FL_ONGROUND;
+		pev->origin.z += RANDOM_LONG(0, 45);
+		pev->velocity = g_vecAttackDir * -1;
+		pev->velocity = pev->velocity * RANDOM_FLOAT(0, 800);
+	}
+	// ############ //
+
 	// don't let the status bar glitch for players.with <0 health.
 	if ( GetHealth() < -99)
 	{
