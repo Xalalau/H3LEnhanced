@@ -70,6 +70,11 @@ void CGauss::Spawn()
 	SetModel( "models/w_gauss.mdl");
 
 	FallInit();// get ready to fall down.
+
+	// ############ hu3lifezado ############ //
+	// Anel verde supremo comeca com tamanho 0
+	m_iSpriteTextureRange = 0;
+	// ############ //
 }
 
 
@@ -95,6 +100,15 @@ void CGauss::Precache()
 
 	m_usGaussFire = PRECACHE_EVENT( 1, "events/gauss.sc" );
 	m_usGaussSpin = PRECACHE_EVENT( 1, "events/gaussspin.sc" );
+
+	// ############ hu3lifezado ############ //
+	// Novos sons
+	PRECACHE_SOUND("weapons/deploy_cajado.wav");
+	PRECACHE_SOUND("weapons/gausscharging.wav");
+	PRECACHE_SOUND("weapons/gauss_brasil.wav");
+	// Textura dos aneis
+	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");
+	// ############ //
 }
 
 // ############ hu3lifezado ############ //
@@ -142,6 +156,10 @@ bool CGauss::IsUseable()
 
 bool CGauss::Deploy()
 {
+	// ############ hu3lifezado ############ //
+	// Um belo novo som para quando puxamos a arma.
+	EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/deploy_cajado.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM);
+	// ############ //
 	m_pPlayer->m_flPlayAftershock = 0.0;
 	return DefaultDeploy( "models/v_gauss.mdl", "models/p_gauss.mdl", GAUSS_DRAW, "gauss" );
 }
@@ -172,6 +190,19 @@ void CGauss::Holster()
 void CGauss::PrimaryAttack()
 {
 	// ############ hu3lifezado ############ //
+	// Pequeno anel e liberado
+	SonicAttack(2);
+	// Funciona embaixo d'agua sim, amiguinho!
+	/*
+	// don't fire underwater
+	if ( m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
+	{
+		PlayEmptySound( );
+		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay(0.15);
+		return;
+	}
+	*/
+	
 	// [Terceira Pessoa]
 	// Remocao da mira em terceira pessoa
 #ifndef CLIENT_DLL
@@ -182,14 +213,6 @@ void CGauss::PrimaryAttack()
 	}
 #endif
 	// ############ //
-
-	// don't fire underwater
-	if ( m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
-	{
-		PlayEmptySound( );
-		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay(0.15);
-		return;
-	}
 
 	if ( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] < AMMO_PER_PRIMARY_SHOT )
 	{
@@ -206,12 +229,18 @@ void CGauss::PrimaryAttack()
 	StartFire();
 	m_InAttack = AttackState::NOT_ATTACKING;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
-	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.2;
+	// ############ hu3lifezado ############ //
+	// Delay aumentado (original: 0.2)
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.8;
+	// ############ //
 }
 
 void CGauss::SecondaryAttack()
 {
+	// ############ hu3lifezado ############ //
+	// Funciona embaixo d'agua sim, amiguinho!
 	// don't fire underwater
+	/*
 	if ( m_pPlayer->GetWaterLevel() == WATERLEVEL_HEAD )
 	{
 		if ( m_InAttack != AttackState::NOT_ATTACKING )
@@ -228,6 +257,8 @@ void CGauss::SecondaryAttack()
 		m_flNextSecondaryAttack = m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
 		return;
 	}
+	*/
+	// ############ //
 
 	if ( m_InAttack == AttackState::NOT_ATTACKING )
 	{
@@ -275,11 +306,24 @@ void CGauss::SecondaryAttack()
 		if( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] <= 0 )
 		{
 			// out of ammo! force the gun to fire
-			StartFire();
+			// ############ hu3lifezado ############ //
+			// Desativar isso aqui
+			// StartFire();
+			// ############ //
 			m_InAttack = AttackState::NOT_ATTACKING;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 			//Need to set m_flNextPrimaryAttack so the weapon gets a chance to complete its secondary fire animation. - Solokiller
 			m_flNextPrimaryAttack = m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1;
+			// ############ hu3lifezado ############ //
+			// Quando acaba a municao, solta aneis roxos
+			SonicAttack(2);
+			// Reseto o tamanho dos aneis para 0
+			m_iSpriteTextureRange = 0;
+			// Nova finalizacao que desbuga o som de sobrecarga
+			Holster();
+			SendWeaponAnim( GAUSS_DRAW ); // Original: GAUSS_IDLE
+			// ############ //
+
 			return;
 		}
 
@@ -289,19 +333,42 @@ void CGauss::SecondaryAttack()
 			if ( bIsMultiplayer() )
 			{
 				m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ]--;
+				// ############ hu3lifezado ############ //
+				// Os aneis aumentam de 20 em 20 unidades
+				m_iSpriteTextureRange += 20;
+				// ############ //
 				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.1;
 			}
 			else
 			{
 				m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ]--;
+				// ############ hu3lifezado ############ //
+				// Os aneis aumentam de 20 em 20 unidades
+				m_iSpriteTextureRange += 20;
+				// ############ //
 				m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase() + 0.3;
 			}
 		}
 		
 		if ( UTIL_WeaponTimeBase() >= m_pPlayer->m_flAmmoStartCharge )
 		{
+			// ############ hu3lifezado ############ //
+			// A arma deveria parar de gastar municao, mas ela ja esta OP demais
 			// don't eat any more ammo after gun is fully charged.
-			m_pPlayer->m_flNextAmmoBurn = 1000;
+			//m_pPlayer->m_flNextAmmoBurn = 1000;
+			// Aneis supremos de poder
+			if (gpGlobals->time - m_pPlayer->m_flStartCharge <= GetFullChargeTime() + 0.1)
+			{
+				m_iSpriteTextureRange = 20;
+			}
+			else
+			{
+				if (m_iSpriteTextureRange <= 200)
+					SonicAttack(1);
+				else
+					SonicAttack(2);
+			}
+			// ############ //
 		}
 
 		int pitch = ( gpGlobals->time - m_pPlayer->m_flStartCharge ) * ( 150 / GetFullChargeTime() ) + 100;
@@ -313,28 +380,48 @@ void CGauss::SecondaryAttack()
 		if ( m_iSoundState == 0 )
 			ALERT( at_console, "sound state %d\n", m_iSoundState );
 
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
+		// ############ hu3lifezado ############ //
+		// Son de charging modificado
+		//PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
+		EMIT_SOUND_DYN(m_pPlayer, CHAN_WEAPON, "weapons/gausscharging.wav", 1.0, ATTN_NORM, 0, pitch);
+		// ############ //
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
 		m_pPlayer->m_iWeaponVolume = GAUSS_PRIMARY_CHARGE_VOLUME;
 		
 		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
+		// ############ hu3lifezado ############ //
+		// Toco o som de dor aqui (meio que um hack...)
+		if (m_pPlayer->m_flStartCharge < gpGlobals->time - 9.75)
+		{
+			EMIT_SOUND_DYN(m_pPlayer, CHAN_VOICE, "weapons/gauss_brasil.wav", 1.0, ATTN_NORM, 0, 80 + RANDOM_LONG(0, 0x3f));
+		}
+		// ############ //
 		if ( m_pPlayer->m_flStartCharge < gpGlobals->time - 10 )
 		{
 			// Player charged up too long. Zap him.
+			// ############ hu3lifezado ############ //
+			// Sons de overcharge modificados
 			EMIT_SOUND_DYN( m_pPlayer, CHAN_WEAPON, "weapons/electro4.wav", 1.0, ATTN_NORM, 0, 80 + RANDOM_LONG(0,0x3f));
-			EMIT_SOUND_DYN( m_pPlayer, CHAN_ITEM,   "weapons/electro6.wav", 1.0, ATTN_NORM, 0, 75 + RANDOM_LONG(0,0x3f));
-			
+			//EMIT_SOUND_DYN( m_pPlayer, CHAN_ITEM,   "weapons/electro6.wav", 1.0, ATTN_NORM, 0, 75 + RANDOM_LONG(0,0x3f));
+			// ############ //
 			m_InAttack = AttackState::NOT_ATTACKING;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 			m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 				
 #ifndef CLIENT_DLL
 			m_pPlayer->TakeDamage( CWorld::GetInstance(), CWorld::GetInstance(), 50, DMG_SHOCK );
-			UTIL_ScreenFade( m_pPlayer, Vector(255,128,0), 2, 0.5, 128, FFADE_IN );
+			// ############ hu3lifezado ############ //
+			// Cor de dor por dano de excesso de carga alterada (original: 255,128,0)
+			UTIL_ScreenFade( m_pPlayer, Vector(255,0,0), 2, 0.5, 128, FFADE_IN );
+			// ############ //
 #endif
-			SendWeaponAnim( GAUSS_IDLE );
+			// ############ hu3lifezado ############ //
+			// Nova finalizacao que desbuga o som de sobrecarga
+			Holster();
+			SendWeaponAnim( GAUSS_DRAW ); // Original: GAUSS_IDLE
+			// ############ //
 			
 			// Player may have been killed and this weapon dropped, don't execute any more code after this!
 			return;
@@ -369,7 +456,10 @@ void CGauss::StartFire()
 	{
 		// fixed damage on primary attack
 #ifdef CLIENT_DLL
-		flDamage = 20;
+		// ############ hu3lifezado ############ //
+		// Dano aumentado (20)
+		flDamage = 120;
+		// ############ //
 #else 
 		flDamage = gSkillData.GetPlrDmgGauss();
 #endif
@@ -398,7 +488,15 @@ void CGauss::StartFire()
 		}
 #endif
 		// player "shoot" animation
-		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+		// ############ hu3lifezado ############ //
+		// Ajeito a animacao de ataque
+		//m_pPlayer->SetAnimation( PLAYER_ATTACK1 ); // Original
+		switch (RANDOM_LONG(0, 1))
+		{
+		case 0:	SendWeaponAnim(GAUSS_FIRE_HU3_FIX); break;
+		case 1: SendWeaponAnim(GAUSS_FIRE); break;
+		}
+		// ############ //
 	}
 
 	// time until aftershock 'static discharge' sound
@@ -446,7 +544,10 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	int	nTotal = 0;
 	bool fHasPunched = false;
 	bool fFirstBeam = true;
-	int	nMaxHits = 10;
+	// ############ hu3lifezado ############ //
+	// limite de rebatidas aumentado de 10 para 100
+	int	nMaxHits = 100;
+	// ############ //
 
 	while (flDamage > 10 && nMaxHits > 0)
 	{
@@ -474,7 +575,21 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 		if (pEntity->GetTakeDamageMode() != DAMAGE_NO )
 		{
 			g_MultiDamage.Clear();
-			pEntity->TraceAttack( CTakeDamageInfo( m_pPlayer, flDamage, DMG_BULLET ), vecDir, tr );
+			// ############ hu3lifezado ############ //
+			// Somei 30 ao flDamage
+			pEntity->TraceAttack(CTakeDamageInfo(m_pPlayer, flDamage, DMG_BULLET), vecDir, tr);
+			// Explodo o bastardo que acertamos!
+			MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pEntity->pev->origin );
+				WRITE_BYTE( TE_EXPLOSION);
+				WRITE_COORD( pEntity->pev->origin.x );
+				WRITE_COORD( pEntity->pev->origin.y );
+				WRITE_COORD( pEntity->pev->origin.z );
+				WRITE_SHORT( g_sModelIndexFireball );
+				WRITE_BYTE( 10 ); // scale * 10
+				WRITE_BYTE( 15  ); // framerate
+				WRITE_BYTE( TE_EXPLFLAG_NONE );
+			MESSAGE_END();
+			// ############ //
 			g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
 		}
 
@@ -598,11 +713,45 @@ void CGauss::WeaponIdle()
 		m_pPlayer->m_flPlayAftershock = 0.0;
 	}
 
-	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
-		return;
+	// ############ hu3lifezado ############ //
+	// Troquei a verificacao para o anel funcionar durante as cargas tambem
+	//if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
+	//return;
+	if (m_iSpriteTextureRange == 0)
+		if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
+			return;
+	// ############ //
 
-	if ( m_InAttack != AttackState::NOT_ATTACKING )
+	// ############ hu3lifezado ############ //
+	// Verifico se m_iSpriteTextureRange nao e 0 tambem
+	if ((m_InAttack != AttackState::NOT_ATTACKING) || (m_iSpriteTextureRange != 0))
 	{
+		// Solta aneis roxos ou vermelhos dependendo da situacao
+		if (gpGlobals->time - m_pPlayer->m_flStartCharge >= GetFullChargeTime())
+		{
+			SendWeaponAnim(GAUSS_FIRE2);
+			if (m_pPlayer->m_flStartCharge < gpGlobals->time - 10)
+			{
+				m_iSpriteTextureRange = 600;
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+				SonicAttack(3);
+			}
+			else
+				m_iSpriteTextureRange = 450;
+			SonicAttack(3);
+		}
+		else
+			SonicAttack(2);
+		m_iSpriteTextureRange = 0;
+		// ############ //
 		StartFire();
 		m_InAttack = AttackState::NOT_ATTACKING;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
@@ -615,12 +764,14 @@ void CGauss::WeaponIdle()
 	{
 		int iAnim;
 		float flRand = RANDOM_FLOAT(0, 1);
-		if (flRand <= 0.5)
+		// ############ hu3lifezado ############ //
+		// Maior chance de dar dedo do meio agora
+		if (flRand <= 0.35) // Origial: 0.5
 		{
 			iAnim = GAUSS_IDLE;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 		}
-		else if (flRand <= 0.75)
+		else if (flRand <= 0.65) // Original 0.75
 		{
 			iAnim = GAUSS_IDLE2;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
@@ -630,9 +781,14 @@ void CGauss::WeaponIdle()
 			iAnim = GAUSS_FIDGET;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
 		}
+		// ############ //
 
 		return;
+
+		// ############ hu3lifezado ############ //
+		// Nota: por que tem codigo depois do return? O q isso deveria fazer?
 		SendWeaponAnim( iAnim );
+		// ############ 
 		
 	}
 }
@@ -660,3 +816,153 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo );
+
+
+// ##############################
+// HU3-LIFE Ataque Secudario
+// ##############################
+// Roubei e ajustei o ataque do houndeye
+
+//=========================================================
+// WriteBeamColor - writes a color vector to the network 
+// based on the size of the group. 
+//=========================================================
+void CGauss::WriteBeamColor(int force)
+{
+	byte	bRed, bGreen, bBlue;
+
+	switch (force)
+	{
+	case 1:
+		bRed = 10;
+		bGreen = 208;
+		bBlue = 0;
+		break;
+	case 2:
+		bRed = 60;
+		bGreen = 33;
+		bBlue = 64;
+		break;
+	case 3:
+		bRed = 255;
+		bGreen = 0;
+		bBlue = 0;
+		break;
+	default:
+		// Original: 188, 220, 255
+		ALERT(at_aiconsole, "Unsupported Houndeye SquadSize!\n");
+		bRed = 10;
+		bGreen = 208;
+		bBlue = 0;
+		break;
+	}
+
+	WRITE_BYTE(bRed);
+	WRITE_BYTE(bGreen);
+	WRITE_BYTE(bBlue);
+}
+
+//=========================================================
+// SonicAttack
+//=========================================================
+void CGauss::SonicAttack(int force)
+{
+#ifdef CLIENT_DLL
+	return;
+#endif
+
+	edict_t *pClient;
+
+	// manually find the single player. 
+	pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
+
+	float		flAdjustedDamage;
+	float		flDist;
+
+	// blast circles
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, GetAbsOrigin());
+		WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( GetAbsOrigin().x);
+		WRITE_COORD( GetAbsOrigin().y);
+		WRITE_COORD( GetAbsOrigin().z);
+		WRITE_COORD( GetAbsOrigin().x);
+		WRITE_COORD( GetAbsOrigin().y);
+		WRITE_COORD( GetAbsOrigin().z + 16 + m_iSpriteTextureRange / .2); // reach damage radius over .3 seconds
+		WRITE_SHORT( m_iSpriteTexture );
+		WRITE_BYTE( 0 ); // startframe
+		WRITE_BYTE( 0 ); // framerate
+		WRITE_BYTE( 2 ); // life
+		WRITE_BYTE( 16 );  // width
+		WRITE_BYTE( 0 );   // noise
+		WriteBeamColor( force );
+		WRITE_BYTE( 255 ); //brightness
+		WRITE_BYTE( 0 );		// speed
+	MESSAGE_END();
+	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, GetAbsOrigin() );
+		WRITE_BYTE( TE_BEAMCYLINDER );
+		WRITE_COORD( GetAbsOrigin().x);
+		WRITE_COORD( GetAbsOrigin().y);
+		WRITE_COORD( GetAbsOrigin().z);
+		WRITE_COORD( GetAbsOrigin().x);
+		WRITE_COORD( GetAbsOrigin().y);
+		WRITE_COORD( GetAbsOrigin().z + 16 + ( m_iSpriteTextureRange / 2 ) / .2); // reach damage radius over .3 seconds
+		WRITE_SHORT( m_iSpriteTexture );
+		WRITE_BYTE( 0 ); // startframe
+		WRITE_BYTE( 0 ); // framerate
+		WRITE_BYTE( 2 ); // life
+		WRITE_BYTE( 16 );  // width
+		WRITE_BYTE( 0 );   // noise
+		WriteBeamColor( force );
+		
+		WRITE_BYTE( 255 ); //brightness
+		WRITE_BYTE( 0 );		// speed
+	MESSAGE_END();
+
+
+	CBaseEntity *pEntity = NULL;
+	// iterate on all entities in the vicinity.
+
+	while ((pEntity = UTIL_FindEntityInSphere(pEntity, GetAbsOrigin(), m_iSpriteTextureRange)) != NULL)
+	{
+		if (pEntity->pev->takedamage != DAMAGE_NO)
+		{
+			if ( !pEntity->ClassnameIs(STRING(pClient->v.classname)) )
+			{// houndeyes don't hurt other houndeyes with their attack
+
+				// Para nao ser tao OP, dano durante o anel supremo tem que ser calculado bem mais leve do que o de um anel ?nico
+				if ( (gpGlobals->time - m_pPlayer->m_flStartCharge >= GetFullChargeTime()) && (m_iSpriteTextureRange != 400))
+					flAdjustedDamage =  m_iSpriteTextureRange * 3;
+				else
+					flAdjustedDamage =  m_iSpriteTextureRange * 10;
+
+				flDist = (pEntity->Center() - pev->origin).Length();
+
+				flAdjustedDamage -= ( flDist / m_iSpriteTextureRange ) * flAdjustedDamage;
+
+
+				if (!FVisible(pEntity))
+				{
+					if (pEntity->IsPlayer())
+					{
+						// if this entity is a client, and is not in full view, inflict half damage. We do this so that players still 
+						// take the residual damage if they don't totally leave the houndeye's effective radius. We restrict it to clients
+						// so that monsters in other parts of the level don't take the damage and get pissed.
+						flAdjustedDamage *= 0.5;
+					}
+					else if (!pEntity->ClassnameIs("func_breakable") && !pEntity->ClassnameIs("func_pushable"))
+					{
+						// do not hurt nonclients through walls, but allow damage to be done to breakables
+						flAdjustedDamage = 0;
+					}
+				}
+
+				//ALERT ( at_aiconsole, "Damage: %f\n", flAdjustedDamage );
+
+				if (flAdjustedDamage > 0)
+				{
+					pEntity->TakeDamage(this, this, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB);
+				}
+			}
+		}
+	}
+}

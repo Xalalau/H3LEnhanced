@@ -25,7 +25,11 @@ enum gauss_e
 	GAUSS_FIRE,
 	GAUSS_FIRE2,
 	GAUSS_HOLSTER,
-	GAUSS_DRAW
+	GAUSS_DRAW,
+	// ############ hu3lifezado ############ //
+	// Pequena gambiarra para consertar o saque da arma
+	GAUSS_FIRE_HU3_FIX
+	// ############ //
 };
 
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
@@ -102,6 +106,13 @@ public:
 	// [Terceira Pessoa]
 	// Funcoes para renderizar a mira em terceira pessoa
 	void ItemPreFrame(void);
+	// Codigo dos aneis de poder
+	void SonicAttack(int force);
+	void WriteBeamColor(int force);
+	// Textura dos aneis
+	int m_iSpriteTexture;
+	// Tamanho dos aneis
+	int m_iSpriteTextureRange;
 	// ############ //
 
 private:
