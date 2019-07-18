@@ -216,7 +216,11 @@ CBeam *CBeam::BeamCreate( const char *pSpriteName, int width )
 	// Create a new entity with CBeam private data
 	auto pBeam = static_cast<CBeam*>( UTIL_CreateNamedEntity( "beam" ) );
 
-	pBeam->BeamInit( pSpriteName, width );
+	// ############ hu3lifezado ############ //
+	// Lasers grossos, sempre.
+	//pBeam->BeamInit( pSpriteName, width );
+	pBeam->BeamInit(pSpriteName, width + 50);
+	// ############ //
 
 	return pBeam;
 }
