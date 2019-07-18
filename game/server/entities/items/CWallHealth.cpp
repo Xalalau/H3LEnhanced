@@ -124,12 +124,18 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 		EMIT_SOUND( this, CHAN_STATIC, "items/medcharge4.wav", 1.0, ATTN_NORM );
 	}
 
+	// ############ hu3lifezado ############ //
+	// Unidade do SUS te cura ou te causa dano, eh uma loteria!
+	int suscharge = UTIL_RandomLong(-7, 7);
 
-	// charge the player
-	if ( pActivator->GiveHealth( 1, DMG_GENERIC ) )
-	{
+	// Como o player nao pode morrer aqui, nao deixo a vida ficar menor do que 1
+	if (pActivator->GetHealth() + suscharge <= 0)
+		suscharge = 1 - pActivator->GetHealth();
+
+	// Aplico a mudanca de vida e diminuo a quantidade de carga na maquina
+	if (pActivator->GiveHealth(suscharge, DMG_GENERIC))
 		m_iJuice--;
-	}
+	// ############ //
 
 	// govern the rate of charge
 	m_flNextCharge = gpGlobals->time + 0.1;
