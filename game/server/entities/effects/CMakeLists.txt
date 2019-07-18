@@ -17,6 +17,8 @@ add_sources(
 	CEnvSpark.cpp
 	CFade.h
 	CFade.cpp
+	CFoodShooter.h
+	CFoodShooter.cpp
 	CGib.h
 	CGib.cpp
 	CGibShooter.h
