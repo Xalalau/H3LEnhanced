@@ -395,4 +395,9 @@ void Cvar_DirectSet( cvar_t* pCvar, const float flValue );
 */
 int UTIL_CountPlayers();
 
+// ############ hu3lifezado ############ //
+// Manuseio seguro de jogadores
+int UTIL_GetRandomPLayerID();
+// ############ //
+
 #endif //GAME_SHARED_UTIL_H
