@@ -34,6 +34,8 @@ add_sources(
 	CEnvGlobal.cpp
 	CFuncMortarField.h
 	CFuncMortarField.cpp
+	CFuncParent.h
+	CFuncParent.cpp
 	CGrenade.h
 	CGrenade.cpp
 	CInfoIntermission.h
