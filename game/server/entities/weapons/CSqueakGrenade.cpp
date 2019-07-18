@@ -168,8 +168,12 @@ void CSqueakGrenade::HuntThink( void )
 	if( gpGlobals->time >= m_flDie )
 	{
 		g_vecAttackDir = GetAbsVelocity().Normalize();
-		SetHealth( -1 );
-		Killed( CTakeDamageInfo( this, 0, 0 ), GIB_NORMAL );
+		// ############ hu3lifezado ############ //
+		// Barriguinha mole nao morre mais por tempo
+		//SetHealth( -1 );
+		//Killed( CTakeDamageInfo( this, 0, 0 ), GIB_NORMAL );
+		m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
+		// ############ //
 		return;
 	}
 
