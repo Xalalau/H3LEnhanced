@@ -91,7 +91,7 @@ void CBaseMonster :: GibMonster( void )
 		{
 			CGib::SpawnHeadGib( this );
 			// ############ hu3lifezado ############ //
-			// Mais tripas com gore e menos no modo coop
+			// Mais tripas com gore
 			if (CVAR_GET_FLOAT("hu3_gore"))
 				CGib::SpawnRandomGibs(this, 5, 1);
 			else
@@ -105,7 +105,7 @@ void CBaseMonster :: GibMonster( void )
 		if ( CVAR_GET_FLOAT("violence_agibs") != 0 )	// Should never get here, but someone might call it directly
 		{
 			// ############ hu3lifezado ############ //
-			// Mais tripas com gore e menos no modo coop
+			// Mais tripas com gore
 			if (CVAR_GET_FLOAT("hu3_gore"))
 				CGib::SpawnRandomGibs(this, 5, 1);
 			else
