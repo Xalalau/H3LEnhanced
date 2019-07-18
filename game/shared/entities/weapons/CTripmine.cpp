@@ -36,8 +36,11 @@ void CTripmine::Spawn( )
 {
 	Precache( );
 	SetModel( "models/v_tripmine.mdl");
-	SetFrame( 0 );
-	SetBody( 3 );
+	SetFrame(0);
+	// ############ hu3lifezado ############ //
+	// Posicao extra para evitar que a mina pinto de parede entre na chao na forma world (3)
+	SetBody(4);
+	// ############ //
 	SetSequence( TRIPMINE_GROUND );
 	// ResetSequenceInfo( );
 	SetFrameRate( 0 );
