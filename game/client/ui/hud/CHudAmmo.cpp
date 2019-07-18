@@ -1223,7 +1223,11 @@ int CHudAmmo::DrawWList(float flTime)
 		{
 			// Draw Row of weapons.
 
-			GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+			// ############ hu3lifezado ############ //
+			// Mudei a cor do HUD (RGB_YELLOWISH)
+			//GetHud().GetPrimaryColor().UnpackRGB(r,g,b);
+			UnpackRGB(r, g, b, RGB_GREENISH);
+			// ############ //
 
 			for ( CBasePlayerWeapon* p = pPlayer->m_rgpPlayerItems[ i ]; p; p = p->m_pNext )
 			{
