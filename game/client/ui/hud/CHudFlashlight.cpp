@@ -134,6 +134,9 @@ bool CHudFlashlight::Draw(float flTime)
 		// Nova dimensao lateral da lanterna ligada
 		// x = ScreenWidth - m_iWidth/2;
 		x = distancia_do_lado + m_iWidth;
+
+		SPR_Set(m_hBeam, r, g, b);
+		SPR_DrawAdditive(0, x, y, m_prcBeam);
 	}
 
 	// Icone da energia da lanterna foi movido para a regiao armadura
