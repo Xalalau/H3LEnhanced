@@ -71,6 +71,24 @@ DLL_DECALLIST gDecals[] = {
 	{ "{ofsmscorch1", 0 },	// DECAL_OFSMSCORCH1
 	{ "{ofsmscorch2", 0 },	// DECAL_OFSMSCORCH2
 	{ "{ofsmscorch3", 0 },	// DECAL_OFSMSCORCH3
+
+	// ############ hu3lifezado ############ //
+	// Sprites para usar na arma de pichacao (ficam no decals.wad. Os de HUD estao no hud.txt)
+	// Insira novos decals no final! Nao mexa na ordem! kkkk
+	{ "{preto", 0 },
+	{ "{branco", 0 },
+	{ "{vermelho", 0 },
+	{ "{rosa", 0 },
+	{ "{roxo", 0 },
+	{ "{azul_forte", 0 },
+	{ "{azul_fraco", 0 },
+	{ "{verde", 0 },
+	{ "{amarelo", 0 },
+	{ "{laranja", 0 },
+	{ "{fundobranco", 0 },
+	{ "{fundopreto", 0 },
+	{ "{carlosadao", 0 },
+	// ############ //
 };
 
 const size_t gDecalsSize = ARRAYSIZE( gDecals );

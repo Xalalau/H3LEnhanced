@@ -16,6 +16,8 @@
 #ifndef GAME_SHARED_ENTITIES_WEAPONS_CKNIFE_H
 #define GAME_SHARED_ENTITIES_WEAPONS_CKNIFE_H
 
+// ############ hu3lifezado ############ //
+// Adicionadas novas animacoes
 enum KnifeAnim
 {
 	KNIFE_IDLE1 = 0,
@@ -30,14 +32,22 @@ enum KnifeAnim
 	KNIFE_IDLE2,
 	KNIFE_IDLE3,
 	KNIFE_CHARGE,
-	KNIFE_STAB
+	KNIFE_STAB,
+	KNIFE_PICHAVASIM,
+	KNIFE_SELECTION
 };
+// ############ //
 
 class CKnife : public CBasePlayerWeapon
 {
 public:
-	DECLARE_CLASS( CKnife, CBasePlayerWeapon );
+	DECLARE_CLASS(CKnife, CBasePlayerWeapon);
+	// ############ hu3lifezado ############ //
+	// Correcao: save movido para escopo correto
+#ifdef SERVER_DLL
 	DECLARE_DATADESC();
+#endif
+	// ############ //
 
 	CKnife();
 
@@ -51,17 +61,48 @@ public:
 
 	void PrimaryAttack() override;
 
-	bool Swing( const bool bFirst );
+	// ############ hu3lifezado ############ //
+	// Funcoes deletadas
+	// bool Swing(const bool bFirst);
+	// void SwingAgain();
+	// void Smack();
 
-	void SwingAgain();
+	// Funcoes para mexer com pichacao
+	void WeaponIdle() override;
 
-	void Smack();
+	void SecondaryAttack() override;
+
+	void DamageAnimationAndSound();
+
+	bool TraceSomeShit();
+
+	void PlaceColor();
+
+	static const char *pSelectionSounds[];
+	// ############ //
 
 private:
 	unsigned short m_usKnife;
 
 	int m_iSwing;
 	TraceResult m_trHit;
+
+	// ############ hu3lifezado ############ //
+	// Tempo ate processar novamente dano, animacoes e sons
+	float m_nextthink;
+	// Tempo ate proxima mudanca de cor ser liberada
+	float m_nextcolorchange;
+	// Tempo que quando ultrapassado forca a rechecagem do primeiro acerto
+	float m_nextfirsthit;
+	// Tempo para o proximo som de spray aplicado em parede
+	float m_nextsprayonwallsound;
+	// Cor selecionada (64 clientes)
+#ifdef SERVER_DLL
+	int hu3_spray_color[64];
+#else
+	int hu3_spray_color[2];
+#endif
+	// ############ //
 };
 
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CKNIFE_H

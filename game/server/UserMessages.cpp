@@ -62,6 +62,11 @@ int gmsgReceiveW = 0;
 int gmsgHudColors = 0;
 int gmsgWpnBody = 0;
 
+// ############ hu3lifezado ############ //
+// Cores da Latinha de Pichacao no HUD
+int gmsgHu3PicheColors = 0;
+// ############ //
+
 /**
 *	Sends game state to the player on connect.
 *	Byte: Whether it's a multiplayer game.
@@ -120,6 +125,11 @@ void LinkUserMessages()
 	gmsgWpnBody = REG_USER_MSG( "WpnBody", 2 );
 
 	gmsgGameState = REG_USER_MSG( "GameState", 1 );
+
+	// ############ hu3lifezado ############ //
+	// Cores da Latinha de Pichacao no HUD
+	gmsgHu3PicheColors = REG_USER_MSG("Graffiti", 1);
+	// ############ //
 }
 
 void UMSG_SendGameState( CBasePlayer& player )

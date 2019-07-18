@@ -63,6 +63,10 @@ public:
 	void MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
 	void MsgFunc_ItemPickup( const char *pszName, int iSize, void *pbuf );
 	void MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf );
+	// ############ hu3lifezado ############ //
+	// Cores da Latinha de Pichacao no HUD
+	void MsgFunc_Graffiti(const char *pszName, int iSize, void *pbuf);
+	// ############ //
 
 	void SlotInput( int iSlot );
 	void _cdecl UserCmd_Slot1( void );
@@ -109,6 +113,11 @@ private:
 	cvar_t* m_pCrosshair;
 	cvar_t* m_pCrosshairMode;
 	cvar_t* m_pCrosshairScale;
+
+	// ############ hu3lifezado ############ //
+	// Cores da Latinha de Pichacao no HUD
+	int m_pCvarLColor;
+	// ############ //
 
 	//The server sent a message before the client was ready, so update as soon as possible - Solokiller
 	bool m_bNeedsLocalUpdate = false;
