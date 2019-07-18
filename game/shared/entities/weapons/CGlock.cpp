@@ -209,11 +209,11 @@ void CGlock::Reload( void )
 		m_pLaser = nullptr;
 	}
 #endif	
-	// Tempo de recarga aumentado para acertar com a nova animacao. (1.5)
-	if (m_iClip == 0)
-		bResult = DefaultReload(GLOCK_RELOAD, 2.2);
-	else
+	// Tempo de recarga aumentado para acertar com a nova animacao (1.5)
+	if (m_iClip != 0)
 		bResult = DefaultReload(GLOCK_RELOAD_NOT_EMPTY, 2.2);
+	else
+		bResult = DefaultReload(GLOCK_RELOAD, 2.2);
 	// ############ //
 
 	if (m_iClip == 0)
