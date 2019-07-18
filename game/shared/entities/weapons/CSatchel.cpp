@@ -148,6 +148,11 @@ void CSatchelCharge :: Precache( void )
 	PRECACHE_SOUND("weapons/g_bounce1.wav");
 	PRECACHE_SOUND("weapons/g_bounce2.wav");
 	PRECACHE_SOUND("weapons/g_bounce3.wav");
+	// ############ hu3lifezado ############ //
+	// Novos sons
+	PRECACHE_SOUND("weapons/churrasqueira_liga.wav");
+	PRECACHE_SOUND("weapons/churrasqueira_puta_vida.wav");
+	// ############
 }
 
 void CSatchelCharge :: BounceSound( void )
@@ -325,6 +330,11 @@ void CSatchel::PrimaryAttack()
 		{
 		SendWeaponAnim( SATCHEL_RADIO_FIRE );
 
+		// ############ hu3lifezado ############ //
+		// Faustao diz "PUTA VIDA" + som de explosao da churrasqueira
+		EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/churrasqueira_puta_vida.wav", 1.0, ATTN_NORM);
+		// ############
+
 		DeactivateSatchels( m_pPlayer, SatchelAction::DETONATE );
 
 		m_chargeReady = ChargeState::TRIGGERED;
@@ -357,6 +367,11 @@ void CSatchel::Throw( void )
 	if ( m_pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] )
 	{
 #ifndef CLIENT_DLL
+		// ############ hu3lifezado ############ //
+		// Filosofo do Caiscais diz "Numero 1 liga"
+		EMIT_SOUND(m_pPlayer, CHAN_WEAPON, "weapons/churrasqueira_liga.wav", 1.0, ATTN_NORM);
+		// ############
+
 		Vector vecSrc = m_pPlayer->GetAbsOrigin();
 
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->GetAbsVelocity();
