@@ -379,6 +379,17 @@ void CM249::Reload()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.78;
 
 		m_flReloadEnd = UTIL_WeaponTimeBase() + 1.33;
+
+		// ############ hu3lifezado ############ //
+		// Remocao da mira em terceira pessoa
+#ifndef CLIENT_DLL
+		if (m_pLaser)
+		{
+			m_pLaser->RemoveSpot(m_pLaser);
+			m_pLaser = nullptr;
+		}
+#endif
+		// ############ //
 	}
 }
 
