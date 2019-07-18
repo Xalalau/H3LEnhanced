@@ -131,7 +131,10 @@ void CBasePlayer::InitialSpawn()
 void CBasePlayer::Spawn()
 {
 	SetClassname( "player" );
-	SetHealth( 100 );
+	// ############ hu3lifezado ############ //
+	// Era 100
+	SetHealth(169);
+	// ############ //
 	SetArmorAmount( 0 );
 	SetTakeDamageMode( DAMAGE_AIM );
 	SetSolidType( SOLID_SLIDEBOX );
