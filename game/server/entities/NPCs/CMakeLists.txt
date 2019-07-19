@@ -67,6 +67,8 @@ add_sources(
 	CGenericMonster.cpp
 	CGenericMonsterGod.h
 	CGenericMonsterGod.cpp
+	CGloriousBreasts.h
+	CGloriousBreasts.cpp
 	CGMan.h
 	CGMan.cpp
 	CHAssassin.h
