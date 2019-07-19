@@ -39,6 +39,8 @@ add_sources(
 	CBMortar.cpp
 	CBullsquid.h
 	CBullsquid.cpp
+	CButano.h
+	CButano.cpp
 	CController.h
 	CController.cpp
 	CControllerHeadBall.h
