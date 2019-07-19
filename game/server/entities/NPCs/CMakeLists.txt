@@ -103,6 +103,8 @@ add_sources(
 	CNihilanthHVR.cpp
 	COsprey.h
 	COsprey.cpp
+	CPeacock.h
+	CPeacock.cpp
 	CPenguinGrenade.h
 	CPenguinGrenade.cpp
 	CRat.h
