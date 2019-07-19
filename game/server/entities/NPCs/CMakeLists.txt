@@ -121,6 +121,8 @@ add_sources(
 	CScientist.cpp
 	CScientistGiant.h
 	CScientistGiant.cpp
+	CScientistParaguai.h
+	CScientistParaguai.cpp
 	CSentry.h
 	CSentry.cpp
 	CSittingScientist.h
