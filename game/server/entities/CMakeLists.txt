@@ -62,6 +62,8 @@ add_sources(
 	CPointCounter.cpp
 	CPointCMD.h
 	CPointCMD.cpp
+	CPointTimer.h
+	CPointTimer.cpp
 	CPointEntity.h
 	CPointEntity.cpp
 	CPushable.h
