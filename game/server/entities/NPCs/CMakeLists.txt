@@ -3,6 +3,8 @@ add_sources(
 	Activity.cpp
 	CAGrunt.h
 	CAGrunt.cpp
+	CAirBope.h
+	CAirBope.cpp
 	CApache.h
 	CApache.cpp
 	CApacheHVR.h
@@ -23,7 +25,7 @@ add_sources(
 	CBaseTurret.cpp
 	CBigMomma.h
 	CBigMomma.cpp
-	CBloater.h
+    CBloater.h
 	CBloater.cpp
 	CBMortar.h
 	CBMortar.cpp
