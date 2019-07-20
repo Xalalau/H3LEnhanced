@@ -96,6 +96,8 @@ void CKnife::Spawn()
 #else
 	hu3_spray_color[1] = 1;
 #endif
+	// [COOP] Resetar a selecao no HUD
+	reset_hud = true;
 	// ############ //
 
 	FallInit();
@@ -418,6 +420,21 @@ void CKnife::WeaponIdle()
 
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
+
+	// [COOP] Consertar o icone de cor no HUD depois de um changelevel
+	// Isso eh necessario porque eu nao salvo a selecao nesse caso
+#ifdef SERVER_DLL
+	if (g_pGameRules->IsCoOp() && reset_hud)
+	{
+		CBaseEntity *hu3Player = (CBaseEntity *)m_pPlayer;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgHu3PicheColors, NULL, hu3Player);
+			WRITE_BYTE(1);
+		MESSAGE_END();
+	
+		reset_hud = false;
+	}
+#endif
 
 	// 3% de chance de tocar EU PICHAVA SIM E CURTIA MUITO!
 	if (RANDOM_LONG(0, 99) >= 97)

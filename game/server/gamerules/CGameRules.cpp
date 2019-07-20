@@ -139,3 +139,19 @@ void CGameRules::PlayerRespawn( CBasePlayer* pPlayer, const bool bCopyCorpse )
 		SERVER_COMMAND( "reload\n" );
 	}
 }
+
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+// Uso vazio e generalizado do changelevel do modo coop
+// Preciso disso para acessar essa funcao externamente em qualquer arquivo do HL1
+void CGameRules::ChangeLevelCoopToogle()
+{
+	return;
+}
+// [MODO COOP]
+// Desativar a fisica dos jogadores em qualquer lugar
+void CGameRules::DisablePhysics(CBaseEntity * pEntity)
+{
+	return;
+}
+// ############ //

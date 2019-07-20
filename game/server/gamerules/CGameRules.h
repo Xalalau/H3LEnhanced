@@ -145,7 +145,7 @@ public:
 	// Nome mudado de Half-Life para Hu3-Life
 	virtual const char *GetGameDescription() const { return "Hu3-Life"; }
 	// ############ //
-	
+
 // Client connection/disconnection
 
 	/**
@@ -403,6 +403,16 @@ public:
 	*	Immediately end a multiplayer game
 	*/
 	virtual void EndMultiplayerGame() {}
+
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Declaracao do uso vazio e generalizado do changelevel do modo coop
+	// Preciso disso para acessar essa funcao externamente em qualquer arquivo do HL1
+	virtual void ChangeLevelCoopToogle();
+	// [MODO COOP]
+	// Desativar a fisica dos jogadores em qualquer lugar
+	virtual void DisablePhysics(CBaseEntity * pEntity);
+	// ############ //
 };
 
 inline CGameRules::~CGameRules()

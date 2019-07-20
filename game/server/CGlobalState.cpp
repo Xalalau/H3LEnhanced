@@ -17,6 +17,10 @@
 #include "cbase.h"
 #include "CBasePlayer.h"
 #include "CGlobalState.h"
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/GameRules.h"
+// ############ //
 
 const char* GLOBALESTATEToString( const GLOBALESTATE state )
 {
@@ -44,6 +48,18 @@ void CGlobalState::Reset( void )
 
 globalentity_t *CGlobalState::Find( string_t globalname )
 {
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// No modo coop nos nao carregamos nenhuma entidade de um mapa para o outro desse jeito
+	if (g_pGameRules)
+	{
+		if (g_pGameRules->IsCoOp())
+		{
+			return NULL;
+		}
+	}
+	// ############ //
+
 	if( !globalname )
 		return NULL;
 

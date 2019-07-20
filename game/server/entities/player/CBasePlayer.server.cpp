@@ -183,7 +183,6 @@ void CBasePlayer::Spawn()
 	m_flFallVelocity = 0;
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
-	g_pGameRules->GetPlayerSpawnSpot( this );
 
 	SetModel( "models/player.mdl" );
 	g_ulModelIndexPlayer = GetModelIndex();
@@ -223,7 +222,13 @@ void CBasePlayer::Spawn()
 
 	m_flNextChatTime = gpGlobals->time;
 
-	g_pGameRules->PlayerSpawn( this );
+	// ############ hu3lifezado ############ //
+	// [COOP] Eu entro nas configuracoes do coop ou simplesmente posiciono o jogador
+	if (g_pGameRules->IsCoOp())
+		g_pGameRules->PlayerSpawn(this);
+	else
+		g_pGameRules->GetPlayerSpawnSpot(this);
+	// ############ //
 }
 
 Vector CBasePlayer::GetGunPosition()

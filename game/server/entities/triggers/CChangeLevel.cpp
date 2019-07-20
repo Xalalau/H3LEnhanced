@@ -125,6 +125,17 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 	if( g_pGameRules->IsDeathmatch() )
 		return;
 
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Changelevel do coop eh diferente no final
+	if (g_pGameRules->IsCoOp())
+	{
+		g_pGameRules->ChangeLevelCoopToogle();
+
+		return;
+	}
+	// ############ //
+
 	// Some people are firing these multiple times in a frame, disable
 	if( gpGlobals->time == GetDamageTime() )
 		return;

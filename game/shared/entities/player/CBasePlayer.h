@@ -452,7 +452,11 @@ public:
 	void SelectItem( const char *pstr );
 	void ItemPreFrame();
 	void ItemPostFrame();
-	void GiveNamedItem( const char *szName );
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Retorno a entidade para poder lidar com ela
+	CBaseEntity* GiveNamedItem(const char *szName);
+	// ############ //
 
 	int GiveAmmo( int iAmount, const char *szName );
 	void SendAmmoUpdate();

@@ -117,6 +117,10 @@ float CHalfLifeRules::FlPlayerFallDamage( CBasePlayer *pPlayer )
 //=========================================================
 void CHalfLifeRules :: PlayerSpawn( CBasePlayer *pPlayer )
 {
+	// ############ hu3lifezado ############ //
+	// Delay para executar checagem de comandos preconfigurados
+	checkCommandsDelay = gpGlobals->time + 0.1;
+	// ############ //
 }
 
 //=========================================================
@@ -130,6 +134,55 @@ bool CHalfLifeRules::AllowAutoTargetCrosshair()
 //=========================================================
 void CHalfLifeRules :: PlayerThink( CBasePlayer *pPlayer )
 {
+	// ############ hu3lifezado ############ //
+	// Executo estados especiais nas entidades
+	// NOTA: Isso era feito em PlayerSpawn() e funcionava quando usavamos o comando
+	//       "map algum_mapa" para testarmos os niveis, mas em loads entre fases
+	//       a funcao infelizmente rodava em um momento anterior ao que deveria e
+	//       portanto nao tinha efeito. Fui obrigado a vir para o Think().
+	if (gpGlobals->time > checkCommandsDelay && checkCommandsDelay != -1)
+	{
+		edict_t		*pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+		CBaseEntity *pEntity;
+		char * sp_remove = (char*)CVAR_GET_STRING("sp_remove");
+		int j, count_sp_remove = 0;
+
+		// Contar a quantidade de entidades a remover
+		char* tok = strtok(sp_remove, ";");
+		while (tok != NULL) {
+			count_sp_remove++;
+			tok = strtok(NULL, ";");
+		}
+
+		if (count_sp_remove > 0)
+		{
+			for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+			{
+				if (!pEdict)
+					break;
+
+				pEntity = CBaseEntity::Instance(pEdict);
+				if (!pEntity)
+					continue; // Essa verificacao em Util.cpp dentro de UTIL_MonstersInSphere() usa continue ao inves de break
+
+				// Remover a entidade se ela estiver marcada como nao apropriada para o sp
+				tok = sp_remove;
+				for (j = 0; j < count_sp_remove; ++j) {
+					if (strcmp(pEntity->GetTargetname(), tok) == 0)
+					{
+						pEntity->SUB_Remove();
+
+						break;
+					}
+					tok += strlen(tok) + 1;
+					tok += strspn(tok, ";");
+				}
+			}
+		}
+
+		checkCommandsDelay = -1;
+	}
+	// ############ //
 }
 
 

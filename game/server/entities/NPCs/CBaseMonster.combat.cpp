@@ -30,6 +30,11 @@
 #include "Weapons.h"
 #include "entities/effects/CGib.h"
 
+// ############ hu3lifezado ############ //
+// [MODO COOP]
+#include "gamerules/GameRules.h"
+// ############ //
+
 bool CBaseMonster::HasHumanGibs()
 {
 	EntityClassification_t myClass = Classify();
@@ -91,11 +96,15 @@ void CBaseMonster :: GibMonster( void )
 		{
 			CGib::SpawnHeadGib( this );
 			// ############ hu3lifezado ############ //
-			// Mais tripas com gore
-			if (CVAR_GET_FLOAT("hu3_gore"))
-				CGib::SpawnRandomGibs(this, 5, 1);
+			// [MODO COOP]
+			// Mais tripas com gore e menos no modo coop
+			if (!g_pGameRules->IsCoOp())
+				if (CVAR_GET_FLOAT("hu3_gore"))
+					CGib::SpawnRandomGibs(this, 5, 1);
+				else
+					CGib::SpawnRandomGibs(this, 2, 1); // throw some human gibs.
 			else
-				CGib::SpawnRandomGibs(this, 2, 1); // throw some human gibs.
+				CGib::SpawnRandomGibs(this, 1, 1);
 			// ############ //
 		}
 		gibbed = true;
@@ -105,11 +114,15 @@ void CBaseMonster :: GibMonster( void )
 		if ( CVAR_GET_FLOAT("violence_agibs") != 0 )	// Should never get here, but someone might call it directly
 		{
 			// ############ hu3lifezado ############ //
-			// Mais tripas com gore
-			if (CVAR_GET_FLOAT("hu3_gore"))
-				CGib::SpawnRandomGibs(this, 5, 1);
+			// [MODO COOP]
+			// Mais tripas com gore e menos no modo coop
+			if (!g_pGameRules->IsCoOp())
+				if (CVAR_GET_FLOAT("hu3_gore"))
+					CGib::SpawnRandomGibs(this, 5, 1);
+				else
+					CGib::SpawnRandomGibs(this, 2, 1);	// throw alien gibs.
 			else
-				CGib::SpawnRandomGibs(this, 2, 1);	// throw alien gibs.
+				CGib::SpawnRandomGibs(this, 1, 1);
 			// ############ //
 		}
 		gibbed = true;

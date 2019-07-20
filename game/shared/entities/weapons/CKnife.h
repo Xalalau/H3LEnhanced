@@ -102,6 +102,8 @@ private:
 #else
 	int hu3_spray_color[2];
 #endif
+	// [COOP] Resetar a selecao no HUD
+	bool reset_hud;
 	// ############ //
 };
 

@@ -54,6 +54,25 @@ cvar_t	allowmonsters = { "mp_allowmonsters","1", FCVAR_SERVER };
 cvar_t	hu3_mp_strip = { "hu3_mp_strip","0", FCVAR_SERVER };
 // Tripas cagarrentas
 cvar_t hu3_gore = { "hu3_gore", "1", FCVAR_SERVER };
+
+// [Modo COOP] :
+
+// Corrigir o spawn de trens
+cvar_t	coop_train_spawnpoint = { "coop_train_spawnpoint","0", FCVAR_SERVER };
+// Adicionar delay no inicio do movimento de trens
+cvar_t	coop_train_delay = { "coop_train_delay","0", FCVAR_SERVER | FCVAR_UNLOGGED };
+// Forcar uma velocidade de inicio no trem (resolve ele nao andar no c0a0)
+cvar_t	coop_train_startspeed = { "coop_train_startspeed","0", FCVAR_SERVER | FCVAR_UNLOGGED };
+// Remover entidades no coop
+cvar_t	coop_remove = { "coop_remove","", FCVAR_SERVER };
+// Remover entidades no singleplayer
+cvar_t	sp_remove = { "sp_remove","", FCVAR_SERVER };
+// Desativar a fisica de entidades no coop
+cvar_t	coop_nophysics = { "coop_nophysics","", FCVAR_SERVER };
+// Teletransporte que deve funcionar em todos os players no coop
+cvar_t coop_teleport_plys = { "coop_teleport_plys","", FCVAR_SERVER };
+// Muda de mapa instantaneamente quando algum jogador toca no changelevel
+cvar_t coop_force_changelevel = { "coop_force_changelevel","", FCVAR_SERVER };
 // ############ //
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
@@ -352,6 +371,25 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&hu3_mp_strip);
 	// Tripas cagarrentas
 	CVAR_REGISTER(&hu3_gore);
+
+	// [Modo COOP] :
+
+	// Corrigir o spawn de trens
+	CVAR_REGISTER(&coop_train_spawnpoint);
+	// Adicionar delay no inicio do movimento de trens
+	CVAR_REGISTER(&coop_train_delay);
+	// Forcar uma velocidade de inicio no trem (resolve ele nao andar no c0a0)
+	CVAR_REGISTER(&coop_train_startspeed);
+	// Remover entidades no coop
+	CVAR_REGISTER(&coop_remove);
+	// Remover entidades no singleplayer
+	CVAR_REGISTER(&sp_remove);
+	// Desativar a fisica de entidades no coop
+	CVAR_REGISTER(&coop_nophysics);
+	// Teletransporte que deve funcionar em todos os players no coop
+	CVAR_REGISTER(&coop_teleport_plys);
+	// Muda de mapa instantaneamente quando algum jogador toca no changelevel
+	CVAR_REGISTER(&coop_force_changelevel);
 	// ############ //
 
 	// REGISTER CVARS FOR SKILL LEVEL STUFF
