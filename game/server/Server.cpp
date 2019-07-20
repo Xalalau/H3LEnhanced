@@ -47,8 +47,9 @@ cvar_t	decalfrequency = {"decalfrequency","30", FCVAR_SERVER };
 cvar_t	teamlist = {"mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
 cvar_t	teamoverride = {"mp_teamoverride","1" };
 cvar_t	defaultteam = {"mp_defaultteam","0" };
-cvar_t	allowmonsters={"mp_allowmonsters","0", FCVAR_SERVER };
 // ############ hu3lifezado ############ //
+// Permitir monstros por padrao no multiplayer (0)
+cvar_t	allowmonsters = { "mp_allowmonsters","1", FCVAR_SERVER };
 // Remover as armas do jogador
 cvar_t	hu3_mp_strip = { "hu3_mp_strip","0", FCVAR_SERVER };
 // Tripas cagarrentas
