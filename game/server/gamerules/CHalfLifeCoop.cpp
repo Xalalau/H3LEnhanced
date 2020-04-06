@@ -939,30 +939,36 @@ void CBaseHalfLifeCoop::LoadPlayerItems(CBasePlayer *pPlayer, playerCoopSaveRest
 	// As armas salvas serao verificadas uma a uma
 	while (strcmp((*CoopPlyDataIn).keepweapons[i].name, "-1") != 0)
 	{
-		// Readiciono a quantidade da municao 1 no jogador
+		// Readiciono a quantidade da "municao 1" no jogador
 		if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "-1") != 0)
 			// jogador deve estar zerado dessa municao, caso contrario ela ja foi restaurada por outra arma
 			if (pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex((*CoopPlyDataIn).keepweapons[i].type1)] == 0)
 			{
-				// HACK!!!! AJUSTE DA MUNICAO DURANTE O MOMENTO DO CHANGELEVEL
-				// Estao ocorrendo somas muito loucas na recarga aqui, nao sei de onde elas vem...
-				// Definitavamente eu nao sou o culpado disso, estou resolvendo na mao! Funciona...
+				//--
+				// HACK!!!! AJUSTE DA MUNICAO LOGO APOS O CHANGELEVEL
+				// O jogador ganha municao extra quando o mapa muda e eu sou obrigado a remove-la aqui
+				// Nao sei qual parte do codigo esta fazendo isso
 				if ((*CoopPlyDataIn).changinglevel)
 				{
-					if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "buckshot") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 4;
-					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "rockets") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 1;
-					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "uranium") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 80;
-					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Hand Grenade") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 5;
-					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Trip Mine") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 1;
-					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Satchel Charge") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 1;
-					else if (strcmp((*CoopPlyDataIn).keepweapons[i].type1, "Snarks") == 0)
-						(*CoopPlyDataIn).keepweapons[i].amountammo1 = (*CoopPlyDataIn).keepweapons[i].amountammo1 - 5;
+					int fixammo = 0;
+					char *type1 = (*CoopPlyDataIn).keepweapons[i].type1;
+
+					if (strcmp(type1, "buckshot") == 0)
+						fixammo = - 4;
+					else if (strcmp(type1, "rockets") == 0)
+						fixammo = - 1;
+					else if (strcmp(type1, "uranium") == 0)
+						fixammo = - 80;
+					else if (strcmp(type1, "Hand Grenade") == 0)
+						fixammo = - 5;
+					else if (strcmp(type1, "Trip Mine") == 0)
+						fixammo = - 1;
+					else if (strcmp(type1, "Satchel Charge") == 0)
+						fixammo = - 1;
+					else if (strcmp(type1, "Snarks") == 0)
+						fixammo = - 5;
+
+					(*CoopPlyDataIn).keepweapons[i].amountammo1 += fixammo;
 				}
 				//--
 
@@ -1060,6 +1066,8 @@ void CBaseHalfLifeCoop::SavePlayerItemsAux(CBasePlayer *pPlayer, playerCoopSaveR
 	// Se tiver municao 1 em cartucho
 	if (pWeapon->pszAmmo1())
 	{
+	//	NOTA: evitar salvar municoes repetidamente!!!
+
 		// Tipo da municao 1
 		strcpy((*CoopPlyDataIn).keepweapons[j].type1, pWeapon->pszAmmo1());
 		// Quantidade da municao 1 em cartucho
