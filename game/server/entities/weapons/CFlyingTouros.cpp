@@ -110,7 +110,7 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 		else
 			g_MultiDamage.ApplyMultiDamage(this, m_pPlayer);
 	}
-
+	
 	// If we hit a player, make a nice squishy thunk sound. Otherwise
 	// make a clang noise and throw a bunch of sparks. 
 	if (pOther->IsPlayer())
@@ -129,10 +129,9 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 	// Get the unit vector in the direction of motion.
 	Vector vecDir = pev->velocity.Normalize();
 
-	// Reposiciona virado para cima
-#ifndef CLIENT_DLL
+	// Reposiciono a arma deitada e apontando para qualquer lado
 	pev->angles = vecDir;
-#endif
+	pev->angles.y = UTIL_RandomLong(0, 360);
 
 	// Trace a line along the velocity vector to get the normal at impact.
 	TraceResult tr;
