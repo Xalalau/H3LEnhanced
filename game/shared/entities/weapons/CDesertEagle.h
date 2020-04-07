@@ -73,6 +73,8 @@ public:
 	void ShrapnelDamage(int chance, int min_damage, int max_damage);
 	// Perder toda a municao
 	bool RandomlyLostAllAmmo();
+	// Varejar a arma
+	void ThrowWeapon(bool isReloading);
 	// ############ //
 
 private:
@@ -95,7 +97,8 @@ private:
 	cvar_t	*hu3_touros_gambiarra_qualidade;
 	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
 	float m_qualitypercentageeffect;
-
+	// Indico que acabei de fazer um reload
+	bool m_reloaded;
 public:
 	// Qualidade da arma (de 1 ate 9, nunca 10)
 	int m_quality;

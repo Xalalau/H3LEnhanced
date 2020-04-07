@@ -22,7 +22,6 @@
 // Arma Touros quebrada voadora e tiro secundario, codigos adaptados de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 #include "entities/weapons/CFlyingTouros.h"
-#include "entities/weapons/CFlyingTourosSecondary.h"
 // Para balancar a tela:
 #include "shake.h"
 // Imprimir mensagens
@@ -142,6 +141,9 @@ bool CDesertEagle::Deploy()
 	if (hu3_touros_municao_sync->value == -1)
 		hu3_touros_municao_sync->value = m_iClip;
 #endif
+
+	// Inicializo o controle da animação de reload
+	m_reloaded = false;
 	// ############ //
 
 	return DefaultDeploy(
@@ -166,6 +168,21 @@ void CDesertEagle::WeaponIdle()
 	ResetEmptySound();
 
 	// ############ hu3lifezado ############ //
+	// Gambiarra: a animacao de reload demora 3.7 segundos, e aqui faco os 2 segundos finais.
+	// Se estiver voltando de um reload, termino jogando a arma fora
+	if (m_reloaded)
+	{
+		ThrowWeapon(m_reloaded);
+
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.8;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.8;
+		m_flNextSecondaryAttack = gpGlobals->time + 1.8;
+
+		m_reloaded = false;
+
+		return;
+	}
+
 	// Entre 4 e 7 segundos tem entre 10% e 30% de chance da arma atirar sozinha (leva 12 segundos para comecar a rodar inicialmente)
 	if (m_nextbadshootchance <= gpGlobals->time && m_waitforthegametobeready <= gpGlobals->time)
 	{
@@ -246,13 +263,12 @@ bool CDesertEagle::RandomlyBreak()
 {
 	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (99 - 8 * m_qualitypercentageeffect))
 	{
-		// Como a arma quebra, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
-		if (m_iClip != 0)
+		if (m_pPlayer->RemovePlayerItem(this)) // Only throw if we were able to detatch from player.
 		{
-			m_iClip = 0;
-		}
-		else if (m_pPlayer->RemovePlayerItem(this)) // Only throw if we were able to detatch from player.
-		{
+			// Como a arma quebra, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
+			if (m_iClip != 0)
+				m_iClip = 0;
+
 #ifndef CLIENT_DLL
 			// Dano de estilhaco de 10 a 25 no jogador, efeitos da tela e tremer, som da arma quebrando
 			ShrapnelDamage(100, 10, 25);
@@ -277,6 +293,9 @@ bool CDesertEagle::RandomlyBreak()
 			pFTouros->pev->avelocity.x = -1000;
 			pFTouros->pev->gravity = .5;
 			pFTouros->m_pPlayer = m_pPlayer;
+
+			// Nao deixar o jogador pegar a arma do chao
+			pFTouros->SetMode(1);
 #endif
 			// Do player weapon anim.
 			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -567,31 +586,40 @@ void CDesertEagle::PrimaryAttack()
 }
 
 // ############ hu3lifezado ############ //
-// Tiro secundario, adaptado de:
-// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+// Tiro secundario:
 void CDesertEagle::SecondaryAttack()
 {
+	ThrowWeapon(false);
+}
 
-	// Como a arma eh jogada fora, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
-	if (m_iClip != 0)
+// Varejar a arma, adaptado de:
+// http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
+void CDesertEagle::ThrowWeapon(bool isReloading)
+{
+	if (isReloading || m_pPlayer->RemovePlayerItem(this))
 	{
-		m_iClip2 = m_iClip;
-		m_iClip = 0;
-	}
-	else if ((m_pPlayer->pev->waterlevel != 3) && (m_pPlayer->RemovePlayerItem(this)))
-	{
-		// Don't throw underwater, and only throw if we were able to detatch 
-		// from player.
+		// Don't throw if we were able to detatch from player.
+
+		// Como a arma eh jogada fora, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
+		if (!isReloading && m_iClip != 0)
+		{
+			m_iClip2 = m_iClip;
+			m_iClip = 0;
+		}
 
 		// Get the origin, direction, and fix the angle of the throw.
-		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
-		Vector vecDir = gpGlobals->v_forward;
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+		if (!isReloading)
+			vecSrc = vecSrc + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
+		else
+			vecSrc = vecSrc + gpGlobals->v_right * 16 + gpGlobals->v_forward * 3 - gpGlobals->v_up * 27;
+		Vector vecDir = gpGlobals->v_forward + gpGlobals->v_right * 0.35;
 		Vector vecAng = UTIL_VecToAngles(vecDir);
 		vecAng.z = vecDir.z - 90;
 
 #ifndef CLIENT_DLL
 		// Create a flying Touros.
-		CFlyingTourosSecondary *pFTouros = (CFlyingTourosSecondary *)Create("flying_touros_secondary", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
+		CFlyingTouros *pFTouros = (CFlyingTouros *)Create("flying_touros", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
 
 		// Give the Touros its velocity, angle, and spin. 
 		// Lower the gravity a bit, so it flys. 
@@ -600,37 +628,50 @@ void CDesertEagle::SecondaryAttack()
 		pFTouros->pev->avelocity.x = -500;
 		pFTouros->pev->gravity = .9;
 		pFTouros->m_pPlayer = m_pPlayer;
+		int mode = 0;
+
+		// Definir se o jogador vai poder pegar a arma do chao ou nao
+		if (isReloading)
+			mode = 1;
+		pFTouros->SetMode(mode);
 
 		// Salvo a qualidade da arma e a quantidade de balas inicial
-		if (m_quality == 0) // Caso o jogador jogue a arma fora antes de dar o primeiro tiro
-			m_quality = RANDOM_LONG(1, 9);
-		pFTouros->SetQuality(m_quality, m_iClip2);
+		if (!isReloading)
+		{
+			if (m_quality == 0) // Caso o jogador jogue a arma fora antes de dar o primeiro tiro
+				m_quality = RANDOM_LONG(1, 9);
+
+			pFTouros->SetQuality(m_quality, m_iClip2);
+		}
 
 		// Do player weapon anim and sound effect. 
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 		EMIT_SOUND_DYN(this, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
 #endif
 
-		// Zero a qualidade
-		m_quality = 0;
+		if (!isReloading)
+		{
+			// Zero a qualidade
+			m_quality = 0;
 #ifdef CLIENT_DLL
-		hu3_touros_qualidade_inicial->value = 0;
+			hu3_touros_qualidade_inicial->value = 0;
 #endif
 
-		// Just for kicks, set this. 
-		// But we destroy this weapon anyway so... thppt. 
-		m_flNextSecondaryAttack = gpGlobals->time + 0.75;
+			// Just for kicks, set this. 
+			// But we destroy this weapon anyway so... thppt. 
+			m_flNextSecondaryAttack = gpGlobals->time + 0.75;
 
-		// Mensagem
+			// Mensagem
 #ifndef CLIENT_DLL
-		UTIL_SayText("Voce jogou sua arma Cornus fora!|g", m_pPlayer);
+			UTIL_SayText("Voce jogou sua arma Cornus fora!|g", m_pPlayer);
 #endif
 
-		// take item off hud
-		m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
+			// take item off hud
+			m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
 
-		// Destroy this weapon
-		DestroyItem();
+			// Destroy this weapon
+			DestroyItem();
+		}
 	}
 }
 // ############ //
@@ -641,20 +682,21 @@ void CDesertEagle::Reload()
 	// Se a arma estiver travada, liberar
 	if (m_jammedweapon)
 		m_jammedweapon = false;
-	// ############ //
 
-	if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] > 0)
+	if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] > 0 && !m_reloaded)
 	{
-		// ############ hu3lifezado ############ //
 		// Tempo reajustado (1.5)
-		const bool bResult = DefaultReload(m_iClip ? DEAGLE_RELOAD : DEAGLE_RELOAD_NOSHOT, 3.7, 1);
-		// ############ //
+		const bool bResult = DefaultReload(m_iClip ? DEAGLE_RELOAD : DEAGLE_RELOAD_NOSHOT, 1.9, 1);
 
 		if (bResult)
 		{
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10.0, 15.0);
+			// Gambiarra: a animacao demora 3.7 segundos, mas aqui faco so 1.9. Na parte de idle eu jogo a arma fora e atraso mais 1.8 segundos. Nao me importo, eh mais facil fazer logo assim
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.9;
+			// Indico que estou em um reload
+			m_reloaded = true;
 		}
 	}
+	// ############ //
 }
 
 void CDesertEagle::GetWeaponData(weapon_data_t& data)

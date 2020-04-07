@@ -1,3 +1,4 @@
+#if USE_OPFOR
 // ---------------------------------------------------------------
 // Based on Flying Crowbar Entity. Ver 1.0 as seen in Lambda BubbleMod
 // 
@@ -25,7 +26,7 @@
 // ---------------------------------------------------------------
 
 // ############ hu3lifezado ############ //
-// Arma Touros quebrando, adaptado de:
+// Tiro secundario da arma Touros, adaptado de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 // ############ //
 
@@ -37,15 +38,16 @@
 #include "nodes/Nodes.h"
 #include "CBasePlayer.h"
 #include "gamerules/GameRules.h"
+#include "entities/weapons/CWeaponBox.h"
 
 #include "CFlyingTouros.h"
 
 BEGIN_DATADESC(CFlyingTouros)
-	DEFINE_TOUCHFUNC( SpinTouch ),
-	DEFINE_THINKFUNC( BubbleThink ),
+DEFINE_TOUCHFUNC(SpinTouch),
+DEFINE_THINKFUNC(BubbleThink),
 END_DATADESC()
 
-LINK_ENTITY_TO_CLASS( flying_touros, CFlyingTouros);
+LINK_ENTITY_TO_CLASS(flying_touros, CFlyingTouros);
 
 void CFlyingTouros::Spawn()
 {
@@ -112,10 +114,10 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 	// If we hit a player, make a nice squishy thunk sound. Otherwise
 	// make a clang noise and throw a bunch of sparks. 
 	if (pOther->IsPlayer())
-		EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/cbar_hitbod1.wav", 1.0, ATTN_NORM, 0, 100);
+		EMIT_SOUND_DYN(this, CHAN_WEAPON, "weapons/cbar_hitbod1.wav", 1.0, ATTN_NORM, 0, 100);
 	else
 	{
-		EMIT_SOUND_DYN( this, CHAN_WEAPON, "weapons/cbar_hit1.wav", 1.0, ATTN_NORM, 0, 100);
+		EMIT_SOUND_DYN(this, CHAN_WEAPON, "weapons/cbar_hit1.wav", 1.0, ATTN_NORM, 0, 100);
 		if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)
 		{
 			UTIL_Sparks(pev->origin);
@@ -136,12 +138,66 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 	TraceResult tr;
 	UTIL_TraceLine(pev->origin, pev->origin + vecDir * 100, dont_ignore_monsters, ENT(pev), &tr);
 
-	// Throw Touros along the normal so it looks kinda
-	// like a ricochet. This would be better if I actually 
-	// calcualted the reflection angle, but I'm lazy. :)
-	pev->velocity = tr.vecPlaneNormal * 100;
+	// Se o jogador nao pode pegar a arma do chao, arremesso ela
+	if (mode == 1)
+		pev->velocity = tr.vecPlaneNormal * 100;
+	// Caso contrario
+	else if (mode == 0)
+	{
+		// Don't draw the flying Touros anymore. 
+		pev->effects |= EF_NODRAW;
+		pev->solid = SOLID_NOT;
+
+		// Spawn a Touros weapon
+		CBasePlayerWeapon *pItem = (CBasePlayerWeapon *)Create("weapon_eagle", pev->origin, pev->angles, edict());
+
+		// Ligo o item para acesso externo
+		CDesertEagle *pItem_hu3 = (CDesertEagle *)pItem;
+
+		// Salvo a qualidade incial da arma
+		pItem_hu3->m_quality = quality;
+
+		// Salvo a quantidade inicial de balas
+		pItem_hu3->m_iClip2 = iClip;
+
+		// Spawn a weapon box
+		CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", GetAbsOrigin(), pev->angles, edict());
+
+		// don't let weapon box tilt.
+		pWeaponBox->pev->angles.x = 0;
+		pWeaponBox->pev->angles.z = 0;
+
+		// remove the weapon box after 2 mins. // Nope, 10 minutos
+		pWeaponBox->pev->nextthink = gpGlobals->time + 1200;
+		pWeaponBox->SetThink(&CWeaponBox::Kill);
+
+		// Pack the Touros in the weapon box
+		pWeaponBox->PackWeapon(pItem);
+
+		// Throw Touros or WB along the normal so it looks kinda
+		// like a ricochet. This would be better if I actually 
+		// calcualted the reflection angle, but I'm lazy. :)
+		pWeaponBox->pev->velocity = tr.vecPlaneNormal * 100;
+
+		// Remove this flying_Touros from the world.
+		SetThink(&CBaseEntity::SUB_Remove);
+	}
 
 	pev->nextthink = gpGlobals->time + .1;
+}
+
+void CFlyingTouros::SetQuality(int m_quality, int m_iClip)
+{
+	// Pego a qualidade na arma
+	quality = m_quality;
+	// Pego a municao carregada na arma
+	iClip = m_iClip;
+}
+
+void CFlyingTouros::SetMode(int m_mode)
+{
+	// Pego o modo da arma;
+	mode = m_mode;
 }
 
 void CFlyingTouros::BubbleThink(void)
@@ -155,9 +211,10 @@ void CFlyingTouros::BubbleThink(void)
 	pev->nextthink = gpGlobals->time + 0.25;
 
 	// Make a whooshy sound. 
-	EMIT_SOUND_DYN( this, CHAN_VOICE, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 120);
+	EMIT_SOUND_DYN(this, CHAN_VOICE, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 120);
 
 	// If the Touros enters water, make some bubbles. 
 	if (pev->waterlevel)
 		UTIL_BubbleTrail(pev->origin - pev->velocity * 0.1, pev->origin, 1);
 }
+#endif //USE_OPFOR

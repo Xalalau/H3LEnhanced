@@ -1,3 +1,4 @@
+#if USE_OPFOR
 // ---------------------------------------------------------------
 // Flying Crowbar Entity. Ver 1.0 as seen in Lambda BubbleMod  
 // 
@@ -25,12 +26,14 @@
 // ---------------------------------------------------------------
 
 // ############ hu3lifezado ############ //
-// Arma Touros quebrando, adaptado de:
+// Arma Touros voando, adaptado de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
 // ############ //
 
 #ifndef C_FLYING_TOUROS
 #define C_FLYING_TOUROS
+
+#include "entities/weapons/CDesertEagle.h"
 
 class CFlyingTouros : public CBaseEntity
 {
@@ -42,12 +45,18 @@ public:
 	void Precache(void);
 	void BubbleThink(void);
 	void SpinTouch(CBaseEntity *pOther);
+	void SetQuality(int m_quality, int m_iClip);
+	void SetMode(int m_mode);
 	CBasePlayer *m_pPlayer;
 
 private:
-
+	int quality;
+	int iClip;
+	int mode;
 	EHANDLE m_hOwner;        // Original owner is stored here so we can
 							 // allow the Touros to hit the user.
 };
 
 #endif
+
+#endif //USE_OPFOR
