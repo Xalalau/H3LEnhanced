@@ -32,17 +32,6 @@
 
 #include "CDesertEagle.h"
 
-// ############ hu3lifezado ############ //
-#ifdef CLIENT_DLL
-// Sincronida da qualidade inicial
-cvar_t	*hu3_touros_qualidade_inicial;
-// Sincronida da municao primaria inicial
-cvar_t	*hu3_touros_municao_inicial;
-// Sincronida da municao primaria continuamente
-cvar_t	*hu3_touros_municao_sync;
-#endif
-// ############ //
-
 LINK_ENTITY_TO_CLASS(weapon_eagle, CDesertEagle);
 
 CDesertEagle::CDesertEagle()
@@ -93,11 +82,14 @@ void CDesertEagle::Spawn()
 	m_iClip2 = -1;
 #ifdef CLIENT_DLL
 	// Server -> client: Comando para copiarmos valores de qualidade inicial 
-	hu3_touros_qualidade_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_qualidade_inicial", "", 0);
+	if (gEngfuncs.pfnGetCvarFloat("hu3_touros_qualidade_inicial") == 0)
+		hu3_touros_qualidade_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_qualidade_inicial", "", 0);
 	// Server -> client: Comando para copiarmos valores de municao inicial 
-	hu3_touros_municao_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_municao_inicial", "-1", 0);
+	if (gEngfuncs.pfnGetCvarFloat("hu3_touros_municao_inicial") == 0)
+		hu3_touros_municao_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_municao_inicial", "-1", 0);
 	// Manter a sincronia de balas entre server e client mesmo que forcado
-	hu3_touros_municao_sync = gEngfuncs.pfnRegisterVariable("hu3_touros_municao_sync", "-1", 0);
+	if (gEngfuncs.pfnGetCvarFloat("hu3_touros_municao_sync") == 0)
+		hu3_touros_municao_sync = gEngfuncs.pfnRegisterVariable("hu3_touros_municao_sync", "-1", 0);
 #endif
 	// ############ //
 

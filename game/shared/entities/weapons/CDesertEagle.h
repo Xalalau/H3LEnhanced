@@ -99,6 +99,15 @@ private:
 	float m_qualitypercentageeffect;
 	// Indico que acabei de fazer um reload
 	bool m_reloaded;
+#ifdef CLIENT_DLL
+	// Sincronida da qualidade inicial
+	cvar_t	*hu3_touros_qualidade_inicial;
+	// Sincronida da municao primaria inicial
+	cvar_t	*hu3_touros_municao_inicial;
+	// Sincronida da municao primaria continuamente
+	cvar_t	*hu3_touros_municao_sync;
+#endif
+
 public:
 	// Qualidade da arma (de 1 ate 9, nunca 10)
 	int m_quality;
