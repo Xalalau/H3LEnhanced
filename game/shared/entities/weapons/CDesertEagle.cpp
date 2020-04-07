@@ -202,8 +202,8 @@ void CDesertEagle::WeaponIdle()
 			return;
 		}
 	}
-	// ############ //
 
+	// Novos tempos de animacao
 	if (m_flTimeWeaponIdle <= UTIL_WeaponTimeBase() && m_iClip)
 	{
 		const float flNextIdle = UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 1.0);
@@ -213,24 +213,25 @@ void CDesertEagle::WeaponIdle()
 		if (flNextIdle <= 0.3)
 		{
 			iAnim = DEAGLE_IDLE1;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle * 5 + 3.2;
 		}
 		else
 		{
 			if (flNextIdle > 0.6)
 			{
 				iAnim = DEAGLE_IDLE3;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 1.633;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle * 5 + 3.2;
 			}
 			else
 			{
 				iAnim = DEAGLE_IDLE2;
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle + 2.5;
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + flNextIdle * 5 + 5.6;
 			}
 		}
 
 		SendWeaponAnim(iAnim);
 	}
+	// ############ //
 }
 
 // ############ hu3lifezado ############ //
