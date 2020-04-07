@@ -152,6 +152,9 @@ void CFlyingCrowbar::SpinTouch(CBaseEntity *pOther)
 	// Get the unit vector in the direction of motion.
 	Vector vecDir = pev->velocity.Normalize();
 
+	// Reposiciono a arma deitada e apontando na direcao do jogador
+	pev->angles = vecDir;
+
 	// Trace a line along the velocity vector to get the normal at impact.
 	TraceResult tr;
 	UTIL_TraceLine(pev->origin, pev->origin + vecDir * 100, dont_ignore_monsters, ENT(pev), &tr);
