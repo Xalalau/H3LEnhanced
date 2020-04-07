@@ -193,12 +193,6 @@ void CFlyingTouros::SaveQualityAndClip(int m_quality, int m_iClip)
 	iClip = m_iClip;
 }
 
-int CFlyingTouros::GetQuality()
-{
-	// Retorno a qualidade da arma
-	return quality;
-}
-
 void CFlyingTouros::SetMode(int m_mode)
 {
 	// Pego o modo da arma;

@@ -46,7 +46,6 @@ public:
 	void BubbleThink(void);
 	void SpinTouch(CBaseEntity *pOther);
 	void SaveQualityAndClip(int m_quality, int m_iClip);
-	int GetQuality(void);
 	void SetMode(int m_mode);
 	CBasePlayer *m_pPlayer;
 
