@@ -32,6 +32,13 @@
 
 #include "CDesertEagle.h"
 
+// ############ hu3lifezado ############ //
+// Nova funcao think
+BEGIN_DATADESC(CDesertEagle)
+DEFINE_THINKFUNC(PrimaryAttackWait),
+END_DATADESC()
+// ############ //
+
 LINK_ENTITY_TO_CLASS(weapon_eagle, CDesertEagle);
 
 CDesertEagle::CDesertEagle()
@@ -73,23 +80,18 @@ void CDesertEagle::Spawn()
 	m_waitforthegametobeready = gpGlobals->time + 12;
 	// Arma travada
 	m_jammedweapon = false;
-	// Qualidade da arma e porcentagem extra de problemas
+	// Qualidade da arma
 	m_quality = 0;
+	// Porcentagem extra de problemas
 	m_qualitypercentageeffect = 0;
 	// Imprimir mensagem quando o jogador coleta a arma
 	m_firstmessage = true;
-	// Sincronização de balas inicial (server) s / Controlar retirada de balas no caso de arma jogada
+	// Controlar retirada de balas no caso de arma jogada
 	m_iClip2 = -1;
 #ifdef CLIENT_DLL
-	// Server -> client: Comando para copiarmos valores de qualidade inicial 
+	// Server -> client: Comando para copiarmos valores de qualidade inicial
 	if (gEngfuncs.pfnGetCvarFloat("hu3_touros_qualidade_inicial") == 0)
-		hu3_touros_qualidade_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_qualidade_inicial", "", 0);
-	// Server -> client: Comando para copiarmos valores de municao inicial 
-	if (gEngfuncs.pfnGetCvarFloat("hu3_touros_municao_inicial") == 0)
-		hu3_touros_municao_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_municao_inicial", "-1", 0);
-	// Manter a sincronia de balas entre server e client mesmo que forcado
-	if (gEngfuncs.pfnGetCvarFloat("hu3_touros_municao_sync") == 0)
-		hu3_touros_municao_sync = gEngfuncs.pfnRegisterVariable("hu3_touros_municao_sync", "-1", 0);
+		hu3_touros_qualidade_inicial = gEngfuncs.pfnRegisterVariable("hu3_touros_qualidade_inicial", "0", 0);
 #endif
 	// ############ //
 
@@ -112,30 +114,27 @@ bool CDesertEagle::AddToPlayer(CBasePlayer* pPlayer)
 bool CDesertEagle::Deploy()
 {
 	// ############ hu3lifezado ############ //
-	// Sincronizacao do numero de balas inicial
-	// Cliente
-#ifdef CLIENT_DLL
-	if (hu3_touros_municao_inicial->value != -1)
-	{
-		m_iClip = hu3_touros_municao_inicial->value;
-		hu3_touros_municao_inicial->value = -1;
-	}
-#endif
-	// Servidor
-	if (m_iClip2 != -1)
-	{
-		m_iClip = m_iClip2;
-		m_iClip2 = -1;
-	}
-
-	// Manter a sincronia de balas entre server e client mesmo que forcado
-#ifdef CLIENT_DLL
-	if (hu3_touros_municao_sync->value == -1)
-		hu3_touros_municao_sync->value = m_iClip;
-#endif
-
 	// Inicializo o controle da animação de reload
 	m_reloaded = false;
+
+	// Sincronizo a qualidade da arma (server -> client)
+#ifndef CLIENT_DLL
+	if (m_quality != 0)
+	{
+		char command[35] = "hu3_touros_qualidade_inicial ";
+		char value[2];
+		snprintf(value, 2, "%d", m_quality);
+		strcat(strcat(command, value), "\n");
+		CLIENT_COMMAND(ENT(m_pPlayer), command);
+	}
+#endif
+
+	// Zero a municao do clip no primeiro deploy
+	if (m_firstmessage)
+		m_iClip = 0;
+
+	// Iniciar a funcao de think
+	SetThink(&CDesertEagle::PrimaryAttackWait);
 	// ############ //
 
 	return DefaultDeploy(
@@ -164,7 +163,7 @@ void CDesertEagle::WeaponIdle()
 	// Se estiver voltando de um reload, termino jogando a arma fora
 	if (m_reloaded)
 	{
-		ThrowWeapon(m_reloaded);
+		ThrowWeapon(false);
 
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.8;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.8;
@@ -176,6 +175,8 @@ void CDesertEagle::WeaponIdle()
 	}
 
 	// Entre 4 e 7 segundos tem entre 10% e 30% de chance da arma atirar sozinha (leva 12 segundos para comecar a rodar inicialmente)
+	// OBS: esse codigo nao funciona 100%!! A sincronia de balas nao eh fiel quando eu chamo PrimaryAttack(); por aqui.
+	// Mas como no final tudo se acerto no jogo, eu preferi deixar esse efeito, porque ele é muito interessante.
 	if (m_nextbadshootchance <= gpGlobals->time && m_waitforthegametobeready <= gpGlobals->time)
 	{
 		m_nextbadshootchance = gpGlobals->time + UTIL_SharedRandomLong(m_pPlayer->random_seed, 4, 7);
@@ -184,7 +185,7 @@ void CDesertEagle::WeaponIdle()
 		{
 			UTIL_Sparks(m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 22 + gpGlobals->v_right * 10);
 #ifndef CLIENT_DLL
-			UTIL_SayText("Sua arma Cornus atirou sozinha ou balas sairam voando!|r", m_pPlayer);
+			UTIL_SayText("Sua arma Cornus atirou sozinha ou balas sairam voando!|r", m_pPlayer); //Nota: "balas sairam voando" nao deveria acontecer.
 
 			// 30% de chance de levar dano de 1 a 5 por estilhacos
 			ShrapnelDamage(30, 1, 5);
@@ -256,64 +257,11 @@ bool CDesertEagle::RandomlyBreak()
 {
 	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (99 - 8 * m_qualitypercentageeffect))
 	{
-		if (m_pPlayer->RemovePlayerItem(this)) // Only throw if we were able to detatch from player.
-		{
-			// Como a arma quebra, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
-			if (m_iClip != 0)
-				m_iClip = 0;
+		ThrowWeapon(false);
 
-#ifndef CLIENT_DLL
-			// Dano de estilhaco de 10 a 25 no jogador, efeitos da tela e tremer, som da arma quebrando
-			ShrapnelDamage(100, 10, 25);
-			UTIL_ScreenShake(m_pPlayer->GetAbsOrigin(), 6.0, 4.0, 0.6, 750);
-			EMIT_SOUND_DYN(this, CHAN_WEAPON, "weapons/desert_eagle_fuck.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
-#endif
-
-			// Get the origin, direction, and fix the angle of the throw.
-			Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
-			Vector vecDir = gpGlobals->v_forward;
-			Vector vecAng = UTIL_VecToAngles(vecDir);
-			vecAng.z = vecDir.z - 90;
-
-#ifndef CLIENT_DLL
-			// Create a flying Touros.
-			CFlyingTouros *pFTouros = (CFlyingTouros *)Create("flying_touros", vecSrc, Vector(0, 0, 0), m_pPlayer->edict());
-
-			// Give the Touros its velocity, angle, and spin. 
-			// Lower the gravity a bit, so it flys. 
-			pFTouros->pev->velocity = vecDir * 500 + m_pPlayer->pev->velocity;
-			pFTouros->pev->angles = vecAng;
-			pFTouros->pev->avelocity.x = -1000;
-			pFTouros->pev->gravity = .5;
-			pFTouros->m_pPlayer = m_pPlayer;
-
-			// Nao deixar o jogador pegar a arma do chao
-			pFTouros->SetMode(1);
-#endif
-			// Do player weapon anim.
-			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-
-			// Just for kicks, set this. 
-			m_flNextSecondaryAttack = gpGlobals->time + 0.75;
-
-			// take item off hud
-			m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
-
-			// Destroy this weapon
-			DestroyItem();
-
-			// Mensagem humilhante pessoal
-#ifndef CLIENT_DLL
-			UTIL_SayText("Sua arma Cornus quebrou!|r", m_pPlayer);
-#endif
-			// Zero a qualidade
-			m_quality = 0;
-#ifdef CLIENT_DLL
-			hu3_touros_qualidade_inicial->value = 0;
-#endif
-		}
 		return true;
 	}
+
 	return false;
 }
 
@@ -323,14 +271,18 @@ bool CDesertEagle::RandomlyLostAllAmmo()
 	if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 100) <= 1 + 7 * m_qualitypercentageeffect)
 	{
 		int i;
+
+		// Mensagem
 #ifndef CLIENT_DLL
 		UTIL_SayText("Infelizmente a sua arma Cornus estragou toda a municao dela...|r", m_pPlayer);
 #endif
 		// Tomar dano de estilhacos
 		ShrapnelDamage(100, 1, 5);
+
 		// Um bando de faisca
 		for (i = 0; i <= 5; i++)
 			UTIL_Sparks(m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 22 + gpGlobals->v_right * 10);
+
 		// Tchau municao
 		m_iClip = 0;
 		m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] = 0;
@@ -361,10 +313,15 @@ void CDesertEagle::ShrapnelDamage(int chance, int min_damage, int max_damage)
 // Definir a qualidade da arma
 void CDesertEagle::SetQuality()
 {
-	// Verifico se o servidor enviou algum valor de qualidade para ser sincronizado no cliente
+	// Vejo se ha um valor de qualidade a ser sincronizado
 #ifdef CLIENT_DLL
-	if (hu3_touros_qualidade_inicial->value != 0)
-		m_quality = hu3_touros_qualidade_inicial->value;
+	int cvar_quality = gEngfuncs.pfnGetCvarFloat("hu3_touros_qualidade_inicial");
+
+	if (cvar_quality != 0 && cvar_quality != m_quality)
+	{
+		m_quality = gEngfuncs.pfnGetCvarFloat("hu3_touros_qualidade_inicial");
+		gEngfuncs.pfnClientCmd("hu3_touros_qualidade_inicial 0");
+	}
 #endif
 
 	// Se nao houver a qualidade definida, precisamos de uma
@@ -372,21 +329,32 @@ void CDesertEagle::SetQuality()
 		m_quality = UTIL_SharedRandomLong(m_pPlayer->random_seed, 1, 9);
 
 	// Cada defeito da arma tem um bonus que e adicionado de 0 até 100% dependendo dessa qualidade 9 ate 1;
-	m_qualitypercentageeffect = 1.0 - (m_quality - 1 + (m_quality - 1) * 1 / 8) * 1.0 / 9;
+	if (m_qualitypercentageeffect == 0)
+		m_qualitypercentageeffect = 1.0 - (m_quality - 1 + (m_quality - 1) * 1 / 8) * 1.0 / 9;
 
-	// Mensagem inicial, sempre no primeiro tiro
 #ifndef CLIENT_DLL
 	if (m_firstmessage)
 	{
-		char mensagem_i[70] = "Pelo uso voce percebeu a qualidade dessa Cornus:";
+		// Mostro a qualidade da arma para o jogador
+		char mensagem_i[70] = "Qualidade da sua Cornus: ";
 		char mensagem_m[15];
-		snprintf(mensagem_m, 9, " %d/10", m_quality);
+		snprintf(mensagem_m, 9, "%d/10", m_quality);
 		char mensagem_f[5] = "|g";
 		strcat(mensagem_i, strcat(mensagem_m, mensagem_f));
 		UTIL_SayText(mensagem_i, m_pPlayer);
 		m_firstmessage = false;
 	}
 #endif
+
+/*
+// Teste de sincronia da qualidade
+#ifndef CLIENT_DLL
+	ALERT(at_console, "SERVER\n");
+#else
+	ALERT(at_console, "CLIENT\n");
+#endif
+	ALERT(at_console, "------------- QUALITY: %d\n", m_quality);
+*/
 }
 // ############ //
 
@@ -398,8 +366,8 @@ void CDesertEagle::PrimaryAttack()
 	// UTIL_SharedRandomFloat estao diferentes no client e no server quando eu a chamo no inico
 	// do carregamento da arma. Mesmo adicionando delay isso ainda acontece... Ja aqui nao.
 	// Acredito que isso seja porque PrimaryAttack tem sua execucao mais posterior. Funciona.
-
 	SetQuality();
+
 	// Chance de quebrar
 	if (!m_jammedweapon)
 		if (RandomlyBreak())
@@ -457,18 +425,62 @@ void CDesertEagle::PrimaryAttack()
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
 	// ############ hu3lifezado ############ //
-	// Solta de 1 a 7 tiros por ataque primario e com mira pessima (variando com a qualidade da arma).
+	// Entre 2% e 10% de chance de levar dano de 1 a 5 por estilhacos (caso a arma nao esteja travada)
+	if (!m_jammedweapon)
+		ShrapnelDamage(2 + 8 * m_qualitypercentageeffect, 1, 5);
+	else
+	// Nao fazer nada caso a arma esteja travada
+		return;
 
-	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	// Chance de travar a arma
+	if (RandomlyJammed())
+	{
+		if (m_iClip > 0)
+			--m_iClip;
 
-	m_pPlayer->GetEffects() |= EF_MUZZLEFLASH;
+		SendWeaponAnim(DEAGLE_SHOOT);
+	}
+	// Chance de quebrar a arma
+	else if (RandomlyLostAllAmmo())
+		{ }
+	// Evento para atirar atrasado
+	else
+	{
+		pev->nextthink = gpGlobals->time + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.2, 1.5);
 
+		// Detalhes da animacao
+		SendWeaponAnim(DEAGLE_SWINGING);
+	}
+
+	// Novos tempos
+	//m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + (m_bLaserActive ? 0.5 : 0.22);
+	//m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10.0, 15.0);
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 4.0, 8.0);
+	// ############ //
+}
+
+// ############ hu3lifezado ############ //
+// Atirar na hora certa
+// Solta de 1 a 7 tiros por ataque primario e com mira pessima (variando com a qualidade da arma).
+void CDesertEagle::PrimaryAttackWait()
+{
+	// Vetores
+	UTIL_MakeVectors(m_pPlayer->GetViewAngle() + m_pPlayer->GetPunchAngle());
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
+
+	// Flags
 	int flags;
 #if defined( CLIENT_WEAPONS )
 	flags = FEV_NOTHOST;
 #else
 	flags = 0;
 #endif
+
+	// Animacoes
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	m_pPlayer->GetEffects() |= EF_MUZZLEFLASH;
 
 	// Quantidade de balas atiradas de uma vez segundo a qualidade da arma
 	int i, j = 0;
@@ -490,43 +502,31 @@ void CDesertEagle::PrimaryAttack()
 		j = UTIL_SharedRandomLong(m_pPlayer->random_seed, 2, 7);
 	}
 
-	// Movi essas linhas para fora do loop
-	UTIL_MakeVectors(m_pPlayer->GetViewAngle() + m_pPlayer->GetPunchAngle());
-	Vector vecSrc = m_pPlayer->GetGunPosition();
-	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
-
-	// Entre 2% e 10% de chance de levar dano de 1 a 5 por estilhacos (caso a arma nao esteja travada)
-	if (!m_jammedweapon)
-		ShrapnelDamage(2 + 8 * m_qualitypercentageeffect, 1, 5);
-
+	// Atirar
 	for (i = 0; i < j; i++)
 	{
-		// Chance de travar a arma
-		if (RandomlyJammed())
-		{
-			if (m_iClip == 7)
-				--m_iClip;
+		// Remover 1 bala
+		--m_iClip;
 
-			SendWeaponAnim(DEAGLE_SHOOT);
+		// Checar se eh uma bala valida
+		if (m_iClip == 0)
+		{
+			// Falar e recarregar
+			if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0)
+				m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_SENTENCE, SUIT_REPEAT_OK);
+
 			break;
 		}
 
-		// Chance de quebrar a arma
-		if (RandomlyLostAllAmmo())
-			break;
-
-		--m_iClip;
-
-		// Novo espalhamento todo zoado (distancia do centro)
+		// Espalhamento: distancia do centro
 		float flSpread = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, 0.01, 0.91 + 0.49 * m_qualitypercentageeffect);
 
-		Vector vecSpread;
-
-		vecSpread = m_pPlayer->FireBulletsPlayer(
+		// Tiro
+		Vector vecSpread = m_pPlayer->FireBulletsPlayer(
 			1,
 			vecSrc, vecAiming, Vector(flSpread, flSpread, flSpread),
 			8192.0, BULLET_PLAYER_DEAGLE, 0, 0,
-			m_pPlayer, UTIL_SharedRandomLong(m_pPlayer->random_seed + i, 1, 10)); // Mais espalhamento aqui (angulos ao redor do centro)
+			m_pPlayer, UTIL_SharedRandomLong(m_pPlayer->random_seed + i, 1, 10)); // Espalhamento: angulos ao redor do centro
 
 		PLAYBACK_EVENT_FULL(
 			flags, m_pPlayer->edict(), m_usFireEagle, 0,
@@ -534,75 +534,44 @@ void CDesertEagle::PrimaryAttack()
 			vecSpread.x, vecSpread.y,
 			0, 0,
 			m_iClip == 0, 0);
-
-		if (!m_iClip)
-		{
-			if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0)
-				m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_SENTENCE, SUIT_REPEAT_OK);
-			break;
-		}
 	}
 
 	/*
-	// Para checar a porcaria da sincronia de balas
-	#ifdef CLIENT_DLL
-	ALERT( at_console, "-------- j / m_iClip: %d / % d\n", j, m_iClip);
-	#endif
-	#ifndef CLIENT_DLL
-	char mensagem_i[70] = "[HU3 DEBUG] (servidor) j / m_iClip:";
-	char mensagem_m[15];
-	snprintf(mensagem_m, 9, " %d / %d", j, m_iClip);
-	char mensagem_f[5] = "|b";
-	strcat(mensagem_i, strcat(mensagem_m, mensagem_f));
-	UTIL_SayText(mensagem_i, m_pPlayer);
-	#endif
-	*/
-
-	// Forco a sincronia de balas com isso
+	// Teste de sincronia das balas
 #ifndef CLIENT_DLL
-	char command[35] = "hu3_touros_municao_sync ";
-	char value[2];
-	snprintf(value, 2, "%d", m_iClip);
-	strcat(strcat(command, value), "\n");
-	CLIENT_COMMAND(ENT(m_pPlayer), command);
+	ALERT(at_console, "SERVER\n");
 #else
-	if (m_iClip != hu3_touros_municao_sync->value)
-		m_iClip = hu3_touros_municao_sync->value;
+	ALERT(at_console, "CLIENT\n");
 #endif
-
-	// Novos tempos
-	//m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + (m_bLaserActive ? 0.5 : 0.22);
-	//m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 10.0, 15.0);
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 4.0, 8.0);
-	// ############ //
+	ALERT(at_console, "------------- BALAS: %d\n", m_iClip);
+	*/
 }
 
-// ############ hu3lifezado ############ //
 // Tiro secundario:
+// Nota: por alguma razao eu nao consigo chamar essa funcao com o iClip cheio.
 void CDesertEagle::SecondaryAttack()
 {
-	ThrowWeapon(false);
+	ThrowWeapon(true);
 }
 
 // Varejar a arma, adaptado de:
 // http://web.archive.org/web/20020717063241/http://lambda.bubblemod.org/tuts/crowbar/
-void CDesertEagle::ThrowWeapon(bool isReloading)
+void CDesertEagle::ThrowWeapon(bool isCollectable)
 {
-	if (isReloading || m_pPlayer->RemovePlayerItem(this))
+	// O jogador perde a municao no pente se nao estiver recarregando. Faco a remocao nesse if/else porque essa funcao acaba 
+	// sendo chamada mais de uma vez e ai tudo ocorre bem. Nao da certo remover a municao e deletar a arma de uma vez so.
+	if (isCollectable && m_iClip2 == -1)
 	{
-		// Don't throw if we were able to detatch from player.
-
-		// Como a arma eh jogada fora, o jogador perde a municao que esta nela, e eu preciso fazer isso antes de tudo!
-		if (!isReloading && m_iClip != 0)
-		{
-			m_iClip2 = m_iClip;
-			m_iClip = 0;
-		}
-
+		// Tchau municao
+		m_iClip2 = m_iClip;
+		m_iClip = 0;
+	}
+	// Only throw if we were able to detatch from player.
+	else if (!isCollectable || m_pPlayer->RemovePlayerItem(this))
+	{
 		// Get the origin, direction, and fix the angle of the throw.
 		Vector vecSrc = m_pPlayer->GetGunPosition();
-		if (!isReloading)
+		if (isCollectable)
 			vecSrc = vecSrc + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
 		else
 			vecSrc = vecSrc + gpGlobals->v_right * 16 + gpGlobals->v_forward * 3 - gpGlobals->v_up * 27;
@@ -621,20 +590,22 @@ void CDesertEagle::ThrowWeapon(bool isReloading)
 		pFTouros->pev->avelocity.x = -500;
 		pFTouros->pev->gravity = .9;
 		pFTouros->m_pPlayer = m_pPlayer;
-		int mode = 0;
 
 		// Definir se o jogador vai poder pegar a arma do chao ou nao
-		if (isReloading)
+		int mode = 0;
+		if (!isCollectable)
 			mode = 1;
 		pFTouros->SetMode(mode);
 
 		// Salvo a qualidade da arma e a quantidade de balas inicial
-		if (!isReloading)
+		if (isCollectable)
 		{
 			if (m_quality == 0) // Caso o jogador jogue a arma fora antes de dar o primeiro tiro
 				m_quality = RANDOM_LONG(1, 9);
 
-			pFTouros->SetQuality(m_quality, m_iClip2);
+			pFTouros->SaveQualityAndClip(m_quality, m_iClip2);
+
+			m_iClip2 = -1;
 		}
 
 		// Do player weapon anim and sound effect. 
@@ -642,13 +613,11 @@ void CDesertEagle::ThrowWeapon(bool isReloading)
 		EMIT_SOUND_DYN(this, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 0xF));
 #endif
 
-		if (!isReloading)
+		if (isCollectable)
 		{
-			// Zero a qualidade
+			// Zero a qualidade e seus efeitos
 			m_quality = 0;
-#ifdef CLIENT_DLL
-			hu3_touros_qualidade_inicial->value = 0;
-#endif
+			m_qualitypercentageeffect = 0;
 
 			// Just for kicks, set this. 
 			// But we destroy this weapon anyway so... thppt. 

@@ -156,9 +156,6 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 		// Salvo a qualidade incial da arma
 		pItem_hu3->m_quality = quality;
 
-		// Salvo a quantidade inicial de balas
-		pItem_hu3->m_iClip2 = iClip;
-
 		// Spawn a weapon box
 		CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create("weaponbox", GetAbsOrigin(), pev->angles, edict());
 
@@ -173,6 +170,9 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 		// Pack the Touros in the weapon box
 		pWeaponBox->PackWeapon(pItem);
 
+		// Guardo a municao na caixa
+		pWeaponBox->PackAmmo(MAKE_STRING(pItem->pszAmmo1()), iClip);
+
 		// Throw Touros or WB along the normal so it looks kinda
 		// like a ricochet. This would be better if I actually 
 		// calcualted the reflection angle, but I'm lazy. :)
@@ -185,12 +185,18 @@ void CFlyingTouros::SpinTouch(CBaseEntity *pOther)
 	pev->nextthink = gpGlobals->time + .1;
 }
 
-void CFlyingTouros::SetQuality(int m_quality, int m_iClip)
+void CFlyingTouros::SaveQualityAndClip(int m_quality, int m_iClip)
 {
-	// Pego a qualidade na arma
+	// Pego a qualidade da arma
 	quality = m_quality;
 	// Pego a municao carregada na arma
 	iClip = m_iClip;
+}
+
+int CFlyingTouros::GetQuality()
+{
+	// Retorno a qualidade da arma
+	return quality;
 }
 
 void CFlyingTouros::SetMode(int m_mode)

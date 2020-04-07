@@ -18,6 +18,8 @@
 
 class CDesertEagleLaser;
 
+// ############ hu3lifezado ############ //
+// Adicionado DEAGLE_SWINGING
 enum DesertEagleAnim
 {
 	DEAGLE_IDLE1 = 0,
@@ -30,13 +32,19 @@ enum DesertEagleAnim
 	DEAGLE_RELOAD_NOSHOT,
 	DEAGLE_RELOAD,
 	DEAGLE_DRAW,
-	DEAGLE_HOLSTER
+	DEAGLE_HOLSTER,
+	DEAGLE_SWINGING
 };
+// ############ //
 
 class CDesertEagle : public CBasePlayerWeapon
 {
 public:
 	DECLARE_CLASS(CDesertEagle, CBasePlayerWeapon);
+	// ############ hu3lifezado ############ //
+	// Nova funcao think
+	DECLARE_DATADESC();
+	// ############ //
 
 	CDesertEagle();
 
@@ -75,6 +83,8 @@ public:
 	bool RandomlyLostAllAmmo();
 	// Varejar a arma
 	void ThrowWeapon(bool isReloading);
+	// Atirar na hora certa
+	void PrimaryAttackWait(void);
 	// ############ //
 
 private:
@@ -95,17 +105,13 @@ private:
 	bool m_firstmessage;
 	// Comando para copiarmos valores de qualidade do server para o client
 	cvar_t	*hu3_touros_gambiarra_qualidade;
-	// Cada defeito da arma tem um bônus que é adicionado de 0 até 100% dependendo dessa qualidade 9 até 1;
+	// Cada defeito da arma tem um bonus que eh adicionado de 0 ate 100% dependendo dessa qualidade 9 ate 1;
 	float m_qualitypercentageeffect;
 	// Indico que acabei de fazer um reload
 	bool m_reloaded;
 #ifdef CLIENT_DLL
 	// Sincronida da qualidade inicial
 	cvar_t	*hu3_touros_qualidade_inicial;
-	// Sincronida da municao primaria inicial
-	cvar_t	*hu3_touros_municao_inicial;
-	// Sincronida da municao primaria continuamente
-	cvar_t	*hu3_touros_municao_sync;
 #endif
 
 public:
@@ -117,6 +123,7 @@ public:
 
 
 };
+
 #endif //GAME_SHARED_ENTITIES_WEAPONS_CDESERTEAGLE_H
 
 #endif //USE_OPFOR
