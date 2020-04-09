@@ -174,14 +174,14 @@ void CDesertEagle::WeaponIdle()
 		return;
 	}
 
-	// Entre 4 e 7 segundos tem entre 10% e 30% de chance da arma atirar sozinha (leva 12 segundos para comecar a rodar inicialmente)
+	// Entre 4 e 7 segundos tem entre 3% e 13% de chance da arma atirar sozinha (leva 12 segundos para comecar a rodar inicialmente)
 	// OBS: esse codigo nao funciona 100%!! A sincronia de balas nao eh fiel quando eu chamo PrimaryAttack(); por aqui.
-	// Mas como no final tudo se acerto no jogo, eu preferi deixar esse efeito, porque ele é muito interessante.
+	// Mas como no final tudo se acerto no jogo, eu preferi deixar esse efeito, porque ele é muito interessante. So reduzi a chance dele.
 	if (m_nextbadshootchance <= gpGlobals->time && m_waitforthegametobeready <= gpGlobals->time)
 	{
 		m_nextbadshootchance = gpGlobals->time + UTIL_SharedRandomLong(m_pPlayer->random_seed, 4, 7);
 
-		if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (90 - 20 * m_qualitypercentageeffect) && !m_jammedweapon && m_iClip != 0)
+		if (UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, 99) >= (97 - 10 * m_qualitypercentageeffect) && !m_jammedweapon && m_iClip != 0)
 		{
 			UTIL_Sparks(m_pPlayer->GetGunPosition() + gpGlobals->v_forward * 22 + gpGlobals->v_right * 10);
 #ifndef CLIENT_DLL
