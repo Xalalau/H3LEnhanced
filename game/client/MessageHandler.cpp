@@ -12,6 +12,9 @@ static cvar_t* msghandler_debug = nullptr;
 
 void Initialize()
 {
+	//Wipe any previously registered handlers so registrations get to the engine during a soft restart
+	MessageHandlers().Clear();
+
 	msghandler_debug = CVAR_CREATE( "msghandler_debug", "0", 0 );
 }
 
