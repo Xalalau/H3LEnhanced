@@ -1243,14 +1243,12 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	CBaseEntity* pChangelevel1 = nullptr;
 	CBaseEntity* pChangelevel2 = nullptr;
 	CBaseEntity* temp = nullptr;
+	bool isForcing = false;
 	int trigger0 = 0, trigger1 = 0, i, plyCount = 0;
 
 	// Forcar o changelevel se o mapa estiver configurado para isso
 	if (strcmp(CVAR_GET_STRING("coop_force_changelevel"), "1") == 0)
-	{
-		CVAR_SET_STRING("coop_force_changelevel", "1");
-		return 1;
-	}
+		isForcing = true;
 
 	// Conta o total de jogadores
 	for (i = 1; i <= gpGlobals->maxClients; i++)
@@ -1292,6 +1290,9 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 				plyInTrigger = true;
 			}
 
+			if (plyInTrigger && isForcing)
+				break;
+
 			// Aplica ou remove efeitos nos jogadores e avisa sobre o estado do changelevel
 			if (plyInTrigger)
 			{
@@ -1315,7 +1316,7 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 	}
 
 	// Todos os jogadores estao no mesmo changelevel
-	if (plyCount == trigger0)
+	if (plyCount == trigger0 || isForcing && trigger0 > 0)
 	{
 		CChangeLevel* activatedChangelevel = (CChangeLevel*) pChangelevel1;
 
@@ -1324,7 +1325,7 @@ int CBaseHalfLifeCoop::ChangeLevelVolume()
 
 		return 1;
 	} 
-	else if (plyCount == trigger1)
+	else if (plyCount == trigger1 || isForcing && trigger1 > 0)
 	{
 		CChangeLevel* activatedChangelevel = (CChangeLevel*)pChangelevel2;
 
