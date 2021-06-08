@@ -321,7 +321,10 @@ void CBullsquid :: HandleAnimEvent( AnimEvent_t& event )
 				WRITE_COORD( vecSpitDir.y);	
 				WRITE_COORD( vecSpitDir.z);	
 				WRITE_SHORT( iSquidSpitSprite );	// model
-				WRITE_BYTE ( 15 );			// count
+				// ############ hu3lifezado ############ //
+				// Vomito volumoso (15)
+				WRITE_BYTE ( 100 );			// count
+				// ############ hu3lifezado ############ //
 				WRITE_BYTE ( 210 );			// speed
 				WRITE_BYTE ( 25 );			// noise ( client will divide by 100 )
 			MESSAGE_END();
@@ -425,7 +428,10 @@ void CBullsquid :: HandleAnimEvent( AnimEvent_t& event )
 					if ( pHurt->IsPlayer() )
 					{
 						UTIL_MakeVectors( GetAbsAngles() );
-						pHurt->SetAbsVelocity( pHurt->GetAbsVelocity() + gpGlobals->v_forward * 300 + gpGlobals->v_up * 300 );
+						// ############ hu3lifezado ############ //
+						// Pancada do dinossauro arremessa player (* 300)
+						pHurt->SetAbsVelocity( pHurt->GetAbsVelocity() + gpGlobals->v_forward * 1000 + gpGlobals->v_up * 1000 );
+						// ############ //
 					}
 				}
 			}
