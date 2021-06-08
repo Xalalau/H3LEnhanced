@@ -751,10 +751,10 @@ int CBasePlayer::GiveAmmo( int iCount, const char *szName )
 		return -1;
 
 	int iAdd = min( iCount, pType->GetMaxCarry() - m_rgAmmo[ i ] );
-	if( iAdd < 1 )
-		return i;
 
 	// ############ hu3lifezado ############ //
+	//	if( iAdd < 1 )
+	//	return i;
 	// [MODO COOP]
 	// Sou obrigado a processar municao negativa devido a um tipo de bug! Hack em LoadPlayerItems do CHalfLifeCoop.cpp
 	if (g_pGameRules->IsCoOp())
