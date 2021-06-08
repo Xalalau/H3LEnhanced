@@ -84,8 +84,11 @@ void CServerGameInterface::ClientDisconnect( edict_t* pEdict )
 	pPlayer->SetConnectState( CBasePlayer::ConnectState::DISCONNECTING );
 
 	char text[ 256 ] = "";
+	// ############ hu3lifezado ############ //
+	// Mensagem de saída extremamente melhorada
 	if( pPlayer->HasNetName() )
-		V_sprintf_safe( text, "- %s has left the game\n", pPlayer->GetNetName() );
+		V_sprintf_safe( text, "- %s meteu o peh\n", pPlayer->GetNetName() );
+	// ############ //
 	text[ sizeof( text ) - 1 ] = 0;
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 	WRITE_BYTE( pPlayer->entindex() );
