@@ -22,6 +22,11 @@ public:
 	CMessageHandlers() = default;
 	~CMessageHandlers()
 	{
+		Clear();
+	}
+
+	void Clear()
+	{
 		m_MessageHandlers.PurgeAndDeleteElements();
 	}
 
