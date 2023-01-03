@@ -36,7 +36,7 @@ project( Hu3-Life )
 set( CMAKE_SKIP_RPATH true )
 
 #C++14 support
-set( SHARED_COMPILER_FLAGS "-std=c++1y" )
+set( SHARED_COMPILER_FLAGS )
 
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU" )
 	# Sempre compilar em modo 32 bits (-m32)
