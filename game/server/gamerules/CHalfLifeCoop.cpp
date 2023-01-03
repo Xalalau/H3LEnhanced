@@ -101,8 +101,13 @@ bool CBaseHalfLifeCoop::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 
 cvar_t* CBaseHalfLifeCoop::GetSkillCvar(const skilldata_t& skillData, const char* pszSkillCvarName)
 {
+	// ############ hu3lifezado ############ //
+	// [MODO COOP]
+	// Desativei isso aqui porque esses overrides nao sao nem chamados no multiplayer normal e eu nao sei a funcao deles.
+	// Ah, e eles crashavam o jogo por causa desse szBuffer nonsense...
 	//These cvars have overrides for multiplayer. - Solokiller
-	if (strcmp(pszSkillCvarName, "sk_suitcharger") == 0 ||
+	if (false && (
+		strcmp(pszSkillCvarName, "sk_suitcharger") == 0 ||
 		strcmp(pszSkillCvarName, "sk_plr_crowbar") == 0 ||
 		strcmp(pszSkillCvarName, "sk_plr_9mm_bullet") == 0 ||
 		strcmp(pszSkillCvarName, "sk_plr_357_bullet") == 0 ||
@@ -116,15 +121,16 @@ cvar_t* CBaseHalfLifeCoop::GetSkillCvar(const skilldata_t& skillData, const char
 		strcmp(pszSkillCvarName, "sk_plr_hand_grenade") == 0 ||
 		strcmp(pszSkillCvarName, "sk_plr_satchel") == 0 ||
 		strcmp(pszSkillCvarName, "sk_plr_tripmine") == 0 ||
-		strcmp(pszSkillCvarName, "sk_plr_hornet_dmg") == 0)
+		strcmp(pszSkillCvarName, "sk_plr_hornet_dmg") == 0))
 	{
 		char szBuffer[64];
 
 		//All overrides have _mp appended to their base name. - Solokiller
-		const int Result = snprintf(szBuffer, sizeof(szBuffer), "%s_mp", pszSkillCvarName);
+		//const int Result = snprintf(szBuffer, sizeof(szBuffer), "%s_mp", pszSkillCvarName);
 
 		return skilldata_t::GetSkillCvar(szBuffer, skillData.GetSkillLevel());
 	}
+	// ############ //
 
 	return CGameRules::GetSkillCvar(skillData, pszSkillCvarName);
 }
