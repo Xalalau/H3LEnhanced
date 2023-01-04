@@ -162,10 +162,15 @@ enum GibAction
 // All monsters need this data
 enum BloodColor
 {
-	DONT_BLEED			= -1,
-	BLOOD_COLOR_RED		= 247,
-	BLOOD_COLOR_YELLOW	= 195,
-	BLOOD_COLOR_GREEN	= BLOOD_COLOR_YELLOW,
+	DONT_BLEED = -1,
+	BLOOD_COLOR_RED = 247,
+	BLOOD_COLOR_YELLOW = 195,
+	// ############ hu3lifezado ############ //
+	// kkk A Valve trocou verde por amarelo em algum momento. "Consertei" isso
+	// Paleta: https://forums.alliedmods.net/showthread.php?t=159200
+	// BLOOD_COLOR_GREEN = BLOOD_COLOR_YELLOW,
+	BLOOD_COLOR_GREEN = 184,
+	// ############
 };
 
 typedef void ( CBaseEntity::*BASEPTR )();

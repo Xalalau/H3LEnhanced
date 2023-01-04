@@ -24,7 +24,7 @@ Para entender melhor o funcionamento deste modo, veja a nossa documentação no Gi
 #include "CWeaponInfoCache.h"
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
-
+ 
 extern int g_teamplay;
 
 extern cvar_t mp_chattime;
@@ -101,8 +101,6 @@ bool CBaseHalfLifeCoop::ClientCommand(CBasePlayer *pPlayer, const char *pcmd)
 
 cvar_t* CBaseHalfLifeCoop::GetSkillCvar(const skilldata_t& skillData, const char* pszSkillCvarName)
 {
-	// ############ hu3lifezado ############ //
-	// [MODO COOP]
 	// Desativei isso aqui porque esses overrides nao sao nem chamados no multiplayer normal e eu nao sei a funcao deles.
 	// Ah, e eles crashavam o jogo por causa desse szBuffer nonsense...
 	//These cvars have overrides for multiplayer. - Solokiller
@@ -130,7 +128,6 @@ cvar_t* CBaseHalfLifeCoop::GetSkillCvar(const skilldata_t& skillData, const char
 
 		return skilldata_t::GetSkillCvar(szBuffer, skillData.GetSkillLevel());
 	}
-	// ############ //
 
 	return CGameRules::GetSkillCvar(skillData, pszSkillCvarName);
 }
