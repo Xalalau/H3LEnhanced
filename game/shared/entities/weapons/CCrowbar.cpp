@@ -105,7 +105,7 @@ void CCrowbar::SecondaryAttack()
 {
 	// Don't throw underwater, and only throw if we were able to detatch 
 	// from player.
-	if ((m_pPlayer->pev->waterlevel != 3) && (m_pPlayer->RemovePlayerItem(this)))
+	if ((m_pPlayer->pev->waterlevel != 3)) // && (m_pPlayer->RemovePlayerItem(this)))
 	{
 		// Get the origin, direction, and fix the angle of the throw.
 		Vector vecSrc = m_pPlayer->GetGunPosition() + gpGlobals->v_right * 8 + gpGlobals->v_forward * 16;
@@ -132,13 +132,23 @@ void CCrowbar::SecondaryAttack()
 
 		// Just for kicks, set this. 
 		// But we destroy this weapon anyway so... thppt. 
-		m_flNextSecondaryAttack = gpGlobals->time + 0.75;
+		m_flNextSecondaryAttack = GetNextAttackDelay(0.25);
 
 		// take item off hud
-		m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
+		//m_pPlayer->pev->weapons &= ~(1 << this->m_iId);
 
 		// Destroy this weapon
-		DestroyItem();
+		//DestroyItem();
+
+		switch (((m_iSwing++) % 2) + 1)
+		{
+		case 0:
+			SendWeaponAnim(CROWBAR_ATTACK1HIT); break;
+		case 1:
+			SendWeaponAnim(CROWBAR_ATTACK2HIT); break;
+		case 2:
+			SendWeaponAnim(CROWBAR_ATTACK3HIT); break;
+		}
 	}
 }
 // ############ //

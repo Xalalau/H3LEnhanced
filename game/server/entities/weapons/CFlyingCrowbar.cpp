@@ -142,8 +142,8 @@ void CFlyingCrowbar::SpinTouch(CBaseEntity *pOther)
 	pWeaponBox->pev->angles.x = 0;
 	pWeaponBox->pev->angles.z = 0;
 
-	// remove the weapon box after 2 mins. // Nope, 10 minutos
-	pWeaponBox->pev->nextthink = gpGlobals->time + 1200;
+	// remove the weapon box after 2 mins. // Nope, 1 minuto
+	pWeaponBox->pev->nextthink = gpGlobals->time + 60;
 	pWeaponBox->SetThink(&CWeaponBox::Kill);
 
 	// Pack the crowbar in the weapon box
