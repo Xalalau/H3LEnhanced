@@ -248,7 +248,11 @@ void CBarnacleGrapple::PrimaryAttack()
 			case CBarnacleGrappleTip::TargetClass::NOT_A_TARGET: break;
 
 			case CBarnacleGrappleTip::TargetClass::SMALL:
-				pTarget->BarnacleVictimGrabbed( this );
+				// ############ hu3lifezado ############ //
+				// Conserto portado do halflife-op4-updated
+				// Nao colocar vitimas em modo grabbed
+				//pTarget->BarnacleVictimGrabbed( this );
+				// ############ //
 				m_pTip->SetAbsOrigin( pTarget->Center() );
 
 				pTarget->SetAbsVelocity( 
@@ -264,7 +268,11 @@ void CBarnacleGrapple::PrimaryAttack()
 			case CBarnacleGrappleTip::TargetClass::MEDIUM:
 			case CBarnacleGrappleTip::TargetClass::LARGE:
 			case CBarnacleGrappleTip::TargetClass::FIXED:
-				pTarget->BarnacleVictimGrabbed( this );
+				// ############ hu3lifezado ############ //
+				// Conserto portado do halflife-op4-updated
+				// Nao colocar vitimas em modo grabbed
+				//pTarget->BarnacleVictimGrabbed( this );
+				// ############ //
 
 				if( m_pTip->GetGrappleType() != CBarnacleGrappleTip::TargetClass::FIXED )
 					m_pTip->SetAbsOrigin( pTarget->Center() );
@@ -377,6 +385,10 @@ void CBarnacleGrapple::PrimaryAttack()
 
 		UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr );
 
+		// ############ hu3lifezado ############ //
+		// Conserto portado do halflife-op4-updated
+		// Esse trecho era client only e a checagem por tr.pHit foi alterada (world não conta + melhores checks)
+#ifndef CLIENT_DLL
 		if( tr.flFraction >= 1.0 )
 		{
 			UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, Hull::HEAD, m_pPlayer->edict(), &tr );
@@ -385,78 +397,81 @@ void CBarnacleGrapple::PrimaryAttack()
 			{
 				CBaseEntity* pHit = Instance( tr.pHit );
 
-				if( !pHit )
-					pHit = CWorld::GetInstance();
-
-				if( !pHit )
+				//If we've hit a solid object see if we're hurting it
+				if (!tr.pHit || FNullEnt(tr.pHit) || pHit->IsBSPModel())
 				{
 					FindHullIntersection( vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer );
 				}
 			}
 		}
+#endif
+		// ############ //
 
 		if( tr.flFraction < 1.0 )
 		{
+			// ############ hu3lifezado ############ //
+			// Conserto portado do halflife-op4-updated
+			// tr.pHit não aceita world
 			CBaseEntity* pHit = Instance( tr.pHit );
-
-			if( !pHit )
-				pHit = CWorld::GetInstance();
+			// ############ //
 
 			m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 			if( pHit )
 			{
-				if( m_pTip )
+				// ############ hu3lifezado ############ //
+				// Conserto portado do halflife-op4-updated
+				// removida checagem inutil por m_pTip
+				// ############ //
+
+				bool bValidTarget = false;
+				if( pHit->IsPlayer() )
 				{
-					bool bValidTarget = false;
-					if( pHit->IsPlayer() )
-					{
-						m_pTip->SetGrappleTarget( pHit );
+					m_pTip->SetGrappleTarget( pHit );
 
-						bValidTarget = true;
-					}
-					else if( m_pTip->ClassifyTarget( pHit ) != CBarnacleGrappleTip::TargetClass::NOT_A_TARGET )
-					{
-						bValidTarget = true;
-					}
+					bValidTarget = true;
+				}
+				else if( m_pTip->ClassifyTarget( pHit ) != CBarnacleGrappleTip::TargetClass::NOT_A_TARGET )
+				{
+					bValidTarget = true;
+				}
 
-					if( bValidTarget )
+				if( bValidTarget )
+				{
+					if( m_flDamageTime + 0.5 < gpGlobals->time )
 					{
-						if( m_flDamageTime + 0.5 < gpGlobals->time )
-						{
 #ifndef CLIENT_DLL
-							g_MultiDamage.Clear();
+						g_MultiDamage.Clear();
 
-							float flDamage = gSkillData.GetPlrDmgGrapple();
+						float flDamage = gSkillData.GetPlrDmgGrapple();
 
-							if( g_pGameRules->IsMultiplayer() )
-							{
-								flDamage *= 2;
-							}
+						if( g_pGameRules->IsMultiplayer() )
+						{
+							flDamage *= 2;
+						}
 
-							pHit->TraceAttack( 
-								CTakeDamageInfo( this, m_pPlayer, flDamage, DMG_ALWAYSGIB | DMG_CLUB ), 
-								gpGlobals->v_forward, tr );
+						pHit->TraceAttack( 
+							CTakeDamageInfo( this, m_pPlayer, flDamage, DMG_ALWAYSGIB | DMG_CLUB ), 
+							gpGlobals->v_forward, tr );
 
-							g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
+						g_MultiDamage.ApplyMultiDamage( m_pPlayer, m_pPlayer );
 #endif
 
-							m_flDamageTime = gpGlobals->time;
+						m_flDamageTime = gpGlobals->time;
 
-							const char* pszSample;
+						const char* pszSample;
 
-							switch( UTIL_RandomLong( 0, 2 ) )
-							{
-							default:
-							case 0: pszSample = "barnacle/bcl_chew1.wav"; break;
-							case 1: pszSample = "barnacle/bcl_chew2.wav"; break;
-							case 2: pszSample = "barnacle/bcl_chew3.wav"; break;
-							}
-
-							EMIT_SOUND_DYN( 
-								m_pPlayer, CHAN_VOICE, 
-								pszSample, VOL_NORM, ATTN_NORM, 0, 125 );
+						switch( UTIL_RandomLong( 0, 2 ) )
+						{
+						default:
+						case 0: pszSample = "barnacle/bcl_chew1.wav"; break;
+						case 1: pszSample = "barnacle/bcl_chew2.wav"; break;
+						case 2: pszSample = "barnacle/bcl_chew3.wav"; break;
 						}
+
+						EMIT_SOUND_DYN( 
+							m_pPlayer, CHAN_VOICE, 
+							pszSample, VOL_NORM, ATTN_NORM, 0, 125 );
 					}
 				}
 			}
@@ -504,12 +519,13 @@ void CBarnacleGrapple::Fire( const Vector& vecOrigin, const Vector& vecDir )
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr );
 
-	if( !tr.fAllSolid )
+	// ############ hu3lifezado ############ //
+	// Conserto portado do halflife-op4-updated
+	// Check melhorado e tr.pHit não aceita world
+	if( 0 == tr.fAllSolid )
 	{
 		CBaseEntity* pHit = Instance( tr.pHit );
-
-		if( !pHit )
-			pHit = CWorld::GetInstance();
+		// ############ //
 
 		if( pHit )
 		{
