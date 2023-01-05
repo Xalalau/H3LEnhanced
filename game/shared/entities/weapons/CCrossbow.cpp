@@ -278,6 +278,16 @@ void CCrossbow::FireBolt()
 
 void CCrossbow::SecondaryAttack()
 {
+	// ############ hu3lifezado ############ //
+	// [Terceira Pessoa]
+	// Remover zoom. Funciona mas ainda da uma aproximacao maluca super rapida.
+	if (m_pPlayer->hu3_cam_crosshair != 0) {
+		SetNextThink(UTIL_WeaponTimeBase() + 1.0);
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.0;
+		return;
+	}
+	// ############ //
+
 	if ( m_pPlayer->GetFOV() != 0 )
 	{
 		//TODO: figure out if these can be merged - Solokiller
