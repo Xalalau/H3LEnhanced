@@ -184,7 +184,18 @@ void CBasePlayer::Spawn()
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
 
-	SetModel( "models/player.mdl" );
+	SetModel("models/player.mdl");
+
+	// ############ hu3lifezado ############ //
+	// Decidir se o jogador tem suit
+	// nota: trocar de bodygroup so funciona executando o jogo normalmente!!! Nunca da certo pelo debbuger!!!
+	if (GetWeapons().Any(1 << WEAPON_SUIT)) {
+		SetBodygroup(1, 0);
+	} else {
+		SetBodygroup(1, 1);
+	}
+	// ############ //
+
 	g_ulModelIndexPlayer = GetModelIndex();
 	SetSequence( LookupActivity( ACT_IDLE ) );
 

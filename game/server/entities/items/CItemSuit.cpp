@@ -32,6 +32,15 @@ bool CItemSuit::MyTouch( CBasePlayer *pPlayer )
 	else
 		EMIT_SOUND_SUIT( pPlayer, "!HEV_AAx" );	// long version of suit logon
 
-	pPlayer->GetWeapons().AddFlags( 1 << WEAPON_SUIT );
+	pPlayer->GetWeapons().AddFlags(1 << WEAPON_SUIT);
+
+	// ############ hu3lifezado ############ //
+	// Trocar para o suit
+	// nota: trocar de bodygroup so funciona executando o jogo normalmente!!! Nunca da certo pelo debbuger!!!
+	if (strcmp(pPlayer->GetModelName(), "models/player.mdl") == 0) {
+		pPlayer->SetBodygroup(1, 0);
+	}
+	// ############ //
+
 	return true;
 }
