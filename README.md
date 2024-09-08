@@ -7,7 +7,7 @@ Windows: [![Build status](https://ci.appveyor.com/api/projects/status/bhciqnomt0
 
 Linux & Mac: [![Build Status](https://travis-ci.org/Xalalau/H3LEnhanced.svg?branch=master)](https://travis-ci.org/Xalalau/H3LEnhanced)
 
-Este repositório contém os códigos de client.* e hl.* usados no Hu3-Life.
+Este repositório contém os códigos de client.* e hl.* usados no Hu3-Life, baseado em uma versão otimizada do HL1 que foi basicamente deletada pelo próprio criador.
 
 Conheçam mais sobre o mod: [Facebook](https://www.facebook.com/hu3lifeoficial/), [Moddb](http://www.moddb.com/mods/hu3-life), [Steam](https://steamcommunity.com/groups/Hu3-Life) e [Discord](https://discord.gg/aKHc9XQ).
 
