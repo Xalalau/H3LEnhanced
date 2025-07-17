@@ -8,7 +8,10 @@ projects_*/*
 build/*
 fake_steamcommon/*
 deps/*
-CMakeFiles/*
+CMakeFiles
+*.cmake
+Makefile
+
 
 #Mapsrc data
 gamerc/mapsrc/*.max
