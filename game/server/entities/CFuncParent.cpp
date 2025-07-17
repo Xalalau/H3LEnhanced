@@ -195,7 +195,9 @@ void CFuncParent::Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 }
 
 // Coordena as configuracoes e chamadas de movimento (eh a principal)
-entvars_t* CFuncParent::ProcessMovement(entvars_t *parent, string_t targetName)
+
+
+entvars_t * CFuncParent::ProcessMovement(entvars_t *parent, string_t targetName)
 {
 	parent = SetEntVars_t(targetName);
 	if (parent != NULL)
@@ -206,7 +208,7 @@ entvars_t* CFuncParent::ProcessMovement(entvars_t *parent, string_t targetName)
 		return parent;
 	}
 
-	return nullptr;
+	return NULL;
 }
 
 // Encontra entidades no mapa
@@ -253,56 +255,56 @@ void CFuncParent::LinearMoveDone(void)
 	if (!blockThink)
 	{
 		// Paro a entidade e todos os parents
-		if (pev->velocity > 0)
-			pev->velocity = 0;
+		if (pev->velocity.Length() > 0)
+			pev->velocity = pev->velocity * 0;
 		if (parent01)
-			if (parent01->velocity > 0)
-					parent01->velocity = 0;
+			if (parent01->velocity.Length() > 0)
+				parent01->velocity = parent01->velocity * 0;
 		if (parent02)
-			if (parent02->velocity > 0)
-				parent02->velocity = 0;
+			if (parent02->velocity.Length() > 0)
+				parent02->velocity = parent02->velocity * 0;
 		if (parent03)
-			if (parent03->velocity > 0)
-				parent03->velocity = 0;
+			if (parent03->velocity.Length() > 0)
+				parent03->velocity = parent03->velocity * 0;
 		if (parent04)
-			if (parent04->velocity > 0)
-				parent04->velocity = 0;
+			if (parent04->velocity.Length() > 0)
+				parent04->velocity = parent04->velocity * 0;
 		if (parent05)
-			if (parent05->velocity > 0)
-				parent05->velocity = 0;
+			if (parent05->velocity.Length() > 0)
+				parent05->velocity = parent05->velocity * 0;
 		if (parent06)
-			if (parent06->velocity > 0)
-				parent06->velocity = 0;
+			if (parent06->velocity.Length() > 0)
+				parent06->velocity = parent06->velocity * 0;
 		if (parent07)
-			if (parent07->velocity > 0)
-				parent07->velocity = 0;
+			if (parent07->velocity.Length() > 0)
+				parent07->velocity = parent07->velocity * 0;
 		if (parent08)
-			if (parent08->velocity > 0)
-				parent08->velocity = 0;
+			if (parent08->velocity.Length() > 0)
+				parent08->velocity = parent08->velocity * 0;
 		if (parent09)
-			if (parent09->velocity > 0)
-				parent09->velocity = 0;
+			if (parent09->velocity.Length() > 0)
+				parent09->velocity = parent09->velocity * 0;
 		if (parent10)
-			if (parent10->velocity > 0)
-				parent10->velocity = 0;
+			if (parent10->velocity.Length() > 0)
+				parent10->velocity = parent10->velocity * 0;
 		if (parent11)
-			if (parent11->velocity > 0)
-				parent11->velocity = 0;
+			if (parent11->velocity.Length() > 0)
+				parent11->velocity = parent11->velocity * 0;
 		if (parent12)
-			if (parent12->velocity > 0)
-				parent12->velocity = 0;
+			if (parent12->velocity.Length() > 0)
+				parent12->velocity = parent12->velocity * 0;
 		if (parent13)
-			if (parent13->velocity > 0)
-				parent13->velocity = 0;
+			if (parent13->velocity.Length() > 0)
+				parent13->velocity = parent13->velocity * 0;
 		if (parent14)
-			if (parent14->velocity > 0)
-				parent14->velocity = 0;
+			if (parent14->velocity.Length() > 0)
+				parent14->velocity = parent14->velocity * 0;
 		if (parent15)
-			if (parent15->velocity > 0)
-				parent15->velocity = 0;
+			if (parent15->velocity.Length() > 0)
+				parent15->velocity = parent15->velocity * 0;
 		if (parent16)
-			if (parent16->velocity > 0)
-				parent16->velocity = 0;
+			if (parent16->velocity.Length() > 0)
+				parent16->velocity = parent16->velocity * 0;
 
 		// Verifico se ela ja pode iniciar a proxima entidade (target)
 		if (pev->ltime > parent_time)
