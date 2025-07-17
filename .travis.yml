@@ -22,9 +22,9 @@ notifications:
 # Usar C como base
 language: c
 
-# Linux - usando Ubuntu 14.04 Trusty Tahr como base (suporte de sistemas mais antigos até os mais novos - glibc // única opção disponível no Travis)
+# Linux - usando Ubuntu 24.04 Trusty Tahr como base (suporte de sistemas mais antigos até os mais novos - glibc // única opção disponível no Travis)
 sudo: required
-dist: trusty
+dist: noble
 
 # Linux - adicionar o Ubuntu restricted tool chain para instalar o GCC e a biblioteca padrão C
 addons:
@@ -33,16 +33,16 @@ addons:
     - ubuntu-toolchain-r-test
     packages:
     - linux-libc-dev
-    - gcc-7-multilib
-    - g++-7-multilib
+    - gcc-14-multilib
+    - g++-14-multilib
     - libcurl4-openssl-dev:i386
     - libpthread-stubs0-dev:i386
 
 # Variáveis de ambiente
 env:
   global:
-    - COMPILER_VERSION_C=gcc-7
-    - COMPILER_VERSION_CXX=g++-7
+    - COMPILER_VERSION_C=gcc-14
+    - COMPILER_VERSION_CXX=g++-14
     - DEPENDENCIES_DIR="${TRAVIS_BUILD_DIR}/dependencies"
 
 
@@ -82,7 +82,7 @@ install:
   # Preparar as dependências, dar build e falsear o diretório common do Steam para o Travis
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - STEAMCOMMON_DIR="${TRAVIS_BUILD_DIR}/fake_steamcommon"
-  - mkdir -p ${DEPS_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR} && mkdir -p ${STEAMCOMMON_DIR}/Half-Life && cd ${STEAMCOMMON_DIR}/Half-Life
+  - mkdir -p "${DEPS_DIR}" && mkdir -p "${STEAMCOMMON_DIR}" && mkdir -p "${STEAMCOMMON_DIR}/Half-Life" && cd "${STEAMCOMMON_DIR}/Half-Life"
   # Make symlinks to required libraries located in the Half-Life directory
   - ln -s ${TRAVIS_BUILD_DIR}/lib/public/vgui.so libvgui.so
   - ln -s ${TRAVIS_BUILD_DIR}/lib/public/libtier0.so libtier0.so
