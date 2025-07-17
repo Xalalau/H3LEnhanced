@@ -1,5 +1,12 @@
 # Rascunho - Xala
 
+# OBS: O .so está dando erro de ao ler os exports do tier0. Se alguém quiser resolver isso, fique à vontade; 
+# estou usando o mod no Linux via Proton.
+
+# Requisitos para rodar no Linux:
+# cd [...]/common/Half-Life
+# ln -s vgui.so libvgui.so
+# no steam: LD_LIBRARY_PATH=[...]/common/Half-Life
 
 
 # Noble
@@ -8,7 +15,7 @@ sudo dpkg --add-architecture i386
 sudo apt-get -qq update
 sudo apt install -y linux-libc-dev gcc-14-multilib g++-14-multilib libcurl4-openssl-dev:i386 libpthread-stubs0-dev:i386 linux-libc-dev:i386
 
-BASE_DIR="~/Stuff/Hu3-Life/H3LEnhanced"
+BASE_DIR="/home/hue/Stuff/Hu3-Life/H3LEnhanced"
 
 
 
@@ -59,5 +66,8 @@ cmake ${COMPILER_SETTINGS} -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -m32 -fno-stric
 -DSTEAMCOMMON=${STEAMCOMMON_DIR} ${BUILD_RULES} \
 -Dvgui_DIR="${BASE_DIR}/lib/public"
 
+
+
 make
+# make -j 8 # Melhor colocar o seu número de CPUs aqui
 
